@@ -1,6 +1,6 @@
 # Helix Sidekick
 
-> Helper for authoring Helix projects
+> Browser helper for authoring Helix projects
 
 ## Status
 [![codecov](https://img.shields.io/codecov/c/github/adobe/helix-sidekick.svg)](https://codecov.io/gh/adobe/helix-sidekick)
@@ -12,9 +12,7 @@
 
 ## Installation
 
-```bash
-$ npm install @adobe/helix-sidekick
-```
+https://www.hlx.live/tools/sidekick/
 
 ## Usage
 

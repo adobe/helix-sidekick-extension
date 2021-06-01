@@ -13,4 +13,8 @@
 module.exports = {
   root: true,
   extends: '@adobe/helix',
+  rules: {
+    // allow reassigning param
+    'no-param-reassign': [2, { props: false }],
+  },
 };

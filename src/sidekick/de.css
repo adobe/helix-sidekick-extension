@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Adobe. All rights reserved.
+ * Copyright 2020 Adobe. All rights reserved.
  * This file is licensed to you under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License. You may obtain a copy
  * of the License at http://www.apache.org/licenses/LICENSE-2.0
@@ -10,16 +10,26 @@
  * governing permissions and limitations under the License.
  */
 
-/* eslint-env mocha */
+ .hlx-sk:empty::before {
+  content: "Keine Funktionen gefunden";
+ }
 
-'use strict';
+.hlx-sk .loading::before {
+  content: 'Funktionen werden geladen...';
+}
 
-const assert = require('assert');
-const index = require('../src/index.js').main;
+.hlx-sk .close::before {
+  content: "Schließen";
+}
 
-describe('Index Tests', () => {
-  it('index function is present', async () => {
-    const result = await index();
-    assert.equal(result, 'Hello, world.');
-  });
-});
+.hlx-sk-overlay div.modal.wait:empty::before {
+  content: "Bitte warten..."
+}
+
+.hlx-sk .preview button::before {
+  content: "Vorschau";
+}
+
+.hlx-sk .publish button::before {
+  content: "Publizieren";
+}

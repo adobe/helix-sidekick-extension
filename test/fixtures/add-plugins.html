@@ -1,0 +1,25 @@
+<html>
+  <head>
+    <meta charset="utf-8"/>
+  </head>
+  <body>
+    <div class="foo"><button>Foo</button></div>
+    <script src="../../src/sidekick/app.js"></script>
+    <script>
+      window.hlx.sidekick.add({        
+          id: 'ding',
+          button: {
+            text: 'Ding',
+            action: () => {
+              window.hlx.sidekick.add({
+                id: 'baz',
+                button: {
+                  text: 'Baz',
+                },
+              });
+            },
+          },
+        });
+    </script>
+  </body>
+</html>
