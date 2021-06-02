@@ -326,7 +326,7 @@
     // check for wrong byocdn config
     // https://github.com/adobe/helix-pages/issues/885
     if (sk.config.byocdn && sk.config.host
-      && sk.config.host.includes('.adobe.')
+      && sk.config.host.endsWith('.adobe.com')
       && !sk.config.host.startsWith('www.')) {
       sk.config.byocdn = false;
       sk.updateRequired = true;

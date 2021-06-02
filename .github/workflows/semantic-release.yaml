@@ -2,21 +2,33 @@ name: Semantic Release
 on:
   push:
     branches:
-      - 'main'
+      - main
 
 jobs:
   build:
     runs-on: ubuntu-latest
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
     steps:
-      - uses: actions/checkout@v2
-      - name: Use Node.js 12.x
-        uses: actions/setup-node@v2
+      - name: Checkout
+        uses: actions/checkout@v2
         with:
-          node-version: '12.x'
-      - run: npm install
-      - run: npm test
-      - run: npm run semantic-release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.ADOBE_BOT_NPM_TOKEN }}
+          ssh-key: ${{ secrets.SSH-KEY }}
+      - name: Checkout dist repo
+        uses: actions/checkout@v2
+        with:
+          repository: adobe/helix-pages
+          path: dist
+      - name: Create commit in dist repo
+        run: |
+          cp src/sidekick/app.* dist/tools/sidekick/
+          cd dist/tools/sidekick
+      - name: Create pull request in dist repo
+        uses: peter-evans/create-pull-request@v3
+        with:
+          commit-message: "chore(sidekick): new release [skip ci]"
+          token: ${{ secrets.PAT }}
+          path: dist
+          branch: sidekick-release
+          delete-branch: true
+          title: Helix Sidekick Release
+          body: This PR has been auto-generated from https://github.com/adobe/helix-sidekick/ to update Helix Sidekick.
