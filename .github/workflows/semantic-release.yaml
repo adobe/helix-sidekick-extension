@@ -27,7 +27,8 @@ jobs:
           commit-message: "chore(sidekick): new release [skip ci]"
           token: ${{ secrets.PAT }}
           path: dist
-          branch: sidekick-release
+          branch: sidekick
+          branch-suffix: short-commit-hash
           delete-branch: true
           title: Helix Sidekick Release
           body: This PR has been auto-generated from https://github.com/adobe/helix-sidekick/ to update Helix Sidekick.
