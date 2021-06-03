@@ -6,6 +6,9 @@ executors:
     environment:
       NPM_CONFIG_PREFIX: ~/.npm-global
 
+orbs:
+  puppeteer: threetreeslight/puppeteer@0.1.2
+
 commands:
   setup:
     steps:
@@ -37,14 +40,12 @@ jobs:
     - run:
         name: Lint
         command: npm run lint
-
+    - puppeteer/install
     - run:
         name: Test
         command: npm run test
-
     - store_test_results:
         path: junit
-
     - store_artifacts:
         path: junit
 
