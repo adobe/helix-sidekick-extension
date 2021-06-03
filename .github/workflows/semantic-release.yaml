@@ -1,11 +1,11 @@
-name: Semantic Release
+name: Release
 on:
   push:
     branches:
       - main
 
 jobs:
-  build:
+  release:
     runs-on: ubuntu-latest
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
     steps:
@@ -18,10 +18,9 @@ jobs:
         with:
           repository: adobe/helix-pages
           path: dist
-      - name: Create commit in dist repo
+      - name: Copy files to dist repo
         run: |
           cp src/sidekick/app.* dist/tools/sidekick/
-          cd dist/tools/sidekick
       - name: Create pull request in dist repo
         uses: peter-evans/create-pull-request@v3
         with:
