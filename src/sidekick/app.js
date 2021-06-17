@@ -10,6 +10,7 @@
  * governing permissions and limitations under the License.
  */
 /* global window, document, navigator, fetch */
+/* eslint-disable no-console, no-alert */
 
 'use strict';
 
@@ -371,7 +372,6 @@
     ];
     if (indicators.includes(true)) {
       window.setTimeout(() => {
-        // eslint-disable-next-line no-alert
         if (window.confirm('Good news! There is a newer version of the Helix Sidekick Bookmarklet available!\n\nDo you want to install it now? It will only take a minute …')) {
           sk.showModal('Please wait …', true);
           window.location.href = getShareUrl(sk.config, sk.location.href);
@@ -410,54 +410,6 @@
   }
 
   /**
-   * Switches to or opens a given environment.
-   * @private
-   * @param {Sidekick} sidekick The sidekick
-   * @param {string} targetEnv One of the following environments:
-   *        {@code edit}, {@code preview}, {@code live} or {@code production}
-   * @param {boolean} open=false {@code true} if environment should be opened in new tab
-   */
-  async function gotoEnv(sidekick, targetEnv, open) {
-    const { config, location } = sidekick;
-    const hostType = ENVS[targetEnv];
-    if (!hostType) {
-      return;
-    }
-    const previewStatusUrl = getAdminUrl(config, 'preview', sidekick.isEditor() ? '' : location.pathname);
-    if (sidekick.isEditor()) {
-      previewStatusUrl.search = new URLSearchParams([
-        ['editUrl', location.href],
-      ]).toString();
-    }
-    let envUrl;
-    try {
-      const resp = await fetch(previewStatusUrl, {
-        // TODO: use POST for preview
-        // method: targetEnv === 'preview' ? 'POST' : 'GET',
-      });
-      const { edit, webPath: path } = await resp.json();
-      if (targetEnv === 'edit' && edit.url) {
-        envUrl = edit.url;
-      } else if (path) {
-        envUrl = `https://${config[hostType]}${path}`;
-      }
-    } catch (e) {
-      // eslint-disable-next-line no-console
-      console.log(e);
-    }
-    if (!envUrl) {
-      sidekick.showModal('Failed to switch environment. Please try again later.', true, 0);
-      return;
-    }
-    // switch or open env
-    if (open) {
-      window.open(envUrl);
-    } else {
-      window.location.href = envUrl;
-    }
-  }
-
-  /**
    * Check for Helix 3 related issues.
    * @private
    * @param {Sidekick} sk The sidekick
@@ -466,7 +418,6 @@
     // check if sidekick config needs to be updated to hlx3
     if (!sk.config.hlx3 && sk.location.hostname.endsWith('hlx3.page')) {
       window.setTimeout(() => {
-        // eslint-disable-next-line no-alert
         if (window.confirm('This Helix Sidekick Bookmarklet is unable to deal with a Helix 3 site.\n\nPress OK to install one for Helix 3 now.')) {
           sk.showModal('Please wait …', true);
           // set hlx3 flag temporarily
@@ -479,10 +430,8 @@
     if (sk.config.hlx3
       && sk.location.hostname.endsWith('.page')
       && !sk.location.hostname.endsWith('hlx3.page')) {
-      // eslint-disable-next-line no-alert
       if (window.confirm('This Helix Sidekick Bookmarklet can only work on a Helix 3 site.\n\nPress OK to be taken to the Helix 3 version of this page now.')) {
-        sk.showModal('Please wait …', true);
-        await gotoEnv(sk, 'preview');
+        sk.switchEnv('preview');
       }
     }
   }
@@ -503,7 +452,7 @@
           if (evt.target.classList.contains('pressed')) {
             return;
           }
-          await gotoEnv(sk, 'edit', newTab(evt));
+          sk.switchEnv('edit', newTab(evt));
         },
         isPressed: (sidekick) => sidekick.isEditor(),
       },
@@ -518,7 +467,7 @@
           if (evt.target.classList.contains('pressed')) {
             return;
           }
-          await gotoEnv(sk, 'preview', newTab(evt));
+          sk.switchEnv('preview', newTab(evt));
         },
         isPressed: (sidekick) => sidekick.isInner(),
       },
@@ -534,7 +483,7 @@
           if (evt.target.classList.contains('pressed')) {
             return;
           }
-          await gotoEnv(sk, 'live', newTab(evt));
+          sk.switchEnv('live', newTab(evt));
         },
         isPressed: (sidekick) => sidekick.isOuter(),
       },
@@ -551,7 +500,7 @@
           if (evt.target.classList.contains('pressed')) {
             return;
           }
-          await gotoEnv(sk, 'prod', newTab(evt));
+          sk.switchEnv('prod', newTab(evt));
         },
         isPressed: (sidekick) => sidekick.isProd(),
       },
@@ -572,13 +521,11 @@
           const { location } = sk;
           sk.showModal('Please wait …', true);
           try {
-            const resp = await sk.reload(location.pathname);
+            const resp = await sk.update(location.pathname);
             if (!resp.ok && resp.status >= 400) {
-              // eslint-disable-next-line no-console
               console.error(resp);
               throw new Error(resp);
             }
-            // eslint-disable-next-line no-console
             console.log(`reloading ${location.href}`);
             if (newTab(evt)) {
               window.open(window.location.href);
@@ -623,7 +570,6 @@
           // fetch and redirect to production
           const prodURL = `https://${config.byocdn ? config.outerHost : config.host}${path}`;
           await fetch(prodURL, { cache: 'reload', mode: 'no-cors' });
-          // eslint-disable-next-line no-console
           console.log(`redirecting to ${prodURL}`);
           if (newTab(evt)) {
             window.open(prodURL);
@@ -651,8 +597,11 @@
           class: 'hlx-sk hlx-sk-hidden hlx-sk-empty',
         },
       });
+      this.status = {};
       this.loadContext();
       this.loadCSS();
+      // re-fetch status every 5s
+      window.setInterval(() => this.fetchStatus(), 5000);
       // share button
       const share = appendTag(this.root, {
         tag: 'button',
@@ -704,14 +653,36 @@
     }
 
     /**
-     * Loads the sidekick configuration based on {@link window.hlx.sidekickConfig}
-     * and retrieves the location of the current document.
+     * Fetches the status for the current resource.
      * @returns {Sidekick} The sidekick
      */
-    loadContext() {
+    async fetchStatus() {
+      const { href, pathname } = this.location;
+      const statusUrl = getAdminUrl(this.config, 'preview', pathname);
+      if (this.isEditor()) {
+        statusUrl.search = new URLSearchParams([
+          ['editUrl', href],
+        ]).toString();
+      }
+      try {
+        const resp = await fetch(statusUrl);
+        Object.assign(this.status, await resp.json());
+        // console.log('status fetched', this.status);
+      } catch (e) {
+        console.error('failed to fetch status', e);
+      }
+      return this;
+    }
+
+    /**
+     * Loads the sidekick configuration based on {@link window.hlx.sidekickConfig},
+     * retrieves the location of the current document and fetches the status.
+     * @returns {Sidekick} The sidekick
+     */
+    async loadContext() {
       this.config = initConfig();
       this.location = getLocation();
-      return this;
+      return this.fetchStatus();
     }
 
     /**
@@ -1024,20 +995,80 @@
     }
 
     /**
+     * Switches to (or opens) a given environment.
+     * @param {string} targetEnv One of the following environments:
+     *        {@code edit}, {@code preview}, {@code live} or {@code prod}
+     * @param {boolean} open=false {@code true} if environment should be opened in new tab
+     * @returns {Sidekick} The sidekick
+     */
+    async switchEnv(targetEnv, open) {
+      const hostType = ENVS[targetEnv];
+      if (!hostType) {
+        console.error('invalid environment', targetEnv);
+        return this;
+      }
+      this.showModal('Please wait …', true);
+      if (!this.status.webPath) {
+        console.log('not ready yet, trying again in a second ...');
+        window.setTimeout(() => this.switchEnv(targetEnv, open), 1000);
+        return this;
+      }
+      let envUrl;
+      if (targetEnv === 'edit' && this.status.edit && this.status.edit.url) {
+        envUrl = this.status.edit.url;
+      } else {
+        envUrl = `https://${this.config[hostType]}${this.status.webPath}`;
+        if (targetEnv === 'preview' && this.isEditor()) {
+          this.update(this.status.webPath);
+        }
+      }
+      if (!envUrl) {
+        this.showModal('Failed to switch environment. Please try again later.', true, 0);
+        return this;
+      }
+      // switch or open env
+      if (open) {
+        window.open(envUrl);
+        this.hideModal();
+      } else {
+        window.location.href = envUrl;
+      }
+      return this;
+    }
+
+    /**
      * Reloads the page at the specified path.
-     * @param {string} path The path of the page to publish
+     * @deprecated since v3.2.0. use {@link update} instead
+     * @param {string} path The path of the page to purge
      * @return {Response} The response object
      */
     async reload(path) {
+      console.log('reload() is deprecated, use update() instead.');
+      return this.update(path);
+    }
+
+    /**
+     * Updates the preview resource at the specified path.
+     * @param {string} path The path of the resource to refresh
+     * @return {Response} The response object
+     */
+    async update(path) {
       const { config } = this;
       let resp;
-      if (config.hlx3) {
-        resp = await fetch(getAdminUrl(config, 'preview', path), { method: 'POST' });
-      } else {
-        resp = await this.publish(path, true);
+      try {
+        if (config.hlx3) {
+          // update preview
+          resp = await fetch(getAdminUrl(config, 'preview', path), { method: 'POST' });
+          // bust client cache
+          await fetch(window.location.href, { cache: 'reload', mode: 'no-cors' });
+        } else {
+          resp = await this.publish(path, true);
+        }
+      } catch (e) {
+        console.error('failed to update', path, e);
       }
       return {
-        ok: resp.ok,
+        ok: resp.ok || false,
         status: resp.status,
         path,
       };
@@ -1050,7 +1081,6 @@
      * @return {publishResponse} The response object
      */
     async publish(path, innerOnly = false) {
-      /* eslint-disable no-console */
       const { config, location } = this;
 
       if ((!innerOnly && !config.host)
@@ -1091,7 +1121,6 @@
         ok = resp.ok && Array.isArray(json) && json.every((e) => e.status === 'ok');
         status = resp.status;
       }
-      /* eslint-enable no-console */
       return {
         ok,
         status,
