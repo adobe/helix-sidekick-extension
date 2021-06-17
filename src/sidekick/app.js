@@ -400,9 +400,7 @@
    */
   function getAdminUrl({ owner, repo, ref }, api, path) {
     return new URL([
-      // TODO: switch to admin.hlx3.page before merging to main!
-      // 'https://admin.hlx3.page/',
-      'https://admin2.hlx3.page/',
+      'https://admin.hlx3.page/',
       api,
       `/${owner}`,
       `/${repo}`,
