@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-/* global window, document, navigator, fetch, btoa */
+/* global window, document, navigator, fetch */
 
 'use strict';
 
@@ -98,6 +98,27 @@
   };
 
   /**
+   * Returns a hash code for the specified string.
+   * Source: http://werxltd.com/wp/2010/05/13/javascript-implementation-of-javas-string-hashcode-method/
+   * @param {*} str The source string
+   * @returns {number} The hash code
+   */
+  function hashCode(str = '') {
+    let hash = 0;
+    let i;
+    let chr;
+    if (str.length === 0) return hash;
+    for (i = 0; i < str.length; i += 1) {
+      chr = str.charCodeAt(i);
+      /* eslint-disable no-bitwise */
+      hash = ((hash << 5) - hash) + chr;
+      hash |= 0; // Convert to 32bit integer
+      /* eslint-enable no-bitwise */
+    }
+    return hash;
+  }
+
+  /**
    * Returns the sidekick configuration based on {@link window.hlx.sidekickConfig}.
    * @private
    * @returns {Object} The sidekick configuration
@@ -107,22 +128,26 @@
       ? window.hlx.sidekickConfig
       : window.hlxSidekickConfig) || {};
     const {
-      owner, repo, ref = 'main', host, project,
+      owner,
+      repo,
+      ref = 'main',
+      host,
+      project,
+      // if hlx3 flag unset, check for known hlx3 repos
+      hlx3 = [974752171, -1149574338].includes(hashCode(repo)),
     } = cfg;
-    const ghDetails = owner && repo
-      ? `${repo}--${owner}`
-      : null;
-    const innerPrefix = ghDetails ? `${ref}--${ghDetails}` : null;
-    // host param for purge request must include ref
+    const innerPrefix = owner && repo ? `${ref}--${repo}--${owner}` : null;
     const publicHost = host && host.startsWith('http') ? new URL(host).host : host;
-    // get hlx domain from script src
-    let innerHost;
-    let scriptUrl;
     const script = document.querySelector('script[src$="/sidekick/app.js"]');
-    if (script) {
-      scriptUrl = script.src;
+    const scriptUrl = script && script.src;
+    let innerHost;
+    if (hlx3) {
+      innerHost = 'hlx3.page';
+    }
+    if (!innerHost && scriptUrl) {
+      // get hlx domain from script src (used for branch deployment testing)
       const scriptHost = new URL(scriptUrl).host;
-      if (scriptHost && scriptHost !== 'www.hlx.live') {
+      if (scriptHost && scriptHost !== 'www.hlx.live' && !scriptHost.startsWith('localhost')) {
         // keep only 1st and 2nd level domain
         innerHost = scriptHost.split('.')
           .reverse()
@@ -131,11 +156,12 @@
           .join('.');
       }
     }
-    if (!innerHost || innerHost.startsWith('localhost')) {
+    if (!innerHost) {
+      // fall back to hlx.page
       innerHost = 'hlx.page';
     }
     innerHost = innerPrefix ? `${innerPrefix}.${innerHost}` : null;
-    const outerHost = publicHost && ghDetails ? `${ghDetails}.hlx.live` : null;
+    const outerHost = publicHost && owner && repo ? `${repo}--${owner}.hlx.live` : null;
     return {
       ...cfg,
       ref,
@@ -145,6 +171,7 @@
       scriptUrl,
       host: publicHost,
       project: project || 'your Helix Pages project',
+      hlx3,
     };
   }
 
@@ -283,14 +310,17 @@
    * Returns the share URL for the sidekick bookmarklet.
    * @private
    * @param {Object} config The sidekick configuration
+   * @param {string} from The URL of the referrer page
    * @returns {string} The share URL
    */
-  function getShareUrl(config) {
+  function getShareUrl(config, from) {
     const shareUrl = new URL('https://www.hlx.live/tools/sidekick/');
     shareUrl.search = new URLSearchParams([
       ['project', config.project || ''],
       ['host', config.host || ''],
       ['byocdn', !!config.byocdn],
+      ['hlx3', !!config.hlx3],
+      ['from', from || ''],
       ['giturl', `https://github.com/${config.owner}/${config.repo}${config.ref ? `/tree/${config.ref}` : ''}`],
     ]).toString();
     return shareUrl.toString();
@@ -326,7 +356,7 @@
     // check for wrong byocdn config
     // https://github.com/adobe/helix-pages/issues/885
     if (sk.config.byocdn && sk.config.host
-      && sk.config.host.endsWith('.adobe.com')
+      && sk.config.host.includes('.adobe.')
       && !sk.config.host.startsWith('www.')) {
       sk.config.byocdn = false;
       sk.updateRequired = true;
@@ -344,11 +374,7 @@
         // eslint-disable-next-line no-alert
         if (window.confirm('Good news! There is a newer version of the Helix Sidekick Bookmarklet available!\n\nDo you want to install it now? It will only take a minute …')) {
           sk.showModal('Please wait …', true);
-          const url = new URL(getShareUrl(sk.config));
-          const params = new URLSearchParams(url.search);
-          params.set('from', sk.location.href);
-          url.search = params.toString();
-          window.location.href = url.toString();
+          window.location.href = getShareUrl(sk.config, sk.location.href);
         }
       }, 1000);
     }
@@ -356,6 +382,7 @@
 
   /**
    * Determines whether to open a new tab or reuse the existing window.
+   * @private
    * @param {Event} evt The event
    * @returns {@code true} if a new tab should be opened, else {@code false}
    */
@@ -364,7 +391,29 @@
   }
 
   /**
+   * Creates an Admin URL for an API and path.
+   * @private
+   * @param {Object} config The sidekick configuration
+   * @param {string} api The API endpoint to call
+   * @param {string} path The current path
+   * @returns {string} The admin URL
+   */
+  function getAdminUrl({ owner, repo, ref }, api, path) {
+    return new URL([
+      // TODO: switch to admin.hlx3.page before merging to main!
+      // 'https://admin.hlx3.page/',
+      'https://admin2.hlx3.page/',
+      api,
+      `/${owner}`,
+      `/${repo}`,
+      `/${ref}`,
+      path,
+    ].join(''));
+  }
+
+  /**
    * Switches to or opens a given environment.
+   * @private
    * @param {Sidekick} sidekick The sidekick
    * @param {string} targetEnv One of the following environments:
    *        {@code edit}, {@code preview}, {@code live} or {@code production}
@@ -372,56 +421,71 @@
    */
   async function gotoEnv(sidekick, targetEnv, open) {
     const { config, location } = sidekick;
-    const { owner, repo, ref } = config;
     const hostType = ENVS[targetEnv];
     if (!hostType) {
       return;
     }
-    let url = `https://admin.hlx3.page/${owner}/${repo}/${ref}`;
-    if (targetEnv === 'edit') {
-      // resolve editor url
-      const path = location.pathname;
-      const file = path.split('/').pop() || 'index'; // use 'index' if no filename
-      let editPath;
-      if (file.endsWith('.html')) {
-        editPath = path.replace(/\.html$/, '.lnk');
-      } else if (!file.includes('.')) {
-        editPath = `${path.endsWith(file) ? path : `${path}${file}`}.lnk`;
-      }
-      url += new URL(editPath, location.href).pathname;
-    } else if (sidekick.isEditor()) {
-      // resolve target env from editor url
-      url += `/hlx_${btoa(location.href).replace(/\+/, '-').replace(/\//, '_')}.lnk`;
-      if (targetEnv !== 'preview') {
-        // fetch report, extract url and patch host
-        try {
-          const resp = await fetch(`${url}?hlx_report=true`);
-          if (resp.ok) {
-            const { webUrl } = await resp.json();
-            if (webUrl) {
-              const u = new URL(webUrl);
-              u.hostname = config[hostType];
-              u.pathname = u.pathname === '/index' ? '/' : u.pathname;
-              url = u.toString();
-            }
-          }
-        } catch (e) {
-          // something went wrong
-        }
-      }
-    } else {
-      // resolve target env from any env
-      url = `https://${config[hostType]}${location.pathname}`;
+    const previewStatusUrl = getAdminUrl(config, 'preview', sidekick.isEditor() ? '' : location.pathname);
+    if (sidekick.isEditor()) {
+      previewStatusUrl.search = new URLSearchParams([
+        ['editUrl', location.href],
+      ]).toString();
     }
-
-    // switch or open env
-    if (!url) {
+    let envUrl;
+    try {
+      const resp = await fetch(previewStatusUrl, {
+        // TODO: use POST for preview
+        // method: targetEnv === 'preview' ? 'POST' : 'GET',
+      });
+      const { edit, webPath: path } = await resp.json();
+      if (targetEnv === 'edit' && edit.url) {
+        envUrl = edit.url;
+      } else if (path) {
+        envUrl = `https://${config[hostType]}${path}`;
+      }
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.log(e);
+    }
+    if (!envUrl) {
+      sidekick.showModal('Failed to switch environment. Please try again later.', true, 0);
       return;
     }
+    // switch or open env
     if (open) {
-      window.open(url);
+      window.open(envUrl);
     } else {
-      window.location.href = url;
+      window.location.href = envUrl;
+    }
+  }
+
+  /**
+   * Check for Helix 3 related issues.
+   * @private
+   * @param {Sidekick} sk The sidekick
+   */
+  async function checkForHelix3(sk) {
+    // check if sidekick config needs to be updated to hlx3
+    if (!sk.config.hlx3 && sk.location.hostname.endsWith('hlx3.page')) {
+      window.setTimeout(() => {
+        // eslint-disable-next-line no-alert
+        if (window.confirm('This Helix Sidekick Bookmarklet is unable to deal with a Helix 3 site.\n\nPress OK to install one for Helix 3 now.')) {
+          sk.showModal('Please wait …', true);
+          // set hlx3 flag temporarily
+          sk.config.hlx3 = true;
+          window.location.href = getShareUrl(sk.config, sk.location.href);
+        }
+      }, 1000);
+    }
+    // check if current inner cdn url is hlx3 url
+    if (sk.config.hlx3
+      && sk.location.hostname.endsWith('.page')
+      && !sk.location.hostname.endsWith('hlx3.page')) {
+      // eslint-disable-next-line no-alert
+      if (window.confirm('This Helix Sidekick Bookmarklet can only work on a Helix 3 site.\n\nPress OK to be taken to the Helix 3 version of this page now.')) {
+        sk.showModal('Please wait …', true);
+        await gotoEnv(sk, 'preview');
+      }
     }
   }
 
@@ -508,21 +572,28 @@
       button: {
         action: async (evt) => {
           const { location } = sk;
-          const path = location.pathname;
           sk.showModal('Please wait …', true);
-          const resp = await sk.publish(path, true);
-          if (resp && resp.ok) {
+          try {
+            const resp = await sk.reload(location.pathname);
+            if (!resp.ok && resp.status >= 400) {
+              // eslint-disable-next-line no-console
+              console.error(resp);
+              throw new Error(resp);
+            }
+            // eslint-disable-next-line no-console
+            console.log(`reloading ${location.href}`);
             if (newTab(evt)) {
               window.open(window.location.href);
               sk.hideModal();
             } else {
               window.location.reload();
             }
-          } else {
-            sk.showModal([
-              `Failed to reload ${path}. Please try again later.`,
-              JSON.stringify(resp),
-            ], true, 0);
+          } catch (e) {
+            sk.showModal(
+              `Failed to reload ${location.pathname}. Please try again later.`,
+              true,
+              0,
+            );
           }
         },
       },
@@ -549,23 +620,18 @@
           if (Array.isArray(window.hlx.dependencies)) {
             urls = urls.concat(window.hlx.dependencies);
           }
-
           await Promise.all(urls.map((url) => sk.publish(url)));
-          if (config.host) {
-            sk.showModal('Please wait …', true);
-            // fetch and redirect to production
-            const prodURL = `https://${config.byocdn ? config.outerHost : config.host}${path}`;
-            await fetch(prodURL, { cache: 'reload', mode: 'no-cors' });
-            // eslint-disable-next-line no-console
-            console.log(`redirecting to ${prodURL}`);
-            if (newTab(evt)) {
-              window.open(prodURL);
-              sk.hideModal();
-            } else {
-              window.location.href = prodURL;
-            }
+          sk.showModal('Please wait …', true);
+          // fetch and redirect to production
+          const prodURL = `https://${config.byocdn ? config.outerHost : config.host}${path}`;
+          await fetch(prodURL, { cache: 'reload', mode: 'no-cors' });
+          // eslint-disable-next-line no-console
+          console.log(`redirecting to ${prodURL}`);
+          if (newTab(evt)) {
+            window.open(prodURL);
+            sk.hideModal();
           } else {
-            sk.notify('Successfully published');
+            window.location.href = prodURL;
           }
         },
       },
@@ -636,6 +702,7 @@
         });
       }
       checkForUpdates(this);
+      checkForHelix3(this);
     }
 
     /**
@@ -959,42 +1026,78 @@
     }
 
     /**
+     * Reloads the page at the specified path.
+     * @param {string} path The path of the page to publish
+     * @return {Response} The response object
+     */
+    async reload(path) {
+      const { config } = this;
+      let resp;
+      if (config.hlx3) {
+        resp = await fetch(getAdminUrl(config, 'preview', path), { method: 'POST' });
+      } else {
+        resp = await this.publish(path, true);
+      }
+      return {
+        ok: resp.ok,
+        status: resp.status,
+        path,
+      };
+    }
+
+    /**
      * Publishes the page at the specified path if {@code config.host} is defined.
      * @param {string} path The path of the page to publish
      * @param {boolean} innerOnly {@code true} to only refresh inner CDN, else {@code false}
      * @return {publishResponse} The response object
      */
     async publish(path, innerOnly = false) {
-      if ((!innerOnly && !this.config.host)
-        || (this.config.byocdn && this.location.host === this.config.host)) {
+      /* eslint-disable no-console */
+      const { config, location } = this;
+
+      if ((!innerOnly && !config.host)
+        || (config.byocdn && location.host === config.host)) {
         return null;
       }
-      const purgeURL = new URL(path, this.location.href);
-      /* eslint-disable no-console */
-      console.log(`purging ${purgeURL.href}`);
-      const xfh = [this.config.innerHost];
-      if (!innerOnly) {
-        if (this.config.outerHost) {
-          xfh.push(this.config.outerHost);
+
+      const purgeURL = new URL(path, location.href);
+      let ok;
+      let status;
+      let json;
+
+      if (config.hlx3) {
+        console.log(`publishing ${purgeURL.pathname}`);
+        const resp = await fetch(getAdminUrl(config, 'live', purgeURL.pathname), { method: 'POST' });
+        ok = resp.ok;
+        status = resp.status;
+      } else {
+        console.log(`purging ${purgeURL.href}`);
+        const xfh = [config.innerHost];
+        if (!innerOnly) {
+          if (config.outerHost) {
+            xfh.push(config.outerHost);
+          }
+          if (config.host && !config.byocdn) {
+            xfh.push(config.host);
+          }
         }
-        if (this.config.host && !this.config.byocdn) {
-          xfh.push(this.config.host);
-        }
+        const resp = await fetch(purgeURL, {
+          method: 'POST',
+          headers: {
+            'X-Method-Override': 'HLXPURGE',
+            'X-Forwarded-Host': xfh.join(', '),
+          },
+        });
+        json = await resp.json();
+        console.log(JSON.stringify(json));
+        ok = resp.ok && Array.isArray(json) && json.every((e) => e.status === 'ok');
+        status = resp.status;
       }
-      const resp = await fetch(purgeURL.href, {
-        method: 'POST',
-        headers: {
-          'X-Method-Override': 'HLXPURGE',
-          'X-Forwarded-Host': xfh.join(', '),
-        },
-      });
-      const json = await resp.json();
-      console.log(JSON.stringify(json));
       /* eslint-enable no-console */
       return {
-        ok: resp.ok && Array.isArray(json) && json.every((e) => e.status === 'ok'),
-        status: resp.status,
-        json,
+        ok,
+        status,
+        json: json || {},
         path,
       };
     }
