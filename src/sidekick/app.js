@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-/* global window, document, navigator, fetch */
+/* global window, document, navigator, fetch, CustomEvent */
 /* eslint-disable no-console, no-alert */
 
 'use strict';
@@ -84,6 +84,60 @@
    * @name "window.hlx.sidekick"
    * @type {Sidekick}
    * @description The global variable referencing the {@link Sidekick} singleton.
+   */
+
+  /**
+   * @event Sidekick#shown
+   * @type {Sidekick} The sidekick
+   * @description This event is fired when the sidekick has been shown.
+   */
+
+  /**
+   * @event Sidekick#hidden
+   * @type {Sidekick} The sidekick
+   * @description This event is fired when the sidekick has been hidden.
+   */
+
+  /**
+   * @event Sidekick#pluginused
+   * @type {Object} The plugin used
+   * @property {string} id The plugin ID
+   * @property {Element} button The button element
+   * @description This event is fired when a sidekick plugin has been used.
+   */
+
+  /**
+   * @event Sidekick#contextloaded
+   * @type {Object} The context object
+   * @property {sidekickConfig} config The sidekick configuration
+   * @property {Location} location The sidekick location
+   * @description This event is fired when the context has been loaded.
+   */
+
+  /**
+   * @event Sidekick#statusfetched
+   * @type {Object} The status object
+   * @description This event is fired when the status has been fetched.
+   */
+
+  /**
+   * @event Sidekick#envswitched
+   * @type {Object} The environment object
+   * @property {string} sourceUrl The URL of the source environment
+   * @property {string} targetUrl The URL of the target environment
+   * @description This event is fired when the environment has been switched
+   */
+
+  /**
+   * @event Sidekick#updated
+   * @type {string} The updated path
+   * @description This event is fired when a path has been updated.
+   */
+
+  /**
+   * @event Sidekick#published
+   * @type {string} The published path
+   * @description This event is fired when a path has been published.
    */
 
   /**
@@ -349,7 +403,7 @@
   }
 
   /**
-   * Checks for updates and informs the user.
+   * Checks for sidekick updates and informs the user.
    * @private
    * @param {Sidekick} sk The sidekick
    */
@@ -378,6 +432,29 @@
         }
       }, 1000);
     }
+  }
+
+  /**
+   * Fires an event with the given name.
+   * @private
+   * @param {Sidekick} sk The sidekick
+   * @param {string} name The name of the event
+   * @param {Object} data The data to pass to event listeners (defaults to {@link Sidekick})
+   */
+  function fireEvent(sk, name, data) {
+    sk.root.dispatchEvent(new CustomEvent(name, data || sk));
+  }
+
+  /**
+   * Compares source and preview last modified dates.
+   * @private
+   * @param {Sidekick} sidekick The sidekick
+   */
+  async function checkStatus(status = {}) {
+    const pLastMod = (status.preview && status.preview.lastModified) || null;
+    const sLastMod = (status.source && status.source.lastModified) || null;
+    console.log('preview up to date?', pLastMod, sLastMod, new Date(pLastMod) > new Date(sLastMod));
+    // TODO: do something with it
   }
 
   /**
@@ -596,12 +673,14 @@
         attrs: {
           class: 'hlx-sk hlx-sk-hidden hlx-sk-empty',
         },
+        lstnrs: {
+          statusfetched: checkStatus,
+        },
       });
       this.status = {};
       this.loadContext();
+      this.fetchStatus();
       this.loadCSS();
-      // re-fetch status every 5s
-      window.setInterval(() => this.fetchStatus(), 5000);
       // share button
       const share = appendTag(this.root, {
         tag: 'button',
@@ -627,7 +706,7 @@
           class: 'close',
         },
         lstnrs: {
-          click: () => this.toggle(),
+          click: () => this.hide(),
         },
       });
       // default plugins
@@ -654,50 +733,61 @@
 
     /**
      * Fetches the status for the current resource.
+     * @param {Function} callback the callback function
+     * @fires Sidekick#statusfetched
      * @returns {Sidekick} The sidekick
      */
-    async fetchStatus() {
-      const { href, pathname } = this.location;
-      const statusUrl = getAdminUrl(this.config, 'preview', pathname);
-      if (this.isEditor()) {
-        statusUrl.search = new URLSearchParams([
-          ['editUrl', href],
-        ]).toString();
+    async fetchStatus(callback) {
+      if (!this.status.apiUrl) {
+        const { href, pathname } = this.location;
+        const apiUrl = getAdminUrl(this.config, 'preview', pathname);
+        if (this.isEditor()) {
+          apiUrl.search = new URLSearchParams([
+            ['editUrl', href],
+          ]).toString();
+        }
+        this.status.apiUrl = apiUrl.toString();
       }
-      try {
-        const resp = await fetch(statusUrl);
-        Object.assign(this.status, await resp.json());
-        // console.log('status fetched', this.status);
-      } catch (e) {
-        console.error('failed to fetch status', e);
-      }
+      fetch(this.status.apiUrl, { cache: 'no-store' })
+        .then((resp) => resp.json())
+        .then((json) => Object.assign(this.status, json))
+        .then((json) => fireEvent(this, 'statusfetched', json))
+        .then(() => (typeof callback === 'function' ? callback(this) : null))
+        .catch((e) => console.error('failed to fetch status', e));
       return this;
     }
 
     /**
-     * Loads the sidekick configuration based on {@link window.hlx.sidekickConfig},
-     * retrieves the location of the current document and fetches the status.
+     * Loads the sidekick configuration based on {@link window.hlx.sidekickConfig}
+     * and retrieves the location of the current document.
+     * @fires Sidekick#contextloaded
      * @returns {Sidekick} The sidekick
      */
     async loadContext() {
       this.config = initConfig();
       this.location = getLocation();
-      return this.fetchStatus();
+      fireEvent(this, 'contextloaded', {
+        config: this.config,
+        location: this.location,
+      });
     }
 
     /**
      * Shows the sidekick.
+     * @fires Sidekick#shown
      * @returns {Sidekick} The sidekick
      */
     show() {
       if (this.root.classList.contains('hlx-sk-hidden')) {
         this.root.classList.remove('hlx-sk-hidden');
       }
+      fireEvent(this, 'shown');
       return this;
     }
 
     /**
      * Hides the sidekick.
+     * @fires Sidekick#hidden
      * @returns {Sidekick} The sidekick
      */
     hide() {
@@ -705,6 +795,7 @@
         this.root.classList.add('hlx-sk-hidden');
       }
       this.hideModal();
+      fireEvent(this, 'hidden');
       return this;
     }
 
@@ -713,7 +804,11 @@
      * @returns {Sidekick} The sidekick
      */
     toggle() {
-      this.root.classList.toggle('hlx-sk-hidden');
+      if (this.root.classList.contains('hlx-sk-hidden')) {
+        this.show();
+      } else {
+        this.hide();
+      }
       return this;
     }
 
@@ -731,7 +826,7 @@
         let $pluginContainer = this.root;
         if (ENVS[plugin.id]) {
           // find or create environment plugin container
-          $pluginContainer = this.root.querySelector('.env');
+          $pluginContainer = this.root.querySelector(':scope .env');
           if (!$pluginContainer) {
             $pluginContainer = appendTag(this.root, {
               tag: 'div',
@@ -782,7 +877,7 @@
               auxclick: plugin.button.action,
             },
           };
-          let $button = $plugin ? $plugin.querySelector(buttonCfg.tag) : null;
+          let $button = $plugin ? $plugin.querySelector(':scope button') : null;
           if ($button) {
             // extend existing button
             extendTag($button, buttonCfg);
@@ -795,6 +890,11 @@
             || (typeof plugin.button.isPressed === 'function' && plugin.button.isPressed(this))) {
             $button.classList.add('pressed');
           }
+          // fire event when plugin button is clicked
+          $button.addEventListener('click', () => fireEvent(this, 'pluginused', {
+            id: plugin.id,
+            button: $button,
+          }));
         }
         if (typeof plugin.callback === 'function') {
           plugin.callback(this, $plugin);
@@ -810,7 +910,7 @@
      * @returns {HTMLElement} The plugin
      */
     get(id) {
-      return this.root.querySelector(`.${id}`);
+      return this.root.querySelector(`:scope .${id}`);
     }
 
     /**
@@ -902,6 +1002,7 @@
      * @param {string|string[]} msg The message (lines) to display
      * @param {boolean}         sticky <code>true</code> if message should be sticky (optional)
      * @param {number}          level error (0), warning (1), of info (2)
+     * @fires Sidekick#modalshown
      * @returns {Sidekick} The sidekick
      */
     showModal(msg, sticky = false, level = 2) {
@@ -939,11 +1040,13 @@
       } else {
         this._modal.classList.add('wait');
       }
+      fireEvent(this, 'modalshown', this._modal);
       return this;
     }
 
     /**
      * Hides the modal if shown.
+     * @fires Sidekick#modalhidden
      * @returns {Sidekick} The sidekick
      */
     hideModal() {
@@ -951,6 +1054,7 @@
         this._modal.innerHTML = '';
         this._modal.className = '';
         this._modal.parentNode.classList.add('hlx-sk-hidden');
+        fireEvent(this, 'modalhidden');
       }
       return this;
     }
@@ -999,6 +1103,7 @@
      * @param {string} targetEnv One of the following environments:
      *        {@code edit}, {@code preview}, {@code live} or {@code prod}
      * @param {boolean} open=false {@code true} if environment should be opened in new tab
+     * @fires Sidekick#envswitched
      * @returns {Sidekick} The sidekick
      */
     async switchEnv(targetEnv, open) {
@@ -1026,6 +1131,10 @@
         this.showModal('Failed to switch environment. Please try again later.', true, 0);
         return this;
       }
+      fireEvent(this, 'envswitched', {
+        sourceUrl: this.location.href,
+        targetUrl: envUrl,
+      });
       // switch or open env
       if (open) {
         window.open(envUrl);
@@ -1050,6 +1159,7 @@
     /**
      * Updates the preview resource at the specified path.
      * @param {string} path The path of the resource to refresh
+     * @fires Sidekick#updated
      * @return {Response} The response object
      */
     async update(path) {
@@ -1067,6 +1177,7 @@
       } catch (e) {
         console.error('failed to update', path, e);
       }
+      fireEvent(this, 'updated', path);
       return {
         ok: resp.ok || false,
         status: resp.status,
@@ -1078,6 +1189,7 @@
      * Publishes the page at the specified path if {@code config.host} is defined.
      * @param {string} path The path of the page to publish
      * @param {boolean} innerOnly {@code true} to only refresh inner CDN, else {@code false}
+     * @fires Sidekick#published
      * @return {publishResponse} The response object
      */
     async publish(path, innerOnly = false) {
@@ -1121,12 +1233,32 @@
         ok = resp.ok && Array.isArray(json) && json.every((e) => e.status === 'ok');
         status = resp.status;
       }
+      fireEvent(this, 'published', path);
       return {
         ok,
         status,
         json: json || {},
         path,
       };
+    }
+
+    /**
+     * Sets up a function that will be called whenever the specified sidekick
+     * event is fired.
+     * @param {string} type The event type
+     * @param {Function} listener The function to call
+     */
+    addEventListener(type, listener) {
+      this.root.addEventListener(type, listener);
+    }
+
+    /**
+     * Removes an event listener previously registered with {@link addEventListener}.
+     * @param {string} type The event type
+     * @param {Function} listener The function to remove
+     */
+    removeEventListener(name, listener) {
+      this.root.removeEventListener(name, listener);
     }
   }
 
