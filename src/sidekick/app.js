@@ -442,7 +442,15 @@
    * @param {Object} data The data to pass to event listeners (defaults to {@link Sidekick})
    */
   function fireEvent(sk, name, data) {
-    sk.root.dispatchEvent(new CustomEvent(name, data || sk));
+    try {
+      sk.root.dispatchEvent(new CustomEvent(name, {
+        detail: {
+          data: data || sk,
+        },
+      }));
+    } catch (e) {
+      console.warn('failed to fire event', name, data, e, sk.evtTarget);
+    }
   }
 
   /**
@@ -450,10 +458,11 @@
    * @private
    * @param {Sidekick} sidekick The sidekick
    */
-  async function checkStatus(status = {}) {
+  async function checkStatus({ detail = {} }) {
+    const { data: status = {} } = detail;
     const pLastMod = (status.preview && status.preview.lastModified) || null;
     const sLastMod = (status.source && status.source.lastModified) || null;
-    console.log('preview up to date?', pLastMod, sLastMod, new Date(pLastMod) > new Date(sLastMod));
+    console.log('preview up to date?', new Date(pLastMod) > new Date(sLastMod));
     // TODO: do something with it
   }
 
@@ -642,17 +651,22 @@
           if (Array.isArray(window.hlx.dependencies)) {
             urls = urls.concat(window.hlx.dependencies);
           }
-          await Promise.all(urls.map((url) => sk.publish(url)));
-          sk.showModal('Please wait …', true);
-          // fetch and redirect to production
-          const prodURL = `https://${config.byocdn ? config.outerHost : config.host}${path}`;
-          await fetch(prodURL, { cache: 'reload', mode: 'no-cors' });
-          console.log(`redirecting to ${prodURL}`);
-          if (newTab(evt)) {
-            window.open(prodURL);
-            sk.hideModal();
+          const results = await Promise.all(urls.map((url) => sk.publish(url)));
+          if (results.every((res) => res && res.ok)) {
+            sk.showModal('Please wait …', true);
+            // fetch and redirect to production
+            const prodURL = `https://${config.byocdn ? config.outerHost : config.host}${path}`;
+            await fetch(prodURL, { cache: 'reload', mode: 'no-cors' });
+            console.log(`redirecting to ${prodURL}`);
+            if (newTab(evt)) {
+              window.open(prodURL);
+              sk.hideModal();
+            } else {
+              window.location.href = prodURL;
+            }
           } else {
-            window.location.href = prodURL;
+            console.error(results);
+            sk.showModal('Failed to publish page. Please try again later.', true, 0);
           }
         },
       },
@@ -738,6 +752,10 @@
      * @returns {Sidekick} The sidekick
      */
     async fetchStatus(callback) {
+      const { owner, repo, ref } = this.config;
+      if (!owner || !repo || !ref) {
+        return this;
+      }
       if (!this.status.apiUrl) {
         const { href, pathname } = this.location;
         const apiUrl = getAdminUrl(this.config, 'preview', pathname);
@@ -1200,7 +1218,7 @@
         return null;
       }
 
-      const purgeURL = new URL(path, location.href);
+      const purgeURL = new URL(path, this.isEditor() ? `https://${config.innerHost}/` : location.href);
       let ok;
       let status;
       let json;
