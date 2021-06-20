@@ -79,7 +79,6 @@ describe('Test sidekick bookmarklet', () => {
     if (!evtType) return true;
     const evtTypes = typeof evtType === 'string' ? [evtType] : evtType;
     const results = await Promise.all(evtTypes.map((et) => window[`${et}EventFired`]));
-    console.log(evtType, results.every((res) => res === true));
     return results.every((res) => res === true);
   }, type);
 
