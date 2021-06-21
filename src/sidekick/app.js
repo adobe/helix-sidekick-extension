@@ -1187,10 +1187,12 @@
         if (config.hlx3) {
           // update preview
           resp = await fetch(getAdminUrl(config, 'preview', path), { method: 'POST' });
-          // bust client cache
-          await fetch(window.location.href, { cache: 'reload', mode: 'no-cors' });
         } else {
           resp = await this.publish(path, true);
+        }
+        if (this.isInner() || this.isDev()) {
+          // bust client cache
+          await fetch(`https://${config.innerHost}${path}`, { cache: 'reload', mode: 'no-cors' });
         }
       } catch (e) {
         console.error('failed to update', path, e);
