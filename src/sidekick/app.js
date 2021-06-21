@@ -781,7 +781,7 @@
      * @fires Sidekick#contextloaded
      * @returns {Sidekick} The sidekick
      */
-    async loadContext() {
+    loadContext() {
       this.config = initConfig();
       this.location = getLocation();
       fireEvent(this, 'contextloaded', {
