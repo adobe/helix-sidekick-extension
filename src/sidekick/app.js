@@ -458,7 +458,7 @@
    * @private
    * @param {Sidekick} sidekick The sidekick
    */
-  async function checkStatus({ detail = {} }) {
+  async function checkLastModified({ detail = {} }) {
     const { data: status = {} } = detail;
     const pLastMod = (status.preview && status.preview.lastModified) || null;
     const sLastMod = (status.source && status.source.lastModified) || null;
@@ -688,7 +688,7 @@
           class: 'hlx-sk hlx-sk-hidden hlx-sk-empty',
         },
         lstnrs: {
-          statusfetched: checkStatus,
+          statusfetched: checkLastModified,
         },
       });
       this.status = {};
