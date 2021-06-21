@@ -1,3 +1,17 @@
+# [3.2.0](https://github.com/adobe/helix-sidekick/compare/v3.1.0...v3.2.0) (2021-06-21)
+
+
+### Bug Fixes
+
+* only include path when outside of editor ([bf3fd2d](https://github.com/adobe/helix-sidekick/commit/bf3fd2d5ea8e1ea58472b1209fe2e774e1fa49c4))
+
+
+### Features
+
+* emit events ([c361f15](https://github.com/adobe/helix-sidekick/commit/c361f15b8ae37f610e47fac449d638a2c8798de0))
+* fetch status initially, update preview ([a4b75bc](https://github.com/adobe/helix-sidekick/commit/a4b75bc80d03b17519f6bd032193d1987fdd0d68))
+* fetch status initially, update preview ([efce422](https://github.com/adobe/helix-sidekick/commit/efce422bf234ded6b80995ecd9153376a5bcb14e))
+
 # [3.1.0](https://github.com/adobe/helix-sidekick/compare/v3.0.0...v3.1.0) (2021-06-17)
 
 
