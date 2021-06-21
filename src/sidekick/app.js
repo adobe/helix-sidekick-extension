@@ -449,7 +449,7 @@
         },
       }));
     } catch (e) {
-      console.warn('failed to fire event', name, data, e, sk.evtTarget);
+      console.warn('failed to fire event', name, data);
     }
   }
 
