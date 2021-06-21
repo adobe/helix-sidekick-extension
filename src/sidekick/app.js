@@ -758,7 +758,7 @@
       }
       if (!this.status.apiUrl) {
         const { href, pathname } = this.location;
-        const apiUrl = getAdminUrl(this.config, 'preview', pathname);
+        const apiUrl = getAdminUrl(this.config, 'preview', this.isEditor() ? '/' : pathname);
         if (this.isEditor()) {
           apiUrl.search = new URLSearchParams([
             ['editUrl', href],
@@ -1197,8 +1197,8 @@
       }
       fireEvent(this, 'updated', path);
       return {
-        ok: resp.ok || false,
-        status: resp.status,
+        ok: (resp && resp.ok) || false,
+        status: (resp && resp.status) || 0,
         path,
       };
     }
