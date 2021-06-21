@@ -17,20 +17,41 @@
 const assert = require('assert');
 const puppeteer = require('puppeteer');
 
-const apiTests = {
+const toResp = (resp) => ({
+  status: 200,
+  // eslint-disable-next-line no-nested-ternary
+  body: resp ? (/^[{[]/.test(resp) ? JSON.stringify(resp) : resp) : '',
+});
+const apiMocks = {
+  dummy: {
+    webPath: '/dummy',
+  },
   blog: {
     webPath: '/en/topics/bla.html',
+    preview: {
+      lastModified: 'Fri, 18 Jun 2021 09:57:42 GMT',
+    },
+    source: {
+      lastModified: 'Fri, 18 Jun 2021 09:55:03 GMT',
+    },
     edit: {
       url: 'https://adobe.sharepoint.com/:w:/r/sites/TheBlog/_layouts/15/Doc.aspx?sourcedoc=%7BE8EC80CB-24C3-4B95-B082-C51FD8BC8760%7D&file=bla.docx&action=default&mobileredirect=true',
     },
   },
   pages: {
     webPath: '/creativecloud/en/test',
+    preview: {
+      lastModified: 'Fri, 18 Jun 2021 09:57:42 GMT',
+    },
+    source: {
+      lastModified: 'Fri, 18 Jun 2021 09:55:03 GMT',
+    },
     edit: {
       url: 'https://docs.google.com/document/d/2E1PNphAhTZAZrDjevM0BX7CZr7KjomuBO6xE1TUo9NU/edit',
     },
   },
 };
+const purgeMock = [{ status: 'ok' }];
 
 describe('Test sidekick bookmarklet', () => {
   const IT_DEFAULT_TIMEOUT = 60000;
@@ -46,16 +67,39 @@ describe('Test sidekick bookmarklet', () => {
       })),
   );
 
-  const execPlugin = async (p, id) => p.evaluate((pluginId) => {
-    const click = (el) => {
-      const evt = document.createEvent('Events');
-      evt.initEvent('click', true, false);
-      el.dispatchEvent(evt);
-    };
-    if (pluginId) {
-      click(document.querySelector(`.hlx-sk .${pluginId} button`));
-    }
-  }, id);
+  const waitForEvent = async (p, type) => p.evaluate((evtType) => {
+    if (!evtType) return;
+    const evtTypes = typeof evtType === 'string' ? [evtType] : evtType;
+    evtTypes.forEach((et) => {
+      // set up test var and event listener
+      window[`${et}EventFired`] = false;
+      window.hlx.sidekick.addEventListener(et, () => {
+        window[`${et}EventFired`] = true;
+      });
+    });
+  }, type);
+
+  const checkEventFired = async (p, type) => p.evaluate(async (evtType) => {
+    if (!evtType) return true;
+    const evtTypes = typeof evtType === 'string' ? [evtType] : evtType;
+    const results = await Promise.all(evtTypes.map((et) => window[`${et}EventFired`]));
+    return results.every((res) => res === true);
+  }, type);
+
+  const execPlugin = async (p, id) => {
+    await waitForEvent(p, 'pluginused');
+    await p.evaluate((pluginId) => {
+      const click = (el) => {
+        const evt = document.createEvent('Events');
+        evt.initEvent('click', true, false);
+        el.dispatchEvent(evt);
+      };
+      if (pluginId) {
+        click(document.querySelector(`.hlx-sk .${pluginId} button`));
+      }
+    }, id);
+    assert.ok(await checkEventFired(p, 'pluginused'), 'Event pluginused not fired');
+  };
 
   const clickButton = async (p, id) => p.evaluate((buttonId) => {
     const click = (el) => {
@@ -66,15 +110,14 @@ describe('Test sidekick bookmarklet', () => {
     click(window.document.querySelector(`.hlx-sk button.${buttonId}`));
   }, id);
 
-  const mockCustomPlugins = async (p, js, check = () => true) => {
+  const mockStandardResponses = async (p, pluginsJs, check = () => true) => {
     await p.setRequestInterception(true);
     p.on('request', (req) => {
       if (req.url().endsWith('/tools/sidekick/plugins.js')
         && check(req)) {
-        req.respond({
-          status: 200,
-          body: js || '',
-        });
+        req.respond(toResp(pluginsJs || ''));
+      } else if (req.url().startsWith('https://admin.hlx3.page/')) {
+        req.respond(toResp(apiMocks.dummy));
       } else {
         req.continue();
       }
@@ -85,26 +128,22 @@ describe('Test sidekick bookmarklet', () => {
     page,
     url,
     plugin,
+    events,
     prep = () => {},
     check = () => true,
-    checkResponse = {
-      status: 200,
-      body: JSON.stringify([{ status: 'ok' }]),
-    },
+    mockResponses = purgeMock,
     checkCondition = (req) => req.url().startsWith('https://'),
     timeout = 0,
     timeoutSuccess = true,
   }) => {
+    let count = 0;
     await page.setRequestInterception(true);
     return new Promise((resolve, reject) => {
       // watch for new browser window
       page.on('request', async (req) => {
         if (req.url().endsWith('/tools/sidekick/plugins.js')) {
           // send plugins response
-          return req.respond({
-            status: 200,
-            body: '',
-          });
+          return req.respond(toResp());
         } else if (checkCondition(req)) {
           try {
             if (check(req)) {
@@ -115,8 +154,10 @@ describe('Test sidekick bookmarklet', () => {
               // let file:// requests through
               req.continue();
             } else {
-              // send check response
-              return req.respond(checkResponse);
+              // send mock response
+              const response = toResp(mockResponses[count] || '');
+              count += 1;
+              return req.respond(response);
             }
           } catch (e) {
             reject(e);
@@ -129,7 +170,10 @@ describe('Test sidekick bookmarklet', () => {
       page
         .goto(url, { waitUntil: 'load' })
         .then(() => prep(page))
-        .then(() => execPlugin(page, plugin));
+        .then(() => waitForEvent(page, events))
+        .then(() => execPlugin(page, plugin))
+        .then(() => checkEventFired(page, events))
+        .catch((e) => reject(e));
       if (timeout) {
         setTimeout(() => {
           if (timeoutSuccess) {
@@ -194,7 +238,7 @@ describe('Test sidekick bookmarklet', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Checks for missing Helix 3 flag in config', async () => {
-    await mockCustomPlugins(page);
+    await mockStandardResponses(page);
     await new Promise((resolve, reject) => {
       // wait for dialog
       page.on('dialog', async (dialog) => {
@@ -217,7 +261,7 @@ describe('Test sidekick bookmarklet', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Checks for Helix 3 config/URL mismatch', async () => {
-    await mockCustomPlugins(page);
+    await mockStandardResponses(page);
     await new Promise((resolve, reject) => {
       // wait for dialog
       page.on('dialog', async (dialog) => {
@@ -246,14 +290,14 @@ describe('Test sidekick bookmarklet', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Adds plugin from config', async () => {
-    await mockCustomPlugins(page);
+    await mockStandardResponses(page);
     await page.goto(`${fixturesPrefix}/config-plugin.html`, { waitUntil: 'load' });
     const plugins = await getPlugins(page);
     assert.ok(plugins.find((p) => p.id === 'foo'), 'Did not add plugin from config');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Adds plugin from legacy config', async () => {
-    await mockCustomPlugins(page);
+    await mockStandardResponses(page);
     await new Promise((resolve, reject) => {
       page.on('dialog', (dialog) => {
         try {
@@ -273,7 +317,7 @@ describe('Test sidekick bookmarklet', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Detects innerHost and outerHost from config', async () => {
-    await mockCustomPlugins(page);
+    await mockStandardResponses(page);
     await page.goto(`${fixturesPrefix}/config-plugin.html`, { waitUntil: 'load' });
     const config = await page.evaluate(() => window.hlx.sidekick.config);
     assert.strictEqual(
@@ -297,7 +341,8 @@ describe('Test sidekick bookmarklet', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Adds plugins from project', async () => {
-    await mockCustomPlugins(page, `
+    await mockStandardResponses(page, `
+    console.log(window.hlx && window.hlx.sidekick);
       window.hlx.sidekick.add({
         id: 'bar',
         button: {
@@ -310,7 +355,7 @@ describe('Test sidekick bookmarklet', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Adds plugins from fixed host', async () => {
-    await mockCustomPlugins(
+    await mockStandardResponses(
       page,
       `window.hlx.sidekick.add({
         id: 'bar',
@@ -325,7 +370,7 @@ describe('Test sidekick bookmarklet', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Replaces plugin', async () => {
-    await mockCustomPlugins(page);
+    await mockStandardResponses(page);
     await page.goto(`${fixturesPrefix}/config-plugin.html`, { waitUntil: 'load' });
     await page.evaluate(() => {
       window.hlx.sidekick.add({
@@ -345,7 +390,7 @@ describe('Test sidekick bookmarklet', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Extends plugin', async () => {
-    await mockCustomPlugins(page);
+    await mockStandardResponses(page);
     await page.goto(`${fixturesPrefix}/config-plugin.html`, { waitUntil: 'load' });
     await page.evaluate(() => {
       window.hlx.sidekick.add({
@@ -363,7 +408,7 @@ describe('Test sidekick bookmarklet', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Removes plugin', async () => {
-    await mockCustomPlugins(page);
+    await mockStandardResponses(page);
     await page.goto(`${fixturesPrefix}/config-plugin.html`, { waitUntil: 'load' });
     await page.evaluate(() => window.hlx.sidekick.remove('foo'));
     const plugins = await getPlugins(page);
@@ -441,11 +486,13 @@ describe('Test sidekick bookmarklet', () => {
 
   it('Close button hides sidekick', async () => {
     await page.goto(`${fixturesPrefix}/config-none.html`, { waitUntil: 'load' });
+    await waitForEvent(page, 'hidden');
     await clickButton(page, 'close');
     assert.ok(
       await page.evaluate(() => window.document.querySelector('.hlx-sk').classList.contains('hlx-sk-hidden')),
       'Did not hide sidekick',
     );
+    assert.ok(await checkEventFired(page, 'hidden'), 'Event hidden not fired');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Share button copies sharing URL to clipboard', async () => {
@@ -458,78 +505,63 @@ describe('Test sidekick bookmarklet', () => {
     );
   }).timeout(IT_DEFAULT_TIMEOUT);
 
-  it('Edit plugin uses preview API from staging URL', async () => {
-    const apiTest = apiTests.blog;
+  it('Edit plugin switches to editor from preview URL', async () => {
+    const apiMock = apiMocks.blog;
     await testPageRequests({
       page,
       url: `${fixturesPrefix}/edit-staging.html`,
       check: (req) => {
-        if (req.url().includes('/preview/')) {
-          // check request to preview API
-          assert.ok(
-            req.url().endsWith(`/preview/adobe/theblog/master${apiTest.webPath}`),
-            'Preview API not called',
-          );
-        } else if (req.url().startsWith('https://adobe.sharepoint.com/')) {
+        if (req.url().startsWith('https://adobe.sharepoint.com/')) {
           // check request to edit url
-          assert.ok(req.url() === apiTest.edit.url, 'Edit URL not called');
+          assert.ok(req.url() === apiMock.edit.url, 'Edit URL not called');
           return true;
         }
         // ignore otherwise
         return false;
       },
-      checkResponse: {
-        status: 200,
-        body: JSON.stringify(apiTest),
-      },
+      mockResponses: [
+        apiMock,
+      ],
       plugin: 'edit',
+      events: [
+        'statusfetched',
+        'contextloaded',
+        'envswitched',
+      ],
     });
   }).timeout(IT_DEFAULT_TIMEOUT);
 
-  it('Edit plugin uses preview API from production URL', async () => {
-    const apiTest = apiTests.blog;
+  it('Edit plugin switches to editor from production URL', async () => {
+    const apiMock = apiMocks.blog;
     await testPageRequests({
       page,
       url: `${fixturesPrefix}/edit-production.html`,
       check: (req) => {
-        if (req.url().includes('/preview/')) {
-          // check request to preview API
-          assert.ok(
-            req.url().endsWith(`/preview/adobe/theblog/master${apiTest.webPath}`),
-            'Preview API not called',
-          );
-        } else if (req.url().startsWith('https://adobe.sharepoint.com/')) {
+        if (req.url().startsWith('https://adobe.sharepoint.com/')) {
           // check request to edit url
-          assert.ok(req.url() === apiTest.edit.url, 'Edit URL not called');
+          assert.ok(req.url() === apiMock.edit.url, 'Edit URL not called');
           return true;
         }
         // ignore otherwise
         return false;
       },
-      checkResponse: {
-        status: 200,
-        body: JSON.stringify(apiTest),
-      },
+      mockResponses: [
+        apiMock,
+      ],
       plugin: 'edit',
     });
   }).timeout(IT_DEFAULT_TIMEOUT);
 
-  it('Preview plugin uses preview API with editURL parameter from gdrive URL', async () => {
-    const apiTest = apiTests.pages;
+  it('Preview plugin switches to preview from gdrive URL', async () => {
+    const apiMock = apiMocks.pages;
     await testPageRequests({
       page,
       url: `${fixturesPrefix}/preview-gdrive.html`,
       check: (req) => {
-        if (req.url().includes('/preview/')) {
-          // check request to preview API
-          assert.ok(
-            req.url().endsWith(`/preview/adobe/pages/master?editUrl=${encodeURIComponent(apiTest.edit.url)}`),
-            'Preview API not called',
-          );
-        } else if (req.url().includes('.hlx.page/')) {
+        if (req.url().includes('.hlx.page/')) {
           // check request to preview url
           assert.ok(
-            req.url() === `https://master--pages--adobe.hlx.page${apiTest.webPath}`,
+            req.url() === `https://master--pages--adobe.hlx.page${apiMock.webPath}`,
             'Preview URL not called',
           );
           return true;
@@ -537,30 +569,23 @@ describe('Test sidekick bookmarklet', () => {
         // ignore otherwise
         return false;
       },
-      checkResponse: {
-        status: 200,
-        body: JSON.stringify(apiTest),
-      },
+      mockResponses: [
+        apiMock,
+      ],
       plugin: 'preview',
     });
   }).timeout(IT_DEFAULT_TIMEOUT);
 
-  it('Preview plugin uses preview API with editURL parameter from onedrive URL', async () => {
-    const apiTest = apiTests.blog;
+  it('Preview plugin switches to preview from onedrive URL', async () => {
+    const apiMock = apiMocks.blog;
     await testPageRequests({
       page,
       url: `${fixturesPrefix}/preview-onedrive.html`,
       check: (req) => {
-        if (req.url().includes('/preview/')) {
-          // check request to preview API
-          assert.ok(
-            req.url().endsWith(`/preview/adobe/theblog/master?editUrl=${encodeURIComponent(apiTest.edit.url)}`),
-            'Preview API not called',
-          );
-        } else if (req.url().includes('.hlx.page/')) {
+        if (req.url().includes('.hlx.page/')) {
           // check request to preview url
           assert.ok(
-            req.url() === `https://master--theblog--adobe.hlx.page${apiTest.webPath}`,
+            req.url() === `https://master--theblog--adobe.hlx.page${apiMock.webPath}`,
             'Preview URL not called',
           );
           return true;
@@ -568,30 +593,23 @@ describe('Test sidekick bookmarklet', () => {
         // ignore otherwise
         return false;
       },
-      checkResponse: {
-        status: 200,
-        body: JSON.stringify(apiTest),
-      },
+      mockResponses: [
+        apiMock,
+      ],
       plugin: 'preview',
     });
   }).timeout(IT_DEFAULT_TIMEOUT);
 
-  it('Preview plugin uses preview API from production URL', async () => {
-    const apiTest = apiTests.blog;
+  it('Preview plugin switches to preview from production URL', async () => {
+    const apiMock = apiMocks.blog;
     await testPageRequests({
       page,
       url: `${fixturesPrefix}/edit-production.html`,
       check: (req) => {
-        if (req.url().includes('/preview/')) {
-          // check request to preview API
-          assert.ok(
-            req.url().endsWith(`/preview/adobe/theblog/master${apiTest.webPath}`),
-            'Preview API not called',
-          );
-        } else if (req.url().includes('.hlx.page/')) {
+        if (req.url().includes('.hlx.page/')) {
           // check request to preview url
           assert.ok(
-            req.url() === `https://master--theblog--adobe.hlx.page${apiTest.webPath}`,
+            req.url() === `https://master--theblog--adobe.hlx.page${apiMock.webPath}`,
             'Preview URL not called',
           );
           return true;
@@ -599,30 +617,23 @@ describe('Test sidekick bookmarklet', () => {
         // ignore otherwise
         return false;
       },
-      checkResponse: {
-        status: 200,
-        body: JSON.stringify(apiTest),
-      },
+      mockResponses: [
+        apiMock,
+      ],
       plugin: 'preview',
     });
   }).timeout(IT_DEFAULT_TIMEOUT);
 
-  it('Live plugin uses preview API from gdrive URL', async () => {
-    const apiTest = apiTests.pages;
+  it('Live plugin switches to live from gdrive URL', async () => {
+    const apiMock = apiMocks.pages;
     await testPageRequests({
       page,
       url: `${fixturesPrefix}/preview-gdrive.html`,
       check: (req) => {
-        if (req.url().includes('/preview/')) {
-          // check request to preview API
-          assert.ok(
-            req.url().endsWith(`/preview/adobe/pages/master?editUrl=${encodeURIComponent(apiTest.edit.url)}`),
-            'Preview API not called',
-          );
-        } else if (req.url().includes('.hlx.live/')) {
+        if (req.url().includes('.hlx.live/')) {
           // check request to live url
           assert.ok(
-            req.url() === `https://pages--adobe.hlx.live${apiTest.webPath}`,
+            req.url() === `https://pages--adobe.hlx.live${apiMock.webPath}`,
             'Live URL not called',
           );
           return true;
@@ -630,30 +641,23 @@ describe('Test sidekick bookmarklet', () => {
         // ignore otherwise
         return false;
       },
-      checkResponse: {
-        status: 200,
-        body: JSON.stringify(apiTest),
-      },
+      mockResponses: [
+        apiMock,
+      ],
       plugin: 'live',
     });
   }).timeout(IT_DEFAULT_TIMEOUT);
 
-  it('Production plugin uses preview API from gdrive URL', async () => {
-    const apiTest = apiTests.pages;
+  it('Production plugin switches to production from gdrive URL', async () => {
+    const apiMock = apiMocks.pages;
     await testPageRequests({
       page,
       url: `${fixturesPrefix}/preview-gdrive.html`,
       check: (req) => {
-        if (req.url().includes('/preview/')) {
-          // check request to preview API
-          assert.ok(
-            req.url().endsWith(`/preview/adobe/pages/master?editUrl=${encodeURIComponent(apiTest.edit.url)}`),
-            'Preview API not called',
-          );
-        } else if (req.url().includes('.adobe.com/')) {
+        if (req.url().includes('.adobe.com/')) {
           // check request to production url
           assert.ok(
-            req.url() === `https://pages.adobe.com${apiTest.webPath}`,
+            req.url() === `https://pages.adobe.com${apiMock.webPath}`,
             'Production URL not called',
           );
           return true;
@@ -661,15 +665,15 @@ describe('Test sidekick bookmarklet', () => {
         // ignore otherwise
         return false;
       },
-      checkResponse: {
-        status: 200,
-        body: JSON.stringify(apiTest),
-      },
+      mockResponses: [
+        apiMock,
+      ],
       plugin: 'prod',
     });
   }).timeout(IT_DEFAULT_TIMEOUT);
 
-  it('Reload plugin sends purge request from staging URL and reloads page', async () => {
+  it('Reload plugin sends purge request from preview URL and reloads page', async () => {
+    const apiMock = apiMocks.blog;
     let loads = 0;
     let purged = false;
     let reloaded = false;
@@ -680,7 +684,7 @@ describe('Test sidekick bookmarklet', () => {
         if (!purged && req.method() === 'POST') {
           // intercept purge request
           const headers = req.headers();
-          purged = req.url() === 'https://theblog--adobe.hlx.page/en/topics/bla.html'
+          purged = req.url() === `https://theblog--adobe.hlx.page${apiMock.webPath}`
             && headers['x-forwarded-host'] === 'master--theblog--adobe.hlx.page';
         } else if (req.url().endsWith('reload-staging.html')) {
           loads += 1;
@@ -693,6 +697,10 @@ describe('Test sidekick bookmarklet', () => {
       },
       checkCondition: (request) => request.url().startsWith('https://')
         || request.url().endsWith('reload-staging.html'),
+      mockResponses: [
+        apiMock,
+        purgeMock,
+      ],
       plugin: 'reload',
     });
     // check result
@@ -700,7 +708,8 @@ describe('Test sidekick bookmarklet', () => {
     assert.ok(reloaded, 'Reload not triggered');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
-  it('Reload plugin in hlx3 mode calls preview API', async () => {
+  it('Reload plugin uses preview API in hlx3 mode', async () => {
+    const apiMock = apiMocks.blog;
     let loads = 0;
     let apiCalled = false;
     let reloaded = false;
@@ -710,11 +719,7 @@ describe('Test sidekick bookmarklet', () => {
       check: (req) => {
         if (!apiCalled && req.method() === 'POST') {
           // intercept api request
-          apiCalled = req.url().endsWith('/preview/adobe/theblog/master/en/topics/bla.html');
-          req.respond({
-            status: 200,
-            body: JSON.stringify([{ status: 'ok' }]),
-          });
+          apiCalled = req.url().endsWith(`/preview/adobe/theblog/master${apiMock.webPath}`);
         } else if (req.url().endsWith('reload-staging-hlx3.html')) {
           loads += 1;
           if (loads === 2) {
@@ -727,6 +732,10 @@ describe('Test sidekick bookmarklet', () => {
       },
       checkCondition: (request) => request.url().startsWith('https://')
         || request.url().endsWith('reload-staging-hlx3.html'),
+      mockResponses: [
+        apiMock,
+        apiMock,
+      ],
       plugin: 'reload',
     });
     // check result
@@ -734,7 +743,8 @@ describe('Test sidekick bookmarklet', () => {
     assert.ok(reloaded, 'Reload not triggered');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
-  it('Publish plugin sends purge request from staging URL and redirects to production URL', async () => {
+  it('Publish plugin sends purge request from preview URL and redirects to production URL', async () => {
+    const apiMock = apiMocks.blog;
     let purged = false;
     let redirected = false;
     await testPageRequests({
@@ -744,19 +754,19 @@ describe('Test sidekick bookmarklet', () => {
         if (!purged && req.method() === 'POST') {
           // intercept purge request
           const headers = req.headers();
-          purged = req.url() === 'https://theblog--adobe.hlx.page/en/topics/bla.html'
+          purged = req.url() === `https://theblog--adobe.hlx.page${apiMock.webPath}`
             && headers['x-forwarded-host'].split(',').length === 3;
         } else if (req.url().startsWith('https://blog.adobe.com')) {
           // intercept redirect to production
           redirected = true;
-          req.respond({
-            status: 200,
-            body: 'dummy html',
-          });
           return true;
         }
         return false;
       },
+      mockResponses: [
+        apiMock,
+        purgeMock,
+      ],
       plugin: 'publish',
     });
     // check result
@@ -765,6 +775,7 @@ describe('Test sidekick bookmarklet', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Publish plugin also purges dependencies', async () => {
+    const apiMock = apiMocks.blog;
     const dependencies = [
       '/en/topics/foo.html',
       'bar.html?step=1',
@@ -787,6 +798,12 @@ describe('Test sidekick bookmarklet', () => {
         }
         return purged.length === 3;
       },
+      mockResponses: [
+        apiMock,
+        purgeMock,
+        purgeMock,
+        purgeMock,
+      ],
       plugin: 'publish',
     });
     assert.deepStrictEqual(purged, [
@@ -796,7 +813,8 @@ describe('Test sidekick bookmarklet', () => {
     ], 'Purge request not sent');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
-  it('Publish plugin does not purge outer without production host', async () => {
+  it('Publish plugin refuses to publish without production host', async () => {
+    const apiMock = apiMocks.blog;
     let noPurge = true;
     await testPageRequests({
       page,
@@ -810,22 +828,22 @@ describe('Test sidekick bookmarklet', () => {
       check: (req) => {
         if (req.method() === 'POST') {
           // intercept purge request
-          req.respond({
-            status: 200,
-            body: JSON.stringify([{ status: 'ok' }]),
-          });
           noPurge = false;
           return true;
         }
         return false;
       },
+      mockResponses: [
+        apiMock,
+      ],
       plugin: 'publish',
       timeout: 5000,
     });
     assert.ok(noPurge, 'Did not purge inner host only');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
-  it('Publish plugin in hlx3 mode uses publish API', async () => {
+  it('Publish plugin uses publish API in hlx3 mode', async () => {
+    const apiMock = apiMocks.blog;
     let apiCalled = false;
     let redirected = false;
     await testPageRequests({
@@ -841,6 +859,10 @@ describe('Test sidekick bookmarklet', () => {
         }
         return false;
       },
+      mockResponses: [
+        apiMock,
+        apiMock,
+      ],
       plugin: 'publish',
     });
     // check result
@@ -848,8 +870,38 @@ describe('Test sidekick bookmarklet', () => {
     assert.ok(redirected, 'Redirect not sent');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
+  it('Publish plugin redirects to live instead of bring-your-own-CDN production host', async () => {
+    const apiMock = apiMocks.blog;
+    let redirected = false;
+    await testPageRequests({
+      page,
+      url: `${fixturesPrefix}/publish-staging.html`,
+      prep: async (p) => {
+        // set byocdn flag
+        await p.evaluate(() => {
+          window.hlx.sidekick.config.byocdn = true;
+        });
+      },
+      check: (req) => {
+        if (req.url().startsWith('https://theblog--adobe.hlx.live')) {
+          // intercept redirect to live
+          redirected = true;
+          return true;
+        }
+        return false;
+      },
+      mockResponses: [
+        apiMock,
+        purgeMock,
+      ],
+      plugin: 'publish',
+    });
+    // check result
+    assert.ok(redirected, 'Redirect to live not sent');
+  }).timeout(IT_DEFAULT_TIMEOUT);
+
   it('No publish plugin on bring-your-own-CDN production host', async () => {
-    await mockCustomPlugins(page);
+    await mockStandardResponses(page);
     // open test page
     await page.goto(`${fixturesPrefix}/publish-byocdn.html`, { waitUntil: 'load' });
     const plugins = await getPlugins(page);
@@ -864,11 +916,11 @@ describe('Test sidekick bookmarklet', () => {
     );
   }).timeout(IT_DEFAULT_TIMEOUT);
 
-  it('Inner CDN is correctly detected', async () => {
+  it('Preview environment is correctly detected', async () => {
     await page.goto(`${fixturesPrefix}/publish-staging.html`, { waitUntil: 'load' });
     assert.ok(
       await page.evaluate(() => window.hlx.sidekick.isInner() && window.hlx.sidekick.isHelix()),
-      'Did not detect inner CDN URL',
+      'Did not detect preview URL',
     );
     // check with different ref
     await page.evaluate(() => {
@@ -876,19 +928,19 @@ describe('Test sidekick bookmarklet', () => {
     });
     assert.ok(
       await page.evaluate(() => window.hlx.sidekick.isInner()),
-      'Did not detect inner CDN URL with different ref',
+      'Did not detect preview URL with different ref',
     );
   }).timeout(IT_DEFAULT_TIMEOUT);
 
-  it('Outer CDN is correctly detected', async () => {
+  it('Live environment is correctly detected', async () => {
     await page.goto(`${fixturesPrefix}/is-live.html`, { waitUntil: 'load' });
     assert.ok(
       await page.evaluate(() => window.hlx.sidekick.isOuter() && window.hlx.sidekick.isHelix()),
-      'Did not detect outer CDN URL',
+      'Did not detect live URL',
     );
   }).timeout(IT_DEFAULT_TIMEOUT);
 
-  it('Production is correctly detected', async () => {
+  it('Production environment is correctly detected', async () => {
     await page.goto(`${fixturesPrefix}/edit-production.html`, { waitUntil: 'load' });
     assert.ok(
       await page.evaluate(() => window.hlx.sidekick.isProd() && window.hlx.sidekick.isHelix()),
