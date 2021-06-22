@@ -51,6 +51,7 @@ The sidekick provides helper tools for authors.
 
 * [Sidekick](#Sidekick)
     * [new Sidekick()](#new_Sidekick_new)
+    * [.fetchStatus(callback)](#Sidekick+fetchStatus) ⇒ [<code>Sidekick</code>](#Sidekick)
     * [.loadContext()](#Sidekick+loadContext) ⇒ [<code>Sidekick</code>](#Sidekick)
     * [.show()](#Sidekick+show) ⇒ [<code>Sidekick</code>](#Sidekick)
     * [.hide()](#Sidekick+hide) ⇒ [<code>Sidekick</code>](#Sidekick)
@@ -68,13 +69,39 @@ The sidekick provides helper tools for authors.
     * [.showModal(msg, sticky, level)](#Sidekick+showModal) ⇒ [<code>Sidekick</code>](#Sidekick)
     * [.hideModal()](#Sidekick+hideModal) ⇒ [<code>Sidekick</code>](#Sidekick)
     * [.loadCSS(path)](#Sidekick+loadCSS) ⇒ [<code>Sidekick</code>](#Sidekick)
+    * [.switchEnv(targetEnv, open)](#Sidekick+switchEnv) ⇒ [<code>Sidekick</code>](#Sidekick)
+    * ~~[.reload(path)](#Sidekick+reload) ⇒ <code>Response</code>~~
+    * [.update(path)](#Sidekick+update) ⇒ <code>Response</code>
     * [.publish(path, innerOnly)](#Sidekick+publish) ⇒ [<code>publishResponse</code>](#publishResponse)
+    * [.addEventListener(type, listener)](#Sidekick+addEventListener)
+    * [.removeEventListener(type, listener)](#Sidekick+removeEventListener)
+    * ["shown"](#Sidekick+event_shown)
+    * ["hidden"](#Sidekick+event_hidden)
+    * ["pluginused"](#Sidekick+event_pluginused)
+    * ["contextloaded"](#Sidekick+event_contextloaded)
+    * ["statusfetched"](#Sidekick+event_statusfetched)
+    * ["envswitched"](#Sidekick+event_envswitched)
+    * ["updated"](#Sidekick+event_updated)
+    * ["published"](#Sidekick+event_published)
 
 <a name="new_Sidekick_new"></a>
 
 ### new Sidekick()
 Creates a new sidekick based on a configuration object in
 [window.hlx.sidekickConfig](window.hlx.sidekickConfig).
+
+<a name="Sidekick+fetchStatus"></a>
+
+### sidekick.fetchStatus(callback) ⇒ [<code>Sidekick</code>](#Sidekick)
+Fetches the status for the current resource.
+
+**Kind**: instance method of [<code>Sidekick</code>](#Sidekick)  
+**Returns**: [<code>Sidekick</code>](#Sidekick) - The sidekick  
+**Emits**: [<code>statusfetched</code>](#Sidekick+event_statusfetched)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| callback | <code>function</code> | the callback function |
 
 <a name="Sidekick+loadContext"></a>
 
@@ -84,6 +111,7 @@ and retrieves the location of the current document.
 
 **Kind**: instance method of [<code>Sidekick</code>](#Sidekick)  
 **Returns**: [<code>Sidekick</code>](#Sidekick) - The sidekick  
+**Emits**: [<code>contextloaded</code>](#Sidekick+event_contextloaded)  
 <a name="Sidekick+show"></a>
 
 ### sidekick.show() ⇒ [<code>Sidekick</code>](#Sidekick)
@@ -91,6 +119,7 @@ Shows the sidekick.
 
 **Kind**: instance method of [<code>Sidekick</code>](#Sidekick)  
 **Returns**: [<code>Sidekick</code>](#Sidekick) - The sidekick  
+**Emits**: [<code>shown</code>](#Sidekick+event_shown)  
 <a name="Sidekick+hide"></a>
 
 ### sidekick.hide() ⇒ [<code>Sidekick</code>](#Sidekick)
@@ -98,6 +127,7 @@ Hides the sidekick.
 
 **Kind**: instance method of [<code>Sidekick</code>](#Sidekick)  
 **Returns**: [<code>Sidekick</code>](#Sidekick) - The sidekick  
+**Emits**: [<code>hidden</code>](#Sidekick+event_hidden)  
 <a name="Sidekick+toggle"></a>
 
 ### sidekick.toggle() ⇒ [<code>Sidekick</code>](#Sidekick)
@@ -202,6 +232,7 @@ Displays a modal notification.
 
 **Kind**: instance method of [<code>Sidekick</code>](#Sidekick)  
 **Returns**: [<code>Sidekick</code>](#Sidekick) - The sidekick  
+**Emits**: <code>Sidekick#event:modalshown</code>  
 
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
@@ -216,6 +247,7 @@ Hides the modal if shown.
 
 **Kind**: instance method of [<code>Sidekick</code>](#Sidekick)  
 **Returns**: [<code>Sidekick</code>](#Sidekick) - The sidekick  
+**Emits**: <code>Sidekick#event:modalhidden</code>  
 <a name="Sidekick+loadCSS"></a>
 
 ### sidekick.loadCSS(path) ⇒ [<code>Sidekick</code>](#Sidekick)
@@ -230,6 +262,47 @@ current JS or HTML file. E.g. when called without argument from
 | --- | --- | --- |
 | path | <code>string</code> | The path to the CSS file (optional) |
 
+<a name="Sidekick+switchEnv"></a>
+
+### sidekick.switchEnv(targetEnv, open) ⇒ [<code>Sidekick</code>](#Sidekick)
+Switches to (or opens) a given environment.
+
+**Kind**: instance method of [<code>Sidekick</code>](#Sidekick)  
+**Returns**: [<code>Sidekick</code>](#Sidekick) - The sidekick  
+**Emits**: [<code>envswitched</code>](#Sidekick+event_envswitched)  
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| targetEnv | <code>string</code> |  | One of the following environments:        {@code edit}, {@code preview}, {@code live} or {@code prod} |
+| open | <code>boolean</code> | <code>false</code> | {@code true} if environment should be opened in new tab |
+
+<a name="Sidekick+reload"></a>
+
+### ~~sidekick.reload(path) ⇒ <code>Response</code>~~
+***Deprecated***
+
+Reloads the page at the specified path.
+
+**Kind**: instance method of [<code>Sidekick</code>](#Sidekick)  
+**Returns**: <code>Response</code> - The response object  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| path | <code>string</code> | The path of the page to purge |
+
+<a name="Sidekick+update"></a>
+
+### sidekick.update(path) ⇒ <code>Response</code>
+Updates the preview resource at the specified path.
+
+**Kind**: instance method of [<code>Sidekick</code>](#Sidekick)  
+**Returns**: <code>Response</code> - The response object  
+**Emits**: [<code>updated</code>](#Sidekick+event_updated)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| path | <code>string</code> | The path of the resource to refresh |
+
 <a name="Sidekick+publish"></a>
 
 ### sidekick.publish(path, innerOnly) ⇒ [<code>publishResponse</code>](#publishResponse)
@@ -237,12 +310,107 @@ Publishes the page at the specified path if {@code config.host} is defined.
 
 **Kind**: instance method of [<code>Sidekick</code>](#Sidekick)  
 **Returns**: [<code>publishResponse</code>](#publishResponse) - The response object  
+**Emits**: [<code>published</code>](#Sidekick+event_published)  
 
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
 | path | <code>string</code> |  | The path of the page to publish |
 | innerOnly | <code>boolean</code> | <code>false</code> | {@code true} to only refresh inner CDN, else {@code false} |
 
+<a name="Sidekick+addEventListener"></a>
+
+### sidekick.addEventListener(type, listener)
+Sets up a function that will be called whenever the specified sidekick
+event is fired.
+
+**Kind**: instance method of [<code>Sidekick</code>](#Sidekick)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| type | <code>string</code> | The event type |
+| listener | <code>function</code> | The function to call |
+
+<a name="Sidekick+removeEventListener"></a>
+
+### sidekick.removeEventListener(type, listener)
+Removes an event listener previously registered with [addEventListener](addEventListener).
+
+**Kind**: instance method of [<code>Sidekick</code>](#Sidekick)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| type | <code>string</code> | The event type |
+| listener | <code>function</code> | The function to remove |
+
+<a name="Sidekick+event_shown"></a>
+
+### "shown"
+This event is fired when the sidekick has been shown.
+
+**Kind**: event emitted by [<code>Sidekick</code>](#Sidekick)  
+<a name="Sidekick+event_hidden"></a>
+
+### "hidden"
+This event is fired when the sidekick has been hidden.
+
+**Kind**: event emitted by [<code>Sidekick</code>](#Sidekick)  
+<a name="Sidekick+event_pluginused"></a>
+
+### "pluginused"
+This event is fired when a sidekick plugin has been used.
+
+**Kind**: event emitted by [<code>Sidekick</code>](#Sidekick)  
+**Properties**
+
+| Name | Type | Description |
+| --- | --- | --- |
+| id | <code>string</code> | The plugin ID |
+| button | <code>Element</code> | The button element |
+
+<a name="Sidekick+event_contextloaded"></a>
+
+### "contextloaded"
+This event is fired when the context has been loaded.
+
+**Kind**: event emitted by [<code>Sidekick</code>](#Sidekick)  
+**Properties**
+
+| Name | Type | Description |
+| --- | --- | --- |
+| config | <code>sidekickConfig</code> | The sidekick configuration |
+| location | <code>Location</code> | The sidekick location |
+
+<a name="Sidekick+event_statusfetched"></a>
+
+### "statusfetched"
+This event is fired when the status has been fetched.
+
+**Kind**: event emitted by [<code>Sidekick</code>](#Sidekick)  
+<a name="Sidekick+event_envswitched"></a>
+
+### "envswitched"
+This event is fired when the environment has been switched
+
+**Kind**: event emitted by [<code>Sidekick</code>](#Sidekick)  
+**Properties**
+
+| Name | Type | Description |
+| --- | --- | --- |
+| sourceUrl | <code>string</code> | The URL of the source environment |
+| targetUrl | <code>string</code> | The URL of the target environment |
+
+<a name="Sidekick+event_updated"></a>
+
+### "updated"
+This event is fired when a path has been updated.
+
+**Kind**: event emitted by [<code>Sidekick</code>](#Sidekick)  
+<a name="Sidekick+event_published"></a>
+
+### "published"
+This event is fired when a path has been published.
+
+**Kind**: event emitted by [<code>Sidekick</code>](#Sidekick)  
 <a name="elemAttr"></a>
 
 ## elemAttr : <code>Object.&lt;string, string&gt;</code>

@@ -6,7 +6,7 @@
   "scripts": {
     "test": " nyc --reporter=text --reporter=lcov --check-coverage --branches 100 --statements 100 --lines 100 mocha",
     "lint": "./node_modules/.bin/eslint .",
-    "docs": "npx jsdoc2md -c .jsdoc.json --files 'src/*.js'  > docs/API.md",
+    "docs": "npx jsdoc2md -c .jsdoc.json --files 'src/**/*.js'  > docs/API.md",
     "semantic-release": "semantic-release",
     "commit": "git-cz"
   },
