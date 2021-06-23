@@ -111,7 +111,7 @@ div.advanced > div  {
         's.id=\'hlx-sk-app\';',
         `s.src='${window.location.origin}/tools/sidekick/app.js';`,
         `s.dataset.config='${JSON.stringify(config)}';`,
-        'window.hlx.sidekickScript=s',
+        'window.hlx.sidekickScript=s;',
         'if(document.head.querySelector(\'script#hlx-sk-app\')){',
           'document.head.querySelector(\'script#hlx-sk-app\').replaceWith(s);',
         '} else {',
