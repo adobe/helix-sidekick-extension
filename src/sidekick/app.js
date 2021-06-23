@@ -73,8 +73,9 @@
    * @prop {string} repo    The GitHub owner or organization (mandatory)
    * @prop {string} ref=main The Git reference or branch (optional)
    * @prop {string} host    The production host name (optional)
-   * @prop {string} byocdn=false {@code true} if the production host is a 3rd party CDN (optional)
    * @prop {string} project The name of the Helix project (optional)
+   * @prop {boolean} byocdn=false {@code true} if the production host is a 3rd party CDN (optional)
+   * @prop {boolean} hlx3=false {@code true} if the project is running on Helix 3 (optional)
    */
 
   /**
@@ -748,7 +749,7 @@
       if (this.config.plugins && Array.isArray(this.config.plugins)) {
         this.config.plugins.forEach((plugin) => this.add(plugin));
       }
-      if (typeof this.config.plugins === 'undefined'
+      if (this.config.compatMode
         && (this.isHelix() || this.isEditor())
         && (this.config.pluginHost || this.config.innerHost)) {
         // load custom plugins in compatibility mode
@@ -1323,44 +1324,55 @@
     return window.hlx.sidekick;
   }
 
+  /**
+   * Initializes the sidekick in compatibility mode.
+   * @private
+   * @returns {Sidekick} The sidekick
+   */
+  function initSidekickCompatMode() {
+    window.hlx.sidekickScript = document.querySelector('script[src$="/sidekick/app.js"]');
+    window.hlx.sidekickConfig = window.hlx.sidekickConfig || {};
+    window.hlx.sidekickConfig.compatMode = true;
+    return window.hlx.initSidekick();
+  }
+
   window.hlx = window.hlx || {};
   if (!window.hlx.initSidekick) {
     window.hlx.initSidekick = initSidekick;
   }
 
   if (!window.hlx.sidekickScript && window.hlx.sidekickConfig) {
-    // init sidekick in compatibility mode
-    window.hlx.sidekickScript = document.querySelector('script[src$="/sidekick/app.js"]');
-    window.hlx.initSidekick();
+    initSidekickCompatMode();
   } else {
     // get base config from script data attribute
     window.hlx.sidekickConfig = window.hlx.sidekickScript
       && window.hlx.sidekickScript.dataset.config
       && JSON.parse(window.hlx.sidekickScript.dataset.config);
     if (typeof window.hlx.sidekickConfig !== 'object') {
-      console.error('error loading sidekick: missing project data');
+      initSidekickCompatMode();
     } else {
       const { owner, repo, ref } = window.hlx.sidekickConfig;
       if (!owner || !repo || !ref) {
-        console.error('error loading sidekick: invalid project data', window.hlx.sidekickConfig);
-      }
-      // look for extended config in project
-      const configScript = document.createElement('script');
-      configScript.id = 'hlx-sk-config';
-      configScript.src = `https://${ref}--${repo}--${owner}.hlx.page/tools/sidekick/config.js`;
-      configScript.referrerpolicy = 'no-referrer';
-      configScript.addEventListener('error', () => {
-        // init sidekick without extended config
-        console.info(`no sidekick config found at ${window.hlx.configScript.src}`);
-        window.hlx.initSidekick();
-      });
-      window.hlx.configScript = configScript;
-      // init sidekick via project config
-      if (document.head.querySelector(`script#${window.hlx.configScript.id}`)) {
-        document.head.querySelector(`script#${window.hlx.configScript.id}`)
-          .replaceWith(window.hlx.configScript);
+        initSidekickCompatMode();
       } else {
-        document.head.append(window.hlx.configScript);
+        // look for extended config in project
+        const configScript = document.createElement('script');
+        configScript.id = 'hlx-sk-config';
+        configScript.src = `https://${ref}--${repo}--${owner}.hlx.page/tools/sidekick/config.js`;
+        configScript.referrerpolicy = 'no-referrer';
+        configScript.addEventListener('error', () => {
+          // init sidekick without extended config
+          console.info(`no sidekick config found at ${window.hlx.configScript.src}`);
+          window.hlx.initSidekick();
+        });
+        window.hlx.configScript = configScript;
+        // init sidekick via project config
+        if (document.head.querySelector(`script#${window.hlx.configScript.id}`)) {
+          document.head.querySelector(`script#${window.hlx.configScript.id}`)
+            .replaceWith(window.hlx.configScript);
+        } else {
+          document.head.append(window.hlx.configScript);
+        }
       }
     }
   }
