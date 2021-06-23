@@ -910,8 +910,8 @@
             tag: 'button',
             text: plugin.button.text,
             lstnrs: {
-              click: plugin.button.action,
-              auxclick: plugin.button.action,
+              click: (e) => plugin.button.action(e, this),
+              auxclick: (e) => plugin.button.action(e, this),
             },
           };
           let $button = $plugin ? $plugin.querySelector(':scope button') : null;
