@@ -748,7 +748,7 @@
       if (this.config.plugins && Array.isArray(this.config.plugins)) {
         this.config.plugins.forEach((plugin) => this.add(plugin));
       }
-      if (!this.config.plugins
+      if (typeof this.config.plugins === 'undefined'
         && (this.isHelix() || this.isEditor())
         && (this.config.pluginHost || this.config.innerHost)) {
         // load custom plugins in compatibility mode
@@ -1311,12 +1311,13 @@
    * @returns {Sidekick} The sidekick
    */
   function initSidekick(cfg = {}) {
-    const compatMode = typeof window.hlx.sidekickConfig === 'object';
     // merge base config with extended config
     window.hlx.sidekickConfig = Object.assign(window.hlx.sidekickConfig || {}, cfg);
     if (!window.hlx.sidekick) {
+      // init and show sidekick
       window.hlx.sidekick = new Sidekick(window.hlx.sidekickConfig).show();
-    } else if (!compatMode) {
+    } else {
+      // reload context and toggle sidekick
       window.hlx.sidekick.loadContext(window.hlx.sidekickConfig).toggle();
     }
     return window.hlx.sidekick;
@@ -1348,9 +1349,9 @@
       configScript.id = 'hlx-sk-config';
       configScript.src = `https://${ref}--${repo}--${owner}.hlx.page/tools/sidekick/config.js`;
       configScript.referrerpolicy = 'no-referrer';
-      configScript.addEventListener('error', (e) => {
+      configScript.addEventListener('error', () => {
         // init sidekick without extended config
-        console.info(`no sidekick config found at ${window.hlx.configScript.src} (${e.message})`);
+        console.info(`no sidekick config found at ${window.hlx.configScript.src}`);
         window.hlx.initSidekick();
       });
       window.hlx.configScript = configScript;
