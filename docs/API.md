@@ -28,17 +28,30 @@ a shorthand for <a href="#elemConfig">elemConfig</a>.</p>
 <dt><a href="#publishResponse">publishResponse</a> : <code>Object</code></dt>
 <dd><p>The response object for a publish action.</p>
 </dd>
+<dt><a href="#sidekickConfig">sidekickConfig</a> : <code>Object</code></dt>
+<dd><p>The sidekick configuration.
+before creating the <a href="#Sidekick">Sidekick</a>.</p>
+</dd>
 </dl>
 
 ## External
 
 <dl>
-<dt><a href="#external_window.hlx.sidekickConfig">window.hlx.sidekickConfig</a> : <code>Object</code></dt>
-<dd><p>The sidekick configuration needs to be defined in this global variable
-before creating the <a href="#Sidekick">Sidekick</a>.</p>
+<dt><a href="#external_window.hlx.sidekickConfig">window.hlx.sidekickConfig</a> : <code><a href="#sidekickConfig">sidekickConfig</a></code></dt>
+<dd><p>The global variable holding the initial sidekick configuration.</p>
 </dd>
 <dt><a href="#external_window.hlx.sidekick">window.hlx.sidekick</a> : <code><a href="#Sidekick">Sidekick</a></code></dt>
 <dd><p>The global variable referencing the <a href="#Sidekick">Sidekick</a> singleton.</p>
+</dd>
+<dt><a href="#external_window.hlx.sidekickScript">window.hlx.sidekickScript</a> : <code>Element</code></dt>
+<dd><p>The {@code script} element which loaded the sidekick application.</p>
+</dd>
+<dt><a href="#external_window.hlx.configScript">window.hlx.configScript</a> : <code>Element</code></dt>
+<dd><p>The {@code script} element which loaded the custom sidekick configuration.</p>
+</dd>
+<dt><a href="#external_window.hlx.initSidekick">window.hlx.initSidekick</a> ⇒ <code><a href="#Sidekick">Sidekick</a></code></dt>
+<dd><p>Initializes the sidekick and stores a reference to it in
+             <a href="window.hlx.sidekick">window.hlx.sidekick</a>.</p>
 </dd>
 </dl>
 
@@ -50,9 +63,9 @@ The sidekick provides helper tools for authors.
 **Kind**: global class  
 
 * [Sidekick](#Sidekick)
-    * [new Sidekick()](#new_Sidekick_new)
+    * [new Sidekick(cfg)](#new_Sidekick_new)
     * [.fetchStatus(callback)](#Sidekick+fetchStatus) ⇒ [<code>Sidekick</code>](#Sidekick)
-    * [.loadContext()](#Sidekick+loadContext) ⇒ [<code>Sidekick</code>](#Sidekick)
+    * [.loadContext(cfg)](#Sidekick+loadContext) ⇒ [<code>Sidekick</code>](#Sidekick)
     * [.show()](#Sidekick+show) ⇒ [<code>Sidekick</code>](#Sidekick)
     * [.hide()](#Sidekick+hide) ⇒ [<code>Sidekick</code>](#Sidekick)
     * [.toggle()](#Sidekick+toggle) ⇒ [<code>Sidekick</code>](#Sidekick)
@@ -86,9 +99,13 @@ The sidekick provides helper tools for authors.
 
 <a name="new_Sidekick_new"></a>
 
-### new Sidekick()
-Creates a new sidekick based on a configuration object in
-[window.hlx.sidekickConfig](window.hlx.sidekickConfig).
+### new Sidekick(cfg)
+Creates a new sidekick.
+
+
+| Param | Type | Description |
+| --- | --- | --- |
+| cfg | [<code>sidekickConfig</code>](#sidekickConfig) | The sidekick config |
 
 <a name="Sidekick+fetchStatus"></a>
 
@@ -105,13 +122,17 @@ Fetches the status for the current resource.
 
 <a name="Sidekick+loadContext"></a>
 
-### sidekick.loadContext() ⇒ [<code>Sidekick</code>](#Sidekick)
-Loads the sidekick configuration based on [window.hlx.sidekickConfig](window.hlx.sidekickConfig)
-and retrieves the location of the current document.
+### sidekick.loadContext(cfg) ⇒ [<code>Sidekick</code>](#Sidekick)
+Loads the sidekick configuration and retrieves the location of the current document.
 
 **Kind**: instance method of [<code>Sidekick</code>](#Sidekick)  
 **Returns**: [<code>Sidekick</code>](#Sidekick) - The sidekick  
 **Emits**: [<code>contextloaded</code>](#Sidekick+event_contextloaded)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| cfg | [<code>sidekickConfig</code>](#sidekickConfig) | The sidekick config |
+
 <a name="Sidekick+show"></a>
 
 ### sidekick.show() ⇒ [<code>Sidekick</code>](#Sidekick)
@@ -377,7 +398,7 @@ This event is fired when the context has been loaded.
 
 | Name | Type | Description |
 | --- | --- | --- |
-| config | <code>sidekickConfig</code> | The sidekick configuration |
+| config | [<code>sidekickConfig</code>](#sidekickConfig) | The sidekick configuration |
 | location | <code>Location</code> | The sidekick location |
 
 <a name="Sidekick+event_statusfetched"></a>
@@ -485,13 +506,13 @@ The response object for a publish action.
 | json | <code>Object</code> | The JSON object returned by the publish action |
 | path | <code>string</code> | The path of the published page |
 
-<a name="external_window.hlx.sidekickConfig"></a>
+<a name="sidekickConfig"></a>
 
-## window.hlx.sidekickConfig : <code>Object</code>
-The sidekick configuration needs to be defined in this global variable
+## sidekickConfig : <code>Object</code>
+The sidekick configuration.
 before creating the [Sidekick](#Sidekick).
 
-**Kind**: global external  
+**Kind**: global typedef  
 **Properties**
 
 | Name | Type | Default | Description |
@@ -500,12 +521,44 @@ before creating the [Sidekick](#Sidekick).
 | repo | <code>string</code> |  | The GitHub owner or organization (mandatory) |
 | ref | <code>string</code> | <code>&quot;main&quot;</code> | The Git reference or branch (optional) |
 | host | <code>string</code> |  | The production host name (optional) |
-| byocdn | <code>string</code> | <code>false</code> | {@code true} if the production host is a 3rd party CDN (optional) |
 | project | <code>string</code> |  | The name of the Helix project (optional) |
+| byocdn | <code>boolean</code> | <code>false</code> | {@code true} if the production host is a 3rd party CDN (optional) |
+| hlx3 | <code>boolean</code> | <code>false</code> | {@code true} if the project is running on Helix 3 (optional) |
 
+<a name="external_window.hlx.sidekickConfig"></a>
+
+## window.hlx.sidekickConfig : [<code>sidekickConfig</code>](#sidekickConfig)
+The global variable holding the initial sidekick configuration.
+
+**Kind**: global external  
 <a name="external_window.hlx.sidekick"></a>
 
 ## window.hlx.sidekick : [<code>Sidekick</code>](#Sidekick)
 The global variable referencing the [Sidekick](#Sidekick) singleton.
 
 **Kind**: global external  
+<a name="external_window.hlx.sidekickScript"></a>
+
+## window.hlx.sidekickScript : <code>Element</code>
+The {@code script} element which loaded the sidekick application.
+
+**Kind**: global external  
+<a name="external_window.hlx.configScript"></a>
+
+## window.hlx.configScript : <code>Element</code>
+The {@code script} element which loaded the custom sidekick configuration.
+
+**Kind**: global external  
+<a name="external_window.hlx.initSidekick"></a>
+
+## window.hlx.initSidekick ⇒ [<code>Sidekick</code>](#Sidekick)
+Initializes the sidekick and stores a reference to it in
+             [window.hlx.sidekick](window.hlx.sidekick).
+
+**Kind**: global external  
+**Returns**: [<code>Sidekick</code>](#Sidekick) - The sidekick  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| cfg | <code>Object</code> | The sidekick configuration (extends [window.hlx.sidekickConfig](window.hlx.sidekickConfig)) |
+
