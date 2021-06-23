@@ -1363,7 +1363,7 @@
         configScript.addEventListener('error', () => {
           // init sidekick without extended config
           console.info(`no sidekick config found at ${window.hlx.configScript.src}`);
-          window.hlx.initSidekick();
+          initSidekickCompatMode();
         });
         window.hlx.configScript = configScript;
         // init sidekick via project config
