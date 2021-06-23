@@ -342,7 +342,6 @@ describe('Test sidekick bookmarklet', () => {
 
   it('Adds plugins from project', async () => {
     await mockStandardResponses(page, `
-    console.log(window.hlx && window.hlx.sidekick);
       window.hlx.sidekick.add({
         id: 'bar',
         button: {
