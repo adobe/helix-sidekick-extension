@@ -8,19 +8,8 @@ id: form
 
 <label for="giturl">Repository URL:</label>
 <input id="giturl" placeholder="https://github.com/....">
-<label for="host">Production Hostname (optional): </label>
-<input id="host">
-<input id="byocdn" type="checkbox">
-<label for="byocdn" class="small">3rd party CDN (optional)</label>
-<br>
 <label for="project">Project Name (optional): </label>
 <input id="project">
-<div class="advanced">
-  <div>
-    <input id="hlx3" type="checkbox">
-    <label for="hlx3" class="small">Helix 3 project</label>
-  </div>
-</div>
 <br>
 <button onclick="run()">Generate Bookmarklet</button>
 
@@ -62,7 +51,6 @@ Drag the Helix logo below to your browser's bookmark bar, or <a href="#" onclick
   display: inline-block;
 }
 
-input#host,
 input#project {
   margin-bottom: 0.5rem;
 }
@@ -96,10 +84,7 @@ div.advanced > div  {
 
   function run() {
     let giturl = document.getElementById('giturl').value;
-    const host = document.getElementById('host').value;
-    const byocdn = document.getElementById('byocdn').checked;
     const project = document.getElementById('project').value;
-    const hlx3 = document.getElementById('hlx3').checked;
     if (!giturl) {
       alert('Repository URL is mandatory.');
       return;
@@ -111,18 +96,10 @@ div.advanced > div  {
     const ref = segs[3] || 'main';
 
     const config = {
-      project,
-      host,
       owner,
       repo,
       ref,
     };
-    if (byocdn || /^www.*\.adobe\.com$/.test(host)) { // treat www*.adobe.com as byoCDN
-      config.byocdn = true;
-    }
-    if (hlx3) {
-      config.hlx3 = true;
-    }
 
     const bm=document.getElementById('bookmark');
     bm.href = [
@@ -130,10 +107,15 @@ div.advanced > div  {
       '/* ** Helix Sidekick Bookmarklet ** */',
       '(() => {',
         'window.hlx=window.hlx||{};',
-        `window.hlx.sidekickConfig=${JSON.stringify(config)};`,
-        'if(!window.hlx.sidekick){',
-          `document.head.appendChild(document.createElement("script")).src="${window.location.origin}/tools/sidekick/app.js";`,
-        '}else{window.hlx.sidekick.loadContext().toggle();}',
+        'window.hlx.sidekickScript=document.createElement("script");',
+        'window.hlx.sidekickScript.id="hlx-sk-app";',
+        `window.hlx.sidekickScript.src="${window.location.origin}/tools/sidekick/app.js";`,
+        `window.hlx.sidekickScript.dataset.config=${JSON.stringify(config)};`
+        'if(document.head.querySelector("script#hlx-sk-app")) {',
+          'document.head.querySelector("script#hlx-sk-app").replaceWith(window.hlx.sidekickScript);`,
+        '} else {',
+          'document.head.append(window.hlx.sidekickScript);',
+        '}',
       '})();',
     ].join('');
     if (project) {
