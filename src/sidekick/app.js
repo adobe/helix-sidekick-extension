@@ -1341,7 +1341,7 @@
     window.hlx.initSidekick = initSidekick;
   }
 
-  if (!window.hlx.sidekickScript && window.hlx.sidekickConfig) {
+  if (!window.hlx.sidekickScript) {
     initSidekickCompatMode();
   } else {
     // get base config from script data attribute
