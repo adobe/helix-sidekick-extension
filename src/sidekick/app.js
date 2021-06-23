@@ -1344,15 +1344,16 @@
         console.error('error loading sidekick: invalid project data', window.hlx.sidekickConfig);
       }
       // look for extended config in project
-      window.hlx.configScript = document.createElement('script');
-      window.hlx.configScript.id = 'hlx-sk-config';
-      window.hlx.configScript.src = `https://${ref}--${repo}--${owner}.hlx.page/tools/sidekick/config.js`;
-      window.hlx.configScript.referrerpolicy = 'no-referrer';
-      window.hlx.configScript.addEventListener('error', (e) => {
+      const configScript = document.createElement('script');
+      configScript.id = 'hlx-sk-config';
+      configScript.src = `https://${ref}--${repo}--${owner}.hlx.page/tools/sidekick/config.js`;
+      configScript.referrerpolicy = 'no-referrer';
+      configScript.addEventListener('error', (e) => {
         // init sidekick without extended config
-        console.log(`no sidekick config found at ${window.hlx.configScript.src} (${e.message})`);
+        console.info(`no sidekick config found at ${window.hlx.configScript.src} (${e.message})`);
         window.hlx.initSidekick();
       });
+      window.hlx.configScript = configScript;
       // init sidekick via project config
       if (document.head.querySelector(`script#${window.hlx.configScript.id}`)) {
         document.head.querySelector(`script#${window.hlx.configScript.id}`)
