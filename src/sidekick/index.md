@@ -110,7 +110,7 @@ div.advanced > div  {
         'window.hlx.sidekickScript=document.createElement(\'script\');',
         'window.hlx.sidekickScript.id=\'hlx-sk-app\';',
         `window.hlx.sidekickScript.src='${window.location.origin}/tools/sidekick/app.js';`,
-        `window.hlx.sidekickScript.dataset.config=${JSON.stringify(config)};`,
+        `window.hlx.sidekickScript.dataset.config='${JSON.stringify(config)}';`,
         'if(document.head.querySelector(\'script#hlx-sk-app\')){',
           'document.head.querySelector(\'script#hlx-sk-app\').replaceWith(window.hlx.sidekickScript);',
         '} else {',
