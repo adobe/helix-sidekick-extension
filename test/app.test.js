@@ -318,6 +318,22 @@ describe('Test sidekick bookmarklet', () => {
     });
   }).timeout(IT_DEFAULT_TIMEOUT);
 
+  it('Shows update dialog in compatibility mode', async () => {
+    await mockStandardResponses(page);
+    await new Promise((resolve, reject) => {
+      page.on('dialog', (dialog) => {
+        try {
+          assert.ok(dialog.message().startsWith('Good news!'), 'Did not show update dialog');
+          resolve();
+        } catch (e) {
+          reject(e);
+        }
+      });
+      page.goto(`${fixturesPrefix}/config-compatibility.html`, { waitUntil: 'load' });
+      setTimeout(() => reject(new Error('check timed out')), 5000);
+    });
+  }).timeout(IT_DEFAULT_TIMEOUT);
+
   it('Detects innerHost and outerHost from config', async () => {
     await mockStandardResponses(page);
     await page.goto(`${fixturesPrefix}/config-plugin.html`, { waitUntil: 'load' });
@@ -362,7 +378,27 @@ describe('Test sidekick bookmarklet', () => {
     assert.strictEqual(await page.evaluate(() => window.hlx.sidekick.config.host), 'blog.adobe.com', 'Did not load config from project');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
-  it('Adds plugins from project in compatibility mode', async () => {
+  it('Loads config and plugins from development environment', async () => {
+    await mockStandardResponses(
+      page, {
+        configJs: `
+          window.hlx.initSidekick({
+            host: 'blog.adobe.com',
+            plugins: [{
+              id: 'bar',
+              button: {
+                text: 'Bar',
+              },
+            }],
+          });`,
+      },
+    );
+    await page.goto(`${fixturesPrefix}/init-from-dev.html`, { waitUntil: 'load' });
+    assert.ok((await getPlugins(page)).find((p) => p.id === 'bar'), 'Did not load plugins from project');
+    assert.strictEqual(await page.evaluate(() => window.hlx.sidekick.config.host), 'blog.adobe.com', 'Did not load config from project');
+  }).timeout(IT_DEFAULT_TIMEOUT);
+
+  it('Adds plugins from project (compatibility mode)', async () => {
     await mockStandardResponses(page, {
       pluginsJs: `
         window.hlx.sidekick.add({
@@ -377,7 +413,7 @@ describe('Test sidekick bookmarklet', () => {
     assert.ok((await getPlugins(page)).find((p) => p.id === 'bar'), 'Did not add plugins from project');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
-  it('Adds plugins from fixed host', async () => {
+  it('Adds plugins from development environment (compatibility mode)', async () => {
     await mockStandardResponses(
       page, {
         pluginsJs: `window.hlx.sidekick.add({
@@ -386,7 +422,7 @@ describe('Test sidekick bookmarklet', () => {
             text: 'Bar',
           },
         });`,
-        check: (req) => req.url().startsWith('https://plugins.foo.bar'),
+        check: (req) => req.url().startsWith('http://localhost:3000'),
       },
     );
     await page.goto(`${fixturesPrefix}/config-plugin-host.html`, { waitUntil: 'load' });

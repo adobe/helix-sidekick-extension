@@ -8,7 +8,16 @@
         owner: 'adobe',
         repo: 'theblog',
         ref: 'foo',
-        devMode: true,
+        host: 'blog.adobe.com',
+        plugins: [
+          {
+            id: 'foo',
+            button: {
+              text: 'Foo',
+              action: () => {},
+            }
+          }
+        ],
       };
     </script>
     <script src="../../src/sidekick/app.js"></script>
