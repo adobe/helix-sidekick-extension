@@ -74,8 +74,9 @@
    * @prop {string} ref=main The Git reference or branch (optional)
    * @prop {string} host    The production host name (optional)
    * @prop {string} project The name of the Helix project (optional)
-   * @prop {boolean} byocdn=false {@code true} if the production host is a 3rd party CDN (optional)
-   * @prop {boolean} hlx3=false {@code true} if the project is running on Helix 3 (optional)
+   * @prop {boolean} byocdn=false {@code true} if the production host is a 3rd party CDN
+   * @prop {boolean} hlx3=false {@code true} if the project is running on Helix 3
+   * @prop {boolean} devMode=false Loads configuration and plugins from the developmemt environment
    */
 
   /**
@@ -164,6 +165,7 @@
    * Mapping between the plugin IDs that will be treated as environments
    * and their corresponding host properties in the config.
    * @private
+   * @type {Object}
    */
   const ENVS = {
     edit: 'editor',
@@ -171,6 +173,14 @@
     live: 'outerHost',
     prod: 'host',
   };
+
+  /**
+   * The URL of the development environment.
+   * @see {@link https://github.com/adobe/helix-cli|Helix CLI}).
+   * @private
+   * @type {URL}
+   */
+  const DEV_URL = new URL('http://localhost:3000');
 
   /**
    * Returns a hash code for the specified string.
@@ -220,7 +230,7 @@
     if (!innerHost && scriptUrl) {
       // get hlx domain from script src (used for branch deployment testing)
       const scriptHost = new URL(scriptUrl).host;
-      if (scriptHost && scriptHost !== 'www.hlx.live' && !scriptHost.startsWith('localhost')) {
+      if (scriptHost && scriptHost !== 'www.hlx.live' && !scriptHost.startsWith(DEV_URL.host)) {
         // keep only 1st and 2nd level domain
         innerHost = scriptHost.split('.')
           .reverse()
@@ -436,7 +446,7 @@
     }
     const indicators = [
       // legacy config
-      typeof window.hlxSidekickConfig === 'object',
+      typeof window.hlxSidekickConfig === 'object' || sk.config.compatMode,
       // legacy script host
       !sk.config.scriptUrl || new URL(sk.config.scriptUrl).host === 'www.hlx.page',
       // update flag
@@ -751,9 +761,16 @@
       }
       if (this.config.compatMode
         && (this.isHelix() || this.isEditor())
-        && (this.config.pluginHost || this.config.innerHost)) {
+        && (this.config.devMode || this.config.innerHost)) {
         // load custom plugins in compatibility mode
-        const prefix = this.config.pluginHost || (this.isEditor() ? `https://${this.config.innerHost}` : '');
+        let prefix = (this.isEditor() ? `https://${this.config.innerHost}` : '');
+        if (this.config.devMode || this.config.pluginHost) {
+          // TODO: remove support for pluginHost
+          if (this.config.pluginHost) {
+            console.warn('pluginHost is deprecated, use devMode instead');
+          }
+          prefix = this.config.pluginHost || DEV_URL.origin;
+        }
         appendTag(document.head, {
           tag: 'script',
           attrs: {
@@ -761,8 +778,8 @@
           },
         });
       }
-      checkForUpdates(this);
       checkForHelix3(this);
+      checkForUpdates(this);
     }
 
     /**
@@ -981,7 +998,7 @@
       const { location } = this;
       return [
         '', // for unit testing
-        'localhost:3000', // for development and browser testing
+        DEV_URL.host, // for development and browser testing
       ].includes(location.host);
     }
 
@@ -1344,21 +1361,29 @@
   if (!window.hlx.sidekickScript) {
     initSidekickCompatMode();
   } else {
-    // get base config from script data attribute
-    window.hlx.sidekickConfig = window.hlx.sidekickScript
+    // get base config from script data attribute while
+    const baseConfig = window.hlx.sidekickScript
       && window.hlx.sidekickScript.dataset.config
       && JSON.parse(window.hlx.sidekickScript.dataset.config);
-    if (typeof window.hlx.sidekickConfig !== 'object') {
+    if (typeof baseConfig !== 'object') {
       initSidekickCompatMode();
     } else {
-      const { owner, repo, ref } = window.hlx.sidekickConfig;
+      // merge base config with potential pre-existing config
+      window.hlx.sidekickConfig = Object.assign(
+        window.hlx.sidekickConfig || {}, baseConfig,
+      );
+      // extract and validate base config
+      const {
+        owner, repo, ref, devMode,
+      } = window.hlx.sidekickConfig;
       if (!owner || !repo || !ref) {
-        initSidekickCompatMode();
+        // initSidekickCompatMode();
       } else {
         // look for extended config in project
+        const configOrigin = devMode ? DEV_URL.origin : `https://${ref}--${repo}--${owner}.hlx.page`;
         const configScript = document.createElement('script');
         configScript.id = 'hlx-sk-config';
-        configScript.src = `https://${ref}--${repo}--${owner}.hlx.page/tools/sidekick/config.js`;
+        configScript.src = `${configOrigin}/tools/sidekick/config.js`;
         configScript.referrerpolicy = 'no-referrer';
         configScript.addEventListener('error', () => {
           // init sidekick without extended config
