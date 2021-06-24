@@ -784,11 +784,10 @@
 
     /**
      * Fetches the status for the current resource.
-     * @param {Function} callback the callback function
      * @fires Sidekick#statusfetched
      * @returns {Sidekick} The sidekick
      */
-    async fetchStatus(callback) {
+    async fetchStatus() {
       const { owner, repo, ref } = this.config;
       if (!owner || !repo || !ref) {
         return this;
@@ -807,7 +806,6 @@
         .then((resp) => resp.json())
         .then((json) => Object.assign(this.status, json))
         .then((json) => fireEvent(this, 'statusfetched', json))
-        .then(() => (typeof callback === 'function' ? callback(this) : null))
         .catch((e) => console.error('failed to fetch status', e));
       return this;
     }
@@ -1350,54 +1348,47 @@
     window.hlx.sidekickScript = document.querySelector('script[src$="/sidekick/app.js"]');
     window.hlx.sidekickConfig = window.hlx.sidekickConfig || {};
     window.hlx.sidekickConfig.compatMode = true;
-    return window.hlx.initSidekick();
+    return initSidekick();
   }
 
   window.hlx = window.hlx || {};
-  if (!window.hlx.initSidekick) {
-    window.hlx.initSidekick = initSidekick;
-  }
-
-  if (!window.hlx.sidekickScript) {
+  window.hlx.initSidekick = initSidekick;
+  const appScript = document.getElementById('hlx-sk-app');
+  if (!appScript) {
     initSidekickCompatMode();
   } else {
     // get base config from script data attribute while
-    const baseConfig = window.hlx.sidekickScript
-      && window.hlx.sidekickScript.dataset.config
-      && JSON.parse(window.hlx.sidekickScript.dataset.config);
+    const baseConfig = appScript
+      && appScript.dataset.config
+      && JSON.parse(appScript.dataset.config);
     if (typeof baseConfig !== 'object') {
       initSidekickCompatMode();
     } else {
+      window.hlx.sidekickScript = appScript;
       // merge base config with potential pre-existing config
       window.hlx.sidekickConfig = Object.assign(
         window.hlx.sidekickConfig || {}, baseConfig,
       );
       // extract and validate base config
       const {
-        owner, repo, ref, devMode,
-      } = window.hlx.sidekickConfig;
-      if (!owner || !repo) {
-        console.error('error loading sidekick: missing mandatory config properties "owner" and "repo"');
+        owner, repo, ref = 'main', devMode,
+      } = baseConfig;
+      // look for extended config in project
+      const configOrigin = devMode ? DEV_URL.origin : `https://${ref}--${repo}--${owner}.hlx.page`;
+      const configScript = document.createElement('script');
+      configScript.id = 'hlx-sk-config';
+      configScript.src = `${configOrigin}/tools/sidekick/config.js`;
+      configScript.referrerpolicy = 'no-referrer';
+      configScript.addEventListener('error', () => {
+        // init sidekick without extended config
+        console.info(`no sidekick config found at ${configScript.src}`);
+        initSidekick();
+      });
+      // init sidekick via project config
+      if (document.getElementById(configScript.id)) {
+        document.getElementById(configScript.id).replaceWith(configScript);
       } else {
-        // look for extended config in project
-        const configOrigin = devMode ? DEV_URL.origin : `https://${ref}--${repo}--${owner}.hlx.page`;
-        const configScript = document.createElement('script');
-        configScript.id = 'hlx-sk-config';
-        configScript.src = `${configOrigin}/tools/sidekick/config.js`;
-        configScript.referrerpolicy = 'no-referrer';
-        configScript.addEventListener('error', () => {
-          // init sidekick without extended config
-          console.info(`no sidekick config found at ${window.hlx.configScript.src}`);
-          initSidekickCompatMode();
-        });
-        window.hlx.configScript = configScript;
-        // init sidekick via project config
-        if (document.head.querySelector(`script#${window.hlx.configScript.id}`)) {
-          document.head.querySelector(`script#${window.hlx.configScript.id}`)
-            .replaceWith(window.hlx.configScript);
-        } else {
-          document.head.append(window.hlx.configScript);
-        }
+        document.head.append(configScript);
       }
     }
   }
