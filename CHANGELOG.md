@@ -1,3 +1,10 @@
+## [3.2.1](https://github.com/adobe/helix-sidekick/compare/v3.2.0...v3.2.1) (2021-06-24)
+
+
+### Bug Fixes
+
+* return the sidekick ([#27](https://github.com/adobe/helix-sidekick/issues/27)) ([8b1249b](https://github.com/adobe/helix-sidekick/commit/8b1249bb51ef425fde0f3088c069a23b57b9f495))
+
 # [3.2.0](https://github.com/adobe/helix-sidekick/compare/v3.1.0...v3.2.0) (2021-06-21)
 
 
