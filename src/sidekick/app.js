@@ -788,6 +788,7 @@
         config: this.config,
         location: this.location,
       });
+      return this;
     }
 
     /**
