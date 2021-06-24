@@ -1376,8 +1376,8 @@
       const {
         owner, repo, ref, devMode,
       } = window.hlx.sidekickConfig;
-      if (!owner || !repo || !ref) {
-        // initSidekickCompatMode();
+      if (!owner || !repo) {
+        console.error('error loading sidekick: missing mandatory config properties "owner" and "repo"');
       } else {
         // look for extended config in project
         const configOrigin = devMode ? DEV_URL.origin : `https://${ref}--${repo}--${owner}.hlx.page`;
