@@ -237,7 +237,7 @@ describe('Test sidekick bookmarklet', () => {
     assert.strictEqual(zIndex, '9999999', 'Did not apply default CSS');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
-  it('Checks for missing Helix 3 flag in config', async () => {
+  it('Checks for missing hlx3 flag in config', async () => {
     await mockStandardResponses(page);
     await new Promise((resolve, reject) => {
       // wait for dialog
@@ -260,7 +260,7 @@ describe('Test sidekick bookmarklet', () => {
     });
   }).timeout(IT_DEFAULT_TIMEOUT);
 
-  it('Checks for Helix 3 config/URL mismatch', async () => {
+  it('Checks for hlx3 config/URL mismatch', async () => {
     await mockStandardResponses(page);
     await new Promise((resolve, reject) => {
       // wait for dialog
@@ -281,6 +281,13 @@ describe('Test sidekick bookmarklet', () => {
       page
         .goto(`${fixturesPrefix}/config-hlx3-wrong-url.html`, { waitUntil: 'load' });
     });
+  }).timeout(IT_DEFAULT_TIMEOUT);
+
+  it.only('Uses outerHost with branch in hlx3 mode', async () => {
+    await mockStandardResponses(page);
+    await page.goto(`${fixturesPrefix}/config-hlx3.html`, { waitUntil: 'load' });
+    const outerHost = await page.evaluate(() => window.hlx.sidekick.config.outerHost);
+    assert.strictEqual(outerHost, 'master--theblog--adobe.hlx.live', 'Did not use branch in outerHost');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Uses main branch by default', async () => {

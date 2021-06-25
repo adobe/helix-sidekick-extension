@@ -216,7 +216,11 @@
       innerHost = 'hlx.page';
     }
     innerHost = innerPrefix ? `${innerPrefix}.${innerHost}` : null;
-    const outerHost = publicHost && owner && repo ? `${repo}--${owner}.hlx.live` : null;
+    let outerHost = publicHost && owner && repo ? `${repo}--${owner}.hlx.live` : null;
+    if (outerHost && hlx3) {
+      // always use branch name in hlx3 outer CDN
+      outerHost = `${ref}--${outerHost}`;
+    }
     return {
       ...cfg,
       ref,
