@@ -1000,6 +1000,7 @@ describe('Test sidekick bookmarklet', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Development environment is correctly detected', async () => {
+    await mockStandardResponses(page);
     await page.goto(`${fixturesPrefix}/is-dev.html`, { waitUntil: 'load' });
     assert.ok(
       await page.evaluate(() => window.hlx.sidekick.isDev()),
@@ -1008,6 +1009,7 @@ describe('Test sidekick bookmarklet', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Preview environment is correctly detected', async () => {
+    await mockStandardResponses(page);
     await page.goto(`${fixturesPrefix}/publish-staging.html`, { waitUntil: 'load' });
     assert.ok(
       await page.evaluate(() => window.hlx.sidekick.isInner() && window.hlx.sidekick.isHelix()),
@@ -1024,6 +1026,7 @@ describe('Test sidekick bookmarklet', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Live environment is correctly detected', async () => {
+    await mockStandardResponses(page);
     await page.goto(`${fixturesPrefix}/is-live.html`, { waitUntil: 'load' });
     assert.ok(
       await page.evaluate(() => window.hlx.sidekick.isOuter() && window.hlx.sidekick.isHelix()),
@@ -1032,6 +1035,7 @@ describe('Test sidekick bookmarklet', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Production environment is correctly detected', async () => {
+    await mockStandardResponses(page);
     await page.goto(`${fixturesPrefix}/edit-production.html`, { waitUntil: 'load' });
     assert.ok(
       await page.evaluate(() => window.hlx.sidekick.isProd() && window.hlx.sidekick.isHelix()),
