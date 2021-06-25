@@ -399,12 +399,8 @@
   function getShareUrl(config, from) {
     const shareUrl = new URL('https://www.hlx.live/tools/sidekick/');
     shareUrl.search = new URLSearchParams([
-      ['project', config.project || ''],
-      ['host', config.host || ''],
-      ['byocdn', !!config.byocdn],
-      ['hlx3', !!config.hlx3],
       ['from', from || ''],
-      ['giturl', `https://github.com/${config.owner}/${config.repo}${config.ref ? `/tree/${config.ref}` : ''}`],
+      ['giturl', `https://github.com/${config.owner}/${config.repo}/tree/${config.ref}`],
     ]).toString();
     return shareUrl.toString();
   }
