@@ -283,7 +283,7 @@ describe('Test sidekick bookmarklet', () => {
     });
   }).timeout(IT_DEFAULT_TIMEOUT);
 
-  it.only('Uses outerHost with branch in hlx3 mode', async () => {
+  it('Uses outerHost with branch in hlx3 mode', async () => {
     await mockStandardResponses(page);
     await page.goto(`${fixturesPrefix}/config-hlx3.html`, { waitUntil: 'load' });
     const outerHost = await page.evaluate(() => window.hlx.sidekick.config.outerHost);
