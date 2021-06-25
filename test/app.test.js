@@ -18,7 +18,7 @@ const assert = require('assert');
 const puppeteer = require('puppeteer');
 
 const toResp = (resp) => ({
-  status: 200,
+  status: resp ? 200 : 404,
   // eslint-disable-next-line no-nested-ternary
   body: resp ? (/^[{[]/.test(resp) ? JSON.stringify(resp) : resp) : '',
 });
@@ -52,6 +52,7 @@ const apiMocks = {
   },
 };
 const purgeMock = [{ status: 'ok' }];
+const htmlMock = '<html></html>';
 
 describe('Test sidekick bookmarklet', () => {
   const IT_DEFAULT_TIMEOUT = 60000;
@@ -146,7 +147,8 @@ describe('Test sidekick bookmarklet', () => {
     return new Promise((resolve, reject) => {
       // watch for new browser window
       page.on('request', async (req) => {
-        if (req.url().endsWith('/tools/sidekick/plugins.js')) {
+        if (req.url().endsWith('/tools/sidekick/plugins.js')
+          || req.url().endsWith('/tools/sidekick/config.js')) {
           // send plugins response
           return req.respond(toResp());
         } else if (checkCondition(req)) {
@@ -161,6 +163,7 @@ describe('Test sidekick bookmarklet', () => {
               req.continue();
             } else {
               // send mock response
+              // console.log(req.url());
               const response = toResp(mockResponses[count] || '');
               count += 1;
               return req.respond(response);
@@ -232,6 +235,7 @@ describe('Test sidekick bookmarklet', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Renders with irrelevant config', async () => {
+    await mockStandardResponses(page);
     await page.goto(`${fixturesPrefix}/config-wrong.html`, { waitUntil: 'load' });
     const skHandle = await page.$('div.hlx-sk');
     assert.ok(skHandle, 'Did not render with irrelevant config');
@@ -291,14 +295,26 @@ describe('Test sidekick bookmarklet', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Uses main branch by default', async () => {
+    await mockStandardResponses(page);
     await page.goto(`${fixturesPrefix}/config-no-ref.html`, { waitUntil: 'load' });
     const ref = await page.evaluate(() => window.hlx.sidekick.config.ref);
     assert.strictEqual(ref, 'main', 'Did not use main branch');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Adds plugin from config', async () => {
-    await mockStandardResponses(page);
-    await page.goto(`${fixturesPrefix}/config-plugin.html`, { waitUntil: 'load' });
+    await mockStandardResponses(page, {
+      configJs: `
+        window.hlx.initSidekick({
+          plugins: [{
+            id: 'foo',
+            button: {
+              text: 'Foo',
+              action: () => {},
+            }
+          }],
+        });`,
+    });
+    await page.goto(`${fixturesPrefix}/config-default.html`, { waitUntil: 'load' });
     const plugins = await getPlugins(page);
     assert.ok(plugins.find((p) => p.id === 'foo'), 'Did not add plugin from config');
   }).timeout(IT_DEFAULT_TIMEOUT);
@@ -336,11 +352,11 @@ describe('Test sidekick bookmarklet', () => {
 
   it('Detects innerHost and outerHost from config', async () => {
     await mockStandardResponses(page);
-    await page.goto(`${fixturesPrefix}/config-plugin.html`, { waitUntil: 'load' });
+    await page.goto(`${fixturesPrefix}/config-default.html`, { waitUntil: 'load' });
     const config = await page.evaluate(() => window.hlx.sidekick.config);
     assert.strictEqual(
       config.innerHost,
-      'foo--theblog--adobe.hlx.page',
+      'master--theblog--adobe.hlx.page',
     );
     assert.strictEqual(
       config.outerHost,
@@ -349,13 +365,28 @@ describe('Test sidekick bookmarklet', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Adds plugins via API', async () => {
-    await page.goto(`${fixturesPrefix}/add-plugins.html`, { waitUntil: 'load' });
+    await page.goto(`${fixturesPrefix}/config-none.html`, { waitUntil: 'load' });
+    await page.evaluate(() => {
+      window.hlx.sidekick.add({
+        id: 'ding',
+        button: {
+          text: 'Ding',
+          action: () => {
+            window.hlx.sidekick.add({
+              id: 'baz',
+              button: {
+                text: 'Baz',
+              },
+            });
+          },
+        },
+      });
+    });
     let plugins = await getPlugins(page);
-    assert.ok(plugins.length, 6, 'Did not add plugins via API');
-
+    assert.ok(plugins.length, 1, 'Did not add plugins via API');
     await (await page.$('div.hlx-sk .ding button')).click();
     plugins = await getPlugins(page);
-    assert.ok(plugins.length, 7, 'Did not execute plugin action');
+    assert.ok(plugins.length, 2, 'Did not execute plugin action');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Loads config and plugins from project config', async () => {
@@ -379,20 +410,18 @@ describe('Test sidekick bookmarklet', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Loads config and plugins from development environment', async () => {
-    await mockStandardResponses(
-      page, {
-        configJs: `
-          window.hlx.initSidekick({
-            host: 'blog.adobe.com',
-            plugins: [{
-              id: 'bar',
-              button: {
-                text: 'Bar',
-              },
-            }],
-          });`,
-      },
-    );
+    await mockStandardResponses(page, {
+      configJs: `
+        window.hlx.initSidekick({
+          host: 'blog.adobe.com',
+          plugins: [{
+            id: 'bar',
+            button: {
+              text: 'Bar',
+            },
+          }],
+        });`,
+    });
     await page.goto(`${fixturesPrefix}/init-from-dev.html`, { waitUntil: 'load' });
     assert.ok((await getPlugins(page)).find((p) => p.id === 'bar'), 'Did not load plugins from project');
     assert.strictEqual(await page.evaluate(() => window.hlx.sidekick.config.host), 'blog.adobe.com', 'Did not load config from project');
@@ -409,7 +438,7 @@ describe('Test sidekick bookmarklet', () => {
         });
       `,
     });
-    await page.goto(`${fixturesPrefix}/config-plugin.html`, { waitUntil: 'load' });
+    await page.goto(`${fixturesPrefix}/config-default.html`, { waitUntil: 'load' });
     assert.ok((await getPlugins(page)).find((p) => p.id === 'bar'), 'Did not add plugins from project');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
@@ -425,13 +454,13 @@ describe('Test sidekick bookmarklet', () => {
         check: (req) => req.url().startsWith('http://localhost:3000'),
       },
     );
-    await page.goto(`${fixturesPrefix}/config-plugin-host.html`, { waitUntil: 'load' });
+    await page.goto(`${fixturesPrefix}/config-dev.html`, { waitUntil: 'load' });
     assert.ok((await getPlugins(page)).find((p) => p.id === 'bar'), 'Did not add plugins from fixed host');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Replaces plugin', async () => {
     await mockStandardResponses(page);
-    await page.goto(`${fixturesPrefix}/config-plugin.html`, { waitUntil: 'load' });
+    await page.goto(`${fixturesPrefix}/config-default.html`, { waitUntil: 'load' });
     await page.evaluate(() => {
       window.hlx.sidekick.add({
         id: 'edit',
@@ -451,28 +480,28 @@ describe('Test sidekick bookmarklet', () => {
 
   it('Extends plugin', async () => {
     await mockStandardResponses(page);
-    await page.goto(`${fixturesPrefix}/config-plugin.html`, { waitUntil: 'load' });
+    await page.goto(`${fixturesPrefix}/config-default.html`, { waitUntil: 'load' });
     await page.evaluate(() => {
       window.hlx.sidekick.add({
-        id: 'foo',
+        id: 'edit',
         button: {
-          text: 'ExtendFoo',
+          text: 'ExtendEdit',
           isPressed: true,
         },
       });
     });
     const plugins = await getPlugins(page);
-    const extendedPlugin = plugins.find((p) => p.id === 'foo' && p.text === 'ExtendFoo');
+    const extendedPlugin = plugins.find((p) => p.id === 'edit' && p.text === 'ExtendEdit');
     assert.ok(extendedPlugin, 'Did not extend plugin');
     assert.ok(extendedPlugin.buttonPressed, 'Extended plugin button not pressed');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Removes plugin', async () => {
     await mockStandardResponses(page);
-    await page.goto(`${fixturesPrefix}/config-plugin.html`, { waitUntil: 'load' });
-    await page.evaluate(() => window.hlx.sidekick.remove('foo'));
+    await page.goto(`${fixturesPrefix}/config-default.html`, { waitUntil: 'load' });
+    await page.evaluate(() => window.hlx.sidekick.remove('edit'));
     const plugins = await getPlugins(page);
-    assert.ok(!plugins.find((p) => p.id === 'foo'), 'Did not remove plugin');
+    assert.ok(!plugins.find((p) => p.id === 'edit'), 'Did not remove plugin');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Adds HTML element in plugin', async () => {
@@ -922,6 +951,8 @@ describe('Test sidekick bookmarklet', () => {
       mockResponses: [
         apiMock,
         apiMock,
+        htmlMock,
+        htmlMock,
       ],
       plugin: 'publish',
     });

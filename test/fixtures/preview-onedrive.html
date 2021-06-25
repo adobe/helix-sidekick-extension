@@ -5,15 +5,10 @@
   <body>
     <!-- open staging from gdrive URL -->
     <input type="hidden" id="sidekick_test_location" value="https://adobe.sharepoint.com/:w:/r/sites/TheBlog/_layouts/15/Doc.aspx?sourcedoc=%7BE8EC80CB-24C3-4B95-B082-C51FD8BC8760%7D&file=bla.docx&action=default&mobileredirect=true"/>
-    <script>
-      (window.hlx = window.hlx || {}).sidekickConfig = {
-        host: 'blog.adobe.com',
-        project: 'Adobe Blog',
-        owner: 'adobe',
-        repo: 'theblog',
-        ref: 'master',
-      };
-    </script>
-    <script src="../../src/sidekick/app.js"></script>
+    <script
+      id='hlx-sk-test'
+      src='./bookmarklet.js'
+      data-config='{"owner":"adobe","repo":"theblog","ref":"master"}'
+    ></script>
   </body>
 </html>

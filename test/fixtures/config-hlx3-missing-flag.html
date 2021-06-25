@@ -4,15 +4,10 @@
   </head>
   <body>
     <input type="hidden" id="sidekick_test_location" value="https://theblog--adobe.hlx3.page/en/topics/bla.html"/>
-    <script>
-      (window.hlx = window.hlx || {}).sidekickConfig = {
-        host: 'pages.adobe.com',
-        project: 'Adobe Landing Pages',
-        owner: 'adobe',
-        repo: 'pages',
-        ref: 'master',
-      };
-    </script>
-    <script src="../../src/sidekick/app.js"></script>
+    <script
+      id='hlx-sk-test'
+      src='./bookmarklet.js'
+      data-config='{"owner":"adobe","repo":"theblog"}'
+    ></script>
   </body>
 </html>
