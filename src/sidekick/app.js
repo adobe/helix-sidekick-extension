@@ -759,7 +759,7 @@
       if (this.config.plugins && Array.isArray(this.config.plugins)) {
         this.config.plugins.forEach((plugin) => this.add(plugin));
       }
-      if (this.config.compatMode
+      if ((this.config.compatMode || !this.config.plugins)
         && (this.isHelix() || this.isEditor())
         && (this.config.devMode || this.config.innerHost)) {
         // load custom plugins in compatibility mode
@@ -1373,22 +1373,24 @@
       const {
         owner, repo, ref = 'main', devMode,
       } = baseConfig;
-      // look for extended config in project
-      const configOrigin = devMode ? DEV_URL.origin : `https://${ref}--${repo}--${owner}.hlx.page`;
-      const configScript = document.createElement('script');
-      configScript.id = 'hlx-sk-config';
-      configScript.src = `${configOrigin}/tools/sidekick/config.js`;
-      configScript.referrerpolicy = 'no-referrer';
-      configScript.addEventListener('error', () => {
-        // init sidekick without extended config
-        console.info(`no sidekick config found at ${configScript.src}`);
-        initSidekick();
-      });
-      // init sidekick via project config
-      if (document.getElementById(configScript.id)) {
-        document.getElementById(configScript.id).replaceWith(configScript);
-      } else {
-        document.head.append(configScript);
+      if (owner && repo) {
+        // look for extended config in project
+        const configOrigin = devMode ? DEV_URL.origin : `https://${ref}--${repo}--${owner}.hlx.page`;
+        const configScript = document.createElement('script');
+        configScript.id = 'hlx-sk-config';
+        configScript.src = `${configOrigin}/tools/sidekick/config.js`;
+        configScript.referrerpolicy = 'no-referrer';
+        configScript.addEventListener('error', () => {
+          // init sidekick without extended config
+          console.info(`no sidekick config found at ${configScript.src}`);
+          initSidekick();
+        });
+        // init sidekick via project config
+        if (document.getElementById(configScript.id)) {
+          document.getElementById(configScript.id).replaceWith(configScript);
+        } else {
+          document.head.append(configScript);
+        }
       }
     }
   }
