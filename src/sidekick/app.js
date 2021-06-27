@@ -101,13 +101,6 @@
    */
 
   /**
-   * @external
-   * @name "window.hlx.configScript"
-   * @type {Element}
-   * @description The {@code script} element which loaded the custom sidekick configuration.
-   */
-
-  /**
    * @event Sidekick#shown
    * @type {Sidekick} The sidekick
    * @description This event is fired when the sidekick has been shown.
