@@ -512,9 +512,9 @@ before creating the [Sidekick](#Sidekick).
 | owner | <code>string</code> |  | The GitHub owner or organization (mandatory) |
 | repo | <code>string</code> |  | The GitHub owner or organization (mandatory) |
 | ref | <code>string</code> | <code>&quot;main&quot;</code> | The Git reference or branch (optional) |
+| project | <code>string</code> |  | The name of the Helix project used in the sharing link (optional) |
 | plugins | [<code>Array.&lt;plugin&gt;</code>](#plugin) |  | An array of plugin configurations (optional) |
-| host | <code>string</code> |  | The production host name (optional) |
-| project | <code>string</code> |  | The name of the Helix project (optional) |
+| host | <code>string</code> |  | The production host name to publish content to (optional) |
 | byocdn | <code>boolean</code> | <code>false</code> | <pre>true</pre> if the production host is a 3rd party CDN |
 | hlx3 | <code>boolean</code> | <code>false</code> | <pre>true</pre> if the project is running on Helix 3 |
 | devMode | <code>boolean</code> | <code>false</code> | Loads configuration and plugins from the developmemt environment |
