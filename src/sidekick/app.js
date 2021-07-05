@@ -440,7 +440,7 @@
     ];
     if (indicators.includes(true)) {
       window.setTimeout(() => {
-        if (window.confirm('Apologies, but you will have to update your Helix Sidekick Bookmarklet before continuing …\n\nWe promise it will be for the last time!')) {
+        if (window.confirm('Apologies, but you will have to update your Helix Sidekick Bookmarklet one last time …\n\nYes, this will be the last time, promised!')) {
           sk.showModal('Please wait …', true);
           window.location.href = getShareUrl(sk.config, sk.location.href);
         }
