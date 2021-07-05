@@ -72,10 +72,11 @@
    * @prop {string} owner   The GitHub owner or organization (mandatory)
    * @prop {string} repo    The GitHub owner or organization (mandatory)
    * @prop {string} ref=main The Git reference or branch (optional)
+   * @prop {plugin[]} plugins An array of plugin configurations (optional)
    * @prop {string} host    The production host name (optional)
    * @prop {string} project The name of the Helix project (optional)
-   * @prop {boolean} byocdn=false {@code true} if the production host is a 3rd party CDN
-   * @prop {boolean} hlx3=false {@code true} if the project is running on Helix 3
+   * @prop {boolean} byocdn=false <pre>true</pre> if the production host is a 3rd party CDN
+   * @prop {boolean} hlx3=false <pre>true</pre> if the project is running on Helix 3
    * @prop {boolean} devMode=false Loads configuration and plugins from the developmemt environment
    */
 
@@ -97,7 +98,7 @@
    * @external
    * @name "window.hlx.sidekickScript"
    * @type {Element}
-   * @description The {@code script} element which loaded the sidekick application.
+   * @description The <pre>script</pre> element which loaded the sidekick application.
    */
 
   /**
@@ -488,7 +489,7 @@
    * Determines whether to open a new tab or reuse the existing window.
    * @private
    * @param {Event} evt The event
-   * @returns {@code true} if a new tab should be opened, else {@code false}
+   * @returns <pre>true</pre> if a new tab should be opened, else <pre>false</pre>
    */
   function newTab(evt) {
     return evt.metaKey || evt.shiftKey || evt.which === 2;
@@ -1145,8 +1146,8 @@
     /**
      * Switches to (or opens) a given environment.
      * @param {string} targetEnv One of the following environments:
-     *        {@code edit}, {@code preview}, {@code live} or {@code prod}
-     * @param {boolean} open=false {@code true} if environment should be opened in new tab
+     *        <pre>edit</pre>, <pre>preview</pre>, <pre>live</pre> or <pre>prod</pre>
+     * @param {boolean} open=false <pre>true</pre> if environment should be opened in new tab
      * @fires Sidekick#envswitched
      * @returns {Sidekick} The sidekick
      */
@@ -1232,9 +1233,9 @@
     }
 
     /**
-     * Publishes the page at the specified path if {@code config.host} is defined.
+     * Publishes the page at the specified path if <pre>config.host</pre> is defined.
      * @param {string} path The path of the page to publish
-     * @param {boolean} innerOnly {@code true} to only refresh inner CDN, else {@code false}
+     * @param {boolean} innerOnly <pre>true</pre> to only refresh inner CDN, else <pre>false</pre>
      * @fires Sidekick#published
      * @return {publishResponse} The response object
      */

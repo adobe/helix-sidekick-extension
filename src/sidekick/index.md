@@ -8,8 +8,7 @@ id: form
 
 <label for="giturl">Repository URL:</label>
 <input id="giturl" placeholder="https://github.com/....">
-<label for="project">Project Name (optional): </label>
-<input id="project">
+<input type="hidden" id="project">
 <br>
 <button onclick="run()">Generate Bookmarklet</button>
 
@@ -17,12 +16,28 @@ id: form
 id: book
 style: display:none
 ---
+## Installation
 
 Drag the Helix logo below to your browser's bookmark bar, or <a href="#" onclick="copy()">copy</a> its <b>Link Address</b> to add the bookmarklet manually. <span id="update" style="display:none">Then you can safely delete the previous version of this bookmarklet.</span>
 
 <a id="bookmark" title="Sidekick" href="">
   <img src="./helix.svg" alt="Sidekick">
 </a>
+
+
+## Configuration
+
+To make the Sidekick Bookmarklet even better, additional configuration can be stored in your project's GitHub repository:
+1. Add `/tools/sidekick/config.js`
+2. Use the following call to initialize the Sidekick Bookmarklet with custom configuration:
+   ```
+   window.hlx.initSidekick({
+     project: 'My Project',
+     host: 'www.mydomain.prod',
+   });
+   ```
+3. For available options, see the [API documentation](https://github.com/adobe/helix-sidekick/blob/main/docs/API.md#windowhlxsidekickconfig--object).
+
 
 <style>
 

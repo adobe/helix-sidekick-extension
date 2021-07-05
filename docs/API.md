@@ -44,10 +44,7 @@ before creating the <a href="#Sidekick">Sidekick</a>.</p>
 <dd><p>The global variable referencing the <a href="#Sidekick">Sidekick</a> singleton.</p>
 </dd>
 <dt><a href="#external_window.hlx.sidekickScript">window.hlx.sidekickScript</a> : <code>Element</code></dt>
-<dd><p>The {@code script} element which loaded the sidekick application.</p>
-</dd>
-<dt><a href="#external_window.hlx.configScript">window.hlx.configScript</a> : <code>Element</code></dt>
-<dd><p>The {@code script} element which loaded the custom sidekick configuration.</p>
+<dd><p>The <pre>script</pre> element which loaded the sidekick application.</p>
 </dd>
 <dt><a href="#external_window.hlx.initSidekick">window.hlx.initSidekick</a> ⇒ <code><a href="#Sidekick">Sidekick</a></code></dt>
 <dd><p>Initializes the sidekick and stores a reference to it in
@@ -64,7 +61,7 @@ The sidekick provides helper tools for authors.
 
 * [Sidekick](#Sidekick)
     * [new Sidekick(cfg)](#new_Sidekick_new)
-    * [.fetchStatus(callback)](#Sidekick+fetchStatus) ⇒ [<code>Sidekick</code>](#Sidekick)
+    * [.fetchStatus()](#Sidekick+fetchStatus) ⇒ [<code>Sidekick</code>](#Sidekick)
     * [.loadContext(cfg)](#Sidekick+loadContext) ⇒ [<code>Sidekick</code>](#Sidekick)
     * [.show()](#Sidekick+show) ⇒ [<code>Sidekick</code>](#Sidekick)
     * [.hide()](#Sidekick+hide) ⇒ [<code>Sidekick</code>](#Sidekick)
@@ -109,17 +106,12 @@ Creates a new sidekick.
 
 <a name="Sidekick+fetchStatus"></a>
 
-### sidekick.fetchStatus(callback) ⇒ [<code>Sidekick</code>](#Sidekick)
+### sidekick.fetchStatus() ⇒ [<code>Sidekick</code>](#Sidekick)
 Fetches the status for the current resource.
 
 **Kind**: instance method of [<code>Sidekick</code>](#Sidekick)  
 **Returns**: [<code>Sidekick</code>](#Sidekick) - The sidekick  
 **Emits**: [<code>statusfetched</code>](#Sidekick+event_statusfetched)  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| callback | <code>function</code> | the callback function |
-
 <a name="Sidekick+loadContext"></a>
 
 ### sidekick.loadContext(cfg) ⇒ [<code>Sidekick</code>](#Sidekick)
@@ -294,8 +286,8 @@ Switches to (or opens) a given environment.
 
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
-| targetEnv | <code>string</code> |  | One of the following environments:        {@code edit}, {@code preview}, {@code live} or {@code prod} |
-| open | <code>boolean</code> | <code>false</code> | {@code true} if environment should be opened in new tab |
+| targetEnv | <code>string</code> |  | One of the following environments:        <pre>edit</pre>, <pre>preview</pre>, <pre>live</pre> or <pre>prod</pre> |
+| open | <code>boolean</code> | <code>false</code> | <pre>true</pre> if environment should be opened in new tab |
 
 <a name="Sidekick+reload"></a>
 
@@ -327,7 +319,7 @@ Updates the preview resource at the specified path.
 <a name="Sidekick+publish"></a>
 
 ### sidekick.publish(path, innerOnly) ⇒ [<code>publishResponse</code>](#publishResponse)
-Publishes the page at the specified path if {@code config.host} is defined.
+Publishes the page at the specified path if <pre>config.host</pre> is defined.
 
 **Kind**: instance method of [<code>Sidekick</code>](#Sidekick)  
 **Returns**: [<code>publishResponse</code>](#publishResponse) - The response object  
@@ -336,7 +328,7 @@ Publishes the page at the specified path if {@code config.host} is defined.
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
 | path | <code>string</code> |  | The path of the page to publish |
-| innerOnly | <code>boolean</code> | <code>false</code> | {@code true} to only refresh inner CDN, else {@code false} |
+| innerOnly | <code>boolean</code> | <code>false</code> | <pre>true</pre> to only refresh inner CDN, else <pre>false</pre> |
 
 <a name="Sidekick+addEventListener"></a>
 
@@ -520,10 +512,12 @@ before creating the [Sidekick](#Sidekick).
 | owner | <code>string</code> |  | The GitHub owner or organization (mandatory) |
 | repo | <code>string</code> |  | The GitHub owner or organization (mandatory) |
 | ref | <code>string</code> | <code>&quot;main&quot;</code> | The Git reference or branch (optional) |
+| plugins | [<code>Array.&lt;plugin&gt;</code>](#plugin) |  | An array of plugin configurations (optional) |
 | host | <code>string</code> |  | The production host name (optional) |
 | project | <code>string</code> |  | The name of the Helix project (optional) |
-| byocdn | <code>boolean</code> | <code>false</code> | {@code true} if the production host is a 3rd party CDN (optional) |
-| hlx3 | <code>boolean</code> | <code>false</code> | {@code true} if the project is running on Helix 3 (optional) |
+| byocdn | <code>boolean</code> | <code>false</code> | <pre>true</pre> if the production host is a 3rd party CDN |
+| hlx3 | <code>boolean</code> | <code>false</code> | <pre>true</pre> if the project is running on Helix 3 |
+| devMode | <code>boolean</code> | <code>false</code> | Loads configuration and plugins from the developmemt environment |
 
 <a name="external_window.hlx.sidekickConfig"></a>
 
@@ -540,13 +534,7 @@ The global variable referencing the [Sidekick](#Sidekick) singleton.
 <a name="external_window.hlx.sidekickScript"></a>
 
 ## window.hlx.sidekickScript : <code>Element</code>
-The {@code script} element which loaded the sidekick application.
-
-**Kind**: global external  
-<a name="external_window.hlx.configScript"></a>
-
-## window.hlx.configScript : <code>Element</code>
-The {@code script} element which loaded the custom sidekick configuration.
+The <pre>script</pre> element which loaded the sidekick application.
 
 **Kind**: global external  
 <a name="external_window.hlx.initSidekick"></a>
