@@ -324,7 +324,7 @@ describe('Test sidekick bookmarklet', () => {
     await new Promise((resolve, reject) => {
       page.on('dialog', (dialog) => {
         try {
-          assert.ok(dialog.message().startsWith('Good news!'), 'Did not show update dialog');
+          assert.ok(dialog.message().startsWith('Apologies'), 'Did not show update dialog');
           resolve();
         } catch (e) {
           reject(e);
@@ -339,7 +339,7 @@ describe('Test sidekick bookmarklet', () => {
     await new Promise((resolve, reject) => {
       page.on('dialog', (dialog) => {
         try {
-          assert.ok(dialog.message().startsWith('Good news!'), 'Did not show update dialog');
+          assert.ok(dialog.message().startsWith('Apologies'), 'Did not show update dialog');
           resolve();
         } catch (e) {
           reject(e);
