@@ -69,12 +69,12 @@
    * @typedef {Object} sidekickConfig
    * @description The sidekick configuration.
    * before creating the {@link Sidekick}.
-   * @prop {string} owner   The GitHub owner or organization (mandatory)
-   * @prop {string} repo    The GitHub owner or organization (mandatory)
+   * @prop {string} owner The GitHub owner or organization (mandatory)
+   * @prop {string} repo The GitHub owner or organization (mandatory)
    * @prop {string} ref=main The Git reference or branch (optional)
+   * @prop {string} project The name of the Helix project used in the sharing link (optional)
    * @prop {plugin[]} plugins An array of plugin configurations (optional)
-   * @prop {string} host    The production host name (optional)
-   * @prop {string} project The name of the Helix project (optional)
+   * @prop {string} host The production host name to publish content to (optional)
    * @prop {boolean} byocdn=false <pre>true</pre> if the production host is a 3rd party CDN
    * @prop {boolean} hlx3=false <pre>true</pre> if the project is running on Helix 3
    * @prop {boolean} devMode=false Loads configuration and plugins from the developmemt environment
@@ -247,7 +247,7 @@
       purgeHost: innerHost, // backward compatibility
       scriptUrl,
       host: publicHost,
-      project: project || 'your Helix Pages project',
+      project: project || '',
       hlx3,
     };
   }
