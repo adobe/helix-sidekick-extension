@@ -57,15 +57,6 @@
    */
 
   /**
-   * @typedef {Object} publishResponse
-   * @description The response object for a publish action.
-   * @prop {boolean} ok     True if publish action was successful, else false
-   * @prop {string}  status The status text returned by the publish action
-   * @prop {Object}  json   The JSON object returned by the publish action
-   * @prop {string}  path   The path of the published page
-   */
-
-  /**
    * @typedef {Object} sidekickConfig
    * @description The sidekick configuration.
    * before creating the {@link Sidekick}.
@@ -1231,6 +1222,15 @@
         path,
       };
     }
+
+    /**
+     * @typedef {Object} publishResponse
+     * @description The response object for a publish action.
+     * @prop {boolean} ok     True if publish action was successful, else false
+     * @prop {string}  status The status text returned by the publish action
+     * @prop {Object}  json   The JSON object returned by the publish action
+     * @prop {string}  path   The path of the published page
+     */
 
     /**
      * Publishes the page at the specified path if <pre>config.host</pre> is defined.

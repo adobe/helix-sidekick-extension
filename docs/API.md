@@ -25,12 +25,12 @@ a shorthand for <a href="#elemConfig">elemConfig</a>.</p>
 <dt><a href="#plugin">plugin</a> : <code>Object</code></dt>
 <dd><p>The plugin configuration.</p>
 </dd>
-<dt><a href="#publishResponse">publishResponse</a> : <code>Object</code></dt>
-<dd><p>The response object for a publish action.</p>
-</dd>
 <dt><a href="#sidekickConfig">sidekickConfig</a> : <code>Object</code></dt>
 <dd><p>The sidekick configuration.
 before creating the <a href="#Sidekick">Sidekick</a>.</p>
+</dd>
+<dt><a href="#publishResponse">publishResponse</a> : <code>Object</code></dt>
+<dd><p>The response object for a publish action.</p>
 </dd>
 </dl>
 
@@ -483,21 +483,6 @@ The plugin configuration.
 | condition | <code>function</code> |  | Determines whether to show this plugin (optional). This function is expected to return a boolean when called with the sidekick as argument. |
 | callback | <code>function</code> |  | A function called after adding the plugin (optional). This function is called with the sidekick and the newly added plugin as arguments. |
 
-<a name="publishResponse"></a>
-
-## publishResponse : <code>Object</code>
-The response object for a publish action.
-
-**Kind**: global typedef  
-**Properties**
-
-| Name | Type | Description |
-| --- | --- | --- |
-| ok | <code>boolean</code> | True if publish action was successful, else false |
-| status | <code>string</code> | The status text returned by the publish action |
-| json | <code>Object</code> | The JSON object returned by the publish action |
-| path | <code>string</code> | The path of the published page |
-
 <a name="sidekickConfig"></a>
 
 ## sidekickConfig : <code>Object</code>
@@ -518,6 +503,21 @@ before creating the [Sidekick](#Sidekick).
 | byocdn | <code>boolean</code> | <code>false</code> | <pre>true</pre> if the production host is a 3rd party CDN |
 | hlx3 | <code>boolean</code> | <code>false</code> | <pre>true</pre> if the project is running on Helix 3 |
 | devMode | <code>boolean</code> | <code>false</code> | Loads configuration and plugins from the developmemt environment |
+
+<a name="publishResponse"></a>
+
+## publishResponse : <code>Object</code>
+The response object for a publish action.
+
+**Kind**: global typedef  
+**Properties**
+
+| Name | Type | Description |
+| --- | --- | --- |
+| ok | <code>boolean</code> | True if publish action was successful, else false |
+| status | <code>string</code> | The status text returned by the publish action |
+| json | <code>Object</code> | The JSON object returned by the publish action |
+| path | <code>string</code> | The path of the published page |
 
 <a name="external_window.hlx.sidekickConfig"></a>
 

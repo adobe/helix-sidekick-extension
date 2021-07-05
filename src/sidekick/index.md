@@ -28,16 +28,16 @@ Drag the Helix logo below to your browser's bookmark bar, or <a href="#" onclick
 
 ## Configuration
 
-To make the Sidekick Bookmarklet even better, additional configuration can be stored in your project's GitHub repository:
-1. Add `/tools/sidekick/config.js`
-2. Use the following call to initialize the Sidekick Bookmarklet with custom configuration:
-   ```
+To customize the Sidekick Bookmarklet to your project, additional configuration can be stored in your project's GitHub repository:
+1. Add the file `/tools/sidekick/config.js`
+2. In there, use the following call to initialize the Sidekick Bookmarklet with your custom configuration:
+   ```js
    window.hlx.initSidekick({
      project: 'My Project',
      host: 'www.mydomain.prod',
    });
    ```
-3. For available options, see the [API documentation](https://github.com/adobe/helix-sidekick/blob/main/docs/API.md#windowhlxsidekickconfig--object).
+3. For available configuration options, see the [API documentation](https://github.com/adobe/helix-sidekick/blob/main/docs/API.md#windowhlxsidekickconfig--object).
 
 
 <style>
