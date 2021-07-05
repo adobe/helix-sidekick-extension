@@ -440,7 +440,7 @@
     ];
     if (indicators.includes(true)) {
       window.setTimeout(() => {
-        if (window.confirm('Apologies, but we need you to update your Helix Sidekick Bookmarklet before you can continue …\n\nLast time, promised!')) {
+        if (window.confirm('Apologies, but you will need to update your Helix Sidekick Bookmarklet before continuing …\n\nFor the last time, promised!')) {
           sk.showModal('Please wait …', true);
           window.location.href = getShareUrl(sk.config, sk.location.href);
         }
@@ -515,22 +515,11 @@
    * @param {Sidekick} sk The sidekick
    */
   async function checkForHelix3(sk) {
-    // check if sidekick config needs to be updated to hlx3
-    if (!sk.config.hlx3 && sk.location.hostname.endsWith('hlx3.page')) {
-      window.setTimeout(() => {
-        if (window.confirm('This Helix Sidekick Bookmarklet is unable to deal with a Helix 3 site.\n\nPress OK to install one for Helix 3 now.')) {
-          sk.showModal('Please wait …', true);
-          // set hlx3 flag temporarily
-          sk.config.hlx3 = true;
-          window.location.href = getShareUrl(sk.config, sk.location.href);
-        }
-      }, 1000);
-    }
     // check if current inner cdn url is hlx3 url
     if (sk.config.hlx3
       && sk.location.hostname.endsWith('.page')
       && !sk.location.hostname.endsWith('hlx3.page')) {
-      if (window.confirm('This Helix Sidekick Bookmarklet can only work on a Helix 3 site.\n\nPress OK to be taken to the Helix 3 version of this page now.')) {
+      if (window.confirm('You are trying to use a Helix 3 sidekick on a legacy URL.\n\nPress OK to be taken to the Helix 3 version of this page now.')) {
         sk.switchEnv('preview');
       }
     }
