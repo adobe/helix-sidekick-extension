@@ -749,7 +749,7 @@
       if (this.config.plugins && Array.isArray(this.config.plugins)) {
         this.config.plugins.forEach((plugin) => this.add(plugin));
       }
-      if ((this.config.compatMode || !this.config.plugins)
+      if (this.config.compatMode
         && (this.isHelix() || this.isEditor())
         && (this.config.devMode || this.config.innerHost)) {
         // load custom plugins in compatibility mode

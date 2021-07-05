@@ -438,24 +438,8 @@ describe('Test sidekick bookmarklet', () => {
         });
       `,
     });
-    await page.goto(`${fixturesPrefix}/config-default.html`, { waitUntil: 'load' });
+    await page.goto(`${fixturesPrefix}/config-compatibility.html`, { waitUntil: 'load' });
     assert.ok((await getPlugins(page)).find((p) => p.id === 'bar'), 'Did not add plugins from project');
-  }).timeout(IT_DEFAULT_TIMEOUT);
-
-  it('Adds plugins from development environment (compatibility mode)', async () => {
-    await mockStandardResponses(
-      page, {
-        pluginsJs: `window.hlx.sidekick.add({
-          id: 'bar',
-          button: {
-            text: 'Bar',
-          },
-        });`,
-        check: (req) => req.url().startsWith('http://localhost:3000'),
-      },
-    );
-    await page.goto(`${fixturesPrefix}/config-dev.html`, { waitUntil: 'load' });
-    assert.ok((await getPlugins(page)).find((p) => p.id === 'bar'), 'Did not add plugins from fixed host');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Replaces plugin', async () => {
