@@ -440,7 +440,7 @@
     ];
     if (indicators.includes(true)) {
       window.setTimeout(() => {
-        if (window.confirm('Apologies, but you will need to update your Helix Sidekick Bookmarklet before continuing …\n\nFor the last time, promised!')) {
+        if (window.confirm('Apologies, but you will have to update your Helix Sidekick Bookmarklet before continuing …\n\nWe promise it will be for the last time!')) {
           sk.showModal('Please wait …', true);
           window.location.href = getShareUrl(sk.config, sk.location.href);
         }
@@ -519,7 +519,7 @@
     if (sk.config.hlx3
       && sk.location.hostname.endsWith('.page')
       && !sk.location.hostname.endsWith('hlx3.page')) {
-      if (window.confirm('You are trying to use a Helix 3 sidekick on a legacy URL.\n\nPress OK to be taken to the Helix 3 version of this page now.')) {
+      if (window.confirm('This Helix Sidekick Bookmarklet can only work on a Helix 3 site.\n\nPress OK to be taken to the Helix 3 version of this page now.')) {
         sk.switchEnv('preview');
       }
     }

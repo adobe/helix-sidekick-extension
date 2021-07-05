@@ -248,29 +248,6 @@ describe('Test sidekick bookmarklet', () => {
     assert.strictEqual(zIndex, '9999999', 'Did not apply default CSS');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
-  it('Checks for missing hlx3 flag in config', async () => {
-    await mockStandardResponses(page);
-    await new Promise((resolve, reject) => {
-      // wait for dialog
-      page.on('dialog', async (dialog) => {
-        if (dialog.type() === 'confirm') {
-          try {
-            assert.ok(
-              dialog.message().includes('unable to deal with a Helix 3 site'),
-              `Unexpected dialog message: "${dialog.message()}"`,
-            );
-            resolve();
-          } catch (e) {
-            reject(e);
-          }
-        }
-      });
-      // open test page and click preview button
-      page
-        .goto(`${fixturesPrefix}/config-hlx3-missing-flag.html`, { waitUntil: 'load' });
-    });
-  }).timeout(IT_DEFAULT_TIMEOUT);
-
   it('Checks for hlx3 config/URL mismatch', async () => {
     await mockStandardResponses(page);
     await new Promise((resolve, reject) => {
