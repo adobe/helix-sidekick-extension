@@ -168,6 +168,17 @@
   const DEV_URL = new URL('http://localhost:3000');
 
   /**
+   * Checks if the current location is an editor URL (SharePoint or Google Docs).
+   * @private
+   * @param {Location} loc The location object
+   * @returns {boolean} <code>true</code> if editor URL, else <code>false</code>
+   */
+  function isEditor(loc) {
+    return /.*\.sharepoint\.com/.test(loc.host)
+    || loc.host === 'docs.google.com';
+  }
+
+  /**
    * Returns a hash code for the specified string.
    * Source: http://werxltd.com/wp/2010/05/13/javascript-implementation-of-javas-string-hashcode-method/
    * @param {*} str The source string
@@ -960,8 +971,7 @@
      * @returns {boolean} <code>true</code> if editor URL, else <code>false</code>
      */
     isEditor() {
-      return /.*\.sharepoint\.com/.test(this.location.host)
-        || this.location.host === 'docs.google.com';
+      return isEditor(this.location);
     }
 
     /**
@@ -1360,7 +1370,12 @@
       } = baseConfig;
       if (owner && repo) {
         // look for extended config in project
-        const configOrigin = devMode ? DEV_URL.origin : `https://${ref}--${repo}--${owner}.hlx.page`;
+        let configOrigin = '';
+        if (devMode) {
+          configOrigin = DEV_URL.origin;
+        } else if (isEditor(window.location)) {
+          configOrigin = `https://${ref}--${repo}--${owner}.hlx.page`;
+        }
         const configScript = document.createElement('script');
         configScript.id = 'hlx-sk-config';
         configScript.src = `${configOrigin}/tools/sidekick/config.js`;
