@@ -1,3 +1,10 @@
+## [3.3.1](https://github.com/adobe/helix-sidekick/compare/v3.3.0...v3.3.1) (2021-07-06)
+
+
+### Bug Fixes
+
+* cors error while loading config.js ([43f2812](https://github.com/adobe/helix-sidekick/commit/43f281238fa177ccd174a4eb45b71ff5a30aac3e))
+
 # [3.3.0](https://github.com/adobe/helix-sidekick/compare/v3.2.1...v3.3.0) (2021-07-06)
 
 
