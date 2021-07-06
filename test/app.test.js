@@ -1000,6 +1000,14 @@ describe('Test sidekick bookmarklet', () => {
       await page.evaluate(() => window.hlx.sidekick.isOuter() && window.hlx.sidekick.isHelix()),
       'Did not detect live URL',
     );
+    // check with ref
+    await page.evaluate(() => {
+      window.hlx.sidekick.location.host = 'master--theblog--adobe.hlx.live';
+    });
+    assert.ok(
+      await page.evaluate(() => window.hlx.sidekick.isOuter()),
+      'Did not detect live URL with ref',
+    );
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Production environment is correctly detected', async () => {

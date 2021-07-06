@@ -179,6 +179,23 @@
   }
 
   /**
+   * Checks if a Helix host name matches another, regardless of ref.
+   * @private
+   * @param {string} baseHost The base host
+   * @param {string} host The host to match against the base host
+   * @returns {boolean} <code>true</code> if the hosts match, else <code>false</code>
+   */
+  function matchHelixHost(baseHost, host) {
+    if (!baseHost || !host) {
+      return false;
+    }
+    const compHost = (host.split('--').length === 3)
+      ? host.substring(host.indexOf('--') + 2)
+      : host;
+    return baseHost === compHost || baseHost.endsWith(compHost);
+  }
+
+  /**
    * Returns a hash code for the specified string.
    * Source: http://werxltd.com/wp/2010/05/13/javascript-implementation-of-javas-string-hashcode-method/
    * @param {*} str The source string
@@ -992,12 +1009,7 @@
      */
     isInner() {
       const { config, location } = this;
-      const hasRef = location.host.split('--').length === 3;
-      return config.innerHost === location.host
-        // match without ref
-        || (!hasRef && config.innerHost.endsWith(location.host))
-        // match with any ref
-        || (hasRef && config.innerHost.endsWith(location.host.substring(location.host.indexOf('--') + 2)));
+      return matchHelixHost(config.innerHost, location.host);
     }
 
     /**
@@ -1006,7 +1018,7 @@
      */
     isOuter() {
       const { config, location } = this;
-      return config.outerHost === location.host;
+      return matchHelixHost(config.outerHost, location.host);
     }
 
     /**
