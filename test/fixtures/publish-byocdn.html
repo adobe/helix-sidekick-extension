@@ -5,14 +5,10 @@
   <body>
     <!-- publish from staging URL -->
     <input type="hidden" id="sidekick_test_location" value="https://foo.bar.com/baz"/>
-    <script>
-      (window.hlx = window.hlx || {}).sidekickConfig = {
-        host: 'foo.bar.com',
-        owner: 'bar',
-        repo: 'foo',
-        byocdn: true,
-      };
-    </script>
-    <script src="../../src/sidekick/app.js"></script>
+    <script
+      id='hlx-sk-test'
+      src='./bookmarklet.js'
+      data-config='{"owner":"foo","repo":"bar","host":"foo.bar.com","byocdn":true}'
+    ></script>
   </body>
 </html>

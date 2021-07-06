@@ -5,15 +5,10 @@
   <body>
     <!-- publish from staging URL -->
     <input type="hidden" id="sidekick_test_location" value="https://main--theblog--adobe.hlx3.page/en/topics/bla.html"/>
-    <script>
-      (window.hlx = window.hlx || {}).sidekickConfig = {
-        host: 'blog.adobe.com',
-        project: 'Adobe Blog',
-        owner: 'adobe',
-        repo: 'theblog',
-        hlx3: true,
-      };
-    </script>
-    <script src="../../src/sidekick/app.js"></script>
+    <script
+      id='hlx-sk-test'
+      src='./bookmarklet.js'
+      data-config='{"owner":"adobe","repo":"theblog","ref":"main","host":"blog.adobe.com","hlx3":true}'
+    ></script>
   </body>
 </html>

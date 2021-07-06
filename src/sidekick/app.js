@@ -57,26 +57,25 @@
    */
 
   /**
-   * @external
-   * @name "window.hlx.sidekickConfig"
-   * @type {Object}
-   * @description The sidekick configuration needs to be defined in this global variable
+   * @typedef {Object} sidekickConfig
+   * @description The sidekick configuration.
    * before creating the {@link Sidekick}.
-   * @prop {string} owner   The GitHub owner or organization (mandatory)
-   * @prop {string} repo    The GitHub owner or organization (mandatory)
+   * @prop {string} owner The GitHub owner or organization (mandatory)
+   * @prop {string} repo The GitHub owner or organization (mandatory)
    * @prop {string} ref=main The Git reference or branch (optional)
-   * @prop {string} host    The production host name (optional)
-   * @prop {string} byocdn=false {@code true} if the production host is a 3rd party CDN (optional)
-   * @prop {string} project The name of the Helix project (optional)
+   * @prop {string} project The name of the Helix project used in the sharing link (optional)
+   * @prop {plugin[]} plugins An array of plugin configurations (optional)
+   * @prop {string} host The production host name to publish content to (optional)
+   * @prop {boolean} byocdn=false <pre>true</pre> if the production host is a 3rd party CDN
+   * @prop {boolean} hlx3=false <pre>true</pre> if the project is running on Helix 3
+   * @prop {boolean} devMode=false Loads configuration and plugins from the developmemt environment
    */
 
   /**
-   * @typedef {Object} publishResponse
-   * @description The response object for a publish action.
-   * @prop {boolean} ok     True if publish action was successful, else false
-   * @prop {string}  status The status text returned by the publish action
-   * @prop {Object}  json   The JSON object returned by the publish action
-   * @prop {string}  path   The path of the published page
+   * @external
+   * @name "window.hlx.sidekickConfig"
+   * @type {sidekickConfig}
+   * @description The global variable holding the initial sidekick configuration.
    */
 
   /**
@@ -84,6 +83,13 @@
    * @name "window.hlx.sidekick"
    * @type {Sidekick}
    * @description The global variable referencing the {@link Sidekick} singleton.
+   */
+
+  /**
+   * @external
+   * @name "window.hlx.sidekickScript"
+   * @type {Element}
+   * @description The <pre>script</pre> element which loaded the sidekick application.
    */
 
   /**
@@ -144,6 +150,7 @@
    * Mapping between the plugin IDs that will be treated as environments
    * and their corresponding host properties in the config.
    * @private
+   * @type {Object}
    */
   const ENVS = {
     edit: 'editor',
@@ -151,6 +158,14 @@
     live: 'outerHost',
     prod: 'host',
   };
+
+  /**
+   * The URL of the development environment.
+   * @see {@link https://github.com/adobe/helix-cli|Helix CLI}).
+   * @private
+   * @type {URL}
+   */
+  const DEV_URL = new URL('http://localhost:3000');
 
   /**
    * Returns a hash code for the specified string.
@@ -174,14 +189,13 @@
   }
 
   /**
-   * Returns the sidekick configuration based on {@link window.hlx.sidekickConfig}.
+   * Returns the sidekick configuration.
    * @private
+   * @param {sidekickConfig} cfg The sidekick config (defaults to {@link window.hlx.sidekickConfig})
    * @returns {Object} The sidekick configuration
    */
-  function initConfig() {
-    const cfg = (window.hlx && window.hlx.sidekickConfig
-      ? window.hlx.sidekickConfig
-      : window.hlxSidekickConfig) || {};
+  function initConfig(cfg) {
+    const config = cfg || (window.hlx && window.hlx.sidekickConfig) || {};
     const {
       owner,
       repo,
@@ -190,11 +204,10 @@
       project,
       // if hlx3 flag unset, check for known hlx3 repos
       hlx3 = [974752171, -1149574338].includes(hashCode(repo)),
-    } = cfg;
+    } = config;
     const innerPrefix = owner && repo ? `${ref}--${repo}--${owner}` : null;
     const publicHost = host && host.startsWith('http') ? new URL(host).host : host;
-    const script = document.querySelector('script[src$="/sidekick/app.js"]');
-    const scriptUrl = script && script.src;
+    const scriptUrl = window.hlx.sidekickScript && window.hlx.sidekickScript.src;
     let innerHost;
     if (hlx3) {
       innerHost = 'hlx3.page';
@@ -202,7 +215,7 @@
     if (!innerHost && scriptUrl) {
       // get hlx domain from script src (used for branch deployment testing)
       const scriptHost = new URL(scriptUrl).host;
-      if (scriptHost && scriptHost !== 'www.hlx.live' && !scriptHost.startsWith('localhost')) {
+      if (scriptHost && scriptHost !== 'www.hlx.live' && !scriptHost.startsWith(DEV_URL.host)) {
         // keep only 1st and 2nd level domain
         innerHost = scriptHost.split('.')
           .reverse()
@@ -216,7 +229,11 @@
       innerHost = 'hlx.page';
     }
     innerHost = innerPrefix ? `${innerPrefix}.${innerHost}` : null;
-    const outerHost = publicHost && owner && repo ? `${repo}--${owner}.hlx.live` : null;
+    let outerHost = publicHost && owner && repo ? `${repo}--${owner}.hlx.live` : null;
+    if (outerHost && hlx3) {
+      // always use branch name in hlx3 outer CDN
+      outerHost = `${ref}--${outerHost}`;
+    }
     return {
       ...cfg,
       ref,
@@ -225,7 +242,7 @@
       purgeHost: innerHost, // backward compatibility
       scriptUrl,
       host: publicHost,
-      project: project || 'your Helix Pages project',
+      project: project || '',
       hlx3,
     };
   }
@@ -372,11 +389,8 @@
     const shareUrl = new URL('https://www.hlx.live/tools/sidekick/');
     shareUrl.search = new URLSearchParams([
       ['project', config.project || ''],
-      ['host', config.host || ''],
-      ['byocdn', !!config.byocdn],
-      ['hlx3', !!config.hlx3],
       ['from', from || ''],
-      ['giturl', `https://github.com/${config.owner}/${config.repo}${config.ref ? `/tree/${config.ref}` : ''}`],
+      ['giturl', `https://github.com/${config.owner}/${config.repo}/tree/${config.ref}`],
     ]).toString();
     return shareUrl.toString();
   }
@@ -418,7 +432,7 @@
     }
     const indicators = [
       // legacy config
-      typeof window.hlxSidekickConfig === 'object',
+      typeof window.hlxSidekickConfig === 'object' || sk.config.compatMode,
       // legacy script host
       !sk.config.scriptUrl || new URL(sk.config.scriptUrl).host === 'www.hlx.page',
       // update flag
@@ -426,7 +440,7 @@
     ];
     if (indicators.includes(true)) {
       window.setTimeout(() => {
-        if (window.confirm('Good news! There is a newer version of the Helix Sidekick Bookmarklet available!\n\nDo you want to install it now? It will only take a minute …')) {
+        if (window.confirm('Apologies, but it is time to update your Helix Sidekick Bookmarklet one more time …\n\nThis time we made sure we will never have to ask you again. Promised! :)')) {
           sk.showModal('Please wait …', true);
           window.location.href = getShareUrl(sk.config, sk.location.href);
         }
@@ -470,7 +484,7 @@
    * Determines whether to open a new tab or reuse the existing window.
    * @private
    * @param {Event} evt The event
-   * @returns {@code true} if a new tab should be opened, else {@code false}
+   * @returns <pre>true</pre> if a new tab should be opened, else <pre>false</pre>
    */
   function newTab(evt) {
     return evt.metaKey || evt.shiftKey || evt.which === 2;
@@ -501,17 +515,6 @@
    * @param {Sidekick} sk The sidekick
    */
   async function checkForHelix3(sk) {
-    // check if sidekick config needs to be updated to hlx3
-    if (!sk.config.hlx3 && sk.location.hostname.endsWith('hlx3.page')) {
-      window.setTimeout(() => {
-        if (window.confirm('This Helix Sidekick Bookmarklet is unable to deal with a Helix 3 site.\n\nPress OK to install one for Helix 3 now.')) {
-          sk.showModal('Please wait …', true);
-          // set hlx3 flag temporarily
-          sk.config.hlx3 = true;
-          window.location.href = getShareUrl(sk.config, sk.location.href);
-        }
-      }, 1000);
-    }
     // check if current inner cdn url is hlx3 url
     if (sk.config.hlx3
       && sk.location.hostname.endsWith('.page')
@@ -678,10 +681,10 @@
    */
   class Sidekick {
     /**
-     * Creates a new sidekick based on a configuration object in
-     * {@link window.hlx.sidekickConfig}.
+     * Creates a new sidekick.
+     * @param {sidekickConfig} cfg The sidekick config
      */
-    constructor() {
+    constructor(cfg) {
       this.root = appendTag(document.body, {
         tag: 'div',
         attrs: {
@@ -692,7 +695,7 @@
         },
       });
       this.status = {};
-      this.loadContext();
+      this.loadContext(cfg);
       this.fetchStatus();
       this.loadCSS();
       // share button
@@ -731,9 +734,18 @@
       if (this.config.plugins && Array.isArray(this.config.plugins)) {
         this.config.plugins.forEach((plugin) => this.add(plugin));
       }
-      if ((this.isHelix() || this.isEditor())
-        && (this.config.pluginHost || this.config.innerHost)) {
-        const prefix = this.config.pluginHost || (this.isEditor() ? `https://${this.config.innerHost}` : '');
+      if (this.config.compatMode
+        && (this.isHelix() || this.isEditor())
+        && (this.config.devMode || this.config.innerHost)) {
+        // load custom plugins in compatibility mode
+        let prefix = (this.isEditor() ? `https://${this.config.innerHost}` : '');
+        if (this.config.devMode || this.config.pluginHost) {
+          // TODO: remove support for pluginHost
+          if (this.config.pluginHost) {
+            console.warn('pluginHost is deprecated, use devMode instead');
+          }
+          prefix = this.config.pluginHost || DEV_URL.origin;
+        }
         appendTag(document.head, {
           tag: 'script',
           attrs: {
@@ -741,17 +753,16 @@
           },
         });
       }
-      checkForUpdates(this);
       checkForHelix3(this);
+      checkForUpdates(this);
     }
 
     /**
      * Fetches the status for the current resource.
-     * @param {Function} callback the callback function
      * @fires Sidekick#statusfetched
      * @returns {Sidekick} The sidekick
      */
-    async fetchStatus(callback) {
+    async fetchStatus() {
       const { owner, repo, ref } = this.config;
       if (!owner || !repo || !ref) {
         return this;
@@ -770,19 +781,18 @@
         .then((resp) => resp.json())
         .then((json) => Object.assign(this.status, json))
         .then((json) => fireEvent(this, 'statusfetched', json))
-        .then(() => (typeof callback === 'function' ? callback(this) : null))
         .catch((e) => console.error('failed to fetch status', e));
       return this;
     }
 
     /**
-     * Loads the sidekick configuration based on {@link window.hlx.sidekickConfig}
-     * and retrieves the location of the current document.
+     * Loads the sidekick configuration and retrieves the location of the current document.
+     * @param {sidekickConfig} cfg The sidekick config
      * @fires Sidekick#contextloaded
      * @returns {Sidekick} The sidekick
      */
-    loadContext() {
-      this.config = initConfig();
+    loadContext(cfg) {
+      this.config = initConfig(cfg);
       this.location = getLocation();
       fireEvent(this, 'contextloaded', {
         config: this.config,
@@ -892,8 +902,8 @@
             tag: 'button',
             text: plugin.button.text,
             lstnrs: {
-              click: plugin.button.action,
-              auxclick: plugin.button.action,
+              click: (e) => plugin.button.action(e, this),
+              auxclick: (e) => plugin.button.action(e, this),
             },
           };
           let $button = $plugin ? $plugin.querySelector(':scope button') : null;
@@ -962,7 +972,7 @@
       const { location } = this;
       return [
         '', // for unit testing
-        'localhost:3000', // for development and browser testing
+        DEV_URL.host, // for development and browser testing
       ].includes(location.host);
     }
 
@@ -1120,8 +1130,8 @@
     /**
      * Switches to (or opens) a given environment.
      * @param {string} targetEnv One of the following environments:
-     *        {@code edit}, {@code preview}, {@code live} or {@code prod}
-     * @param {boolean} open=false {@code true} if environment should be opened in new tab
+     *        <pre>edit</pre>, <pre>preview</pre>, <pre>live</pre> or <pre>prod</pre>
+     * @param {boolean} open=false <pre>true</pre> if environment should be opened in new tab
      * @fires Sidekick#envswitched
      * @returns {Sidekick} The sidekick
      */
@@ -1207,9 +1217,18 @@
     }
 
     /**
-     * Publishes the page at the specified path if {@code config.host} is defined.
+     * @typedef {Object} publishResponse
+     * @description The response object for a publish action.
+     * @prop {boolean} ok     True if publish action was successful, else false
+     * @prop {string}  status The status text returned by the publish action
+     * @prop {Object}  json   The JSON object returned by the publish action
+     * @prop {string}  path   The path of the published page
+     */
+
+    /**
+     * Publishes the page at the specified path if <pre>config.host</pre> is defined.
      * @param {string} path The path of the page to publish
-     * @param {boolean} innerOnly {@code true} to only refresh inner CDN, else {@code false}
+     * @param {boolean} innerOnly <pre>true</pre> to only refresh inner CDN, else <pre>false</pre>
      * @fires Sidekick#published
      * @return {publishResponse} The response object
      */
@@ -1283,9 +1302,81 @@
     }
   }
 
+  /**
+   * @external
+   * @name "window.hlx.initSidekick"
+   * @type {Function}
+   * @description Initializes the sidekick and stores a reference to it in
+   *              {@link window.hlx.sidekick}.
+   * @param {Object} cfg The sidekick configuration (extends {@link window.hlx.sidekickConfig})
+   * @returns {Sidekick} The sidekick
+   */
+  function initSidekick(cfg = {}) {
+    // merge base config with extended config
+    window.hlx.sidekickConfig = Object.assign(window.hlx.sidekickConfig || {}, cfg);
+    if (!window.hlx.sidekick) {
+      // init and show sidekick
+      window.hlx.sidekick = new Sidekick(window.hlx.sidekickConfig).show();
+    } else {
+      // reload context and toggle sidekick
+      window.hlx.sidekick.loadContext(window.hlx.sidekickConfig).toggle();
+    }
+    return window.hlx.sidekick;
+  }
+
+  /**
+   * Initializes the sidekick in compatibility mode.
+   * @private
+   * @returns {Sidekick} The sidekick
+   */
+  function initSidekickCompatMode() {
+    window.hlx.sidekickScript = document.querySelector('script[src$="/sidekick/app.js"]');
+    window.hlx.sidekickConfig = window.hlx.sidekickConfig || {};
+    window.hlx.sidekickConfig.compatMode = true;
+    return initSidekick();
+  }
+
   window.hlx = window.hlx || {};
-  // launch sidekick
-  if (!window.hlx.sidekick) {
-    window.hlx.sidekick = new Sidekick().show();
+  window.hlx.initSidekick = initSidekick;
+  const appScript = document.getElementById('hlx-sk-app');
+  if (!appScript) {
+    initSidekickCompatMode();
+  } else {
+    // get base config from script data attribute while
+    const baseConfig = appScript
+      && appScript.dataset.config
+      && JSON.parse(appScript.dataset.config);
+    if (typeof baseConfig !== 'object') {
+      initSidekickCompatMode();
+    } else {
+      window.hlx.sidekickScript = appScript;
+      // merge base config with potential pre-existing config
+      window.hlx.sidekickConfig = Object.assign(
+        window.hlx.sidekickConfig || {}, baseConfig,
+      );
+      // extract and validate base config
+      const {
+        owner, repo, ref = 'main', devMode,
+      } = baseConfig;
+      if (owner && repo) {
+        // look for extended config in project
+        const configOrigin = devMode ? DEV_URL.origin : `https://${ref}--${repo}--${owner}.hlx.page`;
+        const configScript = document.createElement('script');
+        configScript.id = 'hlx-sk-config';
+        configScript.src = `${configOrigin}/tools/sidekick/config.js`;
+        configScript.referrerpolicy = 'no-referrer';
+        configScript.addEventListener('error', () => {
+          // init sidekick without extended config
+          console.info(`no sidekick config found at ${configScript.src}`);
+          initSidekick();
+        });
+        // init sidekick via project config
+        if (document.getElementById(configScript.id)) {
+          document.getElementById(configScript.id).replaceWith(configScript);
+        } else {
+          document.head.append(configScript);
+        }
+      }
+    }
   }
 })();
