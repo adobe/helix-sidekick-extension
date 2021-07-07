@@ -1391,7 +1391,6 @@
         const configScript = document.createElement('script');
         configScript.id = 'hlx-sk-config';
         configScript.src = `${configOrigin}/tools/sidekick/config.js`;
-        configScript.referrerpolicy = 'no-referrer';
         configScript.addEventListener('error', () => {
           // init sidekick without extended config
           console.info(`no sidekick config found at ${configScript.src}`);
