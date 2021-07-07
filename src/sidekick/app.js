@@ -196,27 +196,6 @@
   }
 
   /**
-   * Returns a hash code for the specified string.
-   * Source: http://werxltd.com/wp/2010/05/13/javascript-implementation-of-javas-string-hashcode-method/
-   * @param {*} str The source string
-   * @returns {number} The hash code
-   */
-  function hashCode(str = '') {
-    let hash = 0;
-    let i;
-    let chr;
-    if (str.length === 0) return hash;
-    for (i = 0; i < str.length; i += 1) {
-      chr = str.charCodeAt(i);
-      /* eslint-disable no-bitwise */
-      hash = ((hash << 5) - hash) + chr;
-      hash |= 0; // Convert to 32bit integer
-      /* eslint-enable no-bitwise */
-    }
-    return hash;
-  }
-
-  /**
    * Returns the sidekick configuration.
    * @private
    * @param {sidekickConfig} cfg The sidekick config (defaults to {@link window.hlx.sidekickConfig})
@@ -230,8 +209,7 @@
       ref = 'main',
       host,
       project,
-      // if hlx3 flag unset, check for known hlx3 repos
-      hlx3 = [974752171, -1149574338].includes(hashCode(repo)),
+      hlx3 = false,
     } = config;
     const innerPrefix = owner && repo ? `${ref}--${repo}--${owner}` : null;
     const publicHost = host && host.startsWith('http') ? new URL(host).host : host;
