@@ -1,3 +1,10 @@
+## [3.4.1](https://github.com/adobe/helix-sidekick/compare/v3.4.0...v3.4.1) (2021-07-07)
+
+
+### Bug Fixes
+
+* loading config.js fails on byocdn prod host ([57c5980](https://github.com/adobe/helix-sidekick/commit/57c59801baeb264e7594d245f2f529b78af10c2d))
+
 # [3.4.0](https://github.com/adobe/helix-sidekick/compare/v3.3.1...v3.4.0) (2021-07-07)
 
 
