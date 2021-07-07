@@ -267,7 +267,6 @@
       ref,
       innerHost,
       outerHost,
-      purgeHost: innerHost, // backward compatibility
       scriptUrl,
       host: publicHost,
       project: project || '',
