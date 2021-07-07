@@ -1385,7 +1385,7 @@
         let configOrigin = '';
         if (devMode) {
           configOrigin = DEV_URL.origin;
-        } else if (isEditor(window.location)) {
+        } else {
           configOrigin = `https://${ref}--${repo}--${owner}.hlx.page`;
         }
         const configScript = document.createElement('script');
