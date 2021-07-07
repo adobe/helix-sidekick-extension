@@ -1,3 +1,10 @@
+# [3.4.0](https://github.com/adobe/helix-sidekick/compare/v3.3.1...v3.4.0) (2021-07-07)
+
+
+### Features
+
+* detect outer cdn with and without ref ([46aed97](https://github.com/adobe/helix-sidekick/commit/46aed97c7fd43947f2d7c02ef7a8cf7c6b7bae0b))
+
 ## [3.3.1](https://github.com/adobe/helix-sidekick/compare/v3.3.0...v3.3.1) (2021-07-06)
 
 
