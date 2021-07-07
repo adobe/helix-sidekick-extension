@@ -1382,16 +1382,10 @@
       } = baseConfig;
       if (owner && repo) {
         // look for extended config in project
-        let configOrigin = '';
-        if (devMode) {
-          configOrigin = DEV_URL.origin;
-        } else if (isEditor(window.location)) {
-          configOrigin = `https://${ref}--${repo}--${owner}.hlx.page`;
-        }
+        const configOrigin = devMode ? DEV_URL.origin : `https://${ref}--${repo}--${owner}.hlx.page`;
         const configScript = document.createElement('script');
         configScript.id = 'hlx-sk-config';
         configScript.src = `${configOrigin}/tools/sidekick/config.js`;
-        configScript.referrerpolicy = 'no-referrer';
         configScript.addEventListener('error', () => {
           // init sidekick without extended config
           console.info(`no sidekick config found at ${configScript.src}`);
