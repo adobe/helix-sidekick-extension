@@ -427,25 +427,17 @@
    * @param {Sidekick} sk The sidekick
    */
   function checkForUpdates(sk) {
-    // check for wrong byocdn config
-    // https://github.com/adobe/helix-pages/issues/885
-    if (sk.config.byocdn && sk.config.host
-      && sk.config.host.includes('.adobe.')
-      && !sk.config.host.startsWith('www.')) {
-      sk.config.byocdn = false;
-      sk.updateRequired = true;
-    }
     const indicators = [
       // legacy config
       typeof window.hlxSidekickConfig === 'object' || sk.config.compatMode,
       // legacy script host
       !sk.config.scriptUrl || new URL(sk.config.scriptUrl).host === 'www.hlx.page',
       // update flag
-      sk.updateRequired,
+      sk.updateRequired = false,
     ];
     if (indicators.includes(true)) {
       window.setTimeout(() => {
-        if (window.confirm('Apologies, but it is time to update your Helix Sidekick Bookmarklet one more time …\n\nThis time we made sure we will never have to ask you again. Promised! :)')) {
+        if (window.confirm('Apologies, but your Helix Sidekick Bookmarklet needs to be updated one more time …\n\nThis time we made sure we will never have to ask you again. Promised! :)')) {
           sk.showModal('Please wait …', true);
           window.location.href = getShareUrl(sk.config, sk.location.href);
         }
