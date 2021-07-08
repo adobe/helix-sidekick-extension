@@ -1351,7 +1351,13 @@
       } = baseConfig;
       if (owner && repo) {
         // look for extended config in project
-        const configOrigin = devMode ? DEV_URL.origin : `https://${ref}--${repo}--${owner}.hlx.page`;
+        let configOrigin = '';
+        if (devMode) {
+          configOrigin = DEV_URL.origin;
+        } else if (!new RegExp(`${repo}\\-\\-${owner}\\.hlx3?\\.page$`).test(window.location.hostname)) {
+          // load config from inner CDN
+          configOrigin = `https://${ref}--${repo}--${owner}.hlx.page`;
+        }
         const configScript = document.createElement('script');
         configScript.id = 'hlx-sk-config';
         configScript.src = `${configOrigin}/tools/sidekick/config.js`;
