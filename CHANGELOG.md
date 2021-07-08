@@ -1,3 +1,17 @@
+# [3.5.0](https://github.com/adobe/helix-sidekick/compare/v3.4.1...v3.5.0) (2021-07-08)
+
+
+### Bug Fixes
+
+* load config.js from same origin on inner CDN ([3b38e29](https://github.com/adobe/helix-sidekick/commit/3b38e2916f494cca2141b3dd199e57334638f35a))
+
+
+### Features
+
+* remove byocdn consistency check ([9ad3539](https://github.com/adobe/helix-sidekick/commit/9ad3539f47cac2907f60c57fcf868f21c9c46ef2))
+* remove purgeHost config property ([41207ae](https://github.com/adobe/helix-sidekick/commit/41207aeddb3659ab8eaf05a01f1d3c4057a70451))
+* remove special hlx3 flag handling ([a572fee](https://github.com/adobe/helix-sidekick/commit/a572feed21cf998b20c9da07e03a862e983d8395))
+
 ## [3.4.1](https://github.com/adobe/helix-sidekick/compare/v3.4.0...v3.4.1) (2021-07-07)
 
 
