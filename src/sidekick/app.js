@@ -196,27 +196,6 @@
   }
 
   /**
-   * Returns a hash code for the specified string.
-   * Source: http://werxltd.com/wp/2010/05/13/javascript-implementation-of-javas-string-hashcode-method/
-   * @param {*} str The source string
-   * @returns {number} The hash code
-   */
-  function hashCode(str = '') {
-    let hash = 0;
-    let i;
-    let chr;
-    if (str.length === 0) return hash;
-    for (i = 0; i < str.length; i += 1) {
-      chr = str.charCodeAt(i);
-      /* eslint-disable no-bitwise */
-      hash = ((hash << 5) - hash) + chr;
-      hash |= 0; // Convert to 32bit integer
-      /* eslint-enable no-bitwise */
-    }
-    return hash;
-  }
-
-  /**
    * Returns the sidekick configuration.
    * @private
    * @param {sidekickConfig} cfg The sidekick config (defaults to {@link window.hlx.sidekickConfig})
@@ -230,8 +209,7 @@
       ref = 'main',
       host,
       project,
-      // if hlx3 flag unset, check for known hlx3 repos
-      hlx3 = [974752171, -1149574338].includes(hashCode(repo)),
+      hlx3 = false,
     } = config;
     const innerPrefix = owner && repo ? `${ref}--${repo}--${owner}` : null;
     const publicHost = host && host.startsWith('http') ? new URL(host).host : host;
@@ -267,7 +245,6 @@
       ref,
       innerHost,
       outerHost,
-      purgeHost: innerHost, // backward compatibility
       scriptUrl,
       host: publicHost,
       project: project || '',
@@ -450,25 +427,17 @@
    * @param {Sidekick} sk The sidekick
    */
   function checkForUpdates(sk) {
-    // check for wrong byocdn config
-    // https://github.com/adobe/helix-pages/issues/885
-    if (sk.config.byocdn && sk.config.host
-      && sk.config.host.includes('.adobe.')
-      && !sk.config.host.startsWith('www.')) {
-      sk.config.byocdn = false;
-      sk.updateRequired = true;
-    }
     const indicators = [
       // legacy config
       typeof window.hlxSidekickConfig === 'object' || sk.config.compatMode,
       // legacy script host
       !sk.config.scriptUrl || new URL(sk.config.scriptUrl).host === 'www.hlx.page',
       // update flag
-      sk.updateRequired,
+      sk.updateRequired = false,
     ];
     if (indicators.includes(true)) {
       window.setTimeout(() => {
-        if (window.confirm('Apologies, but it is time to update your Helix Sidekick Bookmarklet one more time …\n\nThis time we made sure we will never have to ask you again. Promised! :)')) {
+        if (window.confirm('Apologies, but your Helix Sidekick Bookmarklet needs to be updated one more time …\n\nThis time we made sure we will never have to ask you again. Promised! :)')) {
           sk.showModal('Please wait …', true);
           window.location.href = getShareUrl(sk.config, sk.location.href);
         }
@@ -1382,7 +1351,13 @@
       } = baseConfig;
       if (owner && repo) {
         // look for extended config in project
-        const configOrigin = devMode ? DEV_URL.origin : `https://${ref}--${repo}--${owner}.hlx.page`;
+        let configOrigin = '';
+        if (devMode) {
+          configOrigin = DEV_URL.origin;
+        } else if (!new RegExp(`${repo}\\-\\-${owner}\\.hlx3?\\.page$`).test(window.location.hostname)) {
+          // load config from inner CDN
+          configOrigin = `https://${ref}--${repo}--${owner}.hlx.page`;
+        }
         const configScript = document.createElement('script');
         configScript.id = 'hlx-sk-config';
         configScript.src = `${configOrigin}/tools/sidekick/config.js`;
