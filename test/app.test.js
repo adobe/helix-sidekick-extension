@@ -17,6 +17,7 @@
 const assert = require('assert');
 const puppeteer = require('puppeteer');
 
+const debug = false;
 const toResp = (resp) => ({
   status: resp ? 200 : 404,
   // eslint-disable-next-line no-nested-ternary
@@ -204,7 +205,7 @@ describe('Test sidekick bookmarklet', () => {
   beforeEach(async function setup() {
     this.timeout(10000);
     browser = await puppeteer.launch({
-      headless: true,
+      devtools: debug,
       args: [
         '--disable-popup-blocking',
         '--disable-web-security',
@@ -216,9 +217,11 @@ describe('Test sidekick bookmarklet', () => {
   });
 
   afterEach(async () => {
-    await browser.close();
-    browser = null;
-    page = null;
+    if (!debug) {
+      await browser.close();
+      browser = null;
+      page = null;
+    }
   });
 
   it('Renders with missing config', async () => {

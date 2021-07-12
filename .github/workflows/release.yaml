@@ -21,6 +21,7 @@ jobs:
       - name: Copy files from source to target repo
         run: |
           cp src/sidekick/* _target/tools/sidekick/
+          cp docs/API.md _target/tools/sidekick/
       - name: Create branch commit and pull request in target repo
         uses: peter-evans/create-pull-request@v3
         with:

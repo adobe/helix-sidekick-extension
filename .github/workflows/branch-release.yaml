@@ -27,6 +27,7 @@ jobs:
           # create and/or switch to target branch and apply changes
           git switch ${targetbranch} || git checkout -b ${targetbranch}
           cp ../src/sidekick/* tools/sidekick/
+          cp ../docs/API.md tools/sidekick/
           git add tools/sidekick/*
           if [ "`git status -s`" != "" ]; then
             echo Changes: `git status -s`
