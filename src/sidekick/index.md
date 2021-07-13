@@ -9,6 +9,7 @@ id: form
 <label for="giturl">Repository URL:</label>
 <input id="giturl" placeholder="https://github.com/....">
 <input type="hidden" id="project">
+<input type="hidden" id="hlx3">
 <br>
 <button onclick="run()">Generate Bookmarklet</button>
 
@@ -86,6 +87,7 @@ div.advanced > div  {
   function run() {
     let giturl = document.getElementById('giturl').value;
     const project = document.getElementById('project').value;
+    const hlx3 = document.getElementById('hlx3').value;
     if (!giturl) {
       alert('Repository URL is mandatory.');
       return;
@@ -101,6 +103,11 @@ div.advanced > div  {
       repo,
       ref,
     };
+
+    // bake hlx3 flag into bookmarklet
+    if (hlx3) {
+      config.hlx3 = true;
+    }
 
     const bm=document.getElementById('bookmark');
     bm.href = [
@@ -119,11 +126,12 @@ div.advanced > div  {
         '}',
       '})();',
     ].join('');
+    let title = 'Sidekick';
     if (project) {
-      const title = `${project} Sidekick`;
-      bm.setAttribute('title', title);
-      bm.firstElementChild.setAttribute('alt', title);
+      title = `${project} ${title}`;
     }
+    bm.setAttribute('title', title);
+    bm.firstElementChild.setAttribute('alt', title);
     document.getElementById('book').style.display = 'block';
   }
 
@@ -136,8 +144,8 @@ div.advanced > div  {
       field.type === 'checkbox' ? field.checked = (v === 'true') : field.value = v;
       autorun = true;
     });
-    if (params.has('from')) {
-      const from = params.get('from');
+    const from = parems.has('from') && params.get('from');
+    if (from) {
       const backLink = document.createElement('a');
       backLink.href = encodeURI(from);
       backLink.textContent = from;
