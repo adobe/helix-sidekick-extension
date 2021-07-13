@@ -1,3 +1,10 @@
+## [3.5.1](https://github.com/adobe/helix-sidekick/compare/v3.5.0...v3.5.1) (2021-07-13)
+
+
+### Bug Fixes
+
+* js error ([ccf0bb3](https://github.com/adobe/helix-sidekick/commit/ccf0bb3ca6d5265a2ad1f929e0d6dee8d5b540bb))
+
 # [3.5.0](https://github.com/adobe/helix-sidekick/compare/v3.4.1...v3.5.0) (2021-07-08)
 
 
