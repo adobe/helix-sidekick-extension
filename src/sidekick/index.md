@@ -22,7 +22,7 @@ style: display:none
 
 Drag the Helix logo below to your browser's bookmark bar, or <a href="#" onclick="copy()">copy</a> its <b>Link Address</b> to add the bookmarklet manually. <span id="update" style="display:none">Then you can safely delete the previous version of this bookmarklet.</span>
 
-<a id="bookmark" title="Sidekick" href="" onclick="return help(e)">
+<a id="bookmark" title="Sidekick" href="">
   <img src="./helix.svg" alt="Sidekick">
 </a>
 
@@ -139,6 +139,7 @@ div.advanced > div  {
     }
     bm.setAttribute('title', title);
     bm.firstElementChild.setAttribute('alt', title);
+    bm.onclick = help;
     document.getElementById('book').style.display = 'block';
   }
 
