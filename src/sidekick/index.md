@@ -22,7 +22,7 @@ style: display:none
 
 Drag the Helix logo below to your browser's bookmark bar, or <a href="#" onclick="copy()">copy</a> its <b>Link Address</b> to add the bookmarklet manually. <span id="update" style="display:none">Then you can safely delete the previous version of this bookmarklet.</span>
 
-<a id="bookmark" title="Sidekick" href="">
+<a id="bookmark" title="Sidekick" href="" onclick="help()">
   <img src="./helix.svg" alt="Sidekick">
 </a>
 
@@ -82,6 +82,13 @@ div.advanced > div  {
   function copy() {
     const text = document.getElementById('bookmark').href;
     navigator.clipboard.writeText(text);
+  }
+
+  function help(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    alert('Drag the Helix logo to your browser\'s bookmarklet bar.');
+    return false;
   }
 
   function run() {
