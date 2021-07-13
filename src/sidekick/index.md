@@ -87,7 +87,7 @@ div.advanced > div  {
   function help(e) {
     e.preventDefault();
     e.stopPropagation();
-    alert('Drag the Helix logo to your browser\'s bookmarklet bar.');
+    alert('Instead of clicking the Helix logo, drag it to your browser\'s bookmark bar.');
     return false;
   }
 
