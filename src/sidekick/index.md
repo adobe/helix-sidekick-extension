@@ -144,7 +144,7 @@ div.advanced > div  {
       field.type === 'checkbox' ? field.checked = (v === 'true') : field.value = v;
       autorun = true;
     });
-    const from = parems.has('from') && params.get('from');
+    const from = params.has('from') && params.get('from');
     if (from) {
       const backLink = document.createElement('a');
       backLink.href = encodeURI(from);
