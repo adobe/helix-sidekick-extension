@@ -274,13 +274,6 @@ describe('Test sidekick bookmarklet', () => {
     });
   }).timeout(IT_DEFAULT_TIMEOUT);
 
-  it('Uses outerHost with branch in hlx3 mode', async () => {
-    await mockStandardResponses(page);
-    await page.goto(`${fixturesPrefix}/config-hlx3.html`, { waitUntil: 'load' });
-    const outerHost = await page.evaluate(() => window.hlx.sidekick.config.outerHost);
-    assert.strictEqual(outerHost, 'master--theblog--adobe.hlx.live', 'Did not use branch in outerHost');
-  }).timeout(IT_DEFAULT_TIMEOUT);
-
   it('Uses main branch by default', async () => {
     await mockStandardResponses(page);
     await page.goto(`${fixturesPrefix}/config-no-ref.html`, { waitUntil: 'load' });
@@ -349,6 +342,30 @@ describe('Test sidekick bookmarklet', () => {
       config.outerHost,
       'theblog--adobe.hlx.live',
     );
+  }).timeout(IT_DEFAULT_TIMEOUT);
+
+  it('Uses outerHost from config', async () => {
+    const testOuterHost = 'test-cdn--theblog--adobe.hlx.live';
+    await mockStandardResponses(page, {
+      configJs: `
+        window.hlx.initSidekick({
+          outerHost: '${testOuterHost}',
+        });
+      `,
+    });
+    await page.goto(`${fixturesPrefix}/config-default.html`, { waitUntil: 'load' });
+    const config = await page.evaluate(() => window.hlx.sidekick.config);
+    assert.strictEqual(
+      config.outerHost,
+      testOuterHost,
+    );
+  }).timeout(IT_DEFAULT_TIMEOUT);
+
+  it('Uses outerHost with branch in hlx3 mode', async () => {
+    await mockStandardResponses(page);
+    await page.goto(`${fixturesPrefix}/config-hlx3.html`, { waitUntil: 'load' });
+    const outerHost = await page.evaluate(() => window.hlx.sidekick.config.outerHost);
+    assert.strictEqual(outerHost, 'master--theblog--adobe.hlx.live', 'Did not use branch in outerHost');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Adds plugins via API', async () => {

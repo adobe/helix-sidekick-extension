@@ -65,6 +65,7 @@
    * @prop {string} ref=main The Git reference or branch (optional)
    * @prop {string} project The name of the Helix project used in the sharing link (optional)
    * @prop {plugin[]} plugins An array of plugin configurations (optional)
+   * @prop {string} liveHost The outer CDN's host name (optional)
    * @prop {string} host The production host name to publish content to (optional)
    * @prop {boolean} byocdn=false <pre>true</pre> if the production host is a 3rd party CDN
    * @prop {boolean} hlx3=false <pre>true</pre> if the project is running on Helix 3
@@ -207,6 +208,7 @@
       owner,
       repo,
       ref = 'main',
+      outerHost,
       host,
       project,
       hlx3 = false,
@@ -235,16 +237,19 @@
       innerHost = 'hlx.page';
     }
     innerHost = innerPrefix ? `${innerPrefix}.${innerHost}` : null;
-    let outerHost = publicHost && owner && repo ? `${repo}--${owner}.hlx.live` : null;
-    if (outerHost && hlx3) {
-      // always use branch name in hlx3 outer CDN
-      outerHost = `${ref}--${outerHost}`;
+    let liveHost = outerHost;
+    if (!liveHost && publicHost && owner && repo) {
+      liveHost = `${repo}--${owner}.hlx.live`;
+      if (hlx3) {
+        // always use branch name in hlx3 outer CDN
+        liveHost = `${ref}--${liveHost}`;
+      }
     }
     return {
-      ...cfg,
+      ...config,
       ref,
       innerHost,
-      outerHost,
+      outerHost: liveHost,
       scriptUrl,
       host: publicHost,
       project: project || '',
