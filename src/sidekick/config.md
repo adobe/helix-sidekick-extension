@@ -9,4 +9,4 @@ To customize the [Helix Sidekick Bookmarklet](./index.md) to your project, add c
      host: 'www.mydomain.prod',
    });
    ```
-3. For available configuration options, see the [Helix Sidekick API documentation](./API.md#windowhlxsidekickconfig--object).
+3. For available configuration options, see the [Helix Sidekick API documentation](./API.md#sidekickConfig).
