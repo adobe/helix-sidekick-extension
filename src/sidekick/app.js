@@ -65,7 +65,7 @@
    * @prop {string} ref=main The Git reference or branch (optional)
    * @prop {string} project The name of the Helix project used in the sharing link (optional)
    * @prop {plugin[]} plugins An array of plugin configurations (optional)
-   * @prop {string} liveHost The outer CDN's host name (optional)
+   * @prop {string} outerHost The outer CDN's host name (optional)
    * @prop {string} host The production host name to publish content to (optional)
    * @prop {boolean} byocdn=false <pre>true</pre> if the production host is a 3rd party CDN
    * @prop {boolean} hlx3=false <pre>true</pre> if the project is running on Helix 3
