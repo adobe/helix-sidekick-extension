@@ -499,6 +499,7 @@ before creating the [Sidekick](#Sidekick).
 | ref | <code>string</code> | <code>&quot;main&quot;</code> | The Git reference or branch (optional) |
 | project | <code>string</code> |  | The name of the Helix project used in the sharing link (optional) |
 | plugins | [<code>Array.&lt;plugin&gt;</code>](#plugin) |  | An array of plugin configurations (optional) |
+| outerHost | <code>string</code> |  | The outer CDN's host name (optional) |
 | host | <code>string</code> |  | The production host name to publish content to (optional) |
 | byocdn | <code>boolean</code> | <code>false</code> | <pre>true</pre> if the production host is a 3rd party CDN |
 | hlx3 | <code>boolean</code> | <code>false</code> | <pre>true</pre> if the project is running on Helix 3 |
