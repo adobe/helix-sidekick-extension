@@ -345,7 +345,7 @@ describe('Test sidekick bookmarklet', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Uses outerHost from config', async () => {
-    const testOuterHost = 'test-cdn--theblog--adobe.hlx.live';
+    const testOuterHost = 'test-cdn-theblog.example.test';
     await mockStandardResponses(page, {
       configJs: `
         window.hlx.initSidekick({
