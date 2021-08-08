@@ -783,7 +783,15 @@
         .then((resp) => resp.json())
         .then((json) => Object.assign(this.status, json))
         .then((json) => fireEvent(this, 'statusfetched', json))
-        .catch((e) => console.error('failed to fetch status', e));
+        .catch((e) => {
+          this.status.error = e.message;
+          this.showModal('Failed to fetch status. Please try again later', false, 0, () => {
+            // this error is fatal, hide and delete sidekick
+            window.hlx.sidekick.hide();
+            delete window.hlx.sidekick;
+          });
+          console.error('failed to fetch status', e);
+        });
       return this;
     }
 
@@ -1027,10 +1035,11 @@
      * @param {string|string[]} msg The message (lines) to display
      * @param {boolean}         sticky <code>true</code> if message should be sticky (optional)
      * @param {number}          level error (0), warning (1), of info (2)
+     * @param {Function}        callback The function to call when the modal is hidden again
      * @fires Sidekick#modalshown
      * @returns {Sidekick} The sidekick
      */
-    showModal(msg, sticky = false, level = 2) {
+    showModal(msg, sticky = false, level = 2, callback) {
       if (!this._modal) {
         const $spinnerWrap = appendTag(document.body, {
           tag: 'div',
@@ -1061,6 +1070,9 @@
         const sk = this;
         window.setTimeout(() => {
           sk.hideModal();
+          if (callback && typeof callback === 'function') {
+            callback(sk);
+          }
         }, 3000);
       } else {
         this._modal.classList.add('wait');
@@ -1135,6 +1147,9 @@
       const hostType = ENVS[targetEnv];
       if (!hostType) {
         console.error('invalid environment', targetEnv);
+        return this;
+      }
+      if (this.status.error) {
         return this;
       }
       this.showModal('Please wait …', true);
