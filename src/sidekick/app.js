@@ -1111,7 +1111,7 @@
       // i18n
       if (!navigator.language.startsWith('en')) {
         // look for language file in same directory
-        const langHref = `${href.substring(0, href.lastIndexOf('/'))}/${navigator.language}.css`;
+        const langHref = `${href.substring(0, href.lastIndexOf('/'))}/${navigator.language.split('-')[0]}.css`;
         appendTag(document.head, {
           tag: 'link',
           attrs: {
