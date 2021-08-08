@@ -1,0 +1,98 @@
+{
+  "description": {
+    "message": "Use Helix Sidekick on multiple Helix projects and across multiple browser windows."
+  },
+  "description_shortcut": {
+    "message": "Toggles Helix Sidekick"
+  },
+  "title": {
+    "message": "Helix Sidekick"
+  },
+  "save": {
+    "message": "Save"
+  },
+  "cancel": {
+    "message": "Cancel"
+  },
+  "add": {
+    "message": "Add"
+  },
+  "config_projects": {
+    "message": "Projects"
+  },
+  "config_project_empty": {
+    "message": "You haven't added any projects yet."
+  },
+  "config_project_exists": {
+    "message": "A configuration for this project already exists!"
+  },
+  "config_project_host": {
+    "message": "Production"
+  },
+  "config_project_innerhost": {
+    "message": "Preview"
+  },
+  "config_project_mountpoints": {
+    "message": "Content"
+  },
+  "config_project_pick": {
+    "message": "Pick a project:"
+  },
+  "config_shareurl_title": {
+    "message": "Add via sharing URL"
+  },
+  "config_shareurl_description": {
+    "message": "Ask someone who already has a Sidekick to share its URL with you by clicking the sharing icon."
+  },
+  "config_shareurl_placeholder": {
+    "message": "Sharing URL: https://www.hlx.page/tools/sidekick/..."
+  }, 
+  "config_shareurl_share_title": {
+    "message": "Helix Sidekick configuration for $1"
+  },
+  "config_shareurl_copied": {
+    "message": "Sharing URL for $1 copied to clipboard"
+  },
+  "config_manual_title": {
+    "message": "Add manually"
+  },
+  "config_manual_giturl_placeholder": {
+    "message": "Repository URL: https://github.com/..."
+  },
+  "config_manual_host_placeholder": {
+    "message": "Production Hostname (optional)"
+  },
+  "config_manual_project_placeholder": {
+    "message": "Project Name (optional)"
+  },
+  "config_share": {
+    "message": "Share"
+  },
+  "config_edit": {
+    "message": "Edit"
+  },
+  "config_delete": {
+    "message": "Delete"
+  },
+  "config_delete_confirm": {
+    "message": "Do you really want to delete this project?"
+  },
+  "config_invalid_shareurl": {
+    "message": "Invalid sharing URL"
+  },
+  "config_invalid_giturl": {
+    "message": "Invalid repository URL"
+  },
+  "config_reset": {
+    "message": "Reset"
+  },
+  "config_delete_all": {
+    "message": "Delete all settings"
+  },
+  "config_delete_all_description": {
+    "message": "Caution: This action cannot be undone!"
+  },
+  "config_delete_all_confirm": {
+    "message": "Do you really want to delete all settings?"
+  }
+}

@@ -13,8 +13,25 @@
 module.exports = {
   root: true,
   extends: '@adobe/helix',
+  parser: '@babel/eslint-parser',
+  parserOptions: {
+    allowImportExportEverywhere: true,
+    sourceType: 'module',
+    requireConfigFile: false,
+  },
+  globals: {
+    window: true,
+    document: true,
+    fetch: true,
+    browser: true,
+    navigator: true,
+    jsyaml: true,
+  },
   rules: {
     // allow reassigning param
     'no-param-reassign': [2, { props: false }],
+    'import/extensions': ['error', {
+      js: 'always',
+    }],
   },
 };
