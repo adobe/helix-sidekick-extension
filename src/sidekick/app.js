@@ -1149,7 +1149,7 @@
       } else {
         envUrl = `https://${this.config[hostType]}${this.status.webPath}`;
         if (targetEnv === 'preview' && this.isEditor()) {
-          this.update(this.status.webPath);
+          await this.update(this.status.webPath);
         }
       }
       if (!envUrl) {
@@ -1197,7 +1197,7 @@
         } else {
           resp = await this.publish(path, true);
         }
-        if (this.isInner() || this.isDev()) {
+        if (this.isEditor() || this.isInner() || this.isDev()) {
           // bust client cache
           await fetch(`https://${config.innerHost}${path}`, { cache: 'reload', mode: 'no-cors' });
         }
