@@ -18,6 +18,10 @@
   content: 'Funktionen werden geladen...';
 }
 
+.hlx-sk > .share::before {
+  content: "Teile deinen Sidekick";
+}
+
 .hlx-sk .close::before {
   content: "Schließen";
 }
@@ -26,8 +30,24 @@
   content: "Bitte warten..."
 }
 
+.hlx-sk .edit button::before {
+  content: "Bearbeiten";
+}
+
 .hlx-sk .preview button::before {
   content: "Vorschau";
+}
+
+.hlx-sk .live button::before {
+  content: "Live";
+}
+
+.hlx-sk .prod button::before {
+  content: "Produktion";
+}
+
+.hlx-sk .reload button::before {
+  content: "Aktualisieren";
 }
 
 .hlx-sk .publish button::before {
