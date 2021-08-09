@@ -1,3 +1,18 @@
+# [3.7.0](https://github.com/adobe/helix-sidekick/compare/v3.6.0...v3.7.0) (2021-08-09)
+
+
+### Bug Fixes
+
+* auto-update on switch from editor to preview ([ce32f06](https://github.com/adobe/helix-sidekick/commit/ce32f06cf46ad9400aa52e613383cd39b7ac4abd))
+* error handling when fetching status fails ([981639f](https://github.com/adobe/helix-sidekick/commit/981639f9736ae8fff3a7a939eb3e0fb9a74b5993))
+* load language specific labels ([0d99b3c](https://github.com/adobe/helix-sidekick/commit/0d99b3c6b348dc4d07b5ef1012292a0756c9e137))
+
+
+### Features
+
+* auto-update preview on hlx3 only ([51495d0](https://github.com/adobe/helix-sidekick/commit/51495d0bff95a2c73be93657c42eb250734f9c80))
+* fr translations ([105591b](https://github.com/adobe/helix-sidekick/commit/105591b455ea33784a4a9ace31ba645a432dd439))
+
 # [3.6.0](https://github.com/adobe/helix-sidekick/compare/v3.5.1...v3.6.0) (2021-07-15)
 
 
