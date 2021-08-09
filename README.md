@@ -14,7 +14,7 @@
 
 https://www.hlx.live/tools/sidekick/
 
-## Confguration
+## Configuration
 
 Helix Sidekick supports a number of (optional) configuration options:
 https://www.hlx.live/tools/sidekick/config.html
