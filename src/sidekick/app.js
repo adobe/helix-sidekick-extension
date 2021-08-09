@@ -567,7 +567,7 @@
     // live
     sk.add({
       id: 'live',
-      condition: (sidekick) => sidekick.config.outerHost
+      condition: (sidekick) => (sidekick.config.hlx3 || sidekick.config.outerHost)
         && (sidekick.isEditor() || sidekick.isHelix()),
       button: {
         action: async (evt) => {
@@ -644,7 +644,7 @@
   function addPublishPlugin(sk) {
     sk.add({
       id: 'publish',
-      condition: (sidekick) => sidekick.isHelix() && sidekick.config.host
+      condition: (sidekick) => sidekick.isHelix() && (sidekick.config.hlx3 || sidekick.config.host)
         && !(sidekick.config.byocdn && sidekick.location.host === sidekick.config.host),
       button: {
         action: async (evt) => {
@@ -783,7 +783,15 @@
         .then((resp) => resp.json())
         .then((json) => Object.assign(this.status, json))
         .then((json) => fireEvent(this, 'statusfetched', json))
-        .catch((e) => console.error('failed to fetch status', e));
+        .catch((e) => {
+          this.status.error = e.message;
+          this.showModal('Failed to fetch status. Please try again later', false, 0, () => {
+            // this error is fatal, hide and delete sidekick
+            window.hlx.sidekick.hide();
+            delete window.hlx.sidekick;
+          });
+          console.error('failed to fetch status', e);
+        });
       return this;
     }
 
@@ -1027,10 +1035,11 @@
      * @param {string|string[]} msg The message (lines) to display
      * @param {boolean}         sticky <code>true</code> if message should be sticky (optional)
      * @param {number}          level error (0), warning (1), of info (2)
+     * @param {Function}        callback The function to call when the modal is hidden again
      * @fires Sidekick#modalshown
      * @returns {Sidekick} The sidekick
      */
-    showModal(msg, sticky = false, level = 2) {
+    showModal(msg, sticky = false, level = 2, callback) {
       if (!this._modal) {
         const $spinnerWrap = appendTag(document.body, {
           tag: 'div',
@@ -1061,6 +1070,9 @@
         const sk = this;
         window.setTimeout(() => {
           sk.hideModal();
+          if (callback && typeof callback === 'function') {
+            callback(sk);
+          }
         }, 3000);
       } else {
         this._modal.classList.add('wait');
@@ -1111,7 +1123,7 @@
       // i18n
       if (!navigator.language.startsWith('en')) {
         // look for language file in same directory
-        const langHref = `${href.substring(0, href.lastIndexOf('/'))}/${navigator.language}.css`;
+        const langHref = `${href.substring(0, href.lastIndexOf('/'))}/${navigator.language.split('-')[0]}.css`;
         appendTag(document.head, {
           tag: 'link',
           attrs: {
@@ -1137,6 +1149,9 @@
         console.error('invalid environment', targetEnv);
         return this;
       }
+      if (this.status.error) {
+        return this;
+      }
       this.showModal('Please wait …', true);
       if (!this.status.webPath) {
         console.log('not ready yet, trying again in a second ...');
@@ -1148,8 +1163,8 @@
         envUrl = this.status.edit.url;
       } else {
         envUrl = `https://${this.config[hostType]}${this.status.webPath}`;
-        if (targetEnv === 'preview' && this.isEditor()) {
-          this.update(this.status.webPath);
+        if (this.config.hlx3 && targetEnv === 'preview' && this.isEditor()) {
+          await this.update(this.status.webPath);
         }
       }
       if (!envUrl) {
@@ -1197,7 +1212,7 @@
         } else {
           resp = await this.publish(path, true);
         }
-        if (this.isInner() || this.isDev()) {
+        if (this.isEditor() || this.isInner() || this.isDev()) {
           // bust client cache
           await fetch(`https://${config.innerHost}${path}`, { cache: 'reload', mode: 'no-cors' });
         }

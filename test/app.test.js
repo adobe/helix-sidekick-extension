@@ -274,6 +274,15 @@ describe('Test sidekick bookmarklet', () => {
     });
   }).timeout(IT_DEFAULT_TIMEOUT);
 
+  it('Shows live plugin without host in hlx3 mode', async () => {
+    await mockStandardResponses(page);
+    // open test page and click preview button
+    await page.goto(`${fixturesPrefix}/config-hlx3-no-host.html`, { waitUntil: 'load' });
+    const plugins = await getPlugins(page);
+    // check for live plugin
+    assert.ok(plugins.find((plugin) => plugin.id === 'live'), 'Live plugin not shown');
+  }).timeout(IT_DEFAULT_TIMEOUT);
+
   it('Uses main branch by default', async () => {
     await mockStandardResponses(page);
     await page.goto(`${fixturesPrefix}/config-no-ref.html`, { waitUntil: 'load' });
@@ -366,6 +375,27 @@ describe('Test sidekick bookmarklet', () => {
     await page.goto(`${fixturesPrefix}/config-hlx3.html`, { waitUntil: 'load' });
     const outerHost = await page.evaluate(() => window.hlx.sidekick.config.outerHost);
     assert.strictEqual(outerHost, 'master--theblog--adobe.hlx.live', 'Did not use branch in outerHost');
+  }).timeout(IT_DEFAULT_TIMEOUT);
+
+  it('Fails gracefully when unable to fetch status', async () => {
+    await testPageRequests({
+      page,
+      url: `${fixturesPrefix}/config-default.html`,
+      prep: (p) => new Promise((resolve, reject) => {
+        setTimeout(async () => {
+          try {
+            // verify that window.hlx.sidekick is gone
+            assert.ok(!(await p.evaluate(() => window.hlx.sidekick)));
+            resolve(true);
+          } catch (e) {
+            reject(e);
+          }
+        }, 5000);
+      }),
+      mockResponses: [
+        '404 Not Found',
+      ],
+    });
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Adds plugins via API', async () => {
@@ -664,6 +694,30 @@ describe('Test sidekick bookmarklet', () => {
           assert.ok(
             req.url() === `https://master--theblog--adobe.hlx.page${apiMock.webPath}`,
             'Preview URL not called',
+          );
+          return true;
+        }
+        // ignore otherwise
+        return false;
+      },
+      mockResponses: [
+        apiMock,
+      ],
+      plugin: 'preview',
+    });
+  }).timeout(IT_DEFAULT_TIMEOUT);
+
+  it('Preview plugin updates preview when switching from editor', async () => {
+    const apiMock = apiMocks.blog;
+    await testPageRequests({
+      page,
+      url: `${fixturesPrefix}/preview-onedrive-hlx3.html`,
+      check: (req) => {
+        if (req.method() === 'POST') {
+          // check post request to preview url
+          assert.ok(
+            req.url() === `https://admin.hlx3.page/preview/adobe/theblog/master${apiMock.webPath}`,
+            'Preview URL not updated',
           );
           return true;
         }
