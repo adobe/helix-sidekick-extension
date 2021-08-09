@@ -567,7 +567,7 @@
     // live
     sk.add({
       id: 'live',
-      condition: (sidekick) => sidekick.config.outerHost
+      condition: (sidekick) => (sidekick.config.hlx3 || sidekick.config.outerHost)
         && (sidekick.isEditor() || sidekick.isHelix()),
       button: {
         action: async (evt) => {
@@ -644,7 +644,7 @@
   function addPublishPlugin(sk) {
     sk.add({
       id: 'publish',
-      condition: (sidekick) => sidekick.isHelix() && sidekick.config.host
+      condition: (sidekick) => sidekick.isHelix() && (sidekick.config.hlx3 || sidekick.config.host)
         && !(sidekick.config.byocdn && sidekick.location.host === sidekick.config.host),
       button: {
         action: async (evt) => {
@@ -1163,7 +1163,7 @@
         envUrl = this.status.edit.url;
       } else {
         envUrl = `https://${this.config[hostType]}${this.status.webPath}`;
-        if (targetEnv === 'preview' && this.isEditor()) {
+        if (this.config.hlx3 && targetEnv === 'preview' && this.isEditor()) {
           await this.update(this.status.webPath);
         }
       }
