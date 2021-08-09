@@ -1,3 +1,10 @@
+# [3.6.0](https://github.com/adobe/helix-sidekick/compare/v3.5.1...v3.6.0) (2021-07-15)
+
+
+### Features
+
+* add outerHost config property ([467052a](https://github.com/adobe/helix-sidekick/commit/467052ac3022be0f9ed39d568f7192d9ca4bec32))
+
 ## [3.5.1](https://github.com/adobe/helix-sidekick/compare/v3.5.0...v3.5.1) (2021-07-13)
 
 
