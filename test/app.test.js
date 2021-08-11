@@ -1098,7 +1098,7 @@ describe('makeHostHelixCompliant', () => {
   // TODO: move to proper unit test in order to use original funtion
   // this is a copy of function in sidekick/app.js
   const makeHostHelixCompliant = (ahost) => {
-    if (ahost.match(/^.*?--.*?--.*?\./gm)) {
+    if (!/.*\.hlx.*\.(live|page)/.test(ahost) || ahost.match(/^.*?--.*?--.*?\./gm)) {
       return ahost;
     }
     return ahost
@@ -1107,6 +1107,7 @@ describe('makeHostHelixCompliant', () => {
   };
 
   it('Test makeHostHelixCompliant', () => {
+    assert.strictEqual(makeHostHelixCompliant('abc-123.com'), 'abc-123.com');
     assert.strictEqual(makeHostHelixCompliant('repo-owner.hlx.page'), 'repo--owner.hlx.page');
     assert.strictEqual(makeHostHelixCompliant('repo-owner.hlx-1.page'), 'repo--owner.hlx-1.page');
 

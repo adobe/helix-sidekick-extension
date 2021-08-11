@@ -279,7 +279,7 @@
 
     // replace single - with 2
     const makeHostHelixCompliant = (ahost) => {
-      if (ahost.match(/^.*?--.*?--.*?\./gm)) {
+      if (!/.*\.hlx.*\.(live|page)/.test(ahost) || ahost.match(/^.*?--.*?--.*?\./gm)) {
         return ahost;
       }
       return ahost
