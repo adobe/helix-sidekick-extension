@@ -1,3 +1,10 @@
+## [3.7.1](https://github.com/adobe/helix-sidekick/compare/v3.7.0...v3.7.1) (2021-08-11)
+
+
+### Bug Fixes
+
+* leave prod hostnames with dashes alone ([2fa7344](https://github.com/adobe/helix-sidekick/commit/2fa7344ee9da176993cf96bf340c1a84fa11d501))
+
 # [3.7.0](https://github.com/adobe/helix-sidekick/compare/v3.6.0...v3.7.0) (2021-08-09)
 
 
