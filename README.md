@@ -72,7 +72,7 @@ Every development branch in this repository will be mirrored in https://github.c
 
 1. Push changes to a branch `issue-77`
 2. Note the `sidekick-issue-77` branch in https://github.com/adobe/helix-pages/branches
-3. Go to `https://sidekick-issue-77--helix-pages--adobe.hlx.page` to install a development version for your project
+3. Go to `https://sidekick-issue-77--helix-pages--adobe.hlx.page/tools/sidekick/` to install a development version for your project
 
 _Note: Mirrored development branches in https://github.com/adobe/helix-pages/branches must be deleted manually when no longer needed._
 
@@ -84,7 +84,7 @@ Once a branch is merged to `main` in this repository, a PR will automatically be
 2. Go to the _Sidekick Release Candidate_ PR in https://github.com/adobe/helix-pages/pulls
 3. Pick reviewer(s) and wait for approval(s)
 4. The PR is based on a `sidekick-rc-*` branch (`*` being a random ID) so the RC can also be tested:
-   `https://sidekick-rc-*--helix-pages--adobe.hlx.page`
+   `https://sidekick-rc-*--helix-pages--adobe.hlx.page/tools/sidekick/`
 5. Once approved, the PR can be merged to deploy the new version into production
 
 _Note: Verify that the_ `purge-code` _GitHub action has run in https://github.com/adobe/helix-pages/actions and that https://www.hlx.live/tools/sidekick/app.js (and/or any other files you changed) returns the latest version. If not, use manual purging:_
