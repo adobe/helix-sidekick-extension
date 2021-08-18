@@ -1,3 +1,10 @@
+## [3.7.2](https://github.com/adobe/helix-sidekick/compare/v3.7.1...v3.7.2) (2021-08-18)
+
+
+### Bug Fixes
+
+* broken live button on hlx3 without prod host ([6ff36bc](https://github.com/adobe/helix-sidekick/commit/6ff36bce031bc74983f7313fcc426d5c4bd28d38))
+
 ## [3.7.1](https://github.com/adobe/helix-sidekick/compare/v3.7.0...v3.7.1) (2021-08-11)
 
 
