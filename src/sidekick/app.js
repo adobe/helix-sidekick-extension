@@ -238,11 +238,13 @@
     }
     innerHost = innerPrefix ? `${innerPrefix}.${innerHost}` : null;
     let liveHost = outerHost;
-    if (!liveHost && publicHost && owner && repo) {
-      liveHost = `${repo}--${owner}.hlx.live`;
+    if (!liveHost && owner && repo) {
       if (hlx3) {
-        // always use branch name in hlx3 outer CDN
-        liveHost = `${ref}--${liveHost}`;
+        // hlx3 sites automatically have an outer CDN (including the ref)
+        liveHost = `${ref}--${repo}--${owner}.hlx.live`;
+      } else if (publicHost) {
+        // hlx2 sites require a production host to be defined
+        liveHost = `${repo}--${owner}.hlx.live`;
       }
     }
     return {

@@ -281,6 +281,13 @@ describe('Test sidekick bookmarklet', () => {
     const plugins = await getPlugins(page);
     // check for live plugin
     assert.ok(plugins.find((plugin) => plugin.id === 'live'), 'Live plugin not shown');
+    // check outerHost
+    const outerHost = await page.evaluate(() => window.hlx.sidekick.config.outerHost);
+    assert.strictEqual(
+      outerHost,
+      'main--theblog--adobe.hlx.live',
+      `Outer CDN not defined as expected: ${outerHost}`,
+    );
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Uses main branch by default', async () => {
