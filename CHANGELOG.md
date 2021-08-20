@@ -1,3 +1,10 @@
+## [3.7.3](https://github.com/adobe/helix-sidekick/compare/v3.7.2...v3.7.3) (2021-08-20)
+
+
+### Bug Fixes
+
+* detect ci build domain for testing ([c6a3b31](https://github.com/adobe/helix-sidekick/commit/c6a3b314f458e620f978762e90dbeff8120b97fe))
+
 ## [3.7.2](https://github.com/adobe/helix-sidekick/compare/v3.7.1...v3.7.2) (2021-08-18)
 
 
