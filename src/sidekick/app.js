@@ -1376,7 +1376,7 @@
         let configOrigin = '';
         if (devMode) {
           configOrigin = DEV_URL.origin;
-        } else if (!new RegExp(`${repo}\\-\\-${owner}\\.hlx3?\\.page$`).test(window.location.hostname)) {
+        } else if (!new RegExp(`${repo}\\-\\-${owner}\\.hlx(\\-\\d|3)?\\.page$`).test(window.location.hostname)) {
           // load config from inner CDN
           configOrigin = `https://${ref}--${repo}--${owner}.hlx.page`;
         }
