@@ -960,6 +960,7 @@ describe('Test sidekick bookmarklet', () => {
       prep: async (p) => {
         // remove production host from config
         await p.evaluate(() => {
+          delete window.hlx.sidekick.config.outerHost;
           delete window.hlx.sidekick.config.host;
         });
       },
