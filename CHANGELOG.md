@@ -1,3 +1,10 @@
+## [3.7.4](https://github.com/adobe/helix-sidekick/compare/v3.7.3...v3.7.4) (2021-08-24)
+
+
+### Bug Fixes
+
+* publish not working in hlx3 without host ([44804ce](https://github.com/adobe/helix-sidekick/commit/44804ce1fd16e9cf3e2619c3ee98ff1ba773e4f5))
+
 ## [3.7.3](https://github.com/adobe/helix-sidekick/compare/v3.7.2...v3.7.3) (2021-08-20)
 
 
