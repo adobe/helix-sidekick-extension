@@ -662,7 +662,10 @@
           if (results.every((res) => res && res.ok)) {
             sk.showModal('Please wait …', true);
             // fetch and redirect to production
-            const prodURL = `https://${config.byocdn ? config.outerHost : config.host}${path}`;
+            const redirectHost = config.byocdn || (config.hlx3 && !config.host)
+              ? config.outerHost
+              : config.host;
+            const prodURL = `https://${redirectHost}${path}`;
             await fetch(prodURL, { cache: 'reload', mode: 'no-cors' });
             console.log(`redirecting to ${prodURL}`);
             if (newTab(evt)) {
@@ -1248,8 +1251,8 @@
     async publish(path, innerOnly = false) {
       const { config, location } = this;
 
-      if ((!innerOnly && !config.host)
-        || (config.byocdn && location.host === config.host)) {
+      if ((!innerOnly && !config.hlx3 && !config.host) // non-hlx3 without host
+        || (config.byocdn && location.host === config.host)) { // byocdn and prod host
         return null;
       }
 
