@@ -82,8 +82,10 @@
   box-shadow: var(--hlx-sk-shadow);
 }
 
+.hlx-sk.hlx-sk-loading::before,
 .hlx-sk.hlx-sk-empty::before {
   margin-top: 10px;
+  height: 20px;
   line-height: 2;
 }
 
@@ -264,10 +266,10 @@
 
 .hlx-sk.hlx-sk-empty::before {
   content: "No actions found for this page";
- }
+}
 
-.hlx-sk .loading::before {
-  content: 'Loading...';
+.hlx-sk.hlx-sk-loading::before {
+  content: 'Loading actions...';
 }
 
 .hlx-sk > .share::before {
