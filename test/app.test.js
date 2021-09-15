@@ -480,6 +480,7 @@ describe('Test sidekick bookmarklet', () => {
       `,
     });
     await page.goto(`${fixturesPrefix}/config-compatibility.html`, { waitUntil: 'load' });
+    await page.waitForSelector('.hlx-sk > div.foo', { visible: true });
     assert.ok((await getPlugins(page)).find((p) => p.id === 'bar'), 'Did not add plugins from project');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
