@@ -684,6 +684,66 @@
   }
 
   /**
+   * Adds the default and custom plugins to the sidekick, or checks existing
+   * plugins based on the status of the current resource.
+   * @private
+   * @param {Sidekick} sk The sidekick
+   */
+  function checkPlugins(sk) {
+    if (sk.plugins.length === 0) {
+      // default plugins
+      addEnvPlugins(sk);
+      addReloadPlugin(sk);
+      addPublishPlugin(sk);
+      // custom plugins
+      if (sk.config.plugins && Array.isArray(sk.config.plugins)) {
+        sk.config.plugins.forEach((plugin) => sk.add(plugin));
+      }
+      if (sk.config.compatMode
+        && (sk.isHelix() || sk.isEditor())
+        && (sk.config.devMode || sk.config.innerHost)) {
+        // load custom plugins in compatibility mode
+        let prefix = (sk.isEditor() ? `https://${sk.config.innerHost}` : '');
+        if (sk.config.devMode || sk.config.pluginHost) {
+          // TODO: remove support for pluginHost
+          if (sk.config.pluginHost) {
+            console.warn('pluginHost is deprecated, use devMode instead');
+          }
+          prefix = sk.config.pluginHost || DEV_URL.origin;
+        }
+        appendTag(document.head, {
+          tag: 'script',
+          attrs: {
+            src: `${prefix}/tools/sidekick/plugins.js`,
+          },
+        });
+      }
+      setTimeout(() => {
+        if (sk.root.querySelectorAll(':scope > div > *').length === 0) {
+          // add empty text
+          sk.root.classList.replace('hlx-sk-loading', 'hlx-sk-empty');
+        }
+      }, 5000);
+    } else {
+      // re-evaluate plugin conditions
+      sk.plugins.forEach((plugin) => {
+        if (typeof plugin.condition !== 'function') {
+          // nothing to do
+          return;
+        }
+        const $plugin = sk.get(plugin.id);
+        if ($plugin && !plugin.condition(sk)) {
+          // plugin exists but condition now false
+          sk.remove(plugin.id);
+        } else if (!$plugin && plugin.condition(sk)) {
+          // plugin doesn't exist but condition now true
+          sk.add(plugin);
+        }
+      });
+    }
+  }
+
+  /**
    * The sidekick provides helper tools for authors.
    */
   class Sidekick {
@@ -695,13 +755,17 @@
       this.root = appendTag(document.body, {
         tag: 'div',
         attrs: {
-          class: 'hlx-sk hlx-sk-hidden hlx-sk-empty',
+          class: 'hlx-sk hlx-sk-hidden hlx-sk-loading',
         },
         lstnrs: {
-          statusfetched: checkLastModified,
+          statusfetched: () => {
+            checkPlugins(this);
+            checkLastModified(this);
+          },
         },
       });
       this.status = {};
+      this.plugins = [];
       this.loadContext(cfg);
       this.fetchStatus();
       this.loadCSS();
@@ -733,33 +797,6 @@
           click: () => this.hide(),
         },
       });
-      // default plugins
-      addEnvPlugins(this);
-      addReloadPlugin(this);
-      addPublishPlugin(this);
-      // custom plugins
-      if (this.config.plugins && Array.isArray(this.config.plugins)) {
-        this.config.plugins.forEach((plugin) => this.add(plugin));
-      }
-      if (this.config.compatMode
-        && (this.isHelix() || this.isEditor())
-        && (this.config.devMode || this.config.innerHost)) {
-        // load custom plugins in compatibility mode
-        let prefix = (this.isEditor() ? `https://${this.config.innerHost}` : '');
-        if (this.config.devMode || this.config.pluginHost) {
-          // TODO: remove support for pluginHost
-          if (this.config.pluginHost) {
-            console.warn('pluginHost is deprecated, use devMode instead');
-          }
-          prefix = this.config.pluginHost || DEV_URL.origin;
-        }
-        appendTag(document.head, {
-          tag: 'script',
-          attrs: {
-            src: `${prefix}/tools/sidekick/plugins.js`,
-          },
-        });
-      }
       checkForHelix3(this);
       checkForUpdates(this);
     }
@@ -863,6 +900,7 @@
      */
     add(plugin) {
       if (typeof plugin === 'object') {
+        this.plugins.push(plugin);
         plugin.enabled = typeof plugin.condition === 'undefined'
           || (typeof plugin.condition === 'function' && plugin.condition(this));
         // find existing plugin
@@ -889,9 +927,9 @@
         if (!$plugin && plugin.enabled) {
           // add new plugin
           $plugin = appendTag($pluginContainer, pluginCfg);
-          // remove empty text
-          if (this.root.classList.contains('hlx-sk-empty')) {
-            this.root.classList.remove('hlx-sk-empty');
+          // remove loading text
+          if (this.root.classList.contains('hlx-sk-loading')) {
+            this.root.classList.remove('hlx-sk-loading');
           }
         } else if ($plugin) {
           if (!plugin.enabled) {
