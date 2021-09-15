@@ -10,11 +10,11 @@
  * governing permissions and limitations under the License.
  */
 
- .hlx-sk:empty::before {
+.hlx-sk.hlx-sk-empty::before {
   content: "Aucune action disponible pour cette page";
- }
+}
 
-.hlx-sk .loading::before {
+.hlx-sk.hlx-sk-loading::before {
   content: 'Chargement...';
 }
 

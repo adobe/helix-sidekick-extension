@@ -10,11 +10,11 @@
  * governing permissions and limitations under the License.
  */
 
- .hlx-sk:empty::before {
+.hlx-sk.hlx-sk-empty::before {
   content: "Keine Funktionen gefunden";
  }
 
-.hlx-sk .loading::before {
+.hlx-sk.hlx-sk-loading::before {
   content: 'Funktionen werden geladen...';
 }
 
