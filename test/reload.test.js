@@ -18,10 +18,7 @@ const assert = require('assert');
 const {
   IT_DEFAULT_TIMEOUT,
   MOCKS,
-  getPlugins,
-  mockStandardResponses,
   testPageRequests,
-  sleep,
   getPage,
   startBrowser,
   stopBrowser,
