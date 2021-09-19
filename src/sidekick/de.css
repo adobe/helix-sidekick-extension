@@ -11,7 +11,7 @@
  */
 
 .hlx-sk.hlx-sk-empty::before {
-  content: "Keine Funktionen gefunden";
+  content: "Keine Funktionen für diese Seite gefunden";
  }
 
 .hlx-sk.hlx-sk-loading::before {
@@ -50,6 +50,14 @@
   content: "Aktualisieren";
 }
 
+.hlx-sk .delete button::before {
+  content: "Löschen";
+}
+
 .hlx-sk .publish button::before {
   content: "Publizieren";
+}
+
+.hlx-sk .unpublish button::before {
+  content: "Depublizieren";
 }

@@ -142,9 +142,21 @@
    */
 
   /**
+   * @event Sidekick#deleted
+   * @type {string} The deleted path
+   * @description This event is fired when a path has been deleted.
+   */
+
+  /**
    * @event Sidekick#published
    * @type {string} The published path
    * @description This event is fired when a path has been published.
+   */
+
+  /**
+   * @event Sidekick#unpublished
+   * @type {string} The unpublished path
+   * @description This event is fired when a path has been unpublished.
    */
 
   /**
@@ -608,13 +620,14 @@
   function addReloadPlugin(sk) {
     sk.add({
       id: 'reload',
-      condition: (s) => s.config.innerHost && (s.isInner() || s.isDev()),
+      condition: (s) => s.config.innerHost && (s.isInner() || s.isDev())
+        && (s.status.edit && s.status.edit.url), // show if edit url exists
       button: {
         action: async (evt) => {
           const { location } = sk;
           sk.showModal('Please wait …', true);
           try {
-            const resp = await sk.update(location.pathname);
+            const resp = await sk.update();
             if (!resp.ok && resp.status >= 400) {
               console.error(resp);
               throw new Error(resp);
@@ -639,6 +652,47 @@
   }
 
   /**
+   * Adds the delete plugin to the sidekick.
+   * @private
+   * @param {Sidekick} sk The sidekick
+   */
+  function addDeletePlugin(sk) {
+    sk.add({
+      id: 'delete',
+      condition: (sidekick) => sidekick.isHelix()
+        && (!sidekick.status.edit || !sidekick.status.edit.url), // show if no edit url
+      button: {
+        action: async () => {
+          const { location, status } = sk;
+          // double check
+          if (status.edit && status.edit.url) {
+            window.alert('This page still has a source document and cannot be deleted.');
+            return;
+          }
+          // have user confirm deletion
+          if (window.confirm('This page no longer has a source document, deleting it cannot be undone!\n\nAre you sure you want to delete it?')) {
+            try {
+              const resp = await sk.delete();
+              if (!resp.ok && resp.status >= 400) {
+                console.error(resp);
+                throw new Error(resp);
+              }
+              console.log(`redirecting to ${location.origin}/`);
+              window.location.href = `${location.origin}/`;
+            } catch (e) {
+              sk.showModal(
+                `Failed to delete ${status.webPath}. Please try again later.`,
+                true,
+                0,
+              );
+            }
+          }
+        },
+      },
+    });
+  }
+
+  /**
    * Adds the publish plugin to the sidekick.
    * @private
    * @param {Sidekick} sk The sidekick
@@ -646,8 +700,9 @@
   function addPublishPlugin(sk) {
     sk.add({
       id: 'publish',
-      condition: (sidekick) => sidekick.isHelix() && (sidekick.config.hlx3 || sidekick.config.host)
-        && !(sidekick.config.byocdn && sidekick.location.host === sidekick.config.host),
+      condition: (sidekick) => sidekick.isHelix() && sidekick.config.outerHost
+        && !(sidekick.config.byocdn && sidekick.location.host === sidekick.config.host)
+        && (sidekick.status.edit && sidekick.status.edit.url), // show if edit url exists
       button: {
         action: async (evt) => {
           const { config, location } = sk;
@@ -684,6 +739,53 @@
   }
 
   /**
+   * Adds the unpublish plugin to the sidekick.
+   * @private
+   * @param {Sidekick} sk The sidekick
+   */
+  function addUnpublishPlugin(sk) {
+    sk.add({
+      id: 'unpublish',
+      condition: (sidekick) => sidekick.isHelix() && sidekick.config.outerHost
+        && !(sidekick.config.byocdn && sidekick.location.host === sidekick.config.host)
+        && (!sidekick.status.edit || !sidekick.status.edit.url) // show if no edit url
+        && sidekick.status.live && sidekick.status.live.lastModified, // show if published
+      button: {
+        action: async () => {
+          const { status } = sk;
+          // double check
+          if (status.edit && status.edit.url) {
+            window.alert('This page has a source document and cannot be unpublished.');
+            return;
+          }
+          // have user confirm unpublishing
+          if (window.confirm('This page no longer has a source document, unpublishing it cannot be undone!\n\nAre you sure you want to unpublish it?')) {
+            const path = status.webPath;
+            try {
+              const resp = await sk.unpublish();
+              if (!resp.ok && resp.status >= 400) {
+                console.error(resp);
+                throw new Error(resp);
+              }
+              if (!sk.isInner()) {
+                const newPath = `${path.substring(0, path.lastIndexOf('/'))}/`;
+                console.log(`redirecting to ${newPath}`);
+                window.location.href = newPath;
+              }
+            } catch (e) {
+              sk.showModal(
+                `Failed to unpublish ${path}. Please try again later.`,
+                true,
+                0,
+              );
+            }
+          }
+        },
+      },
+    });
+  }
+
+  /**
    * Adds the default and custom plugins to the sidekick, or checks existing
    * plugins based on the status of the current resource.
    * @private
@@ -694,7 +796,9 @@
       // default plugins
       addEnvPlugins(sk);
       addReloadPlugin(sk);
+      addDeletePlugin(sk);
       addPublishPlugin(sk);
+      addUnpublishPlugin(sk);
       // custom plugins
       if (sk.config.plugins && Array.isArray(sk.config.plugins)) {
         sk.config.plugins.forEach((plugin) => sk.add(plugin));
@@ -1195,19 +1299,20 @@
       if (this.status.error) {
         return this;
       }
+      const { config, location, status } = this;
       this.showModal('Please wait …', true);
-      if (!this.status.webPath) {
+      if (!status.webPath) {
         console.log('not ready yet, trying again in a second ...');
         window.setTimeout(() => this.switchEnv(targetEnv, open), 1000);
         return this;
       }
       let envUrl;
-      if (targetEnv === 'edit' && this.status.edit && this.status.edit.url) {
-        envUrl = this.status.edit.url;
+      if (targetEnv === 'edit' && status.edit && status.edit.url) {
+        envUrl = status.edit.url;
       } else {
-        envUrl = `https://${this.config[hostType]}${this.status.webPath}`;
-        if (this.config.hlx3 && targetEnv === 'preview' && this.isEditor()) {
-          await this.update(this.status.webPath);
+        envUrl = `https://${config[hostType]}${status.webPath}`;
+        if (config.hlx3 && targetEnv === 'preview' && this.isEditor()) {
+          await this.update(status.webPath);
         }
       }
       if (!envUrl) {
@@ -1215,7 +1320,7 @@
         return this;
       }
       fireEvent(this, 'envswitched', {
-        sourceUrl: this.location.href,
+        sourceUrl: location.href,
         targetUrl: envUrl,
       });
       // switch or open env
@@ -1229,24 +1334,13 @@
     }
 
     /**
-     * Reloads the page at the specified path.
-     * @deprecated since v3.2.0. use {@link update} instead
-     * @param {string} path The path of the page to purge
-     * @return {Response} The response object
-     */
-    async reload(path) {
-      console.log('reload() is deprecated, use update() instead.');
-      return this.update(path);
-    }
-
-    /**
-     * Updates the preview resource at the specified path.
-     * @param {string} path The path of the resource to refresh
+     * Updates the preview of the current page.
      * @fires Sidekick#updated
      * @return {Response} The response object
      */
-    async update(path) {
-      const { config } = this;
+    async update() {
+      const { config, status } = this;
+      const path = status.webPath;
       let resp;
       try {
         if (config.hlx3) {
@@ -1259,10 +1353,40 @@
           // bust client cache
           await fetch(`https://${config.innerHost}${path}`, { cache: 'reload', mode: 'no-cors' });
         }
+        fireEvent(this, 'updated', path);
       } catch (e) {
         console.error('failed to update', path, e);
       }
-      fireEvent(this, 'updated', path);
+      return {
+        ok: (resp && resp.ok) || false,
+        status: (resp && resp.status) || 0,
+        path,
+      };
+    }
+
+    /**
+     * Deletes the preview resource.
+     * @fires Sidekick#deleted
+     * @return {Response} The response object
+     */
+    async delete() {
+      const { config, status } = this;
+      const path = status.webPath;
+      let resp;
+      try {
+        if (config.hlx3) {
+          // delete preview
+          resp = await fetch(getAdminUrl(config, 'preview', path), { method: 'DELETE' });
+          if (status.live && status.live.lastModified) {
+            await this.unpublish(path);
+          }
+        } else {
+          resp = await this.update(path);
+        }
+        fireEvent(this, 'deleted', path);
+      } catch (e) {
+        console.error('failed to delete', path, e);
+      }
       return {
         ok: (resp && resp.ok) || false,
         status: (resp && resp.status) || 0,
@@ -1332,6 +1456,31 @@
         ok,
         status,
         json: json || {},
+        path,
+      };
+    }
+
+    /**
+     * Unpublishes the current page.
+     * @fires Sidekick#unpublished
+     * @return {Response} The response object
+     */
+    async unpublish() {
+      const { config, status } = this;
+      const path = status.webPath;
+      let resp;
+      try {
+        if (config.hlx3) {
+          // delete live
+          resp = await fetch(getAdminUrl(config, 'live', path), { method: 'DELETE' });
+          fireEvent(this, 'unpublished', path);
+        }
+      } catch (e) {
+        console.error('failed to unpublish', path, e);
+      }
+      return {
+        ok: (resp && resp.ok) || false,
+        status: (resp && resp.status) || 0,
         path,
       };
     }

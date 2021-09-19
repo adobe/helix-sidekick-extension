@@ -304,6 +304,14 @@
   content: "Reload";
 }
 
+.hlx-sk .delete button::before {
+  content: "Delete";
+}
+
 .hlx-sk .publish button::before {
   content: "Publish";
+}
+
+.hlx-sk .unpublish button::before {
+  content: "Unpublish";
 }
