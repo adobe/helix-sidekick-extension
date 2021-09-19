@@ -208,18 +208,4 @@ describe('Test publish plugin', () => {
     const plugins = await getPlugins(page);
     assert.ok(!plugins.find((p) => p.id === 'publish'), 'Unexpected publish plugin found');
   }).timeout(IT_DEFAULT_TIMEOUT);
-
-  it('No publish plugin without source document', async () => {
-    const page = getPage();
-    const apiMock = { ...MOCKS.api.blog };
-    delete apiMock.edit;
-    await mockStandardResponses(page, {
-      mockResponses: [apiMock],
-    });
-    // open test page
-    await page.goto(`${fixturesPrefix}/publish-staging.html`, { waitUntil: 'load' });
-    await sleep();
-    const plugins = await getPlugins(page);
-    assert.ok(!plugins.find((p) => p.id === 'publish'), 'Unexpected publish plugin found');
-  }).timeout(IT_DEFAULT_TIMEOUT);
 });

@@ -105,18 +105,4 @@ describe('Test reload plugin', () => {
     assert.ok(apiCalled, 'Preview API not called');
     assert.ok(reloaded, 'Reload not triggered');
   }).timeout(IT_DEFAULT_TIMEOUT);
-
-  it('No reload plugin without source document', async () => {
-    const page = getPage();
-    const apiMock = { ...MOCKS.api.blog };
-    delete apiMock.edit;
-    await mockStandardResponses(page, {
-      mockResponses: [apiMock],
-    });
-    // open test page
-    await page.goto(`${fixturesPrefix}/reload-staging.html`, { waitUntil: 'load' });
-    await sleep();
-    const plugins = await getPlugins(page);
-    assert.ok(!plugins.find((p) => p.id === 'reload'), 'Unexpected reload plugin found');
-  }).timeout(IT_DEFAULT_TIMEOUT);
 });
