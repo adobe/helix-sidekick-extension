@@ -1,3 +1,10 @@
+# [3.8.0](https://github.com/adobe/helix-sidekick/compare/v3.7.4...v3.8.0) (2021-09-15)
+
+
+### Features
+
+* load plugins on statusfetched ([7d9ce52](https://github.com/adobe/helix-sidekick/commit/7d9ce526315891dc7bc421947f1e0ac3306ca3d3))
+
 ## [3.7.4](https://github.com/adobe/helix-sidekick/compare/v3.7.3...v3.7.4) (2021-08-24)
 
 
