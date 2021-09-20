@@ -77,10 +77,11 @@ describe('Test delete plugin', () => {
     assert.ok(redirected, 'Redirect to homepage not triggered');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
-  it('Delete plugin uses preview API in hlx3 mode', async () => {
+  it('Delete plugin uses preview API in hlx3 mode if page not published', async () => {
     const page = getPage();
     const apiMock = { ...MOCKS.api.blog };
     delete apiMock.edit;
+    delete apiMock.live;
     let apiCalled = false;
     let redirected = false;
     // wait for delete confirmation dialog and accept it
@@ -117,6 +118,58 @@ describe('Test delete plugin', () => {
     });
     // check result
     assert.ok(apiCalled, 'Preview API not called');
+    assert.ok(redirected, 'Redirect to homepage not triggered');
+  }).timeout(IT_DEFAULT_TIMEOUT);
+
+  it('Delete plugin uses preview and live API in hlx3 mode if page published', async () => {
+    const page = getPage();
+    const apiMock = { ...MOCKS.api.blog };
+    delete apiMock.edit;
+    let previewDeleted = false;
+    let liveDeleted = false;
+    let redirected = false;
+    // wait for delete confirmation dialog and accept it
+    page.on('dialog', async (dialog) => {
+      if (dialog.type() === 'confirm') {
+        assert.ok(
+          dialog.message().includes('Are you sure you want to delete it?'),
+          `Unexpected dialog message: "${dialog.message()}"`,
+        );
+        dialog.accept();
+      }
+    });
+    await testPageRequests({
+      page,
+      url: `${fixturesPrefix}/reload-staging-hlx3.html`,
+      check: (req) => {
+        if (req.method() === 'DELETE') {
+          // intercept api request
+          if (!previewDeleted
+            && req.url().endsWith(`/preview/adobe/theblog/master${apiMock.webPath}`)) {
+            previewDeleted = true;
+          } else if (!liveDeleted
+            && req.url().endsWith(`/live/adobe/theblog/master${apiMock.webPath}`)) {
+            liveDeleted = true;
+          }
+        } else if (req.url() === 'https://master--theblog--adobe.hlx3.page/') {
+          // reload triggered
+          redirected = true;
+          return true;
+        }
+        return false;
+      },
+      checkCondition: (request) => request.url().startsWith('https://')
+        || request.url().endsWith('reload-staging-hlx3.html'),
+      mockResponses: [
+        apiMock,
+        MOCKS.json,
+        MOCKS.json,
+      ],
+      plugin: 'delete',
+    });
+    // check result
+    assert.ok(previewDeleted, 'Preview API not called');
+    assert.ok(liveDeleted, 'Live API not called');
     assert.ok(redirected, 'Redirect to homepage not triggered');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
