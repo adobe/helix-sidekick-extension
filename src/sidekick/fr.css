@@ -50,6 +50,14 @@
   content: "Actualiser";
 }
 
+.hlx-sk .delete button::before {
+  content: "Effacer";
+}
+
 .hlx-sk .publish button::before {
   content: "Publier";
+}
+
+.hlx-sk .unpublish button::before {
+  content: "Dépublier";
 }
