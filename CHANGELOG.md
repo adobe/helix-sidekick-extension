@@ -1,3 +1,10 @@
+# [3.9.0](https://github.com/adobe/helix-sidekick/compare/v3.8.0...v3.9.0) (2021-09-21)
+
+
+### Features
+
+* delete and unpublish ([0b0d8a4](https://github.com/adobe/helix-sidekick/commit/0b0d8a41aacc707da121b6a821fe01051ece4786))
+
 # [3.8.0](https://github.com/adobe/helix-sidekick/compare/v3.7.4...v3.8.0) (2021-09-15)
 
 
