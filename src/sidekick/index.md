@@ -111,10 +111,8 @@ div.advanced > div  {
       ref,
     };
 
-    // bake hlx3 flag into bookmarklet
-    if (hlx3) {
-      config.hlx3 = true;
-    }
+    // bake hlx3 flag into bookmarklet (default: true)
+    config.hlx3 = hlx3 !== 'false';
 
     const bm=document.getElementById('bookmark');
     bm.href = [
