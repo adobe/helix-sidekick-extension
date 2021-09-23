@@ -1,3 +1,10 @@
+# [3.10.0](https://github.com/adobe/helix-sidekick/compare/v3.9.0...v3.10.0) (2021-09-23)
+
+
+### Features
+
+* switch to hlx3 config by default ([1f7a709](https://github.com/adobe/helix-sidekick/commit/1f7a7093f5c89271c1cff1e7e311be24735ab467))
+
 # [3.9.0](https://github.com/adobe/helix-sidekick/compare/v3.8.0...v3.9.0) (2021-09-21)
 
 
