@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-/* global window, document, navigator, fetch, CustomEvent */
+/* global window, document, navigator, fetch, CustomEvent, HTMLElement */
 /* eslint-disable no-console, no-alert */
 
 'use strict';
@@ -849,14 +849,17 @@
 
   /**
    * The sidekick provides helper tools for authors.
+   * @augments HTMLElement
    */
-  class Sidekick {
+  class Sidekick extends HTMLElement {
     /**
      * Creates a new sidekick.
      * @param {sidekickConfig} cfg The sidekick config
      */
     constructor(cfg) {
-      this.root = appendTag(document.body, {
+      super();
+      this.attachShadow({ mode: 'open' });
+      this.root = appendTag(this.shadowRoot, {
         tag: 'div',
         attrs: {
           class: 'hlx-sk hlx-sk-hidden hlx-sk-loading',
@@ -934,6 +937,7 @@
           this.showModal('Failed to fetch status. Please try again later', false, 0, () => {
             // this error is fatal, hide and delete sidekick
             window.hlx.sidekick.hide();
+            window.hlx.sidekick.replaceWith(); // remove() doesn't work for custom element
             delete window.hlx.sidekick;
           });
           console.error('failed to fetch status', e);
@@ -1188,7 +1192,7 @@
      */
     showModal(msg, sticky = false, level = 2, callback) {
       if (!this._modal) {
-        const $spinnerWrap = appendTag(document.body, {
+        const $spinnerWrap = appendTag(this.shadowRoot, {
           tag: 'div',
           attrs: {
             class: 'hlx-sk-overlay',
@@ -1260,7 +1264,7 @@
           href = `${filePath.substring(filePath.lastIndexOf('/') + 1).split('.')[0]}.css`;
         }
       }
-      appendTag(document.head, {
+      appendTag(this.shadowRoot, {
         tag: 'link',
         attrs: {
           rel: 'stylesheet',
@@ -1271,7 +1275,7 @@
       if (!navigator.language.startsWith('en')) {
         // look for language file in same directory
         const langHref = `${href.substring(0, href.lastIndexOf('/'))}/${navigator.language.split('-')[0]}.css`;
-        appendTag(document.head, {
+        appendTag(this.shadowRoot, {
           tag: 'link',
           attrs: {
             rel: 'stylesheet',
@@ -1505,6 +1509,8 @@
     }
   }
 
+  window.customElements.define('helix-sidekick', Sidekick);
+
   /**
    * @external
    * @name "window.hlx.initSidekick"
@@ -1519,7 +1525,9 @@
     window.hlx.sidekickConfig = Object.assign(window.hlx.sidekickConfig || {}, cfg);
     if (!window.hlx.sidekick) {
       // init and show sidekick
-      window.hlx.sidekick = new Sidekick(window.hlx.sidekickConfig).show();
+      window.hlx.sidekick = document.createElement('helix-sidekick');
+      document.body.prepend(window.hlx.sidekick);
+      window.hlx.sidekick.show();
     } else {
       // reload context and toggle sidekick
       window.hlx.sidekick.loadContext(window.hlx.sidekickConfig).toggle();
