@@ -1,3 +1,16 @@
+# [3.11.0](https://github.com/adobe/helix-sidekick/compare/v3.10.0...v3.11.0) (2021-09-27)
+
+
+### Bug Fixes
+
+* also bust client cache on update of code resource ([a742ae5](https://github.com/adobe/helix-sidekick/commit/a742ae5dc9cc43f4d550fd413c07c6cea62a3cf7))
+* editor is always content ([151c483](https://github.com/adobe/helix-sidekick/commit/151c483da63f225f7ca14a4929b036379ed6bd9d))
+
+
+### Features
+
+* support code api ([68d74b6](https://github.com/adobe/helix-sidekick/commit/68d74b63f6879ff486d356fb94ce2504762f93ec))
+
 # [3.10.0](https://github.com/adobe/helix-sidekick/compare/v3.9.0...v3.10.0) (2021-09-23)
 
 
