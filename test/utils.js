@@ -40,6 +40,29 @@ const MOCKS = {
         url: 'https://adobe.sharepoint.com/:w:/r/sites/TheBlog/_layouts/15/Doc.aspx?sourcedoc=%7BE8EC80CB-24C3-4B95-B082-C51FD8BC8760%7D&file=bla.docx&action=default&mobileredirect=true',
       },
     },
+    blogCode: {
+      resourcePath: '/scripts/bla.js',
+      webPath: '/scripts/bla.js',
+      live: {
+        url: 'https://master-theblog--adobe.hlx.live/scripts/bla.js',
+      },
+      code: {
+        codeBusId: 'helix-code-bus/adobe/theblog/master/scripts/bla.js',
+        contentType: 'application/javascript',
+        contentLength: '11239',
+        lastModified: 'Mon, 20 Sep 2021 18:44:07 GMT',
+      },
+      preview: {
+        url: 'https://master--theblog--adobe.hlx3.page/scripts/bla.js',
+      },
+      edit: {
+        url: 'https://github.com/adobe/theblog/edit/master/scripts/bla.js',
+      },
+      source: {
+        lastModified: null,
+        sourceLocation: 'https://raw.githubusercontent.com/adobe/theblog/master/scripts/bla.js',
+      },
+    },
     pages: {
       webPath: '/creativecloud/en/test',
       preview: {

@@ -666,11 +666,17 @@
           const { location, status } = sk;
           // double check
           if (status.edit && status.edit.url) {
-            window.alert('This page still has a source document and cannot be deleted.');
+            window.alert(sk.isContent()
+              ? 'This page still has a source document and cannot be deleted.'
+              : 'This file still exists in the repository and cannot be deleted.');
             return;
           }
           // have user confirm deletion
-          if (window.confirm('This page no longer has a source document, deleting it cannot be undone!\n\nAre you sure you want to delete it?')) {
+          if (window.confirm(`${sk.isContent()
+            ? 'This page no longer has a source document'
+            : 'This file no longer exists in the repository'}
+            , deleting it cannot be undone!\n\n
+            Are you sure you want to delete it?`)) {
             try {
               const resp = await sk.delete();
               if (!resp.ok && resp.status >= 400) {
@@ -702,7 +708,8 @@
       id: 'publish',
       condition: (sidekick) => sidekick.isHelix() && sidekick.config.outerHost
         && !(sidekick.config.byocdn && sidekick.location.host === sidekick.config.host)
-        && (sidekick.status.edit && sidekick.status.edit.url), // show if edit url exists
+        && (sidekick.status.edit && sidekick.status.edit.url) // show if edit url exists
+        && sk.isContent(),
       button: {
         action: async (evt) => {
           const { config, location } = sk;
@@ -749,7 +756,8 @@
       condition: (sidekick) => sidekick.isHelix() && sidekick.config.outerHost
         && !(sidekick.config.byocdn && sidekick.location.host === sidekick.config.host)
         && (!sidekick.status.edit || !sidekick.status.edit.url) // show if no edit url
-        && sidekick.status.live && sidekick.status.live.lastModified, // show if published
+        && sidekick.status.live && sidekick.status.live.lastModified // show if published
+        && sk.isContent(),
       button: {
         action: async () => {
           const { status } = sk;
@@ -920,7 +928,9 @@
       }
       if (!this.status.apiUrl) {
         const { href, pathname } = this.location;
-        const apiUrl = getAdminUrl(this.config, 'preview', this.isEditor() ? '/' : pathname);
+        const apiUrl = getAdminUrl(
+          this.config, this.isContent() ? 'preview' : 'code', this.isEditor() ? '/' : pathname,
+        );
         if (this.isEditor()) {
           apiUrl.search = new URLSearchParams([
             ['editUrl', href],
@@ -1173,6 +1183,16 @@
     }
 
     /**
+     * Checks if the current location is a content URL.
+     * @returns {boolean} <code>true</code> if content URL, else <code>false</code>
+     */
+    isContent() {
+      const file = this.location.pathname.split('/').pop();
+      const ext = file && file.split('.').pop();
+      return this.isEditor() || ext === file || ext === 'html' || ext === 'json';
+    }
+
+    /**
      * Displays a non-sticky notification.
      * @param {string|string[]} msg The message (lines) to display
      * @param {number}          level error (0), warning (1), of info (2)
@@ -1316,7 +1336,7 @@
       } else {
         envUrl = `https://${config[hostType]}${status.webPath}`;
         if (config.hlx3 && targetEnv === 'preview' && this.isEditor()) {
-          await this.update(status.webPath);
+          await this.update();
         }
       }
       if (!envUrl) {
@@ -1338,7 +1358,7 @@
     }
 
     /**
-     * Updates the preview of the current page.
+     * Updates the preview or code of the current resource.
      * @fires Sidekick#updated
      * @return {Response} The response object
      */
@@ -1349,7 +1369,8 @@
       try {
         if (config.hlx3) {
           // update preview
-          resp = await fetch(getAdminUrl(config, 'preview', path), { method: 'POST' });
+          resp = await fetch(getAdminUrl(config, this.isContent() ? 'preview' : 'code', path),
+            { method: 'POST' });
         } else {
           resp = await this.publish(path, true);
         }
@@ -1369,7 +1390,7 @@
     }
 
     /**
-     * Deletes the preview resource.
+     * Deletes the preview or code of the current resource.
      * @fires Sidekick#deleted
      * @return {Response} The response object
      */
@@ -1380,7 +1401,8 @@
       try {
         if (config.hlx3) {
           // delete preview
-          resp = await fetch(getAdminUrl(config, 'preview', path), { method: 'DELETE' });
+          resp = await fetch(getAdminUrl(config, this.isContent() ? 'preview' : 'code', path),
+            { method: 'DELETE' });
           if (status.live && status.live.lastModified) {
             await this.unpublish(path);
           }
@@ -1418,7 +1440,8 @@
       const { config, location } = this;
 
       if ((!innerOnly && !config.hlx3 && !config.host) // non-hlx3 without host
-        || (config.byocdn && location.host === config.host)) { // byocdn and prod host
+        || (config.byocdn && location.host === config.host) // byocdn and prod host
+        || !this.isContent()) {
         return null;
       }
 
@@ -1470,6 +1493,9 @@
      * @return {Response} The response object
      */
     async unpublish() {
+      if (!this.isContent()) {
+        return null;
+      }
       const { config, status } = this;
       const path = status.webPath;
       let resp;
