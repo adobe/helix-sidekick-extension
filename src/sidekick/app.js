@@ -1183,9 +1183,9 @@
      * @returns {boolean} <code>true</code> if content URL, else <code>false</code>
      */
     isContent() {
-      const file = this.status.webPath && this.status.webPath.split('/').pop();
+      const file = this.location.pathname.split('/').pop();
       const ext = file && file.split('.').pop();
-      return ext === file || ext === 'html' || ext === 'json';
+      return this.isEditor() || ext === file || ext === 'html' || ext === 'json';
     }
 
     /**
