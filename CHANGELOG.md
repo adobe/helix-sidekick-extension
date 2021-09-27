@@ -1,3 +1,10 @@
+# [3.12.0](https://github.com/adobe/helix-sidekick/compare/v3.11.0...v3.12.0) (2021-09-27)
+
+
+### Features
+
+* use custom element for improved isolation ([414006c](https://github.com/adobe/helix-sidekick/commit/414006caea82b2f1b10dec288d0cf8d78a337632))
+
 # [3.11.0](https://github.com/adobe/helix-sidekick/compare/v3.10.0...v3.11.0) (2021-09-27)
 
 
