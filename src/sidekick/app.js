@@ -666,11 +666,17 @@
           const { location, status } = sk;
           // double check
           if (status.edit && status.edit.url) {
-            window.alert('This page still has a source document and cannot be deleted.');
+            window.alert(sk.isContent()
+              ? 'This page still has a source document and cannot be deleted.'
+              : 'This file still exists in the repository and cannot be deleted.');
             return;
           }
           // have user confirm deletion
-          if (window.confirm('This page no longer has a source document, deleting it cannot be undone!\n\nAre you sure you want to delete it?')) {
+          if (window.confirm(`${sk.isContent()
+            ? 'This page no longer has a source document'
+            : 'This file no longer exists in the repository'}
+            , deleting it cannot be undone!\n\n
+            Are you sure you want to delete it?`)) {
             try {
               const resp = await sk.delete();
               if (!resp.ok && resp.status >= 400) {
