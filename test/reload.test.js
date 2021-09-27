@@ -106,6 +106,42 @@ describe('Test reload plugin', () => {
     assert.ok(reloaded, 'Reload not triggered');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
+  it('Reload plugin uses code API in hlx3 mode', async () => {
+    const page = getPage();
+    const apiMock = MOCKS.api.blogCode;
+    let loads = 0;
+    let apiCalled = false;
+    let reloaded = false;
+    await testPageRequests({
+      page,
+      url: `${fixturesPrefix}/reload-staging-code-hlx3.html`,
+      check: (req) => {
+        if (!apiCalled && req.method() === 'POST') {
+          // intercept api request
+          apiCalled = req.url().endsWith(`/code/adobe/theblog/master${apiMock.webPath}`);
+        } else if (req.url().endsWith('reload-staging-code-hlx3.html')) {
+          loads += 1;
+          if (loads === 2) {
+            // reload triggered
+            reloaded = true;
+            return true;
+          }
+        }
+        return false;
+      },
+      checkCondition: (request) => request.url().startsWith('https://')
+        || request.url().endsWith('reload-staging-code-hlx3.html'),
+      mockResponses: [
+        apiMock,
+        apiMock,
+      ],
+      plugin: 'reload',
+    });
+    // check result
+    assert.ok(apiCalled, 'Code API not called');
+    assert.ok(reloaded, 'Reload not triggered');
+  }).timeout(IT_DEFAULT_TIMEOUT);
+
   it('No reload plugin without source document', async () => {
     const page = getPage();
     const apiMock = { ...MOCKS.api.blog };
