@@ -1370,7 +1370,7 @@
         } else {
           resp = await this.publish(path, true);
         }
-        if ((this.isEditor() || this.isInner() || this.isDev()) && this.isContent()) {
+        if (this.isEditor() || this.isInner() || this.isDev()) {
           // bust client cache
           await fetch(`https://${config.innerHost}${path}`, { cache: 'reload', mode: 'no-cors' });
         }
