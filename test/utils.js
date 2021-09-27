@@ -88,7 +88,9 @@ const toResp = (resp) => ({
 });
 
 const getPlugins = async (p) => p.evaluate(
-  () => Array.from(document.querySelectorAll('.hlx-sk > div.env > div, .hlx-sk > div:not(.env)'))
+  () => Array.from(window.hlx.sidekick
+    .shadowRoot
+    .querySelectorAll('.hlx-sk > div.env > div, .hlx-sk > div:not(.env)'))
     .map((plugin) => ({
       id: plugin.className,
       text: plugin.textContent,
@@ -125,7 +127,7 @@ const execPlugin = async (p, id) => {
       el.dispatchEvent(evt);
     };
     if (pluginId) {
-      click(document.querySelector(`.hlx-sk .${pluginId} button`));
+      click(window.hlx.sidekick.shadowRoot.querySelector(`.hlx-sk .${pluginId} button`));
     }
   }, id);
   assert.ok(await checkEventFired(p, 'pluginused'), 'Event pluginused not fired');
@@ -137,7 +139,7 @@ const clickButton = async (p, id) => p.evaluate((buttonId) => {
     evt.initEvent('click', true, false);
     el.dispatchEvent(evt);
   };
-  click(window.document.querySelector(`.hlx-sk button.${buttonId}`));
+  click(window.hlx.sidekick.shadowRoot.querySelector(`.hlx-sk button.${buttonId}`));
 }, id);
 
 const mockStandardResponses = async (p, opts = {}) => {

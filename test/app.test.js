@@ -20,6 +20,7 @@ const {
   IT_DEFAULT_TIMEOUT,
   MOCKS,
   getPlugins,
+  execPlugin,
   waitForEvent,
   checkEventFired,
   clickButton,
@@ -40,14 +41,14 @@ describe('Test sidekick bookmarklet', () => {
   it('Renders with missing config', async () => {
     const page = getPage();
     await page.goto(`${fixturesPrefix}/config-none.html`, { waitUntil: 'load' });
-    const skHandle = await page.$('div.hlx-sk');
-    assert.ok(skHandle, 'Did not render without config');
+    const skRoot = await page.evaluate(() => !!window.hlx.sidekick.shadowRoot.querySelector('.hlx-sk'));
+    assert.ok(skRoot, 'Did not render without config');
     const plugins = await getPlugins(page);
     assert.strictEqual(plugins.length, 0, 'Rendered unexpected plugins');
-    const zIndex = await page.evaluate(
-      (elem) => window.getComputedStyle(elem).getPropertyValue('z-index'),
-      skHandle,
-    );
+    const zIndex = await page.evaluate(() => {
+      const root = window.hlx.sidekick.shadowRoot.querySelector('.hlx-sk');
+      return window.getComputedStyle(root).getPropertyValue('z-index');
+    });
     assert.strictEqual(zIndex, '9999999', 'Did not apply default CSS');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
@@ -55,14 +56,15 @@ describe('Test sidekick bookmarklet', () => {
     const page = getPage();
     await mockStandardResponses(page);
     await page.goto(`${fixturesPrefix}/config-wrong.html`, { waitUntil: 'load' });
-    const skHandle = await page.$('div.hlx-sk');
-    assert.ok(skHandle, 'Did not render with irrelevant config');
+    const skHandle = await page.evaluate(() => !!window.hlx.sidekick
+      .shadowRoot.querySelector('.hlx-sk'));
+    assert.ok(skHandle, 'Did not render without config');
     const plugins = await getPlugins(page);
     assert.strictEqual(plugins.length, 0, 'Rendered unexpected plugins');
-    const zIndex = await page.evaluate(
-      (elem) => window.getComputedStyle(elem).getPropertyValue('z-index'),
-      skHandle,
-    );
+    const zIndex = await page.evaluate(() => {
+      const root = window.hlx.sidekick.shadowRoot.querySelector('.hlx-sk');
+      return window.getComputedStyle(root).getPropertyValue('z-index');
+    });
     assert.strictEqual(zIndex, '9999999', 'Did not apply default CSS');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
@@ -236,7 +238,7 @@ describe('Test sidekick bookmarklet', () => {
     });
     let plugins = await getPlugins(page);
     assert.ok(plugins.length, 1, 'Did not add plugins via API');
-    await (await page.$('div.hlx-sk .ding button')).click();
+    await execPlugin(page, 'ding');
     plugins = await getPlugins(page);
     assert.ok(plugins.length, 2, 'Did not execute plugin action');
   }).timeout(IT_DEFAULT_TIMEOUT);
@@ -293,9 +295,12 @@ describe('Test sidekick bookmarklet', () => {
         });
       `,
     });
+    // cancel dialog when it pops up
+    page.on('dialog', async (dialog) => dialog.dismiss());
     await page.goto(`${fixturesPrefix}/config-compatibility.html`, { waitUntil: 'load' });
-    await page.waitForSelector('.hlx-sk > div.foo', { visible: true });
-    assert.ok((await getPlugins(page)).find((p) => p.id === 'bar'), 'Did not add plugins from project');
+    await sleep();
+    const plugins = await getPlugins(page);
+    assert.ok(plugins.find((p) => p.id === 'bar'), 'Did not add plugins from project');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Replaces plugin', async () => {
@@ -360,7 +365,7 @@ describe('Test sidekick bookmarklet', () => {
           },
         ],
       });
-      return document.querySelector('.hlx-sk .foo').textContent;
+      return window.hlx.sidekick.shadowRoot.querySelector('.hlx-sk .foo').textContent;
     });
     assert.strictEqual(text, 'Lorem ipsum', 'Did not add HTML element in plugin');
   }).timeout(IT_DEFAULT_TIMEOUT);
@@ -371,9 +376,10 @@ describe('Test sidekick bookmarklet', () => {
     await page.evaluate(() => {
       window.hlx.sidekick.loadCSS('custom.css');
     });
-    const bgColor = await page.$eval('div.hlx-sk',
-      (elem) => window.getComputedStyle(elem).getPropertyValue('background-color'));
-    await sleep();
+    const bgColor = await page.evaluate(() => {
+      const root = window.hlx.sidekick.shadowRoot.querySelector('.hlx-sk');
+      return window.getComputedStyle(root).getPropertyValue('background-color');
+    });
     assert.strictEqual(bgColor, 'rgb(255, 255, 0)', 'Did not load custom CSS');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
@@ -384,31 +390,31 @@ describe('Test sidekick bookmarklet', () => {
     // shows notification
     assert.strictEqual(await page.evaluate(() => {
       window.hlx.sidekick.notify('Lorem ipsum');
-      return document.querySelector('.hlx-sk-overlay .modal').textContent;
+      return window.hlx.sidekick.shadowRoot.querySelector('.hlx-sk-overlay .modal').textContent;
     }), 'Lorem ipsum', 'Did show notification');
 
     // shows sticky modal
     assert.strictEqual(await page.evaluate(() => {
       window.hlx.sidekick.showModal('Sticky', true);
-      return document.querySelector('.hlx-sk-overlay .modal.wait').textContent;
+      return window.hlx.sidekick.shadowRoot.querySelector('.hlx-sk-overlay .modal.wait').textContent;
     }), 'Sticky', 'Did show sticky modal');
 
     // hides sticky modal
     assert.strictEqual(await page.evaluate(() => {
       window.hlx.sidekick.hideModal();
-      return document.querySelector('.hlx-sk-overlay').classList.contains('hlx-sk-hidden');
+      return window.hlx.sidekick.shadowRoot.querySelector('.hlx-sk-overlay').classList.contains('hlx-sk-hidden');
     }), true, 'Did not hide sticky modal');
 
     // shows multi-line notification
     assert.strictEqual(await page.evaluate(() => {
       window.hlx.sidekick.notify(['Lorem ipsum', 'sit amet']);
-      return document.querySelector('.hlx-sk-overlay .modal').innerHTML;
+      return window.hlx.sidekick.shadowRoot.querySelector('.hlx-sk-overlay .modal').innerHTML;
     }), '<p>Lorem ipsum</p><p>sit amet</p>', 'Did not show multi-line notification');
 
     // hides sticky modal on overlay click
     assert.ok(await page.evaluate(() => {
       window.hlx.sidekick.showModal('Sticky');
-      const overlay = document.querySelector('.hlx-sk-overlay');
+      const overlay = window.hlx.sidekick.shadowRoot.querySelector('.hlx-sk-overlay');
       const click = (el) => {
         const evt = document.createEvent('Events');
         evt.initEvent('click', true, false);
@@ -425,7 +431,11 @@ describe('Test sidekick bookmarklet', () => {
     await waitForEvent(page, 'hidden');
     await clickButton(page, 'close');
     assert.ok(
-      await page.evaluate(() => window.document.querySelector('.hlx-sk').classList.contains('hlx-sk-hidden')),
+      await page.evaluate(() => window.hlx.sidekick
+        .shadowRoot
+        .querySelector('.hlx-sk')
+        .classList
+        .contains('hlx-sk-hidden')),
       'Did not hide sidekick',
     );
     assert.ok(await checkEventFired(page, 'hidden'), 'Event hidden not fired');
@@ -436,7 +446,10 @@ describe('Test sidekick bookmarklet', () => {
     await page.goto(`${fixturesPrefix}/config-none.html`, { waitUntil: 'load' });
     await clickButton(page, 'share');
     assert.strictEqual(
-      await page.evaluate(() => window.document.querySelector('.hlx-sk-overlay .modal').textContent),
+      await page.evaluate(() => window.hlx.sidekick
+        .shadowRoot
+        .querySelector('.hlx-sk-overlay .modal')
+        .textContent),
       'Sharing URL copied to clipboard',
       'Did not copy sharing URL to clipboard',
     );
