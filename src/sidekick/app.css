@@ -10,7 +10,8 @@
  * governing permissions and limitations under the License.
  */
 
-:host {
+:host,
+:root {
   --hlx-sk-bg: #e0e0e0;
   --hlx-sk-logo: url("helix.svg");
   --hlx-sk-color: #505050;
@@ -44,7 +45,8 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  :host {
+  :host,
+  :root {
     --hlx-sk-bg: #303030;
     --hlx-sk-color: #dedede;
     --hlx-sk-button-color: #dedede;
