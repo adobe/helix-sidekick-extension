@@ -1,3 +1,10 @@
+## [3.12.1](https://github.com/adobe/helix-sidekick/compare/v3.12.0...v3.12.1) (2021-09-28)
+
+
+### Bug Fixes
+
+* make css reusable in other UIs ([e239285](https://github.com/adobe/helix-sidekick/commit/e2392857e6683e9bf9267299beae81462beb05c9))
+
 # [3.12.0](https://github.com/adobe/helix-sidekick/compare/v3.11.0...v3.12.0) (2021-09-27)
 
 
