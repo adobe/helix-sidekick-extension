@@ -177,6 +177,7 @@ const testPageRequests = async ({
   events,
   prep = () => {},
   check = () => true,
+  browserCheck: popupCheck,
   mockResponses = MOCKS.purge,
   checkCondition = (req) => req.url().startsWith('https://'),
   timeout = 0,
@@ -184,6 +185,13 @@ const testPageRequests = async ({
 }) => {
   await page.setRequestInterception(true);
   return new Promise((resolve, reject) => {
+    if (typeof popupCheck === 'function') {
+      page.browser().on('request', (req) => {
+        if (popupCheck(req)) {
+          resolve();
+        }
+      });
+    }
     // watch for new browser window
     page.on('request', async (req) => {
       if (DEBUG) {

@@ -166,7 +166,6 @@
    * @type {Object}
    */
   const ENVS = {
-    edit: 'editor',
     preview: 'innerHost',
     live: 'outerHost',
     prod: 'host',
@@ -542,27 +541,32 @@
   }
 
   /**
+   * Adds the edit plugin to the sidekick.
+   * @private
+   * @param {Sidekick} sk The sidekick
+   */
+  function addEditPlugin(sk) {
+    sk.add({
+      id: 'edit',
+      condition: (sidekick) => !sidekick.isEditor() && sidekick.isHelix()
+        && sidekick.status.edit && sidekick.status.edit.url,
+      button: {
+        action: async () => {
+          const { config, status } = sk;
+          const editUrl = status.edit && status.edit.url;
+          window.open(editUrl, `hlx-sk-edit--${config.owner}/${config.repo}/${config.ref}${status.webPath}`);
+        },
+      },
+    });
+  }
+
+  /**
    * Adds the following environment plugins to the sidekick:
-   * Edit, Preview, Live and Production
+   * Preview, Live and Production
    * @private
    * @param {Sidekick} sk The sidekick
    */
   function addEnvPlugins(sk) {
-    // edit
-    sk.add({
-      id: 'edit',
-      condition: (sidekick) => sidekick.isEditor() || sidekick.isHelix(),
-      button: {
-        action: async (evt) => {
-          if (evt.target.classList.contains('pressed')) {
-            return;
-          }
-          sk.switchEnv('edit', newTab(evt));
-        },
-        isPressed: (sidekick) => sidekick.isEditor(),
-      },
-    });
-
     // preview
     sk.add({
       id: 'preview',
@@ -802,6 +806,7 @@
   function checkPlugins(sk) {
     if (sk.plugins.length === 0) {
       // default plugins
+      addEditPlugin(sk);
       addEnvPlugins(sk);
       addReloadPlugin(sk);
       addDeletePlugin(sk);
@@ -1330,26 +1335,18 @@
         window.setTimeout(() => this.switchEnv(targetEnv, open), 1000);
         return this;
       }
-      let envUrl;
-      if (targetEnv === 'edit' && status.edit && status.edit.url) {
-        envUrl = status.edit.url;
-      } else {
-        envUrl = `https://${config[hostType]}${status.webPath}`;
-        if (config.hlx3 && targetEnv === 'preview' && this.isEditor()) {
-          await this.update();
-        }
-      }
-      if (!envUrl) {
-        this.showModal('Failed to switch environment. Please try again later.', true, 0);
-        return this;
+      const envUrl = `https://${config[hostType]}${status.webPath}`;
+      if (config.hlx3 && targetEnv === 'preview' && this.isEditor()) {
+        await this.update();
       }
       fireEvent(this, 'envswitched', {
         sourceUrl: location.href,
         targetUrl: envUrl,
       });
       // switch or open env
-      if (open) {
-        window.open(envUrl);
+      if (open || this.isEditor()) {
+        window.open(envUrl, open
+          ? '' : `hlx-sk-env--${config.owner}/${config.repo}/${config.ref}${status.webPath}`);
         this.hideModal();
       } else {
         window.location.href = envUrl;
