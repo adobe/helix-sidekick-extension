@@ -21,7 +21,7 @@
   },
   "homepage": "https://github.com/adobe/helix-sidekick#readme",
   "devDependencies": {
-    "@adobe/eslint-config-helix": "1.1.5",
+    "@adobe/eslint-config-helix": "1.2.0",
     "@semantic-release/changelog": "6.0.0",
     "@semantic-release/git": "10.0.0",
     "ajv": "8.6.3",
