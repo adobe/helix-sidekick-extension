@@ -1,3 +1,101 @@
+## [3.12.1](https://github.com/adobe/helix-sidekick/compare/v3.12.0...v3.12.1) (2021-09-28)
+
+
+### Bug Fixes
+
+* make css reusable in other UIs ([e239285](https://github.com/adobe/helix-sidekick/commit/e2392857e6683e9bf9267299beae81462beb05c9))
+
+# [3.12.0](https://github.com/adobe/helix-sidekick/compare/v3.11.0...v3.12.0) (2021-09-27)
+
+
+### Features
+
+* use custom element for improved isolation ([414006c](https://github.com/adobe/helix-sidekick/commit/414006caea82b2f1b10dec288d0cf8d78a337632))
+
+# [3.11.0](https://github.com/adobe/helix-sidekick/compare/v3.10.0...v3.11.0) (2021-09-27)
+
+
+### Bug Fixes
+
+* also bust client cache on update of code resource ([a742ae5](https://github.com/adobe/helix-sidekick/commit/a742ae5dc9cc43f4d550fd413c07c6cea62a3cf7))
+* editor is always content ([151c483](https://github.com/adobe/helix-sidekick/commit/151c483da63f225f7ca14a4929b036379ed6bd9d))
+
+
+### Features
+
+* support code api ([68d74b6](https://github.com/adobe/helix-sidekick/commit/68d74b63f6879ff486d356fb94ce2504762f93ec))
+
+# [3.10.0](https://github.com/adobe/helix-sidekick/compare/v3.9.0...v3.10.0) (2021-09-23)
+
+
+### Features
+
+* switch to hlx3 config by default ([1f7a709](https://github.com/adobe/helix-sidekick/commit/1f7a7093f5c89271c1cff1e7e311be24735ab467))
+
+# [3.9.0](https://github.com/adobe/helix-sidekick/compare/v3.8.0...v3.9.0) (2021-09-21)
+
+
+### Features
+
+* delete and unpublish ([0b0d8a4](https://github.com/adobe/helix-sidekick/commit/0b0d8a41aacc707da121b6a821fe01051ece4786))
+
+# [3.8.0](https://github.com/adobe/helix-sidekick/compare/v3.7.4...v3.8.0) (2021-09-15)
+
+
+### Features
+
+* load plugins on statusfetched ([7d9ce52](https://github.com/adobe/helix-sidekick/commit/7d9ce526315891dc7bc421947f1e0ac3306ca3d3))
+
+## [3.7.4](https://github.com/adobe/helix-sidekick/compare/v3.7.3...v3.7.4) (2021-08-24)
+
+
+### Bug Fixes
+
+* publish not working in hlx3 without host ([44804ce](https://github.com/adobe/helix-sidekick/commit/44804ce1fd16e9cf3e2619c3ee98ff1ba773e4f5))
+
+## [3.7.3](https://github.com/adobe/helix-sidekick/compare/v3.7.2...v3.7.3) (2021-08-20)
+
+
+### Bug Fixes
+
+* detect ci build domain for testing ([c6a3b31](https://github.com/adobe/helix-sidekick/commit/c6a3b314f458e620f978762e90dbeff8120b97fe))
+
+## [3.7.2](https://github.com/adobe/helix-sidekick/compare/v3.7.1...v3.7.2) (2021-08-18)
+
+
+### Bug Fixes
+
+* broken live button on hlx3 without prod host ([6ff36bc](https://github.com/adobe/helix-sidekick/commit/6ff36bce031bc74983f7313fcc426d5c4bd28d38))
+
+## [3.7.1](https://github.com/adobe/helix-sidekick/compare/v3.7.0...v3.7.1) (2021-08-11)
+
+
+### Bug Fixes
+
+* leave prod hostnames with dashes alone ([2fa7344](https://github.com/adobe/helix-sidekick/commit/2fa7344ee9da176993cf96bf340c1a84fa11d501))
+
+# [3.7.0](https://github.com/adobe/helix-sidekick/compare/v3.6.0...v3.7.0) (2021-08-09)
+
+
+### Bug Fixes
+
+* auto-update on switch from editor to preview ([ce32f06](https://github.com/adobe/helix-sidekick/commit/ce32f06cf46ad9400aa52e613383cd39b7ac4abd))
+* error handling when fetching status fails ([981639f](https://github.com/adobe/helix-sidekick/commit/981639f9736ae8fff3a7a939eb3e0fb9a74b5993))
+* load language specific labels ([0d99b3c](https://github.com/adobe/helix-sidekick/commit/0d99b3c6b348dc4d07b5ef1012292a0756c9e137))
+
+
+### Features
+
+* auto-update preview on hlx3 only ([51495d0](https://github.com/adobe/helix-sidekick/commit/51495d0bff95a2c73be93657c42eb250734f9c80))
+* fr translations ([105591b](https://github.com/adobe/helix-sidekick/commit/105591b455ea33784a4a9ace31ba645a432dd439))
+
+# [3.6.0](https://github.com/adobe/helix-sidekick/compare/v3.5.1...v3.6.0) (2021-07-15)
+
+
+### Features
+
+* add outerHost config property ([467052a](https://github.com/adobe/helix-sidekick/commit/467052ac3022be0f9ed39d568f7192d9ca4bec32))
+
 ## [3.5.1](https://github.com/adobe/helix-sidekick/compare/v3.5.0...v3.5.1) (2021-07-13)
 
 

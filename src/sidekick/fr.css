@@ -11,31 +11,31 @@
  */
 
 .hlx-sk.hlx-sk-empty::before {
-  content: "Keine Funktionen für diese Seite gefunden";
- }
+  content: "Aucune action disponible pour cette page";
+}
 
 .hlx-sk.hlx-sk-loading::before {
-  content: 'Funktionen werden geladen...';
+  content: 'Chargement...';
 }
 
 .hlx-sk > .share::before {
-  content: "Teile deinen Sidekick";
+  content: "Partager le Sidekick";
 }
 
 .hlx-sk .close::before {
-  content: "Schließen";
+  content: "Fermer";
 }
 
 .hlx-sk-overlay div.modal.wait:empty::before {
-  content: "Bitte warten..."
+  content: "Veuillez patienter..."
 }
 
 .hlx-sk .edit button::before {
-  content: "Bearbeiten";
+  content: "Edition";
 }
 
 .hlx-sk .preview button::before {
-  content: "Vorschau";
+  content: "Aperçu";
 }
 
 .hlx-sk .live button::before {
@@ -43,21 +43,21 @@
 }
 
 .hlx-sk .prod button::before {
-  content: "Produktion";
+  content: "Production";
 }
 
 .hlx-sk .reload button::before {
-  content: "Aktualisieren";
+  content: "Actualiser";
 }
 
 .hlx-sk .delete button::before {
-  content: "Löschen";
+  content: "Effacer";
 }
 
 .hlx-sk .publish button::before {
-  content: "Publizieren";
+  content: "Publier";
 }
 
 .hlx-sk .unpublish button::before {
-  content: "Depublizieren";
+  content: "Dépublier";
 }

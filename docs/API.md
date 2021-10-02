@@ -1,7 +1,7 @@
 ## Classes
 
 <dl>
-<dt><a href="#Sidekick">Sidekick</a></dt>
+<dt><a href="#Sidekick">Sidekick</a> ⇐ <code>HTMLElement</code></dt>
 <dd><p>The sidekick provides helper tools for authors.</p>
 </dd>
 </dl>
@@ -54,12 +54,13 @@ before creating the <a href="#Sidekick">Sidekick</a>.</p>
 
 <a name="Sidekick"></a>
 
-## Sidekick
+## Sidekick ⇐ <code>HTMLElement</code>
 The sidekick provides helper tools for authors.
 
 **Kind**: global class  
+**Extends**: <code>HTMLElement</code>  
 
-* [Sidekick](#Sidekick)
+* [Sidekick](#Sidekick) ⇐ <code>HTMLElement</code>
     * [new Sidekick(cfg)](#new_Sidekick_new)
     * [.fetchStatus()](#Sidekick+fetchStatus) ⇒ [<code>Sidekick</code>](#Sidekick)
     * [.loadContext(cfg)](#Sidekick+loadContext) ⇒ [<code>Sidekick</code>](#Sidekick)
@@ -75,14 +76,16 @@ The sidekick provides helper tools for authors.
     * [.isOuter()](#Sidekick+isOuter) ⇒ <code>boolean</code>
     * [.isProd()](#Sidekick+isProd) ⇒ <code>boolean</code>
     * [.isHelix()](#Sidekick+isHelix) ⇒ <code>boolean</code>
+    * [.isContent()](#Sidekick+isContent) ⇒ <code>boolean</code>
     * [.notify(msg, level)](#Sidekick+notify)
-    * [.showModal(msg, sticky, level)](#Sidekick+showModal) ⇒ [<code>Sidekick</code>](#Sidekick)
+    * [.showModal(msg, sticky, level, callback)](#Sidekick+showModal) ⇒ [<code>Sidekick</code>](#Sidekick)
     * [.hideModal()](#Sidekick+hideModal) ⇒ [<code>Sidekick</code>](#Sidekick)
     * [.loadCSS(path)](#Sidekick+loadCSS) ⇒ [<code>Sidekick</code>](#Sidekick)
     * [.switchEnv(targetEnv, open)](#Sidekick+switchEnv) ⇒ [<code>Sidekick</code>](#Sidekick)
-    * ~~[.reload(path)](#Sidekick+reload) ⇒ <code>Response</code>~~
-    * [.update(path)](#Sidekick+update) ⇒ <code>Response</code>
+    * [.update()](#Sidekick+update) ⇒ <code>Response</code>
+    * [.delete()](#Sidekick+delete) ⇒ <code>Response</code>
     * [.publish(path, innerOnly)](#Sidekick+publish) ⇒ [<code>publishResponse</code>](#publishResponse)
+    * [.unpublish()](#Sidekick+unpublish) ⇒ <code>Response</code>
     * [.addEventListener(type, listener)](#Sidekick+addEventListener)
     * [.removeEventListener(type, listener)](#Sidekick+removeEventListener)
     * ["shown"](#Sidekick+event_shown)
@@ -92,7 +95,9 @@ The sidekick provides helper tools for authors.
     * ["statusfetched"](#Sidekick+event_statusfetched)
     * ["envswitched"](#Sidekick+event_envswitched)
     * ["updated"](#Sidekick+event_updated)
+    * ["deleted"](#Sidekick+event_deleted)
     * ["published"](#Sidekick+event_published)
+    * ["unpublished"](#Sidekick+event_unpublished)
 
 <a name="new_Sidekick_new"></a>
 
@@ -226,6 +231,13 @@ Checks if the current location is a configured Helix URL.
 
 **Kind**: instance method of [<code>Sidekick</code>](#Sidekick)  
 **Returns**: <code>boolean</code> - <code>true</code> if Helix URL, else <code>false</code>  
+<a name="Sidekick+isContent"></a>
+
+### sidekick.isContent() ⇒ <code>boolean</code>
+Checks if the current location is a content URL.
+
+**Kind**: instance method of [<code>Sidekick</code>](#Sidekick)  
+**Returns**: <code>boolean</code> - <code>true</code> if content URL, else <code>false</code>  
 <a name="Sidekick+notify"></a>
 
 ### sidekick.notify(msg, level)
@@ -240,7 +252,7 @@ Displays a non-sticky notification.
 
 <a name="Sidekick+showModal"></a>
 
-### sidekick.showModal(msg, sticky, level) ⇒ [<code>Sidekick</code>](#Sidekick)
+### sidekick.showModal(msg, sticky, level, callback) ⇒ [<code>Sidekick</code>](#Sidekick)
 Displays a modal notification.
 
 **Kind**: instance method of [<code>Sidekick</code>](#Sidekick)  
@@ -252,6 +264,7 @@ Displays a modal notification.
 | msg | <code>string</code> \| <code>Array.&lt;string&gt;</code> |  | The message (lines) to display |
 | sticky | <code>boolean</code> | <code>false</code> | <code>true</code> if message should be sticky (optional) |
 | level | <code>number</code> | <code>2</code> | error (0), warning (1), of info (2) |
+| callback | <code>function</code> |  | The function to call when the modal is hidden again |
 
 <a name="Sidekick+hideModal"></a>
 
@@ -289,33 +302,22 @@ Switches to (or opens) a given environment.
 | targetEnv | <code>string</code> |  | One of the following environments:        <pre>edit</pre>, <pre>preview</pre>, <pre>live</pre> or <pre>prod</pre> |
 | open | <code>boolean</code> | <code>false</code> | <pre>true</pre> if environment should be opened in new tab |
 
-<a name="Sidekick+reload"></a>
-
-### ~~sidekick.reload(path) ⇒ <code>Response</code>~~
-***Deprecated***
-
-Reloads the page at the specified path.
-
-**Kind**: instance method of [<code>Sidekick</code>](#Sidekick)  
-**Returns**: <code>Response</code> - The response object  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| path | <code>string</code> | The path of the page to purge |
-
 <a name="Sidekick+update"></a>
 
-### sidekick.update(path) ⇒ <code>Response</code>
-Updates the preview resource at the specified path.
+### sidekick.update() ⇒ <code>Response</code>
+Updates the preview or code of the current resource.
 
 **Kind**: instance method of [<code>Sidekick</code>](#Sidekick)  
 **Returns**: <code>Response</code> - The response object  
 **Emits**: [<code>updated</code>](#Sidekick+event_updated)  
+<a name="Sidekick+delete"></a>
 
-| Param | Type | Description |
-| --- | --- | --- |
-| path | <code>string</code> | The path of the resource to refresh |
+### sidekick.delete() ⇒ <code>Response</code>
+Deletes the preview or code of the current resource.
 
+**Kind**: instance method of [<code>Sidekick</code>](#Sidekick)  
+**Returns**: <code>Response</code> - The response object  
+**Emits**: [<code>deleted</code>](#Sidekick+event_deleted)  
 <a name="Sidekick+publish"></a>
 
 ### sidekick.publish(path, innerOnly) ⇒ [<code>publishResponse</code>](#publishResponse)
@@ -330,6 +332,14 @@ Publishes the page at the specified path if <pre>config.host</pre> is defined.
 | path | <code>string</code> |  | The path of the page to publish |
 | innerOnly | <code>boolean</code> | <code>false</code> | <pre>true</pre> to only refresh inner CDN, else <pre>false</pre> |
 
+<a name="Sidekick+unpublish"></a>
+
+### sidekick.unpublish() ⇒ <code>Response</code>
+Unpublishes the current page.
+
+**Kind**: instance method of [<code>Sidekick</code>](#Sidekick)  
+**Returns**: <code>Response</code> - The response object  
+**Emits**: [<code>unpublished</code>](#Sidekick+event_unpublished)  
 <a name="Sidekick+addEventListener"></a>
 
 ### sidekick.addEventListener(type, listener)
@@ -418,10 +428,22 @@ This event is fired when the environment has been switched
 This event is fired when a path has been updated.
 
 **Kind**: event emitted by [<code>Sidekick</code>](#Sidekick)  
+<a name="Sidekick+event_deleted"></a>
+
+### "deleted"
+This event is fired when a path has been deleted.
+
+**Kind**: event emitted by [<code>Sidekick</code>](#Sidekick)  
 <a name="Sidekick+event_published"></a>
 
 ### "published"
 This event is fired when a path has been published.
+
+**Kind**: event emitted by [<code>Sidekick</code>](#Sidekick)  
+<a name="Sidekick+event_unpublished"></a>
+
+### "unpublished"
+This event is fired when a path has been unpublished.
 
 **Kind**: event emitted by [<code>Sidekick</code>](#Sidekick)  
 <a name="elemAttr"></a>

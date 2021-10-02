@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-/* global CustomEvent */
+/* global window, document, navigator, fetch, CustomEvent, HTMLElement */
 /* eslint-disable no-console, no-alert */
 
 'use strict';
@@ -142,9 +142,21 @@
    */
 
   /**
+   * @event Sidekick#deleted
+   * @type {string} The deleted path
+   * @description This event is fired when a path has been deleted.
+   */
+
+  /**
    * @event Sidekick#published
    * @type {string} The published path
    * @description This event is fired when a path has been published.
+   */
+
+  /**
+   * @event Sidekick#unpublished
+   * @type {string} The unpublished path
+   * @description This event is fired when a path has been unpublished.
    */
 
   /**
@@ -238,11 +250,13 @@
     }
     innerHost = innerPrefix ? `${innerPrefix}.${innerHost}` : null;
     let liveHost = outerHost;
-    if (!liveHost && publicHost && owner && repo) {
-      liveHost = `${repo}--${owner}.hlx.live`;
+    if (!liveHost && owner && repo) {
       if (hlx3) {
-        // always use branch name in hlx3 outer CDN
-        liveHost = `${ref}--${liveHost}`;
+        // hlx3 sites automatically have an outer CDN (including the ref)
+        liveHost = `${ref}--${repo}--${owner}.hlx.live`;
+      } else if (publicHost) {
+        // hlx2 sites require a production host to be defined
+        liveHost = `${repo}--${owner}.hlx.live`;
       }
     }
     return {
@@ -279,7 +293,7 @@
 
     // replace single - with 2
     const makeHostHelixCompliant = (ahost) => {
-      if (ahost.match(/^.*?--.*?--.*?\./gm)) {
+      if (!/.*\.hlx.*\.(live|page)/.test(ahost) || ahost.match(/^.*?--.*?--.*?\./gm)) {
         return ahost;
       }
       return ahost
@@ -567,7 +581,7 @@
     // live
     sk.add({
       id: 'live',
-      condition: (sidekick) => sidekick.config.outerHost
+      condition: (sidekick) => (sidekick.config.hlx3 || sidekick.config.outerHost)
         && (sidekick.isEditor() || sidekick.isHelix()),
       button: {
         action: async (evt) => {
@@ -606,13 +620,14 @@
   function addReloadPlugin(sk) {
     sk.add({
       id: 'reload',
-      condition: (s) => s.config.innerHost && (s.isInner() || s.isDev()),
+      condition: (s) => s.config.innerHost && (s.isInner() || s.isDev())
+        && (s.status.edit && s.status.edit.url), // show if edit url exists
       button: {
         action: async (evt) => {
           const { location } = sk;
           sk.showModal('Please wait …', true);
           try {
-            const resp = await sk.update(location.pathname);
+            const resp = await sk.update();
             if (!resp.ok && resp.status >= 400) {
               console.error(resp);
               throw new Error(resp);
@@ -637,6 +652,53 @@
   }
 
   /**
+   * Adds the delete plugin to the sidekick.
+   * @private
+   * @param {Sidekick} sk The sidekick
+   */
+  function addDeletePlugin(sk) {
+    sk.add({
+      id: 'delete',
+      condition: (sidekick) => sidekick.isHelix()
+        && (!sidekick.status.edit || !sidekick.status.edit.url), // show if no edit url
+      button: {
+        action: async () => {
+          const { location, status } = sk;
+          // double check
+          if (status.edit && status.edit.url) {
+            window.alert(sk.isContent()
+              ? 'This page still has a source document and cannot be deleted.'
+              : 'This file still exists in the repository and cannot be deleted.');
+            return;
+          }
+          // have user confirm deletion
+          if (window.confirm(`${sk.isContent()
+            ? 'This page no longer has a source document'
+            : 'This file no longer exists in the repository'}
+            , deleting it cannot be undone!\n\n
+            Are you sure you want to delete it?`)) {
+            try {
+              const resp = await sk.delete();
+              if (!resp.ok && resp.status >= 400) {
+                console.error(resp);
+                throw new Error(resp);
+              }
+              console.log(`redirecting to ${location.origin}/`);
+              window.location.href = `${location.origin}/`;
+            } catch (e) {
+              sk.showModal(
+                `Failed to delete ${status.webPath}. Please try again later.`,
+                true,
+                0,
+              );
+            }
+          }
+        },
+      },
+    });
+  }
+
+  /**
    * Adds the publish plugin to the sidekick.
    * @private
    * @param {Sidekick} sk The sidekick
@@ -644,8 +706,10 @@
   function addPublishPlugin(sk) {
     sk.add({
       id: 'publish',
-      condition: (sidekick) => sidekick.isHelix() && sidekick.config.host
-        && !(sidekick.config.byocdn && sidekick.location.host === sidekick.config.host),
+      condition: (sidekick) => sidekick.isHelix() && sidekick.config.outerHost
+        && !(sidekick.config.byocdn && sidekick.location.host === sidekick.config.host)
+        && (sidekick.status.edit && sidekick.status.edit.url) // show if edit url exists
+        && sk.isContent(),
       button: {
         action: async (evt) => {
           const { config, location } = sk;
@@ -660,7 +724,10 @@
           if (results.every((res) => res && res.ok)) {
             sk.showModal('Please wait …', true);
             // fetch and redirect to production
-            const prodURL = `https://${config.byocdn ? config.outerHost : config.host}${path}`;
+            const redirectHost = config.byocdn || (config.hlx3 && !config.host)
+              ? config.outerHost
+              : config.host;
+            const prodURL = `https://${redirectHost}${path}`;
             await fetch(prodURL, { cache: 'reload', mode: 'no-cors' });
             console.log(`redirecting to ${prodURL}`);
             if (newTab(evt)) {
@@ -679,24 +746,141 @@
   }
 
   /**
-   * The sidekick provides helper tools for authors.
+   * Adds the unpublish plugin to the sidekick.
+   * @private
+   * @param {Sidekick} sk The sidekick
    */
-  class Sidekick {
+  function addUnpublishPlugin(sk) {
+    sk.add({
+      id: 'unpublish',
+      condition: (sidekick) => sidekick.isHelix() && sidekick.config.outerHost
+        && !(sidekick.config.byocdn && sidekick.location.host === sidekick.config.host)
+        && (!sidekick.status.edit || !sidekick.status.edit.url) // show if no edit url
+        && sidekick.status.live && sidekick.status.live.lastModified // show if published
+        && sk.isContent(),
+      button: {
+        action: async () => {
+          const { status } = sk;
+          // double check
+          if (status.edit && status.edit.url) {
+            window.alert('This page has a source document and cannot be unpublished.');
+            return;
+          }
+          // have user confirm unpublishing
+          if (window.confirm('This page no longer has a source document, unpublishing it cannot be undone!\n\nAre you sure you want to unpublish it?')) {
+            const path = status.webPath;
+            try {
+              const resp = await sk.unpublish();
+              if (!resp.ok && resp.status >= 400) {
+                console.error(resp);
+                throw new Error(resp);
+              }
+              if (!sk.isInner()) {
+                const newPath = `${path.substring(0, path.lastIndexOf('/'))}/`;
+                console.log(`redirecting to ${newPath}`);
+                window.location.href = newPath;
+              }
+            } catch (e) {
+              sk.showModal(
+                `Failed to unpublish ${path}. Please try again later.`,
+                true,
+                0,
+              );
+            }
+          }
+        },
+      },
+    });
+  }
+
+  /**
+   * Adds the default and custom plugins to the sidekick, or checks existing
+   * plugins based on the status of the current resource.
+   * @private
+   * @param {Sidekick} sk The sidekick
+   */
+  function checkPlugins(sk) {
+    if (sk.plugins.length === 0) {
+      // default plugins
+      addEnvPlugins(sk);
+      addReloadPlugin(sk);
+      addDeletePlugin(sk);
+      addPublishPlugin(sk);
+      addUnpublishPlugin(sk);
+      // custom plugins
+      if (sk.config.plugins && Array.isArray(sk.config.plugins)) {
+        sk.config.plugins.forEach((plugin) => sk.add(plugin));
+      }
+      if (sk.config.compatMode
+        && (sk.isHelix() || sk.isEditor())
+        && (sk.config.devMode || sk.config.innerHost)) {
+        // load custom plugins in compatibility mode
+        let prefix = (sk.isEditor() ? `https://${sk.config.innerHost}` : '');
+        if (sk.config.devMode || sk.config.pluginHost) {
+          // TODO: remove support for pluginHost
+          if (sk.config.pluginHost) {
+            console.warn('pluginHost is deprecated, use devMode instead');
+          }
+          prefix = sk.config.pluginHost || DEV_URL.origin;
+        }
+        appendTag(document.head, {
+          tag: 'script',
+          attrs: {
+            src: `${prefix}/tools/sidekick/plugins.js`,
+          },
+        });
+      }
+      setTimeout(() => {
+        if (sk.root.querySelectorAll(':scope > div > *').length === 0) {
+          // add empty text
+          sk.root.classList.replace('hlx-sk-loading', 'hlx-sk-empty');
+        }
+      }, 5000);
+    } else {
+      // re-evaluate plugin conditions
+      sk.plugins.forEach((plugin) => {
+        if (typeof plugin.condition !== 'function') {
+          // nothing to do
+          return;
+        }
+        const $plugin = sk.get(plugin.id);
+        if ($plugin && !plugin.condition(sk)) {
+          // plugin exists but condition now false
+          sk.remove(plugin.id);
+        } else if (!$plugin && plugin.condition(sk)) {
+          // plugin doesn't exist but condition now true
+          sk.add(plugin);
+        }
+      });
+    }
+  }
+
+  /**
+   * The sidekick provides helper tools for authors.
+   * @augments HTMLElement
+   */
+  class Sidekick extends HTMLElement {
     /**
      * Creates a new sidekick.
      * @param {sidekickConfig} cfg The sidekick config
      */
     constructor(cfg) {
-      this.root = appendTag(document.body, {
+      super();
+      this.attachShadow({ mode: 'open' });
+      this.root = appendTag(this.shadowRoot, {
         tag: 'div',
         attrs: {
-          class: 'hlx-sk hlx-sk-hidden hlx-sk-empty',
+          class: 'hlx-sk hlx-sk-hidden hlx-sk-loading',
         },
         lstnrs: {
-          statusfetched: checkLastModified,
+          statusfetched: () => {
+            checkPlugins(this);
+            checkLastModified(this);
+          },
         },
       });
       this.status = {};
+      this.plugins = [];
       this.loadContext(cfg);
       this.fetchStatus();
       this.loadCSS();
@@ -728,33 +912,6 @@
           click: () => this.hide(),
         },
       });
-      // default plugins
-      addEnvPlugins(this);
-      addReloadPlugin(this);
-      addPublishPlugin(this);
-      // custom plugins
-      if (this.config.plugins && Array.isArray(this.config.plugins)) {
-        this.config.plugins.forEach((plugin) => this.add(plugin));
-      }
-      if (this.config.compatMode
-        && (this.isHelix() || this.isEditor())
-        && (this.config.devMode || this.config.innerHost)) {
-        // load custom plugins in compatibility mode
-        let prefix = (this.isEditor() ? `https://${this.config.innerHost}` : '');
-        if (this.config.devMode || this.config.pluginHost) {
-          // TODO: remove support for pluginHost
-          if (this.config.pluginHost) {
-            console.warn('pluginHost is deprecated, use devMode instead');
-          }
-          prefix = this.config.pluginHost || DEV_URL.origin;
-        }
-        appendTag(document.head, {
-          tag: 'script',
-          attrs: {
-            src: `${prefix}/tools/sidekick/plugins.js`,
-          },
-        });
-      }
       checkForHelix3(this);
       checkForUpdates(this);
     }
@@ -771,7 +928,9 @@
       }
       if (!this.status.apiUrl) {
         const { href, pathname } = this.location;
-        const apiUrl = getAdminUrl(this.config, 'preview', this.isEditor() ? '/' : pathname);
+        const apiUrl = getAdminUrl(
+          this.config, this.isContent() ? 'preview' : 'code', this.isEditor() ? '/' : pathname,
+        );
         if (this.isEditor()) {
           apiUrl.search = new URLSearchParams([
             ['editUrl', href],
@@ -783,7 +942,16 @@
         .then((resp) => resp.json())
         .then((json) => Object.assign(this.status, json))
         .then((json) => fireEvent(this, 'statusfetched', json))
-        .catch((e) => console.error('failed to fetch status', e));
+        .catch((e) => {
+          this.status.error = e.message;
+          this.showModal('Failed to fetch status. Please try again later', false, 0, () => {
+            // this error is fatal, hide and delete sidekick
+            window.hlx.sidekick.hide();
+            window.hlx.sidekick.replaceWith(); // remove() doesn't work for custom element
+            delete window.hlx.sidekick;
+          });
+          console.error('failed to fetch status', e);
+        });
       return this;
     }
 
@@ -850,6 +1018,7 @@
      */
     add(plugin) {
       if (typeof plugin === 'object') {
+        this.plugins.push(plugin);
         plugin.enabled = typeof plugin.condition === 'undefined'
           || (typeof plugin.condition === 'function' && plugin.condition(this));
         // find existing plugin
@@ -876,9 +1045,9 @@
         if (!$plugin && plugin.enabled) {
           // add new plugin
           $plugin = appendTag($pluginContainer, pluginCfg);
-          // remove empty text
-          if (this.root.classList.contains('hlx-sk-empty')) {
-            this.root.classList.remove('hlx-sk-empty');
+          // remove loading text
+          if (this.root.classList.contains('hlx-sk-loading')) {
+            this.root.classList.remove('hlx-sk-loading');
           }
         } else if ($plugin) {
           if (!plugin.enabled) {
@@ -1014,6 +1183,16 @@
     }
 
     /**
+     * Checks if the current location is a content URL.
+     * @returns {boolean} <code>true</code> if content URL, else <code>false</code>
+     */
+    isContent() {
+      const file = this.location.pathname.split('/').pop();
+      const ext = file && file.split('.').pop();
+      return this.isEditor() || ext === file || ext === 'html' || ext === 'json';
+    }
+
+    /**
      * Displays a non-sticky notification.
      * @param {string|string[]} msg The message (lines) to display
      * @param {number}          level error (0), warning (1), of info (2)
@@ -1027,12 +1206,13 @@
      * @param {string|string[]} msg The message (lines) to display
      * @param {boolean}         sticky <code>true</code> if message should be sticky (optional)
      * @param {number}          level error (0), warning (1), of info (2)
+     * @param {Function}        callback The function to call when the modal is hidden again
      * @fires Sidekick#modalshown
      * @returns {Sidekick} The sidekick
      */
-    showModal(msg, sticky = false, level = 2) {
+    showModal(msg, sticky = false, level = 2, callback) {
       if (!this._modal) {
-        const $spinnerWrap = appendTag(document.body, {
+        const $spinnerWrap = appendTag(this.shadowRoot, {
           tag: 'div',
           attrs: {
             class: 'hlx-sk-overlay',
@@ -1061,6 +1241,9 @@
         const sk = this;
         window.setTimeout(() => {
           sk.hideModal();
+          if (callback && typeof callback === 'function') {
+            callback(sk);
+          }
         }, 3000);
       } else {
         this._modal.classList.add('wait');
@@ -1101,7 +1284,7 @@
           href = `${filePath.substring(filePath.lastIndexOf('/') + 1).split('.')[0]}.css`;
         }
       }
-      appendTag(document.head, {
+      appendTag(this.shadowRoot, {
         tag: 'link',
         attrs: {
           rel: 'stylesheet',
@@ -1111,8 +1294,8 @@
       // i18n
       if (!navigator.language.startsWith('en')) {
         // look for language file in same directory
-        const langHref = `${href.substring(0, href.lastIndexOf('/'))}/${navigator.language}.css`;
-        appendTag(document.head, {
+        const langHref = `${href.substring(0, href.lastIndexOf('/'))}/${navigator.language.split('-')[0]}.css`;
+        appendTag(this.shadowRoot, {
           tag: 'link',
           attrs: {
             rel: 'stylesheet',
@@ -1137,19 +1320,23 @@
         console.error('invalid environment', targetEnv);
         return this;
       }
+      if (this.status.error) {
+        return this;
+      }
+      const { config, location, status } = this;
       this.showModal('Please wait …', true);
-      if (!this.status.webPath) {
+      if (!status.webPath) {
         console.log('not ready yet, trying again in a second ...');
         window.setTimeout(() => this.switchEnv(targetEnv, open), 1000);
         return this;
       }
       let envUrl;
-      if (targetEnv === 'edit' && this.status.edit && this.status.edit.url) {
-        envUrl = this.status.edit.url;
+      if (targetEnv === 'edit' && status.edit && status.edit.url) {
+        envUrl = status.edit.url;
       } else {
-        envUrl = `https://${this.config[hostType]}${this.status.webPath}`;
-        if (targetEnv === 'preview' && this.isEditor()) {
-          this.update(this.status.webPath);
+        envUrl = `https://${config[hostType]}${status.webPath}`;
+        if (config.hlx3 && targetEnv === 'preview' && this.isEditor()) {
+          await this.update();
         }
       }
       if (!envUrl) {
@@ -1157,7 +1344,7 @@
         return this;
       }
       fireEvent(this, 'envswitched', {
-        sourceUrl: this.location.href,
+        sourceUrl: location.href,
         targetUrl: envUrl,
       });
       // switch or open env
@@ -1171,40 +1358,61 @@
     }
 
     /**
-     * Reloads the page at the specified path.
-     * @deprecated since v3.2.0. use {@link update} instead
-     * @param {string} path The path of the page to purge
-     * @return {Response} The response object
-     */
-    async reload(path) {
-      console.log('reload() is deprecated, use update() instead.');
-      return this.update(path);
-    }
-
-    /**
-     * Updates the preview resource at the specified path.
-     * @param {string} path The path of the resource to refresh
+     * Updates the preview or code of the current resource.
      * @fires Sidekick#updated
      * @return {Response} The response object
      */
-    async update(path) {
-      const { config } = this;
+    async update() {
+      const { config, status } = this;
+      const path = status.webPath;
       let resp;
       try {
         if (config.hlx3) {
           // update preview
-          resp = await fetch(getAdminUrl(config, 'preview', path), { method: 'POST' });
+          resp = await fetch(getAdminUrl(config, this.isContent() ? 'preview' : 'code', path),
+            { method: 'POST' });
         } else {
           resp = await this.publish(path, true);
         }
-        if (this.isInner() || this.isDev()) {
+        if (this.isEditor() || this.isInner() || this.isDev()) {
           // bust client cache
           await fetch(`https://${config.innerHost}${path}`, { cache: 'reload', mode: 'no-cors' });
         }
+        fireEvent(this, 'updated', path);
       } catch (e) {
         console.error('failed to update', path, e);
       }
-      fireEvent(this, 'updated', path);
+      return {
+        ok: (resp && resp.ok) || false,
+        status: (resp && resp.status) || 0,
+        path,
+      };
+    }
+
+    /**
+     * Deletes the preview or code of the current resource.
+     * @fires Sidekick#deleted
+     * @return {Response} The response object
+     */
+    async delete() {
+      const { config, status } = this;
+      const path = status.webPath;
+      let resp;
+      try {
+        if (config.hlx3) {
+          // delete preview
+          resp = await fetch(getAdminUrl(config, this.isContent() ? 'preview' : 'code', path),
+            { method: 'DELETE' });
+          if (status.live && status.live.lastModified) {
+            await this.unpublish(path);
+          }
+        } else {
+          resp = await this.update(path);
+        }
+        fireEvent(this, 'deleted', path);
+      } catch (e) {
+        console.error('failed to delete', path, e);
+      }
       return {
         ok: (resp && resp.ok) || false,
         status: (resp && resp.status) || 0,
@@ -1231,8 +1439,9 @@
     async publish(path, innerOnly = false) {
       const { config, location } = this;
 
-      if ((!innerOnly && !config.host)
-        || (config.byocdn && location.host === config.host)) {
+      if ((!innerOnly && !config.hlx3 && !config.host) // non-hlx3 without host
+        || (config.byocdn && location.host === config.host) // byocdn and prod host
+        || !this.isContent()) {
         return null;
       }
 
@@ -1279,6 +1488,34 @@
     }
 
     /**
+     * Unpublishes the current page.
+     * @fires Sidekick#unpublished
+     * @return {Response} The response object
+     */
+    async unpublish() {
+      if (!this.isContent()) {
+        return null;
+      }
+      const { config, status } = this;
+      const path = status.webPath;
+      let resp;
+      try {
+        if (config.hlx3) {
+          // delete live
+          resp = await fetch(getAdminUrl(config, 'live', path), { method: 'DELETE' });
+          fireEvent(this, 'unpublished', path);
+        }
+      } catch (e) {
+        console.error('failed to unpublish', path, e);
+      }
+      return {
+        ok: (resp && resp.ok) || false,
+        status: (resp && resp.status) || 0,
+        path,
+      };
+    }
+
+    /**
      * Sets up a function that will be called whenever the specified sidekick
      * event is fired.
      * @param {string} type The event type
@@ -1298,6 +1535,8 @@
     }
   }
 
+  window.customElements.define('helix-sidekick', Sidekick);
+
   /**
    * @external
    * @name "window.hlx.initSidekick"
@@ -1312,7 +1551,9 @@
     window.hlx.sidekickConfig = Object.assign(window.hlx.sidekickConfig || {}, cfg);
     if (!window.hlx.sidekick) {
       // init and show sidekick
-      window.hlx.sidekick = new Sidekick(window.hlx.sidekickConfig).show();
+      window.hlx.sidekick = document.createElement('helix-sidekick');
+      document.body.prepend(window.hlx.sidekick);
+      window.hlx.sidekick.show();
     } else {
       // reload context and toggle sidekick
       window.hlx.sidekick.loadContext(window.hlx.sidekickConfig).toggle();
@@ -1359,7 +1600,7 @@
         let configOrigin = '';
         if (devMode) {
           configOrigin = DEV_URL.origin;
-        } else if (!new RegExp(`${repo}\\-\\-${owner}\\.hlx3?\\.page$`).test(window.location.hostname)) {
+        } else if (!new RegExp(`${repo}\\-\\-${owner}\\.hlx(\\-\\d|3)?\\.page$`).test(window.location.hostname)) {
           // load config from inner CDN
           configOrigin = `https://${ref}--${repo}--${owner}.hlx.page`;
         }

@@ -10,6 +10,7 @@
  * governing permissions and limitations under the License.
  */
 
+:host,
 :root {
   --hlx-sk-bg: #e0e0e0;
   --hlx-sk-logo: url("helix.svg");
@@ -44,6 +45,7 @@
 }
 
 @media (prefers-color-scheme: dark) {
+  :host,
   :root {
     --hlx-sk-bg: #303030;
     --hlx-sk-color: #dedede;
@@ -82,8 +84,10 @@
   box-shadow: var(--hlx-sk-shadow);
 }
 
+.hlx-sk.hlx-sk-loading::before,
 .hlx-sk.hlx-sk-empty::before {
   margin-top: 10px;
+  height: 20px;
   line-height: 2;
 }
 
@@ -264,10 +268,10 @@
 
 .hlx-sk.hlx-sk-empty::before {
   content: "No actions found for this page";
- }
+}
 
-.hlx-sk .loading::before {
-  content: 'Loading...';
+.hlx-sk.hlx-sk-loading::before {
+  content: 'Loading actions...';
 }
 
 .hlx-sk > .share::before {
@@ -302,6 +306,14 @@
   content: "Reload";
 }
 
+.hlx-sk .delete button::before {
+  content: "Delete";
+}
+
 .hlx-sk .publish button::before {
   content: "Publish";
+}
+
+.hlx-sk .unpublish button::before {
+  content: "Unpublish";
 }
