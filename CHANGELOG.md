@@ -1,3 +1,10 @@
+## [3.12.2](https://github.com/adobe/helix-sidekick/compare/v3.12.1...v3.12.2) (2021-10-03)
+
+
+### Bug Fixes
+
+* toggle error ([44b374f](https://github.com/adobe/helix-sidekick/commit/44b374f25832d089e50d34b2ab93537d7727297b))
+
 ## [3.12.1](https://github.com/adobe/helix-sidekick/compare/v3.12.0...v3.12.1) (2021-09-28)
 
 
