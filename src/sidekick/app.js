@@ -1535,8 +1535,6 @@
     }
   }
 
-  window.customElements.define('helix-sidekick', Sidekick);
-
   /**
    * @external
    * @name "window.hlx.initSidekick"
@@ -1551,6 +1549,7 @@
     window.hlx.sidekickConfig = Object.assign(window.hlx.sidekickConfig || {}, cfg);
     if (!window.hlx.sidekick) {
       // init and show sidekick
+      window.customElements.define('helix-sidekick', Sidekick);
       window.hlx.sidekick = document.createElement('helix-sidekick');
       document.body.prepend(window.hlx.sidekick);
       window.hlx.sidekick.show();
