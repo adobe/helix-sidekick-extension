@@ -1,3 +1,10 @@
+# [3.13.0](https://github.com/adobe/helix-sidekick/compare/v3.12.2...v3.13.0) (2021-10-14)
+
+
+### Features
+
+* separate edit from other env plugins ([e9b861e](https://github.com/adobe/helix-sidekick/commit/e9b861eda744ff3981ce811cfce154fa84ff8cbd))
+
 ## [3.12.2](https://github.com/adobe/helix-sidekick/compare/v3.12.1...v3.12.2) (2021-10-03)
 
 

@@ -1,6 +1,6 @@
 {
   "name": "@adobe/helix-sidekick",
-  "version": "3.12.2",
+  "version": "3.13.0",
   "description": "Helix Sidekick",
   "main": "src/index.js",
   "scripts": {
