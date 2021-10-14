@@ -19,6 +19,9 @@ const {
   IT_DEFAULT_TIMEOUT,
   MOCKS,
   testPageRequests,
+  mockStandardResponses,
+  getPlugins,
+  sleep,
   getPage,
   startBrowser,
   stopBrowser,
@@ -36,14 +39,15 @@ describe('Test edit plugin', () => {
     await testPageRequests({
       page,
       url: `${fixturesPrefix}/edit-staging.html`,
-      check: (req) => {
-        if (req.url().startsWith('https://adobe.sharepoint.com/')) {
+      popupCheck: (req) => {
+        try {
           // check request to edit url
           assert.ok(req.url() === apiMock.edit.url, 'Edit URL not called');
           return true;
+        } catch (e) {
+          // ignore otherwise
+          return false;
         }
-        // ignore otherwise
-        return false;
       },
       mockResponses: [
         apiMock,
@@ -52,7 +56,6 @@ describe('Test edit plugin', () => {
       events: [
         'statusfetched',
         'contextloaded',
-        'envswitched',
       ],
     });
   }).timeout(IT_DEFAULT_TIMEOUT);
@@ -63,19 +66,34 @@ describe('Test edit plugin', () => {
     await testPageRequests({
       page,
       url: `${fixturesPrefix}/edit-production.html`,
-      check: (req) => {
-        if (req.url().startsWith('https://adobe.sharepoint.com/')) {
+      popupCheck: (req) => {
+        try {
           // check request to edit url
           assert.ok(req.url() === apiMock.edit.url, 'Edit URL not called');
           return true;
+        } catch (e) {
+          // ignore otherwise
+          return false;
         }
-        // ignore otherwise
-        return false;
       },
       mockResponses: [
         apiMock,
       ],
       plugin: 'edit',
     });
+  }).timeout(IT_DEFAULT_TIMEOUT);
+
+  it('No edit plugin without source document', async () => {
+    const page = getPage();
+    const apiMock = { ...MOCKS.api.blog };
+    delete apiMock.edit;
+    await mockStandardResponses(page, {
+      mockResponses: [apiMock],
+    });
+    // open test page
+    await page.goto(`${fixturesPrefix}/edit-staging.html`, { waitUntil: 'load' });
+    await sleep();
+    const plugins = await getPlugins(page);
+    assert.ok(!plugins.find((p) => p.id === 'edit'), 'Unexpected edit plugin found');
   }).timeout(IT_DEFAULT_TIMEOUT);
 });

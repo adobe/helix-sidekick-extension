@@ -36,7 +36,7 @@ describe('Test preview plugin', () => {
     await testPageRequests({
       page,
       url: `${fixturesPrefix}/preview-gdrive.html`,
-      check: (req) => {
+      popupCheck: (req) => {
         if (req.url().includes('.hlx.page/')) {
           // check request to preview url
           assert.ok(
@@ -61,7 +61,7 @@ describe('Test preview plugin', () => {
     await testPageRequests({
       page,
       url: `${fixturesPrefix}/preview-onedrive.html`,
-      check: (req) => {
+      popupCheck: (req) => {
         if (req.url().includes('.hlx.page/')) {
           // check request to preview url
           assert.ok(
