@@ -17,44 +17,65 @@ import {
   getState,
   getConfigMatches,
   toggleDisplay,
+  setDisplay,
 } from './utils.js';
 
-export function checkTab(id, cb) {
+/**
+ * Checks a tab and enables/disables the extension.
+ * @param {number} id The ID of the tab
+ */
+function checkTab(id) {
   getState(({ configs }) => {
     browser.tabs
       .get(id)
       .then((tab = {}) => {
-        // if (browser.runtime.lastError) {
-        //   console.log('error', chrome.runtime.lastError);
-        //   return;
-        // }
-        const allowed = tab.url && getConfigMatches(configs, tab.url).length;
+        if (!tab.url) return;
+        const matches = getConfigMatches(configs, tab.url);
+        // console.log('checking', id, tab.url, matches);
+        const allowed = matches.length > 0;
         if (allowed) {
           // enable extension for this tab
           browser.pageAction.show(id);
-          // inject/refresh sidekick in tab
           browser.tabs.executeScript(id, {
-            file: 'content.js',
-          });
+            runAt: 'document_start',
+            file: './lib/browser-polyfill.min.js',
+          })
+            .then(() => browser.tabs.executeScript(id, {
+              file: './content.js',
+            }))
+            .catch((e) => console.error('failed to inject scripts', e));
         } else {
-          // disable action for this tab
+          // disable extension for this tab
           browser.pageAction.hide(id);
         }
-        if (typeof cb === 'function') cb(allowed);
       })
-      .catch((e) => console.error('error enabling extension', e));
+      .catch((e) => console.error('error checking tab', id, e));
   });
 }
 
-export function toggle(id, cb) {
-  toggleDisplay();
-  checkTab(id, cb);
+/**
+ * Toggles the extension for a tab.
+ * @param {number} id The ID of the tab
+ */
+function toggle(id) {
+  toggleDisplay(() => {
+    checkTab(id);
+  });
 }
 
-export function addListeners() {
+/**
+ * Adds the listeners for the extension.
+ */
+function addListeners() {
   // toggle the sidekick when the browser action is clicked
   browser.pageAction.onClicked.addListener(({ id }) => {
     toggle(id);
+  });
+
+  // listen for display updates from content tab
+  browser.runtime.onMessage.addListener((msg, sender) => {
+    console.log('[background.js] receiving message', msg, sender);
+    setDisplay(msg);
   });
 
   // listen for url updates in any tab and inject sidekick if must be shown

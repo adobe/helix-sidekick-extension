@@ -26,7 +26,7 @@ function getSidekickSettings(sidekickurl) {
     const params = new URL(sidekickurl).searchParams;
     const giturl = params.get('giturl');
     // check gh url
-    if (!getGitHubSettings(giturl).length === 3) {
+    if (Object.keys(getGitHubSettings(giturl)).length !== 3) {
       throw new Error();
     }
     return {
@@ -38,22 +38,26 @@ function getSidekickSettings(sidekickurl) {
   }
 }
 
-async function loadProjectConfig(owner, repo, ref) {
+async function getProjectConfig(owner, repo, ref) {
   const configJS = `https://raw.githubusercontent.com/${owner}/${repo}/${ref}/tools/sidekick/config.js`;
+  const cfg = {};
   const res = await fetch(configJS);
   if (res.ok) {
-    const s = document.createElement('script');
-    s.textContent = await res.text();
-    document.head.append(s);
+    const js = await res.text();
+    const [, host] = /host: '(.*)',/.exec(js) || [];
+    if (host) {
+      cfg.host = host;
+    }
   }
+  return cfg;
 }
 
 function getInnerHost(owner, repo, ref) {
-  return `${ref}--${repo}--${owner}.hlx.page`;
+  return `${ref}--${repo}--${owner}.hlx3.page`;
 }
 
 function isValidShareURL(shareurl) {
-  return Object.keys(getSidekickSettings(shareurl)).length === 3;
+  return Object.keys(getSidekickSettings(shareurl)).length === 2;
 }
 
 function isValidGitHubURL(giturl) {
@@ -109,19 +113,19 @@ function drawConfigs() {
 
 async function addConfig({ giturl, project }, cb) {
   const { owner, repo, ref } = getGitHubSettings(giturl);
-  await loadProjectConfig(owner, repo, ref);
+  const projectConfig = await getProjectConfig(owner, repo, ref);
   const mountpoints = await getMountpoints(owner, repo, ref);
   getState(({ configs }) => {
     if (!configs.find((cfg) => owner === cfg.owner && repo === cfg.repo && ref === cfg.ref)) {
       configs.push({
-        id: `${owner}/${repo}@${ref}`,
+        id: `${owner}/${repo}/${ref}`,
         giturl,
         owner,
         repo,
         ref,
         mountpoints,
         project,
-        ...window.hlx.projectConfig,
+        ...projectConfig,
       });
       browser.storage.sync
         .set({ hlxSidekickConfigs: configs })
@@ -139,7 +143,7 @@ function shareConfig(i, evt) {
     .get('hlxSidekickConfigs')
     .then(({ hlxSidekickConfigs = [] }) => {
       const config = hlxSidekickConfigs[i];
-      const shareUrl = new URL('https://www.hlx.page/tools/sidekick/');
+      const shareUrl = new URL('https://www.hlx.live/tools/sidekick/');
       shareUrl.search = new URLSearchParams([
         ['project', config.project || ''],
         ['giturl', `https://github.com/${config.owner}/${config.repo}${config.ref ? `/tree/${config.ref}` : ''}`],
@@ -153,7 +157,7 @@ function shareConfig(i, evt) {
         navigator.clipboard.writeText(shareUrl.toString());
         evt.target.classList.add('success');
         evt.target.title = i18n('config_shareurl_copied', [config.project || config.innerHost]);
-        notify(i18n('config_shareurl_copied'));
+        // notify(i18n('config_shareurl_copied'));
         window.setTimeout(() => {
           evt.target.classList.remove('success');
           evt.target.title = 'Share';
@@ -297,13 +301,3 @@ window.addEventListener('DOMContentLoaded', () => {
     }
   });
 });
-
-// capture project config
-window.hlx = {
-  projectConfig: {},
-  initSidekick: (cfg) => {
-    window.hlx.projectConfig = {
-      ...cfg,
-    };
-  },
-};

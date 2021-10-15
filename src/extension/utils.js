@@ -25,10 +25,13 @@ export function url(path) {
 
 // shorthand for browser.notifications.create()
 export function notify(message) {
-  browser.notifications.create('', {
-    title: i18n('title'),
-    message,
-  });
+  // eslint-disable-next-line no-alert
+  window.alert(message);
+  // browser.notifications.create('', {
+  //   iconUrl: url('icons/helix_logo_32.png'),
+  //   title: i18n('title'),
+  //   message,
+  // });
 }
 
 export function getGitHubSettings(giturl) {
@@ -58,16 +61,32 @@ export async function getMountpoints(owner, repo, ref) {
   return [];
 }
 
+export async function getState(cb) {
+  if (typeof cb === 'function') {
+    const { hlxSidekickDisplay = false } = await browser.storage.local.get('hlxSidekickDisplay');
+    const { hlxSidekickConfigs = [] } = await browser.storage.sync.get('hlxSidekickConfigs');
+    cb({
+      display: hlxSidekickDisplay,
+      configs: hlxSidekickConfigs,
+    });
+  }
+}
+
 export function getConfigMatches(configs, tabUrl) {
-  const checkHost = new URL(tabUrl).host;
   const matches = [];
-  configs.forEach(({
-    id, owner, repo, ref, host, mountpoints,
-  }) => {
-    const match = (checkHost === 'localhost:3000' // local development
+  const checkHost = new URL(tabUrl).host;
+  configs.forEach((config) => {
+    const {
+      owner,
+      repo,
+      ref,
+      host,
+      mountpoints,
+    } = config;
+    const match = checkHost === 'localhost:3000' // local development
       || (host && checkHost === host) // production host
-      || checkHost.endsWith(`${repo}--${owner}.hlx.live`) // outer CDN
-      || checkHost.endsWith(`${!['master', 'main'].includes(ref) ? `${ref}--` : ''}${repo}--${owner}.hlx.page`) // inner CDN
+      || checkHost === `${ref}--${repo}--${owner}.hlx.live` // outer CDN
+      || checkHost === `${ref}--${repo}--${owner}.hlx3.page` // inner CDN
       || mountpoints // editor
         .map((mp) => {
           const mpUrl = new URL(mp);
@@ -88,23 +107,12 @@ export function getConfigMatches(configs, tabUrl) {
             return true;
           }
           return false;
-        }));
+        });
     if (match) {
-      matches.push(id);
+      matches.push(config);
     }
   });
   return matches;
-}
-
-export async function getState(cb) {
-  if (typeof cb === 'function') {
-    const { hlxSidekickDisplay = false } = await browser.storage.local.get('hlxSidekickDisplay');
-    const { hlxSidekickConfigs = [] } = await browser.storage.sync.get('hlxSidekickConfigs');
-    cb({
-      display: hlxSidekickDisplay,
-      configs: hlxSidekickConfigs,
-    });
-  }
 }
 
 export function setDisplay(display, cb) {

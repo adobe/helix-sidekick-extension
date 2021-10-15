@@ -1,6 +1,6 @@
 {
 	"manifest_version": 2,
-	"name": "Helix Sidekick",
+	"name": "__MSG_title__",
   "version": "1.0",
   "author": "Adobe",
   "homepage_url": "https://www.hlx.live/tools/sidekick/",
@@ -10,18 +10,19 @@
 	"permissions": [
 		"notifications",
     "storage",
-	  "tabs"
-  ],
-	"optional_permissions": [
+	  "tabs",
     "https://*/*",
     "http://localhost:3000/*"
   ],
 	"background": {
-		"page": "background.html"
+  	"page": "background.html"
   },
   "web_accessible_resources": [
-    "../sidekick/*",
-    "controller.js",
+    "app.css",
+    "app.js",
+    "helix.svg",
+    "configpicker.js",
+    "sidekick.js",
     "utils.js"
   ],
 	"page_action": {

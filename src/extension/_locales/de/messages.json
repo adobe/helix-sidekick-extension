@@ -8,6 +8,9 @@
   "title": {
     "message": "Helix Sidekick (ein-/ausschalten mit Ctrl+Shift+H)"
   },
+  "homepage": {
+    "message": "https://www.hlx.live/tools/sidekick/"
+  },
   "save": {
     "message": "Speichern"
   },

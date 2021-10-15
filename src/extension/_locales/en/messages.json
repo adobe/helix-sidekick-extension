@@ -1,12 +1,15 @@
 {
   "description": {
-    "message": "Use Helix Sidekick on multiple Helix projects and across multiple browser windows."
+    "message": "Use Helix Sidekick on multiple projects and across multiple tabs and windows."
   },
   "description_shortcut": {
-    "message": "Toggles Helix Sidekick"
+    "message": "Toggle Helix Sidekick"
   },
   "title": {
     "message": "Helix Sidekick"
+  },
+  "homepage": {
+    "message": "https://www.hlx.live/tools/sidekick/"
   },
   "save": {
     "message": "Save"
@@ -45,7 +48,7 @@
     "message": "Ask someone who already has a Sidekick to share its URL with you by clicking the sharing icon."
   },
   "config_shareurl_placeholder": {
-    "message": "Sharing URL: https://www.hlx.page/tools/sidekick/..."
+    "message": "Sharing URL: https://www.hlx.live/sidekick..."
   }, 
   "config_shareurl_share_title": {
     "message": "Helix Sidekick configuration for $1"
