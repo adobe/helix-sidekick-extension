@@ -36,7 +36,7 @@ describe('Test production plugin', () => {
     await testPageRequests({
       page,
       url: `${fixturesPrefix}/preview-gdrive.html`,
-      check: (req) => {
+      popupCheck: (req) => {
         if (req.url().includes('.adobe.com/')) {
           // check request to production url
           assert.ok(

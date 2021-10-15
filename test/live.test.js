@@ -40,7 +40,7 @@ describe('Test live plugin', () => {
     await testPageRequests({
       page,
       url: `${fixturesPrefix}/preview-gdrive.html`,
-      check: (req) => {
+      popupCheck: (req) => {
         if (req.url().includes('.hlx.live/')) {
           // check request to live url
           assert.ok(
