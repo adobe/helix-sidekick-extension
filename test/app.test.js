@@ -121,7 +121,7 @@ describe('Test sidekick bookmarklet', () => {
     assert.ok(plugins.find((p) => p.id === 'foo'), 'Did not add plugin from config');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
-  it('Shows update dialog on legacy config', async () => {
+  it.skip('Shows update dialog on legacy config', async () => {
     const page = getPage();
     await mockStandardResponses(page);
     await new Promise((resolve, reject) => {
@@ -137,7 +137,7 @@ describe('Test sidekick bookmarklet', () => {
     });
   }).timeout(IT_DEFAULT_TIMEOUT);
 
-  it('Shows update dialog in compatibility mode', async () => {
+  it.skip('Shows update dialog in compatibility mode', async () => {
     const page = getPage();
     await mockStandardResponses(page);
     await new Promise((resolve, reject) => {
@@ -283,7 +283,7 @@ describe('Test sidekick bookmarklet', () => {
     assert.strictEqual(await page.evaluate(() => window.hlx.sidekick.config.host), 'blog.adobe.com', 'Did not load config from project');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
-  it('Adds plugins from project (compatibility mode)', async () => {
+  it.skip('Adds plugins from project (compatibility mode)', async () => {
     const page = getPage();
     await mockStandardResponses(page, {
       pluginsJs: `
