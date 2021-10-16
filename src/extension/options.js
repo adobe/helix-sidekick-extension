@@ -25,6 +25,7 @@ function getSidekickSettings(sidekickurl) {
   try {
     const params = new URL(sidekickurl).searchParams;
     const giturl = params.get('giturl');
+    const hlx3 = params.get('hlx3') !== 'false';
     // check gh url
     if (Object.keys(getGitHubSettings(giturl)).length !== 3) {
       throw new Error();
@@ -32,8 +33,10 @@ function getSidekickSettings(sidekickurl) {
     return {
       giturl,
       project: params.get('project'),
+      hlx3,
     };
   } catch (e) {
+    console.error('error getting sidekick settings from share url', e);
     return {};
   }
 }
@@ -57,7 +60,7 @@ function getInnerHost(owner, repo, ref) {
 }
 
 function isValidShareURL(shareurl) {
-  return Object.keys(getSidekickSettings(shareurl)).length === 2;
+  return Object.keys(getSidekickSettings(shareurl)).length === 3;
 }
 
 function isValidGitHubURL(giturl) {
@@ -79,7 +82,7 @@ function drawConfigs() {
     const container = document.getElementById('configs');
     container.innerHTML = '';
     configs.forEach(({
-      owner, repo, ref, mountpoints, project,
+      owner, repo, ref, mountpoints, project, host,
     }) => {
       const innerHost = getInnerHost(owner, repo, ref);
       const section = document.createElement('section');
@@ -91,7 +94,10 @@ function drawConfigs() {
     ${mountpoints.length
     ? `<p>${i18n('config_project_mountpoints')}: ${mountpoints.map((mp) => drawLink(mp)).join(' ')}</p>`
     : ''}
-  </div>
+    ${host
+    ? `<p>${i18n('config_project_host')}: ${drawLink(host)}</p>`
+    : ''}
+    </div>
   <div>
     <button class="shareConfig" title="${i18n('config_share')}">${i18n('config_share')}</button>
     <button class="editConfig" title="${i18n('config_edit')}">${i18n('config_edit')}</button>
@@ -111,7 +117,7 @@ function drawConfigs() {
   });
 }
 
-async function addConfig({ giturl, project }, cb) {
+async function addConfig({ giturl, project, hlx3 }, cb) {
   const { owner, repo, ref } = getGitHubSettings(giturl);
   const projectConfig = await getProjectConfig(owner, repo, ref);
   const mountpoints = await getMountpoints(owner, repo, ref);
@@ -125,6 +131,7 @@ async function addConfig({ giturl, project }, cb) {
         ref,
         mountpoints,
         project,
+        hlx3,
         ...projectConfig,
       });
       browser.storage.sync
