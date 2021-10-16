@@ -19,7 +19,7 @@
   },
   "web_accessible_resources": [
     "configpicker.js",
-    "lib/browser-polyfill.min.js",
+    "lib/polyfills.min.js",
     "module.js",
     "sidekick.js",
     "utils.js"
@@ -34,7 +34,7 @@
     }
 	},
   "commands": {
-    "_execute_page_action": {
+    "toggle": {
       "suggested_key": {
         "default": "Ctrl+Shift+H",
         "mac": "MacCtrl+Shift+H"

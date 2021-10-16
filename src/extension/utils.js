@@ -13,7 +13,7 @@
 
 'use strict';
 
-import {} from './lib/browser-polyfill.min.js';
+import {} from './lib/polyfills.min.js';
 
 // shorthand for browser.i18n.getMessage()
 export function i18n(msg, subs) {

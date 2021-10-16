@@ -17,7 +17,6 @@ import {
   getState,
   getConfigMatches,
   toggleDisplay,
-  setDisplay,
 } from './utils.js';
 
 /**
@@ -67,10 +66,12 @@ function toggle(id) {
     toggle(id);
   });
 
-  // listen for display updates from content tab
-  browser.runtime.onMessage.addListener((msg, sender) => {
-    console.log('[background.js] receiving message', msg, sender);
-    setDisplay(msg);
+  // toggle on keyboard shortcut
+  browser.commands.onCommand.addListener(async (cmd) => {
+    if (cmd === 'toggle') {
+      const { id } = (await browser.tabs.getCurrent());
+      toggle(id);
+    }
   });
 
   // listen for url updates in any tab and inject sidekick if must be shown

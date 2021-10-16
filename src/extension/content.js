@@ -49,9 +49,9 @@
       } else if (matches.length > 0) {
         console.log('[content.js] multiple configs found, inject picker', matches);
         // multiple matches, show config picker
-        // import('./configpicker.js')
-        //   .then((mod) => mod.default(matches, display, inject))
-        //   .catch((e) => console.error('failed to load config picker', e));
+        import('./configpicker.js')
+          .then((mod) => mod.default(matches, display, inject))
+          .catch((e) => console.error('failed to load config picker', e));
       }
     });
   };

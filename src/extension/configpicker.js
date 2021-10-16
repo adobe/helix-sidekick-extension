@@ -15,6 +15,13 @@ import {
   setDisplay,
 } from './utils.js';
 
+function pushDownContent(display) {
+  document.querySelectorAll('body, iframe#WebApplicationFrame, div#feds-header')
+    .forEach((container) => {
+      container.style.marginTop = display ? '49px' : 'initial';
+    });
+}
+
 class ConfigPicker extends HTMLElement {
   constructor(configs, callback) {
     super();
@@ -23,35 +30,41 @@ class ConfigPicker extends HTMLElement {
     const shadow = this.attachShadow({ mode: 'open' });
 
     // todo: proper UI
-    const root = shadow.append(document.createElement('div'));
+    const css = shadow.appendChild(document.createElement('link'));
+    css.rel = 'stylesheet';
+    css.href = 'https://www.hlx.live/tools/sidekick/app.css';
+
+    const root = shadow.appendChild(document.createElement('div'));
+    root.className = 'hlx-sk';
 
     const label = document.createElement('span');
+    label.style.margin = '16px 8px 0 0';
     label.textContent = i18n('config_project_pick');
     root.append(label);
 
     this.configs.forEach(({ id, project }, i) => {
       const btn = document.createElement('button');
       btn.id = `${id}`;
-      btn.textContent = project || id;
+      btn.innerHTML = `${project || id} <sup style="font-size:0.5rem">${i + 1}</sup>`;
       btn.title = `(Ctrl+Shift+${i + 1})`;
-      btn.addEventListener('click', this.pickByClick);
+      btn.addEventListener('click', (evt) => this.pickByClick(evt.target));
       root.append(btn);
     });
-    const closeBtn = document.createElement('button');
+    const closeBtn = root.appendChild(document.createElement('button'));
     closeBtn.textContent = '✕';
+    closeBtn.className = 'close';
     closeBtn.title = i18n('cancel');
     closeBtn.addEventListener('click', () => {
       setDisplay(false);
       this.destroy();
     });
-    root.append(closeBtn);
-    root.querySelector('button').focus();
-    document.addEventListener('keyup', this.pickByKey);
+    window.setTimeout(() => root.querySelector('button').focus(), 200);
+    root.addEventListener('keyup', (evt) => this.pickByKey(evt));
   }
 
-  pickByClick({ target }) {
+  pickByClick(btn) {
     // get config from click target id
-    const config = this.configs.find((cfg) => cfg.id === target.id);
+    const config = this.configs.find((cfg) => cfg.id === btn.id);
     if (config) {
       this.callback(config);
       this.destroy();
@@ -59,9 +72,9 @@ class ConfigPicker extends HTMLElement {
   }
 
   pickByKey({
-    ctrlKey, shiftKey, key, keyCode,
+    ctrlKey, metaKey, shiftKey, key, keyCode,
   }) {
-    if (!ctrlKey || !shiftKey) return;
+    if (!(ctrlKey || metaKey) || !shiftKey) return;
     if (keyCode > 48 && keyCode < 58) {
       // number between 1 - 9
       const num = parseInt(key, 10);
@@ -79,21 +92,20 @@ class ConfigPicker extends HTMLElement {
   }
 
   destroy() {
-    document.removeEventListener('keyup', this.pickConfigByKey);
+    // document.body.removeEventListener('keyup', this.pickConfigByKey);
     this.replaceWith('');
+    pushDownContent(false);
   }
 }
+
+window.customElements.define('helix-sidekick-config-picker', ConfigPicker);
 
 export default function injectConfigPicker(matches, display, inject) {
   const picker = document.querySelector('helix-sidekick-config-picker');
   if (display && !picker) {
-    // define custom element
-    if (!window.customElements.get('helix-sidekick-config-picker')) {
-      window.customElements.define('helix-sidekick-config-picker', ConfigPicker);
-    }
     // add config picker
-    document.body.prepend(window.customElements
-      .get('helix-sidekick-config-picker')(matches, inject));
+    document.body.prepend(new ConfigPicker(matches, inject));
+    pushDownContent(true);
   } else if (picker && !display) {
     picker.destroy();
   }
