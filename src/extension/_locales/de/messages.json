@@ -45,7 +45,7 @@
     "message": "Mit Teilen-URL hinzufügen"
   },
   "config_shareurl_description": {
-    "message": "Frage jemanden, der schon einen Sidekick hat, dessen URL durch Klicken auf das Teilen-Symbol mit dir zu teilen."
+    "message": "Frage jemanden, der schon einen Sidekick hat, seine URL durch Klicken auf das Teilen-Symbol rechts mit dir zu teilen."
   },
   "config_shareurl_placeholder": {
     "message": "Teilen-URL: https://www.hlx.page/tools/sidekick/..."

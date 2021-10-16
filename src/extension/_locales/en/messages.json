@@ -45,7 +45,7 @@
     "message": "Add via sharing URL"
   },
   "config_shareurl_description": {
-    "message": "Ask someone who already has a Sidekick to share its URL with you by clicking the sharing icon."
+    "message": "Ask someone who already has a Sidekick to share its URL with you by clicking the sharing icon on the right hand side."
   },
   "config_shareurl_placeholder": {
     "message": "Sharing URL: https://www.hlx.live/sidekick..."
