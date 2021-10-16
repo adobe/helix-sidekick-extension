@@ -13,60 +13,56 @@
 
 'use strict';
 
-function runCtl(code) {
-  if (code) {
-    const newScript = document.createElement('script');
-    newScript.id = 'hlx-sk-ctl';
-    newScript.textContent = `
-    window.hlx = window.hlx || {};
-    if (window.hlx.sidekick) {
-      // console.log('[sidekick-ctl.js] sidekick found, running ctl');
-      ${code}
-    } else {
-      window.hlx.sidekickWait = window.setInterval(() => {
-        // console.log('[sidekick.js] waiting for sidekick...');
-        if (window.hlx.sidekick) {
-          // console.log('[sidekick-ctl.js] sidekick found');
-          window.clearInterval(window.hlx.sidekickWait);
-          delete window.hlx.sidekickWait;
-          // console.log('[sidekick-ctl.js] running ctl');
-          ${code}
-        }
-      }, 500);
-    }
-    `;
-    const ctlScript = document.querySelector('script#hlx-sk-ctl');
-    if (ctlScript) {
-      ctlScript.replaceWith(newScript);
-    } else {
-      document.head.append(newScript);
-    }
-  }
-}
+import { setDisplay } from './utils.js';
 
 export default async function injectSidekick(config, display) {
   if (typeof config !== 'object') {
     console.warn('[sidekick.js] no valid config', config);
     return;
   }
-  if (document.querySelector('script#hlx-sk-app')) {
+  if (window.hlx && window.hlx.sidekick) {
     // sidekick exists, toggle
-    runCtl(`window.hlx.sidekick.${display ? 'show' : 'hide'}();`);
+    window.hlx.sidekick[display ? 'show' : 'hide']();
   } else if (display) {
     // create sidekick
-    // console.log('[sidekick.js] create sidekick');
+    console.log('[sidekick.js] create sidekick');
     // reduce config to only include properties relevant for sidekick
-    config = Object.fromEntries(Object.entries(config)
-      .filter(([k]) => ['owner', 'repo', 'ref', 'hlx3'].includes(k)));
-    // console.log('[sidekick.js] curated config', config);
+    window.hlx.sidekickConfig = Object.fromEntries(Object.entries(config)
+      .filter(([k]) => ['owner', 'repo', 'ref', 'hlx3', 'devMode'].includes(k)));
+    console.log('[sidekick.js] curated config', window.hlx.sidekickConfig);
     // inject sidekick
-    const appScript = document.createElement('script');
-    appScript.id = 'hlx-sk-app';
-    appScript.type = 'module';
-    appScript.dataset.config = JSON.stringify(config);
-    appScript.src = 'https://www.hlx.live/tools/sidekick/app.js';
-    // appScript.src = url('./app.js');
-    document.head.append(appScript);
-    runCtl('window.hlx.sidekick.shadowRoot.querySelectorAll(".hlx-sk > button").forEach((b) => b.remove());');
+    await import('./module.js');
+
+    // look for extended config in project
+    const {
+      owner, repo, ref, devMode,
+    } = config;
+    let configOrigin = '';
+    if (devMode) {
+      configOrigin = 'http://localhost:3000';
+    } else {
+      configOrigin = `https://${ref}--${repo}--${owner}.hlx3.page`;
+    }
+    try {
+      await import(`${configOrigin}/tools/sidekick/config.js`);
+    } catch (e) {
+      // init sidekick without extended config
+      console.info('no extended sidekick config found');
+      window.hlx.initSidekick();
+    }
+
+    // wait for sidekick to instrument
+    window.hlx.sidekickWait = window.setInterval(() => {
+      if (window.hlx.sidekick) {
+        window.clearInterval(window.hlx.sidekickWait);
+        delete window.hlx.sidekickWait;
+        // set display to false if user clicks close button
+        window.hlx.sidekick.shadowRoot
+          .querySelector('.hlx-sk > button.close')
+          .addEventListener('click', () => {
+            setDisplay(false);
+          });
+      }
+    }, 200);
   }
 }

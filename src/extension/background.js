@@ -37,13 +37,8 @@ function checkTab(id) {
           // enable extension for this tab
           browser.pageAction.show(id);
           browser.tabs.executeScript(id, {
-            runAt: 'document_start',
-            file: './lib/browser-polyfill.min.js',
-          })
-            .then(() => browser.tabs.executeScript(id, {
-              file: './content.js',
-            }))
-            .catch((e) => console.error('failed to inject scripts', e));
+            file: './content.js',
+          });
         } else {
           // disable extension for this tab
           browser.pageAction.hide(id);
@@ -66,7 +61,7 @@ function toggle(id) {
 /**
  * Adds the listeners for the extension.
  */
-function addListeners() {
+(() => {
   // toggle the sidekick when the browser action is clicked
   browser.pageAction.onClicked.addListener(({ id }) => {
     toggle(id);
@@ -125,6 +120,4 @@ function addListeners() {
       }
     });
   });
-}
-
-addListeners();
+})();

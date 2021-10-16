@@ -18,14 +18,13 @@
   	"page": "background.html"
   },
   "web_accessible_resources": [
-    "app.css",
-    "app.js",
-    "helix.svg",
     "configpicker.js",
+    "lib/browser-polyfill.min.js",
+    "module.js",
     "sidekick.js",
     "utils.js"
   ],
-	"page_action": {
+  "page_action": {
     "default_title": "__MSG_title__",
 		"default_icon": {
 			"16": "icons/helix_logo_16.png",
