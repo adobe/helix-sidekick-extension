@@ -25,11 +25,11 @@ export default async function injectSidekick(config, display) {
     window.hlx.sidekick[display ? 'show' : 'hide']();
   } else if (display) {
     // create sidekick
-    console.log('[sidekick.js] create sidekick');
+    // console.log('[sidekick.js] create sidekick');
     // reduce config to only include properties relevant for sidekick
     window.hlx.sidekickConfig = Object.fromEntries(Object.entries(config)
       .filter(([k]) => ['owner', 'repo', 'ref', 'hlx3', 'devMode'].includes(k)));
-    console.log('[sidekick.js] curated config', window.hlx.sidekickConfig);
+    console.log('[sidekick.js] curated config', JSON.stringify(window.hlx.sidekickConfig));
     // inject sidekick
     await import('./module.js');
 
