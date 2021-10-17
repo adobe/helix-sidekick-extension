@@ -15,6 +15,7 @@
 'use strict';
 
 const assert = require('assert');
+const fs = require('fs-extra');
 const puppeteer = require('puppeteer');
 
 // set debug to true to see browser window and debug output
@@ -150,7 +151,7 @@ const mockStandardResponses = async (p, opts = {}) => {
     mockResponses = [MOCKS.api.dummy],
   } = opts;
   await p.setRequestInterception(true);
-  p.on('request', (req) => {
+  p.on('request', async (req) => {
     if (DEBUG) {
       // eslint-disable-next-line no-console
       console.log(req.method(), req.url());
@@ -163,6 +164,13 @@ const mockStandardResponses = async (p, opts = {}) => {
       req.respond(toResp(configJs));
     } else if (req.url().startsWith('https://admin.hlx3.page/')) {
       req.respond(toResp(mockResponses.shift()));
+    } else if (req.url() === 'https://www.hlx.live/tools/sidekick/module.js') {
+      try {
+        const data = await fs.readFile(`${__dirname}/../src/sidekick/module.js`, 'utf-8');
+        req.respond(toResp(data));
+      } catch (e) {
+        console.error(e);
+      }
     } else {
       // console.log(req.url());
       req.continue();
