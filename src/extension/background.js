@@ -66,14 +66,6 @@ function toggle(id) {
     toggle(id);
   });
 
-  // toggle on keyboard shortcut
-  browser.commands.onCommand.addListener(async (cmd) => {
-    if (cmd === 'toggle') {
-      const { id } = (await browser.tabs.getCurrent());
-      toggle(id);
-    }
-  });
-
   // listen for url updates in any tab and inject sidekick if must be shown
   browser.tabs.onUpdated.addListener((id, info) => {
     // wait until the tab is done loading
