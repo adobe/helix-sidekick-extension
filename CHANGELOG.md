@@ -1,3 +1,10 @@
+# [3.14.0](https://github.com/adobe/helix-sidekick/compare/v3.13.0...v3.14.0) (2021-10-18)
+
+
+### Features
+
+* move core into module ([762e835](https://github.com/adobe/helix-sidekick/commit/762e8354493bac3fb018a8baa6e17c2083afbb2a))
+
 # [3.13.0](https://github.com/adobe/helix-sidekick/compare/v3.12.2...v3.13.0) (2021-10-14)
 
 
