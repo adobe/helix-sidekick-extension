@@ -16,10 +16,21 @@
 import {
   getState,
   getGitHubSettings,
-  getMountpoints,
   i18n,
   notify,
 } from './utils.js';
+
+import {} from './lib/js-yaml.min.js';
+
+async function getMountpoints(owner, repo, ref) {
+  const fstab = `https://raw.githubusercontent.com/${owner}/${repo}/${ref}/fstab.yaml`;
+  const res = await fetch(fstab);
+  if (res.ok) {
+    const { mountpoints = {} } = jsyaml.load(await res.text());
+    return Object.values(mountpoints);
+  }
+  return [];
+}
 
 function getSidekickSettings(sidekickurl) {
   try {
@@ -83,9 +94,10 @@ function drawConfigs() {
     container.innerHTML = '';
     configs.forEach(({
       owner, repo, ref, mountpoints, project, host,
-    }) => {
+    }, i) => {
       const innerHost = getInnerHost(owner, repo, ref);
       const section = document.createElement('section');
+      section.id = `config-${i}`;
       section.className = 'config';
       section.innerHTML = `
   <div>
@@ -105,12 +117,15 @@ function drawConfigs() {
   </div>`;
       container.appendChild(section);
     });
+    // wire share buttons
     document.querySelectorAll('button.shareConfig').forEach((button, i) => {
       button.addEventListener('click', (evt) => shareConfig(i, evt));
     });
+    // wire edit buttons
     document.querySelectorAll('button.editConfig').forEach((button, i) => {
       button.addEventListener('click', (evt) => editConfig(i, evt));
     });
+    // wire delete buttons
     document.querySelectorAll('button.deleteConfig').forEach((button, i) => {
       button.addEventListener('click', (evt) => deleteConfig(i, evt));
     });
@@ -179,14 +194,13 @@ function editConfig(i) {
     .get('hlxSidekickConfigs')
     .then(({ hlxSidekickConfigs = [] }) => {
       const config = hlxSidekickConfigs[i];
-      const pos = document.querySelectorAll('section.config')[i].getBoundingClientRect();
-      const editor = document.getElementById('configEditor');
+      const editorFragment = document.getElementById('configEditorTemplate').content.cloneNode(true);
+      const editor = editorFragment.querySelector('#configEditor');
       const close = () => {
-        // hide editor and blanket
-        editor.classList.add('hidden');
-        document.getElementById('blanket').classList.add('hidden');
         // unregister esc handler
         window.removeEventListener('keyup', escHandler);
+        // redraw configs
+        drawConfigs();
       };
       const escHandler = (evt) => {
         if (evt.key === 'Escape') {
@@ -194,7 +208,11 @@ function editConfig(i) {
         }
       };
       const buttons = editor.querySelectorAll('button');
+      // set project title
+      editorFragment.querySelector('h4').textContent = config.project || config.id;
       // wire save button
+      buttons[0].textContent = i18n('save');
+      buttons[0].title = i18n('save');
       buttons[0].addEventListener('click', async () => {
         Object.keys(config).forEach((key) => {
           const field = document.getElementById(`edit-${key}`);
@@ -219,22 +237,31 @@ function editConfig(i) {
           });
       });
       // wire cancel button
+      buttons[1].textContent = i18n('cancel');
+      buttons[1].title = i18n('cancel');
       buttons[1].addEventListener('click', close);
-      document.querySelector('main').appendChild(editor);
+      // insert editor in place of config section
+      document.getElementById(`config-${i}`).replaceWith(editorFragment);
       // pre-fill form
-      document.getElementById('edit-giturl').value = config.giturl;
-      document.getElementById('edit-project').value = config.project;
-      // position and show editor
-      editor.classList.remove('hidden');
-      editor.style.top = `${pos.top - 36}px`;
-      editor.style.left = `${pos.left - 10}px`;
-      document.getElementById('blanket').classList.remove('hidden');
+      Object.keys(config).forEach((key) => {
+        const field = document.getElementById(`edit-${key}`);
+        if (field) {
+          if (!!config[key]) {
+            field.value = config[key];
+          }
+          field.setAttribute('placeholder', i18n(`__MSG_config_manual_${key}_placeholder__`));
+        }
+      });
       // focus first field
       const firstField = editor.querySelector('input, textarea');
       firstField.focus();
       firstField.select();
       // register esc handler
       window.addEventListener('keyup', escHandler);
+      // disable other config buttons while editor is shown
+      document
+        .querySelectorAll('section.config:not(#configEditor) button')
+        .forEach((btn) => btn.disabled = true);
     });
 }
 

@@ -15,9 +15,20 @@ governing permissions and limitations under the License.
   <meta http-equiv="Content-Security-Policy" content="script-src * 'unsafe-inline' blob: data: filesystem:">
 	<title>Helix Sidekick</title>
 	<link rel="stylesheet" type="text/css" href="./options.css" />
-  <script src="./lib/browser-polyfill.min.js"></script>
-  <script src="./lib/js-yaml.min.js"></script>
   <script src="./options.js" type="module"></script>
+  <template id="configEditorTemplate">
+    <section id="configEditor" class="config">
+      <div>
+        <h4>Project</h4>
+        <p class="mandatory"><input id="edit-giturl"></p>
+        <p><input id="edit-project"></p>
+        <p>
+          <button></button>
+          <button></button>
+        </p>
+      </div>
+    </section>
+  </template>
 </head>
 <body>
 	<nav class="sideBar">
@@ -58,17 +69,6 @@ governing permissions and limitations under the License.
           <p><button id="addManualConfigButton" title="__MSG_add__">__MSG_add__</button></p>
         </div>
       </section>
-      <section id="configEditor" class="hidden">
-        <div>
-          <p class="mandatory"><input id="edit-giturl" placeholder="__MSG_config_manual_giturl_placeholder__"></p>
-          <p><input id="edit-project" placeholder="__MSG_config_manual_project_placeholder__"></p>
-          <p>
-            <button title="__MSG_save__">__MSG_save__</button>
-            <button title="__MSG_cancel__">__MSG_cancel__</button>
-          </p>
-        </div>
-      </section>
-      <div id="blanket" class="hidden"></div>
       <hr>
 
       <h2 class="settings-section-title warn">__MSG_config_reset__</h2>

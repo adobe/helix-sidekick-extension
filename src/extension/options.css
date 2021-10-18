@@ -14,7 +14,7 @@
   --background-color: 255, 255, 255;
   --text-color: 48, 57, 66;
   --link-color: 3, 95, 230;
-  --border-color: 238, 238, 238;
+  --border-color: 221, 221, 221;
   --button-background-image: linear-gradient(#EDEDED, #EDEDED 38%, #DEDEDE);
   --button-hover-background-image: linear-gradient(#F0F0F0, #F0F0F0 38%, #E0E0E0);
   --button-active-background-image: linear-gradient(#EDEDED, #EDEDED 38%, #DEDEDE);
@@ -28,7 +28,7 @@
   --text-color-help: 153, 153, 153;
   --text-color-warn: 204, 0, 0;
   --text-color-success: 0, 204, 0;
-  --editor-background-color: 255, 255, 255;
+  --editor-background-color: 238, 238, 238;
   --config-title-color: 68, 68, 68;
 }
 
@@ -41,11 +41,11 @@
       --button-background-image: linear-gradient(#121212, #121212 38%, #212121);
       --button-hover-background-image: linear-gradient(#0F0F0F, #0F0F0F 38%, #1F1F1F);
       --button-active-background-image: linear-gradient(#121212, #121212 38%, #212121);
-      --button-disabled-background-image: linear-gradient(#EDEDED, #EDEDED 38%, #DEDEDE);
+      --button-disabled-background-image: linear-gradient(#121212, #121212 38%, #212121);
       --sidebar-color: 163, 158, 153;
       --sidebar-link-color: 102, 102, 102;
       --input-border-color: 153, 153, 153;
-      --editor-background-color: 17, 17, 17;
+      --editor-background-color: 34, 34, 34;
       --config-title-color: 188, 188, 188;
     }
 }
@@ -80,8 +80,6 @@ button, select:not([size]), select[size="1"], input[type="checkbox"], input[type
 }
 select:not([size]), select[size="1"] {
   padding-right: 20px;
-  
-  background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABMAAAAICAYAAAAbQcSUAAAAaUlEQVQoz2P4//8/A7UwdkEGhiggTsODo4g2LBEImJmZvwE1/UfHIHGQPNGGAbHCggULFrKxsf1ENgjEB4mD5EnxJoaByAZB5Yk3DNlAPj6+L8gGkWUYzMC3b982IRtEtmFQjaxYxDAwAGi4TwMYKNLfAAAAAElFTkSuQmCC'), -webkit-linear-gradient(#EDEDED, #EDEDED 38%, #DEDEDE);
   background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABMAAAAICAYAAAAbQcSUAAAAaUlEQVQoz2P4//8/A7UwdkEGhiggTsODo4g2LBEImJmZvwE1/UfHIHGQPNGGAbHCggULFrKxsf1ENgjEB4mD5EnxJoaByAZB5Yk3DNlAPj6+L8gGkWUYzMC3b982IRtEtmFQjaxYxDAwAGi4TwMYKNLfAAAAAElFTkSuQmCC'), linear-gradient(#EDEDED, #EDEDED 38%, #DEDEDE);
   background-position: right center;
   background-repeat: no-repeat;
@@ -135,7 +133,6 @@ button:enabled:hover, select:not([size]):enabled:hover, select[size="1"]:enabled
   border-color: rgba(var(--text-color),0.3);
 }
 	select:not([size]):enabled:hover, select[size="1"]:enabled:hover {
-		background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABMAAAAICAYAAAAbQcSUAAAAaUlEQVQoz2P4//8/A7UwdkEGhiggTsODo4g2LBEImJmZvwE1/UfHIHGQPNGGAbHCggULFrKxsf1ENgjEB4mD5EnxJoaByAZB5Yk3DNlAPj6+L8gGkWUYzMC3b982IRtEtmFQjaxYxDAwAGi4TwMYKNLfAAAAAElFTkSuQmCC'), -webkit-linear-gradient(#F0F0F0, #F0F0F0 38%, #E0E0E0);
 		background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABMAAAAICAYAAAAbQcSUAAAAaUlEQVQoz2P4//8/A7UwdkEGhiggTsODo4g2LBEImJmZvwE1/UfHIHGQPNGGAbHCggULFrKxsf1ENgjEB4mD5EnxJoaByAZB5Yk3DNlAPj6+L8gGkWUYzMC3b982IRtEtmFQjaxYxDAwAGi4TwMYKNLfAAAAAElFTkSuQmCC'), linear-gradient(#F0F0F0, #F0F0F0 38%, #E0E0E0);
 	}
 button:enabled:active, select:not([size]):enabled:active, select[size="1"]:enabled:active, input[type="checkbox"]:enabled:active {
@@ -144,7 +141,6 @@ button:enabled:active, select:not([size]):enabled:active, select[size="1"]:enabl
 	text-shadow: none;
 }
 	select:not([size]):enabled:active, select[size="1"]:enabled:active {
-		background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABMAAAAICAYAAAAbQcSUAAAAaUlEQVQoz2P4//8/A7UwdkEGhiggTsODo4g2LBEImJmZvwE1/UfHIHGQPNGGAbHCggULFrKxsf1ENgjEB4mD5EnxJoaByAZB5Yk3DNlAPj6+L8gGkWUYzMC3b982IRtEtmFQjaxYxDAwAGi4TwMYKNLfAAAAAElFTkSuQmCC'), -webkit-linear-gradient(#E7E7E7, #E7E7E7 38%, #D7D7D7);
 		background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABMAAAAICAYAAAAbQcSUAAAAaUlEQVQoz2P4//8/A7UwdkEGhiggTsODo4g2LBEImJmZvwE1/UfHIHGQPNGGAbHCggULFrKxsf1ENgjEB4mD5EnxJoaByAZB5Yk3DNlAPj6+L8gGkWUYzMC3b982IRtEtmFQjaxYxDAwAGi4TwMYKNLfAAAAAElFTkSuQmCC'), linear-gradient(#E7E7E7, #E7E7E7 38%, #D7D7D7);
 	}
 button:enabled:focus, select:not([size]):enabled:focus, select[size="1"]:enabled:focus, input[type="checkbox"]:enabled:focus, input[type="radio"]:enabled:focus {
@@ -158,7 +154,6 @@ button:disabled, select:not([size]):disabled, select[size="1"]:disabled, input[t
 	color: rgba(var(--text-color), 0.7);
 }
 	select:not([size]):disabled, select[size="1"]:disabled {
-		background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABMAAAAICAYAAAAbQcSUAAAAWklEQVQoz2P4//8/A7UwdkEGhiggTsODo4g2LBEIGhoa/uPCIHmiDQNihQULFizEZhBIHCRPijexGggzCCpPvGHoBiIbRJZhMAPfvn3bhGwQ2YZBNbJiEcPAAIgGZrTRc1ZLAAAAAElFTkSuQmCC'), -webkit-linear-gradient(#F1F1F1, #F1F1F1 38%, #E6E6E6);
 		background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABMAAAAICAYAAAAbQcSUAAAAWklEQVQoz2P4//8/A7UwdkEGhiggTsODo4g2LBEIGhoa/uPCIHmiDQNihQULFizEZhBIHCRPijexGggzCCpPvGHoBiIbRJZhMAPfvn3bhGwQ2YZBNbJiEcPAAIgGZrTRc1ZLAAAAAElFTkSuQmCC'), linear-gradient(#F1F1F1, #F1F1F1 38%, #E6E6E6);
 	}
 	input[type="checkbox"]:disabled, input[type="radio"]:disabled {
@@ -238,8 +233,7 @@ header {
 	left: 200px;
 	right: 0;
 	border-bottom: 1px solid rgb(var(--border-color));
-	background: -webkit-linear-gradient(rgb(var(--background-color)), rgb(var(--background-color)) 40%, rgba(var(--background-color), 0.92));
-	background:         linear-gradient(rgb(var(--background-color)), rgb(var(--background-color)) 40%, rgba(var(--background-color), 0.92));
+	background: linear-gradient(rgb(var(--background-color)), rgb(var(--background-color)) 40%, rgba(var(--background-color), 0.92));
 }
 header, section, hr {
 	max-width: 558px;
@@ -393,30 +387,19 @@ section.config input.favorite::after {
 }
 
 #configEditor {
-  max-width: unset;
-  position: absolute;
-  z-index: 11;
-  box-sizing: border-box;
-  border-radius: 5px;
-  box-shadow: 0 4px 8px 0 rgba(var(--text-color), 0.1), 0 10px 20px 0 rgba(var(--text-color), 0.3);
-  padding: 20px 0 20px 30px;
   background-color: rgb(var(--editor-background-color));
+  display: block;
 }
 
-section#configEditor > div {
-  width: 528px;
+#configEditor > div {
+  padding-right: 0;
+  padding-bottom: 0;
+}
+
+#configEditor input {
+  width: 496px;
 }
 
 #configEditor button {
   margin-right: 10px;
-}
-
-#blanket {
-  position: fixed;
-  z-index: 10;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background-color: rgba(var(--text-color), 0.15);
 }

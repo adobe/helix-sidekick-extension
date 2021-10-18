@@ -53,16 +53,6 @@ export function getGitHubSettings(giturl) {
   }
 }
 
-export async function getMountpoints(owner, repo, ref) {
-  const fstab = `https://raw.githubusercontent.com/${owner}/${repo}/${ref}/fstab.yaml`;
-  const res = await fetch(fstab);
-  if (res.ok) {
-    const { mountpoints = {} } = jsyaml.load(await res.text());
-    return Object.values(mountpoints);
-  }
-  return [];
-}
-
 export async function getState(cb) {
   if (typeof cb === 'function') {
     const { hlxSidekickDisplay = false } = await browser.storage.local.get('hlxSidekickDisplay');
