@@ -46,7 +46,7 @@ class ConfigPicker extends HTMLElement {
       const btn = document.createElement('button');
       btn.id = `${id}`;
       btn.innerHTML = `${project || id} <sup style="font-size:0.5rem">${i + 1}</sup>`;
-      btn.title = `(Ctrl+Shift+${i + 1})`;
+      btn.title = i18n('config_picker_button_title', [ i + 1, project || id]);
       btn.addEventListener('click', (evt) => this.pickByClick(evt.target));
       root.append(btn);
     });
@@ -71,15 +71,17 @@ class ConfigPicker extends HTMLElement {
     }
   }
 
-  pickByKey({
-    ctrlKey, metaKey, shiftKey, key, keyCode,
-  }) {
-    if (!(ctrlKey || metaKey) || !shiftKey) return;
+  pickByKey({ key, keyCode }) {
     if (keyCode > 48 && keyCode < 58) {
       // number between 1 - 9
       const num = parseInt(key, 10);
+      const buttons = this.shadowRoot.querySelectorAll('button[id]');
+      // make sure number is in range
+      if (num > buttons.length) {
+        return;
+      }
       // find button and get config from its id
-      const { id } = this.shadowRoot.querySelectorAll('button')[num - 1];
+      const { id } = buttons[num - 1];
       const config = this.configs.find((cfg) => cfg.id === id);
       if (config) {
         this.callback(config);
