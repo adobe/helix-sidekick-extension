@@ -97,5 +97,8 @@
   },
   "config_delete_all_confirm": {
     "message": "Do you really want to delete all settings?"
+  },
+  "config_picker_button_title": {
+    "message": "Press $1 to pick $2"
   }
 }
