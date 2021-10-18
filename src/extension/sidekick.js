@@ -31,7 +31,7 @@ export default async function injectSidekick(config, display) {
       .filter(([k]) => ['owner', 'repo', 'ref', 'hlx3', 'devMode'].includes(k)));
     // console.log('[sidekick.js] curated config', JSON.stringify(window.hlx.sidekickConfig));
     // inject sidekick
-    await import('./module.js');
+    await import('https://www.hlx.live/tools/sidekick/module.js');
 
     // look for extended config in project
     const {
