@@ -47,7 +47,7 @@
           .then((mod) => mod.default(config, display))
           .catch((e) => console.error('failed to load sidekick', e));
       } else if (matches.length > 0) {
-        console.log('[content.js] multiple configs found, inject picker', matches);
+        // console.log('[content.js] multiple configs found, inject picker', matches);
         // multiple matches, show config picker
         import('./configpicker.js')
           .then((mod) => mod.default(matches, display, inject))

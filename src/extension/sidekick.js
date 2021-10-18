@@ -29,7 +29,7 @@ export default async function injectSidekick(config, display) {
     // reduce config to only include properties relevant for sidekick
     window.hlx.sidekickConfig = Object.fromEntries(Object.entries(config)
       .filter(([k]) => ['owner', 'repo', 'ref', 'hlx3', 'devMode'].includes(k)));
-    console.log('[sidekick.js] curated config', JSON.stringify(window.hlx.sidekickConfig));
+    // console.log('[sidekick.js] curated config', JSON.stringify(window.hlx.sidekickConfig));
     // inject sidekick
     await import('./module.js');
 
