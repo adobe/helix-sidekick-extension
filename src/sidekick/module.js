@@ -953,7 +953,7 @@
           this.showModal('Failed to fetch status. Please try again later', false, 0, () => {
             // this error is fatal, hide and delete sidekick
             window.hlx.sidekick.hide();
-            window.hlx.sidekick.replaceWith(); // remove() doesn't work for custom element
+            window.hlx.sidekick.replaceWith(''); // remove() doesn't work for custom element
             delete window.hlx.sidekick;
           });
           console.error('failed to fetch status', e);
@@ -1560,7 +1560,11 @@
       // merge base config with extended config
       window.hlx.sidekickConfig = Object.assign(window.hlx.sidekickConfig || {}, cfg);
       // init and show sidekick
-      window.customElements.define('helix-sidekick', Sidekick);
+      if (!window.customElements.get('helix-sidekick')) {
+        window.customElements.define('helix-sidekick', Sidekick);
+      }
+      // make sure there is only one sidekick
+      document.querySelectorAll('helix-sidekick').forEach((sk) => sk.replaceWith(''));
       window.hlx.sidekick = document.createElement('helix-sidekick');
       document.body.prepend(window.hlx.sidekick);
       window.hlx.sidekick.show();
