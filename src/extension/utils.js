@@ -95,11 +95,12 @@ export function getConfigMatches(configs, tabUrl) {
       ref,
       host,
       mountpoints,
+      hlx3,
     } = config;
     const match = checkHost === 'localhost:3000' // local development
       || (host && checkHost === host) // production host
       || checkHost === `${ref}--${repo}--${owner}.hlx.live` // outer CDN
-      || checkHost === `${ref}--${repo}--${owner}.hlx3.page` // inner CDN
+      || checkHost === `${ref}--${repo}--${owner}.hlx${hlx3 ? '3' : ''}.page` // inner CDN
       || mountpoints // editor
         .map((mp) => {
           const mpUrl = new URL(mp);
