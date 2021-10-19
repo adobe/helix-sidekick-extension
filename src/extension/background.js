@@ -64,8 +64,10 @@ function checkTab(id) {
         } else {
           // disable extension for this tab
           browser.pageAction.hide(id);
-          // check if share URL and ask to add config
-          checkShareUrl(tab.url);
+          // check if active tab has share URL and ask to add config
+          if (tab.active) {
+            checkShareUrl(tab.url);
+          }
         }
       })
       .catch((e) => log.error('error checking tab', id, e));
