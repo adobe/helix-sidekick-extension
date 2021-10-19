@@ -12,11 +12,41 @@
 
 ## Installation
 
-https://www.hlx.live/tools/sidekick/
+### Bookmarklet
+
+1. Navigate to https://www.hlx.live/tools/sidekick/ and read the instructions.
+
+### Extension (experimental)
+
+The bookmarklet configures the Sidekick for a single project and needs to be reopened in every new browser tab. Use the browser extension to:
+- keep the Sidekick open (or closed) while reloading or navigating multiple browser tabs
+- configure Sidekick for multiple projects without cluttering your browser's bookmark bar
+
+#### Test-driving the Chrome Extension
+1. Clone this repository to your local disk: `git clone https://github.com/adobe/helix-sidekick.git`
+   1. Alternatively, you could also download the latest release as ZIP file from [here](https://github.com/adobe/helix-sidekick/releases)
+1. Open Chrome and navigate to `chrome://extensions`
+1. Turn on _Developer mode_ at the top right of the header bar<br />
+![Developer mode](docs/imgs/install_developer_mode.png)
+1. Click the _Load unpacked_ button in the action bar<br />
+![Load unpacked](docs/imgs/install_load_unpacked.png)
+1. Navigate to the `src > extension` folder of your local `helix-sidekick` copy and click _Select_ to install and activate the Sidekick extension.
+1. Verify that your _Extensions_ page displays a box like this:<br />
+![Extension box](docs/imgs/install_extension_box.png)<br />
+1. Click the extensions ("puzzle piece") icon next to Chrome's address bar to see a list of all extensions. Verify that there's a grayed out Helix icon like this:<br />
+![Extension icon disabled](docs/imgs/install_toolbar_icon.png)<br />
+Click the pin button next to it to make sure it is always visible.
+1. Now click the Helix icon and select _Options_:<br />
+![Extension box](docs/imgs/install_contextmenu_options.png)<br />
+On this page, you can add Helix projects by either pasting a share URL* or a GitHub URL in the respective fields and clicking _Add_. This page will also allow you to view, edit and delete existing projects.
+   1. Alternatively, you can also navigate to a share URL* where the Sidekick extension will ask you if you wish to add the project. Click OK to add.
+1. Navigate to your project's homepage and click on the (now colored) Helix icon to toggle the Sidekick.
+
+\* Share URLs start with `https://www.hlx.live/tools/sidekick/...`
 
 ## Configuration
 
-Helix Sidekick supports a number of (optional) configuration options:
+Helix Sidekick supports a number of (optional) configuration options developers can add to the project to maximize the Sidekick experience:
 https://www.hlx.live/tools/sidekick/config.html
 
 ## Usage
