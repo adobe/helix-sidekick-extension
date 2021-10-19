@@ -9,69 +9,24 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-/* eslint-disable no-console, no-use-before-define */
+/* eslint-disable no-use-before-define */
 
 'use strict';
 
 import {
+  log,
   getState,
+  getMountpoints,
   getGitHubSettings,
+  isValidShareURL,
+  getShareSettings,
   i18n,
   notify,
+  addConfig,
 } from './utils.js';
 
-import {} from './lib/js-yaml.min.js';
-
-async function getMountpoints(owner, repo, ref) {
-  const fstab = `https://raw.githubusercontent.com/${owner}/${repo}/${ref}/fstab.yaml`;
-  const res = await fetch(fstab);
-  if (res.ok) {
-    const { mountpoints = {} } = jsyaml.load(await res.text());
-    return Object.values(mountpoints);
-  }
-  return [];
-}
-
-function getSidekickSettings(sidekickurl) {
-  try {
-    const params = new URL(sidekickurl).searchParams;
-    const giturl = params.get('giturl');
-    const hlx3 = params.get('hlx3') !== 'false';
-    // check gh url
-    if (Object.keys(getGitHubSettings(giturl)).length !== 3) {
-      throw new Error();
-    }
-    return {
-      giturl,
-      project: params.get('project'),
-      hlx3,
-    };
-  } catch (e) {
-    console.error('error getting sidekick settings from share url', e);
-    return {};
-  }
-}
-
-async function getProjectConfig(owner, repo, ref) {
-  const configJS = `https://raw.githubusercontent.com/${owner}/${repo}/${ref}/tools/sidekick/config.js`;
-  const cfg = {};
-  const res = await fetch(configJS);
-  if (res.ok) {
-    const js = await res.text();
-    const [, host] = /host: '(.*)',/.exec(js) || [];
-    if (host) {
-      cfg.host = host;
-    }
-  }
-  return cfg;
-}
-
-function getInnerHost(owner, repo, ref) {
-  return `${ref}--${repo}--${owner}.hlx3.page`;
-}
-
-function isValidShareURL(shareurl) {
-  return Object.keys(getSidekickSettings(shareurl)).length === 3;
+function getInnerHost(owner, repo, ref, hlx3) {
+  return `${ref}--${repo}--${owner}.hlx${hlx3 ? '3' : ''}.page`;
 }
 
 function isValidGitHubURL(giturl) {
@@ -93,9 +48,9 @@ function drawConfigs() {
     const container = document.getElementById('configs');
     container.innerHTML = '';
     configs.forEach(({
-      owner, repo, ref, mountpoints, project, host,
+      owner, repo, ref, mountpoints, project, host, hlx3,
     }, i) => {
-      const innerHost = getInnerHost(owner, repo, ref);
+      const innerHost = getInnerHost(owner, repo, ref, hlx3);
       const section = document.createElement('section');
       section.id = `config-${i}`;
       section.className = 'config';
@@ -132,34 +87,6 @@ function drawConfigs() {
   });
 }
 
-async function addConfig({ giturl, project, hlx3 }, cb) {
-  const { owner, repo, ref } = getGitHubSettings(giturl);
-  const projectConfig = await getProjectConfig(owner, repo, ref);
-  const mountpoints = await getMountpoints(owner, repo, ref);
-  getState(({ configs }) => {
-    if (!configs.find((cfg) => owner === cfg.owner && repo === cfg.repo && ref === cfg.ref)) {
-      configs.push({
-        id: `${owner}/${repo}/${ref}`,
-        giturl,
-        owner,
-        repo,
-        ref,
-        mountpoints,
-        project,
-        hlx3,
-        ...projectConfig,
-      });
-      browser.storage.sync
-        .set({ hlxSidekickConfigs: configs })
-        .then(() => (typeof cb === 'function' ? cb(true) : null))
-        .catch((e) => console.error('error adding config', e));
-    } else {
-      notify(i18n('config_project_exists'));
-      if (typeof cb === 'function') cb(false);
-    }
-  });
-}
-
 function shareConfig(i, evt) {
   browser.storage.sync
     .get('hlxSidekickConfigs')
@@ -186,7 +113,7 @@ function shareConfig(i, evt) {
         }, 3000);
       }
     })
-    .catch((e) => console.error('error sharing config', e));
+    .catch((e) => log.error('error sharing config', e));
 }
 
 function editConfig(i) {
@@ -276,7 +203,7 @@ function deleteConfig(i) {
       })
       .then((hlxSidekickConfigs) => browser.storage.sync.set({ hlxSidekickConfigs }))
       .then(() => drawConfigs())
-      .catch((e) => console.error('error deleting config', e));
+      .catch((e) => log.error('error deleting config', e));
   }
 }
 
@@ -299,7 +226,7 @@ window.addEventListener('DOMContentLoaded', () => {
         .clear()
         .then(() => browser.storage.local.clear())
         .then(() => drawConfigs())
-        .catch((e) => console.error('error deleting all configs', e));
+        .catch((e) => log.error('error deleting all configs', e));
     }
   });
 
@@ -307,7 +234,7 @@ window.addEventListener('DOMContentLoaded', () => {
     const shareurl = document.getElementById('shareurl').value;
     // check share url
     if (isValidShareURL(shareurl)) {
-      await addConfig(getSidekickSettings(shareurl), (added) => {
+      await addConfig(getShareSettings(shareurl), (added) => {
         if (added) {
           drawConfigs();
           clearForms();

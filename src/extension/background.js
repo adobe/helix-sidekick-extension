@@ -9,15 +9,38 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-/* eslint-disable no-console */
 
 'use strict';
 
 import {
+  log,
+  i18n,
   getState,
   getConfigMatches,
   toggleDisplay,
+  notify,
+  addConfig,
+  getShareSettings,
+  isValidShareURL,
 } from './utils.js';
+
+/**
+ * Checks if the URL is a share URL and asks the user
+ * to add the config.
+ * @param {string} url The URL to check 
+ */
+async function checkShareUrl(url) {
+  if (isValidShareURL(url)) {
+    log.info('share URL detected', url);
+    if (confirm(i18n('config_shareurl_add_confirm'))) {
+      await addConfig(getShareSettings(url), (added) => {
+        if (added) {
+          notify(i18n('config_shareurl_added'));
+        }
+      });
+    }
+  }
+}
 
 /**
  * Checks a tab and enables/disables the extension.
@@ -27,10 +50,10 @@ function checkTab(id) {
   getState(({ configs }) => {
     browser.tabs
       .get(id)
-      .then((tab = {}) => {
+      .then(async (tab = {}) => {
         if (!tab.url) return;
         const matches = getConfigMatches(configs, tab.url);
-        // console.log('checking', id, tab.url, matches);
+        log.debug('checking', id, tab.url, matches);
         const allowed = matches.length > 0;
         if (allowed) {
           // enable extension for this tab
@@ -41,9 +64,11 @@ function checkTab(id) {
         } else {
           // disable extension for this tab
           browser.pageAction.hide(id);
+          // check if share URL and ask to add config
+          checkShareUrl(tab.url);
         }
       })
-      .catch((e) => console.error('error checking tab', id, e));
+      .catch((e) => log.error('error checking tab', id, e));
   });
 }
 
@@ -83,7 +108,7 @@ function toggle(id) {
   browser.storage.onChanged.addListener(({ hlxSidekickDisplay = null }, area) => {
     if (area === 'local' && hlxSidekickDisplay) {
       const display = hlxSidekickDisplay.newValue;
-      console.log(`sidekick now ${display ? 'shown' : 'hidden'}`);
+      log.info(`sidekick now ${display ? 'shown' : 'hidden'}`);
       browser.tabs
         .query({
           currentWindow: true,
@@ -96,21 +121,7 @@ function toggle(id) {
             }
           });
         })
-        .catch((e) => console.error('error propagating display state', e));
+        .catch((e) => log.error('error propagating display state', e));
     }
-  });
-
-  // fetch script and execute in sandbox
-  browser.runtime.onConnect.addListener((port) => {
-    console.assert(port.name === browser.runtime.id);
-    port.onMessage.addListener(({ scriptUrl, cb }) => {
-      if (scriptUrl) {
-        fetch(scriptUrl)
-          .then((response) => response.text())
-          .then((code) => browser.tabs.executeScript(port.sender.tab.id, { code }))
-          .then(() => (typeof cb === 'function' ? cb() : null))
-          .catch((e) => console.error('unable to load script', scriptUrl, e));
-      }
-    });
   });
 })();

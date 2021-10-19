@@ -56,6 +56,12 @@
   "config_shareurl_copied": {
     "message": "Sharing URL for $1 copied to clipboard"
   },
+  "config_shareurl_add_confirm": {
+    "message": "Would you like to add this project to your Helix Sidekick?"
+  },
+  "config_shareurl_added": {
+    "message": "Project added to Helix Sidekick"
+  },
   "config_manual_title": {
     "message": "Add manually"
   },

@@ -13,11 +13,11 @@
 
 'use strict';
 
-import { setDisplay } from './utils.js';
+import { log, setDisplay } from './utils.js';
 
 export default async function injectSidekick(config, display) {
   if (typeof config !== 'object') {
-    console.warn('[sidekick.js] no valid config', config);
+    log.warn('sidekick.js: invalid config', config);
     return;
   }
   if (window.hlx && window.hlx.sidekick) {
@@ -25,11 +25,11 @@ export default async function injectSidekick(config, display) {
     window.hlx.sidekick[display ? 'show' : 'hide']();
   } else if (display) {
     // create sidekick
-    // console.log('[sidekick.js] create sidekick');
+    log.debug('sidekick.js: no sidekick yet, create it');
     // reduce config to only include properties relevant for sidekick
     window.hlx.sidekickConfig = Object.fromEntries(Object.entries(config)
       .filter(([k]) => ['owner', 'repo', 'ref', 'hlx3', 'devMode'].includes(k)));
-    // console.log('[sidekick.js] curated config', JSON.stringify(window.hlx.sidekickConfig));
+    log.debug('sidekick.js: curated config', JSON.stringify(window.hlx.sidekickConfig));
     // inject sidekick
     await import('https://www.hlx.live/tools/sidekick/module.js');
 
@@ -47,7 +47,7 @@ export default async function injectSidekick(config, display) {
       await import(`${configOrigin}/tools/sidekick/config.js`);
     } catch (e) {
       // init sidekick without extended config
-      console.info('no extended sidekick config found');
+      log.info('no extended sidekick config found');
       window.hlx.initSidekick();
     }
 

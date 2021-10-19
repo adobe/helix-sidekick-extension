@@ -14,6 +14,17 @@
 'use strict';
 
 import {} from './lib/polyfills.min.js';
+import {} from './lib/js-yaml.min.js';
+
+export const SHARE_PAGE = 'https://www.hlx.live/tools/sidekick/';
+
+export const log = {
+  LEVEL: 2,
+  debug: (...args) => log.LEVEL > 3 && console.debug(...args),
+  info: (...args) => log.LEVEL > 2 && console.info(...args),
+  warn: (...args) => log.LEVEL > 1 && console.warn(...args),
+  error: (...args) => log.LEVEL > 0 && console.error(...args),
+};
 
 // shorthand for browser.i18n.getMessage()
 export function i18n(msg, subs) {
@@ -34,6 +45,16 @@ export function notify(message) {
   //   title: i18n('title'),
   //   message,
   // });
+}
+
+export async function getMountpoints(owner, repo, ref) {
+  const fstab = `https://raw.githubusercontent.com/${owner}/${repo}/${ref}/fstab.yaml`;
+  const res = await fetch(fstab);
+  if (res.ok) {
+    const { mountpoints = {} } = jsyaml.load(await res.text());
+    return Object.values(mountpoints);
+  }
+  return [];
 }
 
 export function getGitHubSettings(giturl) {
@@ -107,6 +128,77 @@ export function getConfigMatches(configs, tabUrl) {
   return matches;
 }
 
+export function isValidShareURL(shareurl) {
+  return shareurl.startsWith(SHARE_PAGE)
+    && Object.keys(getShareSettings(shareurl)).length === 3;
+}
+
+export function getShareSettings(shareurl) {
+  if (typeof shareurl === 'string' && shareurl.startsWith(SHARE_PAGE)) {
+    try {
+      const params = new URL(shareurl).searchParams;
+      const giturl = params.get('giturl');
+      const hlx3 = params.get('hlx3') !== 'false';
+      // check gh url
+      if (Object.keys(getGitHubSettings(giturl)).length !== 3) {
+        throw new Error();
+      }
+      return {
+        giturl,
+        project: params.get('project'),
+        hlx3,
+      };
+    } catch (e) {
+      log.error('error getting sidekick settings from share url', e);
+    }
+  }
+  return {};
+}
+
+async function getProjectConfig(owner, repo, ref) {
+  const configJS = `https://raw.githubusercontent.com/${owner}/${repo}/${ref}/tools/sidekick/config.js`;
+  const cfg = {};
+  const res = await fetch(configJS);
+  if (res.ok) {
+    const js = await res.text();
+    const [, host] = /host: '(.*)',/.exec(js) || [];
+    if (host) {
+      cfg.host = host;
+    }
+  }
+  return cfg;
+}
+
+export async function addConfig({ giturl, project, hlx3 }, cb) {
+  const { owner, repo, ref } = getGitHubSettings(giturl);
+  const projectConfig = await getProjectConfig(owner, repo, ref);
+  const mountpoints = await getMountpoints(owner, repo, ref);
+  getState(({ configs }) => {
+    if (!configs.find((cfg) => owner === cfg.owner && repo === cfg.repo && ref === cfg.ref)) {
+      const config = {
+        id: `${owner}/${repo}/${ref}`,
+        giturl,
+        owner,
+        repo,
+        ref,
+        mountpoints,
+        project,
+        hlx3,
+        ...projectConfig,
+      };
+      configs.push(config);
+      browser.storage.sync
+        .set({ hlxSidekickConfigs: configs })
+        .then(() => (typeof cb === 'function' ? cb(true) : null))
+        .then(() => log.info('added config', config))
+        .catch((e) => log.error('error adding config', e));
+    } else {
+      notify(i18n('config_project_exists'));
+      if (typeof cb === 'function') cb(false);
+    }
+  });
+}
+
 export function setDisplay(display, cb) {
   browser.storage.local
     .set({
@@ -115,7 +207,7 @@ export function setDisplay(display, cb) {
     .then(() => {
       if (typeof cb === 'function') cb(display);
     })
-    .catch((e) => console.error('error setting display', e));
+    .catch((e) => log.error('error setting display', e));
 }
 
 export function toggleDisplay(cb) {
