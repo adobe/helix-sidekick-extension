@@ -20,6 +20,7 @@
   "web_accessible_resources": [
     "configpicker.js",
     "lib/polyfills.min.js",
+    "lib/js-yaml.min.js",
     "sidekick.js",
     "utils.js"
   ],
