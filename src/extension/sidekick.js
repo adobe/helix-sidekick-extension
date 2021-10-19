@@ -48,7 +48,9 @@ export default async function injectSidekick(config, display) {
     } catch (e) {
       // init sidekick without extended config
       log.info('no extended sidekick config found');
-      window.hlx.initSidekick();
+      if (!(window.hlx && window.hlx.sidekick)) {
+        window.hlx.initSidekick();
+      }
     }
 
     // wait for sidekick to instrument
