@@ -19,7 +19,7 @@ import {} from './lib/js-yaml.min.js';
 export const SHARE_PAGE = 'https://www.hlx.live/tools/sidekick/';
 
 export const log = {
-  LEVEL: 2,
+  LEVEL: 3,
   debug: (...args) => log.LEVEL > 3 && console.debug(...args),
   info: (...args) => log.LEVEL > 2 && console.info(...args),
   warn: (...args) => log.LEVEL > 1 && console.warn(...args),

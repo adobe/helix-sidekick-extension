@@ -70,7 +70,7 @@ function checkTab(id) {
           }
         }
       })
-      .catch((e) => log.error('error checking tab', id, e));
+      .catch((e) => log.info('error checking tab', id, e));
   });
 }
 
@@ -123,7 +123,12 @@ function toggle(id) {
             }
           });
         })
-        .catch((e) => log.error('error propagating display state', e));
+        .catch((e) => log.warn('error propagating display state', e));
     }
   });
 })();
+
+// announce sidekick display state
+getState(({ display }) => {
+  log.info(`sidekick now ${display ? 'shown' : 'hidden'}`);
+});
