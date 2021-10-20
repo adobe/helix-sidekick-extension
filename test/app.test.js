@@ -510,6 +510,18 @@ describe('Test sidekick bookmarklet', () => {
       'Did not detect production URL',
     );
   }).timeout(IT_DEFAULT_TIMEOUT);
+
+  it('Pushes down content', async () => {
+    assert.fail('To be implemented');
+  });
+
+  it('Pushes down custom elements', async () => {
+    assert.fail('To be implemented');
+  });
+
+  it('Overlays content in noPushDown mode', async () => {
+    assert.fail('To be implemented');
+  });
 });
 
 describe('makeHostHelixCompliant', () => {
