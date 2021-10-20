@@ -41,7 +41,7 @@ export default async function injectSidekick(config, display) {
     if (devMode) {
       configOrigin = 'http://localhost:3000';
     } else {
-      configOrigin = `https://${ref}--${repo}--${owner}.hlx3.page`;
+      configOrigin = `https://${ref}--${repo}--${owner}.hlx.live`;
     }
     try {
       await import(`${configOrigin}/tools/sidekick/config.js`);
