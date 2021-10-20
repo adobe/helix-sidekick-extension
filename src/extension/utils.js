@@ -112,12 +112,12 @@ export function getConfigMatches(configs, tabUrl) {
               // sharepoint, check for site name in path
               const site = encodeURIComponent(mpPath.split('/')[2]);
               return new URL(tabUrl).pathname.includes(`/sites/${site}/`);
-            } else {
-              return true;
+            } else if (checkHost === 'drive.google.com') {
+              // gdrive, but do not render on drive.google.com
+              return false;
             }
-          }
-          if (checkHost === 'docs.google.com' && mpHost === 'drive.google.com') {
-            // gdrive, for now host matching only
+          } else if (checkHost === 'docs.google.com' && mpHost === 'drive.google.com') {
+            // gdrive, render on docs.google.com
             return true;
           }
           return false;
