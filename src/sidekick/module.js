@@ -1534,18 +1534,6 @@
   }
 
   /**
-   * @private
-   * Pushes the rest of the page down to make room for the sidekick.
-   * @param {boolean} display The sidekick's display state
-   */
-  function pushDownContent(display) {
-    document.querySelectorAll('body, iframe#WebApplicationFrame, div#feds-header')
-      .forEach((container) => {
-        container.style.marginTop = display ? '49px' : 'initial';
-      });
-  }
-
-  /**
    * @external
    * @name "window.hlx.initSidekick"
    * @type {Function}
@@ -1568,10 +1556,6 @@
       window.hlx.sidekick = document.createElement('helix-sidekick');
       document.body.prepend(window.hlx.sidekick);
       window.hlx.sidekick.show();
-      // push down content while sidekick is shown
-      pushDownContent(true);
-      window.hlx.sidekick.addEventListener('shown', () => pushDownContent(true));
-      window.hlx.sidekick.addEventListener('hidden', () => pushDownContent(false));
     } else {
       // toggle sidekick
       window.hlx.sidekick.toggle();
