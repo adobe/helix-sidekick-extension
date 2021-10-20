@@ -108,16 +108,23 @@ export function getConfigMatches(configs, tabUrl) {
         })
         .some(([mpHost, mpPath]) => {
           if (checkHost === mpHost) {
-            if (mpHost.includes('sharepoint.com') && mpPath.startsWith('/sites')) {
+            if (mpHost.endsWith('sharepoint.com')) {
+              if (tabUrl.includes('/AllItems.aspx?')) {
+                // sharepoint browser
+                return false;
+              }
               // sharepoint, check for site name in path
-              const site = encodeURIComponent(mpPath.split('/')[2]);
-              return new URL(tabUrl).pathname.includes(`/sites/${site}/`);
+              const pathSegments = mpPath.split('/');
+              pathSegments.shift();
+              const site = encodeURIComponent(pathSegments
+                .find((s) => s !== 's' && s !== 'sites' && !s.startsWith(':')));
+              return new URL(tabUrl).pathname.includes(`/sites/${site}/`);  
             } else if (checkHost === 'drive.google.com') {
               // gdrive, but do not render on drive.google.com
               return false;
             }
           } else if (checkHost === 'docs.google.com' && mpHost === 'drive.google.com') {
-            // gdrive, render on docs.google.com
+            // gdrive browser
             return true;
           }
           return false;
