@@ -70,6 +70,8 @@
    * @prop {boolean} byocdn=false <pre>true</pre> if the production host is a 3rd party CDN
    * @prop {boolean} hlx3=false <pre>true</pre> if the project is running on Helix 3
    * @prop {boolean} devMode=false Loads configuration and plugins from the developmemt environment
+   * @prop {boolean} noPushDown=false <pre>true</pre> if the sidekick should not push down page content
+   * @prop {string} pushDownSelector Query selector for absolutely positioned elements to push down
    */
 
   /**
@@ -222,6 +224,8 @@
       outerHost,
       host,
       project,
+      noPushDown = false,
+      pushDownSelector,
       hlx3 = false,
     } = config;
     const innerPrefix = owner && repo ? `${ref}--${repo}--${owner}` : null;
@@ -259,6 +263,18 @@
         liveHost = `${repo}--${owner}.hlx.live`;
       }
     }
+    // define elements to push down
+    const pushDownElements = [];
+    if (!noPushDown) {
+      // editor
+      document.querySelectorAll('iframe#WebApplicationFrame, div#docs-chrome')
+        .forEach((elem) => pushDownElements.push(elem));
+      if (pushDownSelector) {
+        // find custom elements to push down
+        document.querySelectorAll(pushDownSelector)
+          .forEach((elem) => pushDownElements.push(elem));
+      }
+    }
     return {
       ...config,
       ref,
@@ -267,6 +283,7 @@
       scriptUrl,
       host: publicHost,
       project: project || '',
+      pushDownElements,
       hlx3,
     };
   }
@@ -986,6 +1003,25 @@
       if (this.root.classList.contains('hlx-sk-hidden')) {
         this.root.classList.remove('hlx-sk-hidden');
       }
+      if (!this.config.noPushDown) {
+        // push down content
+        this.config.pushDownElements.forEach((elem) => {
+          // sidekick shown, push element down
+          const currentTop = parseInt(elem.style.top, 10);
+          let newTop = 49;
+          if (!isNaN(currentTop)) {
+            // add element's non-zero top value
+            newTop += currentTop;
+            console.log('what?!');
+          }
+          console.log(elem, currentTop, newTop);
+          elem.style.top = `${newTop}px`;
+        });
+        if (this.config.pushDownElements.length === 0) {
+          // push down entire document
+          document.documentElement.style.marginTop = '49px';
+        }
+      }
       fireEvent(this, 'shown');
       return this;
     }
@@ -1000,6 +1036,16 @@
         this.root.classList.add('hlx-sk-hidden');
       }
       this.hideModal();
+      if (!this.config.noPushDown) {
+        // revert push down of content
+        this.config.pushDownElements.forEach((elem) => {
+          elem.style.top = 'initial';
+        });
+        if (this.config.pushDownElements.length === 0) {
+          // revert push down of entire document
+          document.documentElement.style.marginTop = '';
+        }
+      }
       fireEvent(this, 'hidden');
       return this;
     }
@@ -1534,18 +1580,6 @@
   }
 
   /**
-   * @private
-   * Pushes the rest of the page down to make room for the sidekick.
-   * @param {boolean} display The sidekick's display state
-   */
-  function pushDownContent(display) {
-    document.querySelectorAll('body, iframe#WebApplicationFrame, div#feds-header')
-      .forEach((container) => {
-        container.style.marginTop = display ? '49px' : 'initial';
-      });
-  }
-
-  /**
    * @external
    * @name "window.hlx.initSidekick"
    * @type {Function}
@@ -1568,10 +1602,6 @@
       window.hlx.sidekick = document.createElement('helix-sidekick');
       document.body.prepend(window.hlx.sidekick);
       window.hlx.sidekick.show();
-      // push down content while sidekick is shown
-      pushDownContent(true);
-      window.hlx.sidekick.addEventListener('shown', () => pushDownContent(true));
-      window.hlx.sidekick.addEventListener('hidden', () => pushDownContent(false));
     } else {
       // toggle sidekick
       window.hlx.sidekick.toggle();
