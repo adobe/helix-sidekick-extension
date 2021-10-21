@@ -70,8 +70,8 @@
    * @prop {boolean} byocdn=false <pre>true</pre> if the production host is a 3rd party CDN
    * @prop {boolean} hlx3=false <pre>true</pre> if the project is running on Helix 3
    * @prop {boolean} devMode=false Loads configuration and plugins from the developmemt environment
-   * @prop {boolean} noPushDown=false <pre>true</pre> to have the sidekick overlay page content
-   * @prop {string} pushDownSelector The CSS selector for absolutely positioned elements to push down
+   * @prop {boolean} pushDown=true <pre>false</pre> to have the sidekick overlay page content
+   * @prop {string} pushDownSelector The CSS selector for absolutely positioned elements to also push down
    */
 
   /**
@@ -224,7 +224,7 @@
       outerHost,
       host,
       project,
-      noPushDown = false,
+      pushDown = true,
       pushDownSelector,
       hlx3 = false,
     } = config;
@@ -265,9 +265,9 @@
     }
     // define elements to push down
     const pushDownElements = [];
-    if (!noPushDown) {
+    if (pushDown) {
       document.querySelectorAll(
-        `html,iframe#WebApplicationFrame${pushDownSelector ? `,${pushDownSelector}` : ''}`,
+        `html, iframe#WebApplicationFrame${pushDownSelector ? `, ${pushDownSelector}` : ''}`,
       ).forEach((elem) => pushDownElements.push(elem));
     }
     return {
@@ -278,6 +278,7 @@
       scriptUrl,
       host: publicHost,
       project: project || '',
+      pushDown,
       pushDownElements,
       hlx3,
     };
@@ -998,7 +999,7 @@
       if (this.root.classList.contains('hlx-sk-hidden')) {
         this.root.classList.remove('hlx-sk-hidden');
       }
-      if (!this.config.noPushDown && this.location.host !== 'docs.google.com') {
+      if (this.config.pushDown && this.location.host !== 'docs.google.com') {
         // push down content
         this.config.pushDownElements.forEach((elem) => {
           // sidekick shown, push element down
@@ -1025,7 +1026,7 @@
         this.root.classList.add('hlx-sk-hidden');
       }
       this.hideModal();
-      if (!this.config.noPushDown && this.location.host !== 'docs.google.com') {
+      if (this.config.pushDown && this.location.host !== 'docs.google.com') {
         // revert push down of content
         this.config.pushDownElements.forEach((elem) => {
           elem.style.marginTop = 'initial';
