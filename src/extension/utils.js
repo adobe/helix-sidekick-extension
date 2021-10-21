@@ -9,7 +9,6 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-/* eslint-disable no-console */
 
 'use strict';
 
@@ -19,10 +18,12 @@ export const SHARE_PAGE = 'https://www.hlx.live/tools/sidekick/';
 
 export const log = {
   LEVEL: 3,
-  debug: (...args) => log.LEVEL > 3 && console.debug(...args),
-  info: (...args) => log.LEVEL > 2 && console.info(...args),
-  warn: (...args) => log.LEVEL > 1 && console.warn(...args),
-  error: (...args) => log.LEVEL > 0 && console.error(...args),
+  /* eslint-disable no-console */
+  debug: (...args) => log.LEVEL > 3 && console.log('DEBUG', ...args),
+  info: (...args) => log.LEVEL > 2 && console.log('INFO', ...args),
+  warn: (...args) => log.LEVEL > 1 && console.log('WARN', ...args),
+  error: (...args) => log.LEVEL > 0 && console.log('ERROR', ...args),
+  /* eslint-enable no-console */
 };
 
 // shorthand for browser.i18n.getMessage()
@@ -33,17 +34,6 @@ export function i18n(msg, subs) {
 // shorthand for browser.runtime.getURL()
 export function url(path) {
   return browser.runtime.getURL(path);
-}
-
-// shorthand for browser.notifications.create()
-export function notify(message) {
-  // eslint-disable-next-line no-alert
-  window.alert(message);
-  // browser.notifications.create('', {
-  //   iconUrl: url('icons/helix_logo_32.png'),
-  //   title: i18n('title'),
-  //   message,
-  // });
 }
 
 export async function getMountpoints(owner, repo, ref) {
@@ -200,7 +190,8 @@ export async function addConfig({ giturl, project, hlx3 }, cb) {
         .then(() => log.info('added config', config))
         .catch((e) => log.error('error adding config', e));
     } else {
-      notify(i18n('config_project_exists'));
+      // eslint-disable-next-line no-alert
+      window.alert(i18n('config_project_exists'));
       if (typeof cb === 'function') cb(false);
     }
   });

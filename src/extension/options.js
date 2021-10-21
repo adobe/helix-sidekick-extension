@@ -21,7 +21,6 @@ import {
   isValidShareURL,
   getShareSettings,
   i18n,
-  notify,
   addConfig,
 } from './utils.js';
 
@@ -173,7 +172,7 @@ function editConfig(i) {
       Object.keys(config).forEach((key) => {
         const field = document.getElementById(`edit-${key}`);
         if (field) {
-          if (!!config[key]) {
+          if (typeof config[key] !== 'undefined') {
             field.value = config[key];
           }
           field.setAttribute('placeholder', i18n(`__MSG_config_manual_${key}_placeholder__`));
@@ -188,7 +187,9 @@ function editConfig(i) {
       // disable other config buttons while editor is shown
       document
         .querySelectorAll('section.config:not(#configEditor) button')
-        .forEach((btn) => btn.disabled = true);
+        .forEach((btn) => {
+          btn.disabled = true;
+        });
     });
 }
 
@@ -241,7 +242,8 @@ window.addEventListener('DOMContentLoaded', () => {
         }
       });
     } else {
-      notify(i18n('config_invalid_shareurl'));
+      // eslint-disable-next-line no-alert
+      window.alert(i18n('config_invalid_shareurl'));
     }
   });
 
@@ -258,7 +260,8 @@ window.addEventListener('DOMContentLoaded', () => {
         }
       });
     } else {
-      notify(i18n('config_invalid_giturl'));
+      // eslint-disable-next-line no-alert
+      window.alert(i18n('config_invalid_giturl'));
     }
   });
 });

@@ -18,7 +18,6 @@ import {
   getState,
   getConfigMatches,
   toggleDisplay,
-  notify,
   addConfig,
   getShareSettings,
   isValidShareURL,
@@ -27,15 +26,17 @@ import {
 /**
  * Checks if the URL is a share URL and asks the user
  * to add the config.
- * @param {string} url The URL to check 
+ * @param {string} url The URL to check
  */
 async function checkShareUrl(url) {
   if (isValidShareURL(url)) {
     log.info('share URL detected', url);
+    // eslint-disable-next-line no-restricted-globals, no-alert
     if (confirm(i18n('config_shareurl_add_confirm'))) {
       await addConfig(getShareSettings(url), (added) => {
         if (added) {
-          notify(i18n('config_shareurl_added'));
+          // eslint-disable-next-line no-alert
+          window.alert(i18n('config_shareurl_added'));
         }
       });
     }
@@ -70,7 +71,7 @@ function checkTab(id) {
           }
         }
       })
-      .catch((e) => log.info('error checking tab', id, e));
+      .catch((e) => log.error('error checking tab', id, e));
   });
 }
 
@@ -123,7 +124,7 @@ function toggle(id) {
             }
           });
         })
-        .catch((e) => log.warn('error propagating display state', e));
+        .catch((e) => log.error('error propagating display state', e));
     }
   });
 })();
