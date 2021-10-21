@@ -113,18 +113,18 @@ export function getConfigMatches(configs, tabUrl) {
                 // sharepoint browser
                 return false;
               }
-              // sharepoint, check for site name in path
+              // sharepoint file, check for site name in path
               const pathSegments = mpPath.split('/');
               pathSegments.shift();
               const site = encodeURIComponent(pathSegments
                 .find((s) => s !== 's' && s !== 'sites' && !s.startsWith(':')));
               return new URL(tabUrl).pathname.includes(`/sites/${site}/`);  
             } else if (checkHost === 'drive.google.com') {
-              // gdrive, but do not render on drive.google.com
+              // gdrive browser
               return false;
             }
           } else if (checkHost === 'docs.google.com' && mpHost === 'drive.google.com') {
-            // gdrive browser
+            // gdrive file
             return true;
           }
           return false;
