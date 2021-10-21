@@ -533,7 +533,7 @@ describe('Test sidekick bookmarklet', () => {
     assert.deepStrictEqual(
       await page.evaluate(() => Array.from(document.querySelectorAll('html, #topnav'))
         .map((elem) => elem.style.marginTop)),
-      ['49px','49px'],
+      ['49px', '49px'],
       'Did not push down custom elements',
     );
   }).timeout(IT_DEFAULT_TIMEOUT);

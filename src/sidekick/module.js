@@ -71,7 +71,7 @@
    * @prop {boolean} hlx3=false <pre>true</pre> if the project is running on Helix 3
    * @prop {boolean} devMode=false Loads configuration and plugins from the developmemt environment
    * @prop {boolean} pushDown=true <pre>false</pre> to have the sidekick overlay page content
-   * @prop {string} pushDownSelector The CSS selector for absolutely positioned elements to also push down
+   * @prop {string} pushDownSelector The CSS selector for absolute elements to also push down
    */
 
   /**
@@ -1005,7 +1005,7 @@
           // sidekick shown, push element down
           const currentMarginTop = parseInt(elem.style.marginTop, 10);
           let newMarginTop = 49;
-          if (!isNaN(currentMarginTop)) {
+          if (!Number.isNaN(currentMarginTop)) {
             // add element's non-zero top value
             newMarginTop += currentMarginTop;
           }
