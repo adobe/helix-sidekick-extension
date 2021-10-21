@@ -510,6 +510,59 @@ describe('Test sidekick bookmarklet', () => {
       'Did not detect production URL',
     );
   }).timeout(IT_DEFAULT_TIMEOUT);
+
+  it('Pushes down page content by default', async () => {
+    const page = getPage();
+    await mockStandardResponses(page);
+    await page.goto(`${fixturesPrefix}/config-default.html`, { waitUntil: 'load' });
+    await sleep();
+    assert.strictEqual(
+      await page.evaluate(() => document.documentElement.style.marginTop),
+      '49px',
+      'Did not push down content',
+    );
+  }).timeout(IT_DEFAULT_TIMEOUT);
+
+  it('Pushes down custom elements', async () => {
+    const page = getPage();
+    await mockStandardResponses(page, {
+      configJs: 'window.hlx.initSidekick({pushDownSelector:"#topnav"})',
+    });
+    await page.goto(`${fixturesPrefix}/pushdown-custom.html`, { waitUntil: 'load' });
+    await sleep();
+    assert.deepStrictEqual(
+      await page.evaluate(() => Array.from(document.querySelectorAll('html, #topnav'))
+        .map((elem) => elem.style.marginTop)),
+      ['49px', '49px'],
+      'Did not push down custom elements',
+    );
+  }).timeout(IT_DEFAULT_TIMEOUT);
+
+  it('No push down if pushDown false', async () => {
+    const page = getPage();
+    await mockStandardResponses(page, {
+      configJs: 'window.hlx.initSidekick({pushDown:false})',
+    });
+    await page.goto(`${fixturesPrefix}/config-default.html`, { waitUntil: 'load' });
+    await sleep();
+    assert.strictEqual(
+      await page.evaluate(() => document.documentElement.style.marginTop),
+      '',
+      'Pushed down content',
+    );
+  }).timeout(IT_DEFAULT_TIMEOUT);
+
+  it('No push down if gdrive', async () => {
+    const page = getPage();
+    await mockStandardResponses(page);
+    await page.goto(`${fixturesPrefix}/preview-gdrive.html`, { waitUntil: 'load' });
+    await sleep();
+    assert.strictEqual(
+      await page.evaluate(() => document.documentElement.style.marginTop),
+      '',
+      'Pushed down content',
+    );
+  }).timeout(IT_DEFAULT_TIMEOUT);
 });
 
 describe('makeHostHelixCompliant', () => {

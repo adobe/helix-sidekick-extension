@@ -70,6 +70,8 @@
    * @prop {boolean} byocdn=false <pre>true</pre> if the production host is a 3rd party CDN
    * @prop {boolean} hlx3=false <pre>true</pre> if the project is running on Helix 3
    * @prop {boolean} devMode=false Loads configuration and plugins from the developmemt environment
+   * @prop {boolean} pushDown=true <pre>false</pre> to have the sidekick overlay page content
+   * @prop {string} pushDownSelector The CSS selector for absolute elements to also push down
    */
 
   /**
@@ -222,6 +224,8 @@
       outerHost,
       host,
       project,
+      pushDown = true,
+      pushDownSelector,
       hlx3 = false,
     } = config;
     const innerPrefix = owner && repo ? `${ref}--${repo}--${owner}` : null;
@@ -259,6 +263,13 @@
         liveHost = `${repo}--${owner}.hlx.live`;
       }
     }
+    // define elements to push down
+    const pushDownElements = [];
+    if (pushDown) {
+      document.querySelectorAll(
+        `html, iframe#WebApplicationFrame${pushDownSelector ? `, ${pushDownSelector}` : ''}`,
+      ).forEach((elem) => pushDownElements.push(elem));
+    }
     return {
       ...config,
       ref,
@@ -267,6 +278,8 @@
       scriptUrl,
       host: publicHost,
       project: project || '',
+      pushDown,
+      pushDownElements,
       hlx3,
     };
   }
@@ -986,6 +999,19 @@
       if (this.root.classList.contains('hlx-sk-hidden')) {
         this.root.classList.remove('hlx-sk-hidden');
       }
+      if (this.config.pushDown && this.location.host !== 'docs.google.com') {
+        // push down content
+        this.config.pushDownElements.forEach((elem) => {
+          // sidekick shown, push element down
+          const currentMarginTop = parseInt(elem.style.marginTop, 10);
+          let newMarginTop = 49;
+          if (!Number.isNaN(currentMarginTop)) {
+            // add element's non-zero top value
+            newMarginTop += currentMarginTop;
+          }
+          elem.style.marginTop = `${newMarginTop}px`;
+        });
+      }
       fireEvent(this, 'shown');
       return this;
     }
@@ -1000,6 +1026,12 @@
         this.root.classList.add('hlx-sk-hidden');
       }
       this.hideModal();
+      if (this.config.pushDown && this.location.host !== 'docs.google.com') {
+        // revert push down of content
+        this.config.pushDownElements.forEach((elem) => {
+          elem.style.marginTop = 'initial';
+        });
+      }
       fireEvent(this, 'hidden');
       return this;
     }
