@@ -14,7 +14,6 @@
 'use strict';
 
 import {} from './lib/polyfills.min.js';
-import {} from './lib/js-yaml.min.js';
 
 export const SHARE_PAGE = 'https://www.hlx.live/tools/sidekick/';
 
@@ -51,6 +50,7 @@ export async function getMountpoints(owner, repo, ref) {
   const fstab = `https://raw.githubusercontent.com/${owner}/${repo}/${ref}/fstab.yaml`;
   const res = await fetch(fstab);
   if (res.ok) {
+    await import('./lib/js-yaml.min.js');
     const { mountpoints = {} } = jsyaml.load(await res.text());
     return Object.values(mountpoints);
   }
@@ -118,7 +118,7 @@ export function getConfigMatches(configs, tabUrl) {
               pathSegments.shift();
               const site = encodeURIComponent(pathSegments
                 .find((s) => s !== 's' && s !== 'sites' && !s.startsWith(':')));
-              return new URL(tabUrl).pathname.includes(`/sites/${site}/`);  
+              return new URL(tabUrl).pathname.includes(`/sites/${site}/`);
             } else if (checkHost === 'drive.google.com') {
               // gdrive browser
               return false;
@@ -134,11 +134,6 @@ export function getConfigMatches(configs, tabUrl) {
     }
   });
   return matches;
-}
-
-export function isValidShareURL(shareurl) {
-  return shareurl.startsWith(SHARE_PAGE)
-    && Object.keys(getShareSettings(shareurl)).length === 3;
 }
 
 export function getShareSettings(shareurl) {
@@ -163,13 +158,17 @@ export function getShareSettings(shareurl) {
   return {};
 }
 
+export function isValidShareURL(shareurl) {
+  return Object.keys(getShareSettings(shareurl)).length === 3;
+}
+
 async function getProjectConfig(owner, repo, ref) {
   const configJS = `https://raw.githubusercontent.com/${owner}/${repo}/${ref}/tools/sidekick/config.js`;
   const cfg = {};
   const res = await fetch(configJS);
   if (res.ok) {
     const js = await res.text();
-    const [, host] = /host: '(.*)',/.exec(js) || [];
+    const [, host] = /host: ?["']{1}(.*)['"]{1}/.exec(js) || [];
     if (host) {
       cfg.host = host;
     }
