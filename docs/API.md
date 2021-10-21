@@ -44,7 +44,7 @@ before creating the <a href="#Sidekick">Sidekick</a>.</p>
 <dd><p>The global variable referencing the <a href="#Sidekick">Sidekick</a> singleton.</p>
 </dd>
 <dt><a href="#external_window.hlx.sidekickScript">window.hlx.sidekickScript</a> : <code>Element</code></dt>
-<dd><p>The <pre>script</pre> element which loaded the sidekick application.</p>
+<dd><p>The <pre>script</pre> element which loaded the sidekick module.</p>
 </dd>
 <dt><a href="#external_window.hlx.initSidekick">window.hlx.initSidekick</a> ⇒ <code><a href="#Sidekick">Sidekick</a></code></dt>
 <dd><p>Initializes the sidekick and stores a reference to it in
@@ -526,6 +526,8 @@ before creating the [Sidekick](#Sidekick).
 | byocdn | <code>boolean</code> | <code>false</code> | <pre>true</pre> if the production host is a 3rd party CDN |
 | hlx3 | <code>boolean</code> | <code>false</code> | <pre>true</pre> if the project is running on Helix 3 |
 | devMode | <code>boolean</code> | <code>false</code> | Loads configuration and plugins from the developmemt environment |
+| pushDown | <code>boolean</code> | <code>true</code> | <pre>false</pre> to have the sidekick overlay page content |
+| pushDownSelector | <code>string</code> |  | The CSS selector for absolute elements to also push down |
 
 <a name="publishResponse"></a>
 
@@ -557,7 +559,7 @@ The global variable referencing the [Sidekick](#Sidekick) singleton.
 <a name="external_window.hlx.sidekickScript"></a>
 
 ## window.hlx.sidekickScript : <code>Element</code>
-The <pre>script</pre> element which loaded the sidekick application.
+The <pre>script</pre> element which loaded the sidekick module.
 
 **Kind**: global external  
 <a name="external_window.hlx.initSidekick"></a>
@@ -571,5 +573,5 @@ Initializes the sidekick and stores a reference to it in
 
 | Param | Type | Description |
 | --- | --- | --- |
-| cfg | <code>Object</code> | The sidekick configuration (extends [window.hlx.sidekickConfig](window.hlx.sidekickConfig)) |
+| cfg | [<code>sidekickConfig</code>](#sidekickConfig) | The sidekick configuration        (extends [window.hlx.sidekickConfig](window.hlx.sidekickConfig)) |
 
