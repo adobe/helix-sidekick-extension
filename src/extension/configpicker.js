@@ -46,7 +46,7 @@ class ConfigPicker extends HTMLElement {
       const btn = document.createElement('button');
       btn.id = `${id}`;
       btn.innerHTML = `${project || id} <sup style="font-size:0.5rem">${i + 1}</sup>`;
-      btn.title = i18n('config_picker_button_title', [ i + 1, project || id]);
+      btn.title = i18n('config_picker_button_title', [i + 1, project || id]);
       btn.addEventListener('click', (evt) => this.pickByClick(evt.target));
       root.append(btn);
     });
