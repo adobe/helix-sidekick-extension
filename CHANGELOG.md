@@ -1,3 +1,19 @@
+# [3.15.0](https://github.com/adobe/helix-sidekick/compare/v3.14.0...v3.15.0) (2021-10-21)
+
+
+### Features
+
+* do not overlay content ([e78b9a7](https://github.com/adobe/helix-sidekick/commit/e78b9a7c164b671b196110508826a77ed7d03a67))
+* do not overlay content ([6025e3f](https://github.com/adobe/helix-sidekick/commit/6025e3fea42695b7f4b3e3f2b3ccf3a536a62cf0))
+* do not overlay content (excluding gdocs) ([a63e3ee](https://github.com/adobe/helix-sidekick/commit/a63e3eedc5a18c32b845769642e02a223c557185))
+
+# [3.14.0](https://github.com/adobe/helix-sidekick/compare/v3.13.0...v3.14.0) (2021-10-18)
+
+
+### Features
+
+* move core into module ([762e835](https://github.com/adobe/helix-sidekick/commit/762e8354493bac3fb018a8baa6e17c2083afbb2a))
+
 # [3.13.0](https://github.com/adobe/helix-sidekick/compare/v3.12.2...v3.13.0) (2021-10-14)
 
 
