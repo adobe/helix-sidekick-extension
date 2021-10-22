@@ -27,7 +27,7 @@
     "message": "You haven't added any projects yet."
   },
   "config_project_exists": {
-    "message": "A configuration for this project already exists!"
+    "message": "A configuration for this project already exists."
   },
   "config_project_host": {
     "message": "Production"
@@ -59,9 +59,6 @@
   "config_shareurl_add_confirm": {
     "message": "Would you like to add this project to your Helix Sidekick?"
   },
-  "config_shareurl_added": {
-    "message": "Project added to Helix Sidekick"
-  },
   "config_manual_title": {
     "message": "Add manually"
   },
@@ -71,8 +68,17 @@
   "config_manual_host_placeholder": {
     "message": "Production Hostname (optional)"
   },
+  "config_manual_mountpoints_placeholder": {
+    "message": "Content URL: https://..."
+  },
   "config_manual_project_placeholder": {
     "message": "Project Name (optional)"
+  },
+  "config_add_success": {
+    "message": "Project added to Helix Sidekick"
+  },
+  "config_add_no_mountpoint": {
+    "message": "Project added to Helix Sidekick, but ...\n\nRetrieving the content URL has failed, so you won't be able to use Helix Sidekick in edit mode yet. To add it manually, click the Edit button next to the project's configuration."
   },
   "config_share": {
     "message": "Share"

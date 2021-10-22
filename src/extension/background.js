@@ -13,6 +13,7 @@
 'use strict';
 
 import {
+  url,
   log,
   i18n,
   getState,
@@ -26,17 +27,16 @@ import {
 /**
  * Checks if the URL is a share URL and asks the user
  * to add the config.
- * @param {string} url The URL to check
+ * @param {string} tabUrl The URL to check
  */
-async function checkShareUrl(url) {
-  if (isValidShareURL(url)) {
-    log.info('share URL detected', url);
+async function checkShareUrl(tabUrl) {
+  if (isValidShareURL(tabUrl)) {
+    log.info('share URL detected', tabUrl);
     // eslint-disable-next-line no-restricted-globals, no-alert
     if (confirm(i18n('config_shareurl_add_confirm'))) {
-      await addConfig(getShareSettings(url), (added) => {
-        if (added) {
-          // eslint-disable-next-line no-alert
-          window.alert(i18n('config_shareurl_added'));
+      await addConfig(getShareSettings(tabUrl), (added) => {
+        if (added && tabUrl !== url('options.html')) {
+          window.open(url('options.html'));
         }
       });
     }

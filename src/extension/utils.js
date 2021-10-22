@@ -171,6 +171,7 @@ export async function addConfig({ giturl, project, hlx3 }, cb) {
   const projectConfig = await getProjectConfig(owner, repo, ref);
   const mountpoints = await getMountpoints(owner, repo, ref);
   getState(({ configs }) => {
+    /* eslint-disable no-alert */
     if (!configs.find((cfg) => owner === cfg.owner && repo === cfg.repo && ref === cfg.ref)) {
       const config = {
         id: `${owner}/${repo}/${ref}`,
@@ -189,11 +190,16 @@ export async function addConfig({ giturl, project, hlx3 }, cb) {
         .then(() => (typeof cb === 'function' ? cb(true) : null))
         .then(() => log.info('added config', config))
         .catch((e) => log.error('error adding config', e));
+      if (!mountpoints[0]) {
+        alert(i18n('config_add_no_mountpoint'));
+      } else {
+        window.alert(i18n('config_add_success'));
+      }
     } else {
-      // eslint-disable-next-line no-alert
       window.alert(i18n('config_project_exists'));
       if (typeof cb === 'function') cb(false);
     }
+    /* eslint-enable no-alert */
   });
 }
 

@@ -60,7 +60,7 @@ body {
   background-color: rgb(var(--background-color));
 }
 
-button, select:not([size]), select[size="1"], input[type="checkbox"], input[type="radio"] {
+button/*, select:not([size]), select[size="1"], input[type="checkbox"], input[type="radio"]*/ {
 	-webkit-appearance: none;
 	position: relative;
 	margin: 0 1px 0 0;
@@ -98,8 +98,7 @@ input[type="checkbox"] {
 label > input[type="checkbox"] {
   margin-right: 0.6em;
 }
-input[type="checkbox"]:checked::before {
-  content: '';
+_input[type="checkbox"]:checked::before {
   display: block;
   width: 100%;
   height: 100%;
@@ -277,9 +276,9 @@ input[disabled] {
 	background-color:rgb(var(--input-disabled-background-color));
 }
 
-input.mandatory::after {
+p.mandatory::after {
   content: "*";
-  color: rgb(var(--text-color-warn));
+  color: var(--text-color-warn);
   margin-left: 4px;
 }
 
@@ -396,8 +395,8 @@ section.config input.favorite::after {
   padding-bottom: 0;
 }
 
-#configEditor input {
-  width: 496px;
+#configEditor input[type="text"] {
+  width: 490px;
 }
 
 #configEditor button {

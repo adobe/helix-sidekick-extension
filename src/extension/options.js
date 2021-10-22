@@ -16,7 +16,6 @@
 import {
   log,
   getState,
-  getMountpoints,
   getGitHubSettings,
   isValidShareURL,
   getShareSettings,
@@ -134,27 +133,21 @@ function editConfig(i) {
         }
       };
       const buttons = editor.querySelectorAll('button');
-      // set project title
-      editorFragment.querySelector('h4').textContent = config.project || config.id;
       // wire save button
       buttons[0].textContent = i18n('save');
       buttons[0].title = i18n('save');
       buttons[0].addEventListener('click', async () => {
-        Object.keys(config).forEach((key) => {
-          const field = document.getElementById(`edit-${key}`);
-          if (field) {
+        document.querySelectorAll('#configEditor input').forEach((field) => {
+          const key = field.id.split('-')[1];
+          if (typeof config[key] === 'object') {
+            config[key][0] = field.value;
+          } else if (field.type === 'checkbox') {
+            config[key] = field.checked;
+          } else {
             config[key] = field.value;
           }
         });
-        const { owner, repo, ref } = getGitHubSettings(config.giturl);
-        const mountpoints = await getMountpoints(owner, repo, ref);
-        hlxSidekickConfigs[i] = {
-          ...config,
-          owner,
-          repo,
-          ref,
-          mountpoints,
-        };
+        hlxSidekickConfigs[i] = config;
         browser.storage.sync
           .set({ hlxSidekickConfigs })
           .then(() => {
@@ -169,14 +162,17 @@ function editConfig(i) {
       // insert editor in place of config section
       document.getElementById(`config-${i}`).replaceWith(editorFragment);
       // pre-fill form
-      Object.keys(config).forEach((key) => {
-        const field = document.getElementById(`edit-${key}`);
-        if (field) {
-          if (typeof config[key] !== 'undefined') {
-            field.value = config[key];
-          }
-          field.setAttribute('placeholder', i18n(`__MSG_config_manual_${key}_placeholder__`));
+      document.querySelectorAll('#configEditor input').forEach((field) => {
+        const key = field.id.split('-')[1];
+        const value = config[key];
+        if (typeof value === 'object') {
+          field.value = value[0] || '';
+        } else if (typeof value === 'boolean' && value) {
+          field.setAttribute('checked', value);
+        } else {
+          field.value = config[key] || '';
         }
+        field.setAttribute('placeholder', i18n(`config_manual_${key}_placeholder`));
       });
       // focus first field
       const firstField = editor.querySelector('input, textarea');

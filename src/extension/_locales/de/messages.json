@@ -27,7 +27,7 @@
     "message": "Du hast noch keine Projekte hinzugefügt."
   },
   "config_project_exists": {
-    "message": "Es existiert bereits eine Konfiguration für dieses Projekt!"
+    "message": "Es existiert bereits eine Konfiguration für dieses Projekt."
   },
   "config_project_host": {
     "message": "Produktion"
@@ -71,8 +71,17 @@
   "config_manual_host_placeholder": {
     "message": "Produktions-Hostname (optional)"
   },
+  "config_manual_mountpoints_placeholder": {
+    "message": "Inhalts-URL: https://..."
+  },
   "config_manual_project_placeholder": {
     "message": "Projektname (optional)"
+  },
+  "config_add_success": {
+    "message": "Projekt zu Helix Sidekick hinzugefügt"
+  },
+  "config_add_no_mountpoint": {
+    "message": "Projekt zu Helix Sidekick hinzugefügt, aber ...\n\nDie Inhalts-URL konnte nicht geholt werden, du wirst also Helix Sidekick noch nicht im Bearbeitungsmodus verwenden können. Um sie manuell hinzuzufügen, klicke den Bearbeiten-Knopf neben der Projektkonfiguration."
   },
   "config_share": {
     "message": "Teilen"
