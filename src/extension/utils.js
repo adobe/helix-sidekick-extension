@@ -17,7 +17,7 @@ import {} from './lib/polyfills.min.js';
 export const SHARE_PAGE = 'https://www.hlx.live/tools/sidekick/';
 
 export const log = {
-  LEVEL: 3,
+  LEVEL: 2,
   /* eslint-disable no-console */
   debug: (...args) => log.LEVEL > 3 && console.log('DEBUG', ...args),
   info: (...args) => log.LEVEL > 2 && console.log('INFO', ...args),
