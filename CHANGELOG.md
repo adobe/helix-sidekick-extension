@@ -1,3 +1,10 @@
+# [3.16.0](https://github.com/adobe/helix-sidekick/compare/v3.15.0...v3.16.0) (2021-10-26)
+
+
+### Features
+
+* add hlx3 flag to share url ([a448fd6](https://github.com/adobe/helix-sidekick/commit/a448fd639e6338a2f41ba4747ad1781c3aad32c9))
+
 # [3.15.0](https://github.com/adobe/helix-sidekick/compare/v3.14.0...v3.15.0) (2021-10-21)
 
 
