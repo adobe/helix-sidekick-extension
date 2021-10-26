@@ -428,6 +428,7 @@
       ['project', config.project || ''],
       ['from', from || ''],
       ['giturl', `https://github.com/${config.owner}/${config.repo}/tree/${config.ref}`],
+      ['hlx3', config.hlx3],
     ]).toString();
     return shareUrl.toString();
   }
