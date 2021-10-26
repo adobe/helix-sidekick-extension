@@ -1,3 +1,10 @@
+## [3.16.1](https://github.com/adobe/helix-sidekick/compare/v3.16.0...v3.16.1) (2021-10-26)
+
+
+### Bug Fixes
+
+* prevent pushing down content multiple times ([aaffc53](https://github.com/adobe/helix-sidekick/commit/aaffc53161e154d2cf3405604881fccf13f0a908))
+
 # [3.16.0](https://github.com/adobe/helix-sidekick/compare/v3.15.0...v3.16.0) (2021-10-26)
 
 
