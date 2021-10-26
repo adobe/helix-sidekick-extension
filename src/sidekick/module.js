@@ -1000,8 +1000,11 @@
       if (this.root.classList.contains('hlx-sk-hidden')) {
         this.root.classList.remove('hlx-sk-hidden');
       }
-      if (this.config.pushDown && this.location.host !== 'docs.google.com') {
+      if (this.config.pushDown
+        && !this.hasAttribute('pushdown')
+        && this.location.host !== 'docs.google.com') {
         // push down content
+        this.setAttribute('pushdown', '');
         this.config.pushDownElements.forEach((elem) => {
           // sidekick shown, push element down
           const currentMarginTop = parseInt(elem.style.marginTop, 10);
@@ -1027,8 +1030,11 @@
         this.root.classList.add('hlx-sk-hidden');
       }
       this.hideModal();
-      if (this.config.pushDown && this.location.host !== 'docs.google.com') {
+      if (this.config.pushDown
+        && this.hasAttribute('pushdown')
+        && this.location.host !== 'docs.google.com') {
         // revert push down of content
+        this.removeAttribute('pushdown');
         this.config.pushDownElements.forEach((elem) => {
           elem.style.marginTop = 'initial';
         });
