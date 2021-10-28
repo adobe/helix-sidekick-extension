@@ -8,7 +8,8 @@
     "lint": "./node_modules/.bin/eslint .",
     "docs": "npx jsdoc2md -c .jsdoc.json --files 'src/**/*.js'  > docs/API.md",
     "semantic-release": "semantic-release",
-    "commit": "git-cz"
+    "commit": "git-cz",
+    "pack": "npm install --no-save crx3 && ./node_modules/.bin/crx3 src/extension -o src/sidekick/extension.crx -x src/sidekick/extension.xml --crxURL https://www.hlx.live/tools/sidekick/extension.crx -p .extension.pem"
   },
   "repository": {
     "type": "git",
