@@ -1,3 +1,35 @@
+# [3.17.0](https://github.com/adobe/helix-sidekick/compare/v3.16.1...v3.17.0) (2021-10-28)
+
+
+### Bug Fixes
+
+* broken import ([eafc658](https://github.com/adobe/helix-sidekick/commit/eafc6582b1868a1dd4fb88d72391cf3264a3ddaa))
+* do not render on drive.google.com (only docs.google.com) ([43c903c](https://github.com/adobe/helix-sidekick/commit/43c903cb2af3c464b51e6be476d1be8607ca3b9a))
+* non hlx3 support ([077ddae](https://github.com/adobe/helix-sidekick/commit/077ddaeb41ee0a44b0b8e9f87d645ac7bc7f67c2))
+* only initialize sidekick if not found ([a2060da](https://github.com/adobe/helix-sidekick/commit/a2060da05bc5cb97881644d6e69ba952010b7ef3))
+* support different sharepoint urls ([a0d8490](https://github.com/adobe/helix-sidekick/commit/a0d8490068396a91d011cac487ef472c852a03da))
+
+
+### Features
+
+* add project from share url only on active tab ([03e5670](https://github.com/adobe/helix-sidekick/commit/03e5670e4915e2500b66ccabf65ba1091036b3e9))
+* add project from share url, logging ([e673bf7](https://github.com/adobe/helix-sidekick/commit/e673bf72aad8259814206b949d911b889db49593))
+* allow editing more config settings ([de6aba9](https://github.com/adobe/helix-sidekick/commit/de6aba9e67c190583b5997c13e11dbab3b6b1b6d))
+* browser extension (wip) ([80713e4](https://github.com/adobe/helix-sidekick/commit/80713e4bfb4086759c4c807d2e046a733b1ed8d2))
+* browser extension (wip) ([8e68335](https://github.com/adobe/helix-sidekick/commit/8e683359414594ed75fb17a959b19b61f77b4003))
+* do not require mod keys in project picker ([4442ad8](https://github.com/adobe/helix-sidekick/commit/4442ad8e302f4dea44e7b498195f75e51b7e703f))
+* do not require mod keys in project picker ([37223c6](https://github.com/adobe/helix-sidekick/commit/37223c6348f3559589efb4a491b13c509323e33f))
+* do not require mod keys in project picker (i18n) ([9cbc342](https://github.com/adobe/helix-sidekick/commit/9cbc342a95e4e239ce139cf838ddb9cc69aaaf43))
+* load project config from outer CDN ([8494bf6](https://github.com/adobe/helix-sidekick/commit/8494bf6cfde01838df56c6476748ec46e274eef3))
+* load sidekick as module into sandbox ([5397039](https://github.com/adobe/helix-sidekick/commit/5397039a865acd592aadd7cf7dfb8b320935ee85))
+* pack extension ([1c2d347](https://github.com/adobe/helix-sidekick/commit/1c2d347054add172ed68869f84b6e18facaa896f))
+* pack extension ([a7f6616](https://github.com/adobe/helix-sidekick/commit/a7f6616ea0b19dba340967f465bba56cf5f475b6))
+* pack extension ([c2af369](https://github.com/adobe/helix-sidekick/commit/c2af3699ebe5d86a859af94eef963c1a145f4dec))
+* pack extension ([b832b85](https://github.com/adobe/helix-sidekick/commit/b832b8526a86a991fef91880f99035ee9631be82))
+* refactor config editor, move getMountpoints to options.js ([355a9ce](https://github.com/adobe/helix-sidekick/commit/355a9ce268b1ab25c1478a840fbae81f8843da7f))
+* show config picker if multiple matches ([a0171d7](https://github.com/adobe/helix-sidekick/commit/a0171d73118c0f1f89632cc37d96ac7641c9e5cb))
+* support hlx3 flag and display production host ([021f56b](https://github.com/adobe/helix-sidekick/commit/021f56bee0068a0cbe079503130e363b4a1a029d))
+
 ## [3.16.1](https://github.com/adobe/helix-sidekick/compare/v3.16.0...v3.16.1) (2021-10-26)
 
 
