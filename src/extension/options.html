@@ -1,0 +1,86 @@
+<!doctype html>
+<!--
+Copyright 2021 Adobe. All rights reserved.
+This file is licensed to you under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License. You may obtain a copy 
+of the License at http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software distributed under
+the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS 
+OF ANY KIND, either express or implied. See the License for the specific language 
+governing permissions and limitations under the License.
+-->
+<html>
+<head>
+  <meta http-equiv="Content-Security-Policy" content="script-src * 'unsafe-inline' blob: data: filesystem:">
+	<title>Helix Sidekick</title>
+	<link rel="stylesheet" type="text/css" href="./options.css" />
+  <script src="./options.js" type="module"></script>
+  <template id="configEditorTemplate">
+    <section id="configEditor" class="config">
+      <div>
+        <p><input id="edit-project"></p>
+        <p class="mandatory"><input id="edit-giturl"></p>
+        <p class="mandatory"><input id="edit-mountpoints"></p>
+        <p><input id="edit-host"></p>
+        <p><input id="edit-hlx3" type="checkbox"> Helix 3</p>
+        <p>
+          <button></button>
+          <button></button>
+        </p>
+      </div>
+    </section>
+  </template>
+</head>
+<body>
+	<nav class="sideBar">
+		<h1>Chrome</h1>
+		<ul>
+			<li class="selected">
+				<a href="chrome://extensions" target="_blank">Extensions</a>
+				<ul>
+            <li id="extShortName">Helix Sidekick</li>
+        </ul>
+			</li>
+			<li><a href="https://github.com/rofe/helix-sidekick/blob/main/README.md" target="_blank">Help</a></li>
+		</ul>
+	</nav>
+	<header>
+		<h1>
+			<span id="extName">Helix Sidekick</span>
+		</h1>
+  </header>
+  <main>
+    <div class="settings-sections">
+      <h2 class="settings-section-title">__MSG_config_projects__</h2>
+    </div>
+    <div id="configs"></div>
+      <section id="addShareConfigSection">
+        <div>
+          <h3>__MSG_config_shareurl_title__</h3>
+          <p class="help">__MSG_config_shareurl_description__</p>
+          <p class="mandatory"><input id="shareurl" placeholder="__MSG_config_shareurl_placeholder__"></p>
+          <p><button id="addShareConfigButton" title="__MSG_add__">__MSG_add__</button></p>
+        </div>
+      </section>
+      <section id="addManualConfigSection">
+        <div>
+          <h3>__MSG_config_manual_title__</h3>
+          <p class="mandatory"><input id="giturl" placeholder="__MSG_config_manual_giturl_placeholder__"></p>
+          <p><input id="project" placeholder="__MSG_config_manual_project_placeholder__"></p>
+          <p><button id="addManualConfigButton" title="__MSG_add__">__MSG_add__</button></p>
+        </div>
+      </section>
+      <hr>
+
+      <h2 class="settings-section-title warn">__MSG_config_reset__</h2>
+
+      <section id="reset" class="warn">
+        <div>
+          <p>__MSG_config_delete_all_description__</p>
+          <p><button id="resetButton" class="warn" title="__MSG_config_delete_all__">__MSG_config_delete_all__</button></p>
+        </div>
+      </section>
+    </main>
+</body>
+</html>

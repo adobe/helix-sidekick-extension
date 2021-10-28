@@ -1,0 +1,119 @@
+{
+  "title": {
+    "message": "Helix Sidekick (Beta)"
+  },
+  "description": {
+    "message": "Benutze den Helix Sidekick in mehreren Helix-Projekten und über mehrere Browserfenster hinweg."
+  },
+  "description_shortcut": {
+    "message": "Helix Sidekick ein-/ausschalten"
+  },
+  "homepage": {
+    "message": "https://www.hlx.live/tools/sidekick/"
+  },
+  "save": {
+    "message": "Speichern"
+  },
+  "cancel": {
+    "message": "Abbrechen"
+  },
+  "add": {
+    "message": "Hinzufügen"
+  },
+  "config_projects": {
+    "message": "Projekte"
+  },
+  "config_project_empty": {
+    "message": "Du hast noch keine Projekte hinzugefügt."
+  },
+  "config_project_exists": {
+    "message": "Es existiert bereits eine Konfiguration für dieses Projekt."
+  },
+  "config_project_host": {
+    "message": "Produktion"
+  },
+  "config_project_innerhost": {
+    "message": "Vorschau"
+  },
+  "config_project_mountpoints": {
+    "message": "Inhalt"
+  },
+  "config_project_pick": {
+    "message": "Wähle ein Projekt aus:"
+  },
+  "config_shareurl_title": {
+    "message": "Mit Teilen-URL hinzufügen"
+  },
+  "config_shareurl_description": {
+    "message": "Frage jemanden, der schon einen Sidekick hat, seine URL durch Klicken auf das Teilen-Symbol rechts mit dir zu teilen."
+  },
+  "config_shareurl_placeholder": {
+    "message": "Teilen-URL: https://www.hlx.page/tools/sidekick/..."
+  }, 
+  "config_shareurl_share_title": {
+    "message": "Helix Sidekick-Konfiguration für $1"
+  },
+  "config_shareurl_copied": {
+    "message": "Teilen-URL für $1 in die Zwischenablage kopiert"
+  },
+  "config_shareurl_add_confirm": {
+    "message": "Möchtest du dieses Projekt zu deinem Helix Sidekick hinzufügen?"
+  },
+  "config_shareurl_added": {
+    "message": "Projekt zu Helix Sidekick hinzugefügt"
+  },
+  "config_manual_title": {
+    "message": "Manuell hinzufügen"
+  },
+  "config_manual_giturl_placeholder": {
+    "message": "Repository-URL: https://github.com/..."
+  },
+  "config_manual_host_placeholder": {
+    "message": "Produktions-Hostname (optional)"
+  },
+  "config_manual_mountpoints_placeholder": {
+    "message": "Inhalts-URL: https://..."
+  },
+  "config_manual_project_placeholder": {
+    "message": "Projektname (optional)"
+  },
+  "config_add_success": {
+    "message": "Projekt zu Helix Sidekick hinzugefügt"
+  },
+  "config_add_no_mountpoint": {
+    "message": "Projekt zu Helix Sidekick hinzugefügt, aber ...\n\nDie Inhalts-URL konnte nicht geholt werden, du wirst also Helix Sidekick noch nicht im Bearbeitungsmodus verwenden können. Um sie manuell hinzuzufügen, klicke den Bearbeiten-Knopf neben der Projektkonfiguration."
+  },
+  "config_share": {
+    "message": "Teilen"
+  },
+  "config_edit": {
+    "message": "Bearbeiten"
+  },
+  "config_delete": {
+    "message": "Löschen"
+  },
+  "config_delete_confirm": {
+    "message": "Möchtest du dieses Projekt wirklich löschen?"
+  },
+  "config_invalid_shareurl": {
+    "message": "Ungültige Teilen-URL"
+  },
+  "config_invalid_giturl": {
+    "message": "Ungültige Repository-URL"
+  },
+  "config_reset": {
+    "message": "Zurücksetzen"
+  },
+  "config_delete_all": {
+    "message": "Alle Einstellungen löschen"
+  },
+  "config_delete_all_description": {
+    "message": "Achtung: Diese Aktion kann nicht rückgängig gemacht werden!"
+  },
+  "config_delete_all_confirm": {
+    "message": "Möchtest du wirklich alle Einstellungen löschen?"
+  },
+  "config_picker_button_title": {
+    "message": "$1 tippen um $2 auszuwählen"
+  }
+}

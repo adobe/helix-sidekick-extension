@@ -12,6 +12,23 @@ jobs:
         uses: actions/checkout@v2
         with:
           ssh-key: ${{ secrets.SSH-KEY }}
+      - name: Pack chrome extension
+        run: |
+          if [ "`git status -s src/extension`" != "" ]; then
+            echo "Packing chrome extension"
+            # write private key file
+            echo "{{ secrets.CHROME_EXT_PEM }}" > .extension.pem
+            chmod 600 .extension.pem
+            # pack crx file
+            npm install --no-save crx3
+            ./node_modules/.bin/crx3 ./src/extension \
+              -p ./.extension.pem \
+              -o ./src/sidekick/extension.crx \
+              -x ./src/sidekick/extension.xml \
+              --crxURL https://www.hlx.live/tools/sidekick/extension.crx
+          else
+            echo "No changes in extension detected"
+          fi
       - name: Checkout target repo
         uses: actions/checkout@v2
         with:
