@@ -14,15 +14,16 @@ jobs:
         run: |
           if [ "`git status -s src/extension`" != "" ]; then
             echo "Packing chrome extension"
-            # write .pem file
-            echo "{{ secrets.$CHROME_EXT_PEM }}" > .extension.pem
+            # write private key file
+            echo "{{ secrets.CHROME_EXT_PEM }}" > .extension.pem
+            chmod 600 .extension.pem
             # pack crx file
             npm install --no-save crx3
             ./node_modules/.bin/crx3 ./src/extension \
-              -p ./.extension.pem
+              -p ./.extension.pem \
               -o ./src/sidekick/extension.crx \
               -x ./src/sidekick/extension.xml \
-              --crxURL https://www.hlx.live/tools/sidekick/extension.crx \
+              --crxURL https://www.hlx.live/tools/sidekick/extension.crx
           else
             echo "No changes in extension detected"
           fi
