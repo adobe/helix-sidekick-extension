@@ -1,12 +1,12 @@
 {
+  "title": {
+    "message": "Helix Sidekick (Beta)"
+  },
   "description": {
     "message": "Use Helix Sidekick on multiple projects and across multiple tabs and windows."
   },
   "description_shortcut": {
     "message": "Toggle Helix Sidekick"
-  },
-  "title": {
-    "message": "Helix Sidekick"
   },
   "homepage": {
     "message": "https://www.hlx.live/tools/sidekick/"
