@@ -9,6 +9,7 @@
 	"options_page": "options.html",
 	"description": "__MSG_description__",
 	"permissions": [
+    "contextMenus",
     "storage",
 	  "tabs",
     "https://*/*",

@@ -41,6 +41,9 @@
   "config_project_pick": {
     "message": "Wähle ein Projekt aus:"
   },
+  "config_project_add": {
+    "message": "Projekt hinzufügen"
+  },
   "config_shareurl_title": {
     "message": "Mit Teilen-URL hinzufügen"
   },
