@@ -90,7 +90,7 @@ export function getConfigMatches(configs, tabUrl) {
     const match = checkHost === 'localhost:3000' // local development
       || (host && checkHost === host) // production host
       || (checkHost.endsWith(`--${repo}--${owner}.hlx.live`) || checkHost === outerHost) // outer CDN
-      || checkHost.endsWith(`--${repo}--${owner}.hlx${hlx3 ? '3' : ''}.page`) // inner CDN with any branch
+      || checkHost.endsWith(`--${repo}--${owner}.hlx${hlx3 ? '3' : ''}.page`) // inner CDN with any ref
       || mountpoints // editor
         .map((mp) => {
           const mpUrl = new URL(mp);
