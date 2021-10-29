@@ -27,7 +27,7 @@ jobs:
       - name: Checkout target repo
         uses: actions/checkout@v2
         with:
-          repository: adobe/helix-pages
+          repository: adobe/helix-website
           ref: master
           path: _target
       - name: Copy files from source to target repo
