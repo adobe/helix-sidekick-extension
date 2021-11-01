@@ -1,3 +1,10 @@
+## [3.17.1](https://github.com/adobe/helix-sidekick/compare/v3.17.0...v3.17.1) (2021-11-01)
+
+
+### Bug Fixes
+
+* devMode to use http://localhost:3000 ([9b3fba9](https://github.com/adobe/helix-sidekick/commit/9b3fba9fd28404753b0a3ca82c75c7ab84ccb62c))
+
 # [3.17.0](https://github.com/adobe/helix-sidekick/compare/v3.16.1...v3.17.0) (2021-10-28)
 
 
