@@ -1,3 +1,10 @@
+## [3.17.3](https://github.com/adobe/helix-sidekick/compare/v3.17.2...v3.17.3) (2021-11-02)
+
+
+### Bug Fixes
+
+* work with custom outerHost and any ref ([c969b23](https://github.com/adobe/helix-sidekick/commit/c969b2331b28cb25022b1820f99c7364240091fd))
+
 ## [3.17.2](https://github.com/adobe/helix-sidekick/compare/v3.17.1...v3.17.2) (2021-11-02)
 
 
