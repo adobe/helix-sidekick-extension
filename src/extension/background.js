@@ -13,6 +13,8 @@
 'use strict';
 
 import {
+  GH_URL,
+  SHARE_URL,
   url,
   log,
   i18n,
@@ -21,23 +23,49 @@ import {
   toggleDisplay,
   addConfig,
   getShareSettings,
-  isValidShareURL,
+  getGitHubSettings,
 } from './utils.js';
 
 /**
- * Checks if the URL is a share URL and asks the user
- * to add the config.
- * @param {string} tabUrl The URL to check
+ * Tries to retrieve a project config from a tab.
+ * @param string} tabUrl The URL of the tab
+ * @returns {object} The config object
  */
-async function checkShareUrl(tabUrl) {
-  if (isValidShareURL(tabUrl)) {
-    log.info('share URL detected', tabUrl);
-    // eslint-disable-next-line no-restricted-globals, no-alert
-    if (confirm(i18n('config_shareurl_add_confirm'))) {
-      await addConfig(getShareSettings(tabUrl), (added) => {
-        if (added && tabUrl !== url('options.html')) {
-          window.open(url('options.html'));
-        }
+function getConfigFromTabUrl(tabUrl) {
+  const cfg = getShareSettings(tabUrl);
+  if (!cfg.giturl && tabUrl.startsWith(GH_URL)) {
+    cfg.giturl = tabUrl;
+    cfg.hlx3 = true;
+  }
+  return cfg;
+}
+
+/**
+ * Enables or disables context menu items for a tab.
+ * @param {string} tabUrl The URL of the tab
+ * @param {Object[]} configs The existing configurations
+ */
+async function checkContextMenu(tabUrl, configs) {
+  // clear context menu
+  browser.contextMenus.removeAll();
+  // check if add project is applicable
+  if (configs && (tabUrl.startsWith(GH_URL) || tabUrl.startsWith(SHARE_URL))) {
+    const { giturl } = getConfigFromTabUrl(tabUrl);
+    if (giturl) {
+      const { owner, repo } = getGitHubSettings(giturl);
+      const configExists = !!configs.find((c) => c.owner === owner && c.repo === repo);
+      const enabled = !configExists;
+      const checked = configExists;
+      // add context menu item for adding project config
+      browser.contextMenus.create({
+        id: 'addProject',
+        title: i18n('config_project_add'),
+        contexts: [
+          'page_action',
+        ],
+        type: 'checkbox',
+        enabled,
+        checked,
       });
     }
   }
@@ -53,6 +81,7 @@ function checkTab(id) {
       .get(id)
       .then(async (tab = {}) => {
         if (!tab.url) return;
+        checkContextMenu(tab.url, configs);
         const matches = getConfigMatches(configs, tab.url);
         log.debug('checking', id, tab.url, matches);
         const allowed = matches.length > 0;
@@ -66,9 +95,6 @@ function checkTab(id) {
           // disable extension for this tab
           browser.pageAction.hide(id);
           // check if active tab has share URL and ask to add config
-          if (tab.active) {
-            checkShareUrl(tab.url);
-          }
         }
       })
       .catch((e) => log.error('error checking tab', id, e));
@@ -89,6 +115,27 @@ function toggle(id) {
  * Adds the listeners for the extension.
  */
 (() => {
+  // actions for context menu items
+  const contextMenuActions = {
+    addProject: async (tabUrl) => {
+      const cfg = getConfigFromTabUrl(tabUrl);
+      if (cfg.giturl) {
+        await addConfig(cfg, (added) => {
+          if (added && tabUrl !== url('options.html')) {
+            // redirect to options page
+            window.open(url('options.html'));
+          }
+        });
+      }
+    },
+  };
+
+  // add listener for clicks on context menu item
+  browser.contextMenus.onClicked.addListener(async ({ menuItemId }, tab) => {
+    if (!tab.url) return;
+    contextMenuActions[menuItemId](tab.url);
+  });
+
   // toggle the sidekick when the browser action is clicked
   browser.pageAction.onClicked.addListener(({ id }) => {
     toggle(id);

@@ -41,6 +41,9 @@
   "config_project_pick": {
     "message": "Wähle ein Projekt aus:"
   },
+  "config_project_add": {
+    "message": "Projekt hinzufügen"
+  },
   "config_shareurl_title": {
     "message": "Mit Teilen-URL hinzufügen"
   },
@@ -55,9 +58,6 @@
   },
   "config_shareurl_copied": {
     "message": "Teilen-URL für $1 in die Zwischenablage kopiert"
-  },
-  "config_shareurl_add_confirm": {
-    "message": "Möchtest du dieses Projekt zu deinem Helix Sidekick hinzufügen?"
   },
   "config_shareurl_added": {
     "message": "Projekt zu Helix Sidekick hinzugefügt"

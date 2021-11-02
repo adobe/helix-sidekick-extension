@@ -14,7 +14,9 @@
 
 import {} from './lib/polyfills.min.js';
 
-export const SHARE_PAGE = 'https://www.hlx.live/tools/sidekick/';
+export const SHARE_URL = 'https://www.hlx.live/tools/sidekick/?';
+
+export const GH_URL = 'https://github.com/';
 
 export const log = {
   LEVEL: 2,
@@ -48,20 +50,18 @@ export async function getMountpoints(owner, repo, ref) {
 }
 
 export function getGitHubSettings(giturl) {
-  try {
+  if (typeof giturl === 'string' && giturl.startsWith(GH_URL)) {
     const segs = new URL(giturl).pathname.substring(1).split('/');
-    if (segs.length < 2) {
+    if (segs.length >= 2) {
       // need at least owner and repo
-      throw new Error();
+      return {
+        owner: segs[0],
+        repo: segs[1],
+        ref: (segs[2] === 'tree' ? segs[3] : undefined) || 'main',
+      };
     }
-    return {
-      owner: segs[0],
-      repo: segs[1],
-      ref: (segs[2] === 'tree' ? segs[3] : undefined) || 'main',
-    };
-  } catch (e) {
-    return {};
   }
+  return {};
 }
 
 export async function getState(cb) {
@@ -127,7 +127,7 @@ export function getConfigMatches(configs, tabUrl) {
 }
 
 export function getShareSettings(shareurl) {
-  if (typeof shareurl === 'string' && shareurl.startsWith(SHARE_PAGE)) {
+  if (typeof shareurl === 'string' && shareurl.startsWith(SHARE_URL)) {
     try {
       const params = new URL(shareurl).searchParams;
       const giturl = params.get('giturl');
