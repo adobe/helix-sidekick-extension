@@ -1,3 +1,10 @@
+# [3.18.0](https://github.com/adobe/helix-sidekick/compare/v3.17.3...v3.18.0) (2021-11-02)
+
+
+### Features
+
+* add project from github or share url ([d62ac4f](https://github.com/adobe/helix-sidekick/commit/d62ac4f753dcf010cd583adb89b74bb1c38f883f))
+
 ## [3.17.3](https://github.com/adobe/helix-sidekick/compare/v3.17.2...v3.17.3) (2021-11-02)
 
 
