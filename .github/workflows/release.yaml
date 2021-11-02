@@ -14,16 +14,11 @@ jobs:
           ssh-key: ${{ secrets.SSH-KEY }}
       - name: Pack chrome extension
         run: |
-          if [ "`git status -s src/extension`" != "" ]; then
-            echo "Packing chrome extension"
-            # write private key file
-            echo "{{ secrets.CHROME_EXT_PEM }}" > .extension.pem
-            chmod 600 .extension.pem
-            # pack crx file
-            npm run pack
-          else
-            echo "No changes in extension detected"
-          fi
+          # write private key file
+          echo "${{secrets.CHROME_EXT_PEM}}" > .extension.pem
+          chmod 600 .extension.pem
+          # pack crx file
+          npm run pack
       - name: Checkout target repo
         uses: actions/checkout@v2
         with:
