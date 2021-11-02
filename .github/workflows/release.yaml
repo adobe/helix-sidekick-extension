@@ -20,7 +20,7 @@ jobs:
             echo "changes_exist=true" >> $GITHUB_ENV
           fi
       - name: Pack chrome extension
-        if: env.changes_exist == 'false'
+        if: env.changes_exist == 'true'
         run: |
           echo "::debug::Packing chrome extension"
           # write private key file
