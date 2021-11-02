@@ -2,7 +2,7 @@ name: Release
 on:
   push:
     branches:
-      - main
+      - pack-extension
 jobs:
   release:
     runs-on: ubuntu-latest
@@ -12,18 +12,22 @@ jobs:
         uses: actions/checkout@v2
         with:
           ssh-key: ${{ secrets.SSH-KEY }}
-      - name: Pack chrome extension
+      - name: Check for changes
         run: |
-          if [ "`git status -s src/extension`" != "" ]; then
-            echo "Packing chrome extension"
-            # write private key file
-            echo "{{ secrets.CHROME_EXT_PEM }}" > .extension.pem
-            chmod 600 .extension.pem
-            # pack crx file
-            npm run pack
+          if git diff --exit-code; then
+            echo "::set-env name=changes_exist::false"
           else
-            echo "No changes in extension detected"
+            echo "::set-env name=changes_exist::true"
           fi
+      - name: Pack chrome extension
+        if: env.changes_exist == 'true'
+        run: |
+          echo "::debug::Packing chrome extension"
+          # write private key file
+          echo "{{ secrets.CHROME_EXT_PEM }}" > .extension.pem
+          chmod 600 .extension.pem
+          # pack crx file
+          npm run pack
       - name: Checkout target repo
         uses: actions/checkout@v2
         with:
