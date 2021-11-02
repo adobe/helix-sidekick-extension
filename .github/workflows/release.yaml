@@ -24,7 +24,7 @@ jobs:
         run: |
           echo "::debug::Packing chrome extension"
           # write private key file
-          echo "{{ secrets.CHROME_EXT_PEM }}" > .extension.pem
+          echo "${{secrets.CHROME_EXT_PEM}}" > .extension.pem
           chmod 600 .extension.pem
           # pack crx file
           npm run pack
