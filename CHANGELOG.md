@@ -1,3 +1,15 @@
+## [3.17.2](https://github.com/adobe/helix-sidekick/compare/v3.17.1...v3.17.2) (2021-11-02)
+
+
+### Bug Fixes
+
+* for testing ([ef2c577](https://github.com/adobe/helix-sidekick/commit/ef2c5773f2e10677d84f73b2acab3a29f8ccbc5f))
+* for testing ([3418372](https://github.com/adobe/helix-sidekick/commit/34183725f424d0fe4a6f4da2655c83c453b188ce))
+* run pack only on change ([3197a1a](https://github.com/adobe/helix-sidekick/commit/3197a1ab9c0bfd756710fad691d54cc33c2c74c6))
+* split in 2 steps ([b80a1f4](https://github.com/adobe/helix-sidekick/commit/b80a1f4a4c0657e6cc54618ca60926e2193bf44a))
+* use env files ([ec15d64](https://github.com/adobe/helix-sidekick/commit/ec15d64562a9a663ce61766f6d64b7652974ee0d))
+* use main ([d61e821](https://github.com/adobe/helix-sidekick/commit/d61e821b83dbc85f5e07c67f0f81b99d9e01fb68))
+
 ## [3.17.1](https://github.com/adobe/helix-sidekick/compare/v3.17.0...v3.17.1) (2021-11-01)
 
 
