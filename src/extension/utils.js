@@ -43,8 +43,12 @@ export async function getMountpoints(owner, repo, ref) {
   const res = await fetch(fstab);
   if (res.ok) {
     await import('./lib/js-yaml.min.js');
-    const { mountpoints = {} } = jsyaml.load(await res.text());
-    return Object.values(mountpoints);
+    try {
+      const { mountpoints = {} } = jsyaml.load(await res.text());
+      return Object.values(mountpoints);
+    } catch (e) {
+      log.error('error getting mountpoints from fstab.yaml', e);
+    }
   }
   return [];
 }
