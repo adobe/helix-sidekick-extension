@@ -1,3 +1,10 @@
+## [3.18.1](https://github.com/adobe/helix-sidekick/compare/v3.18.0...v3.18.1) (2021-11-04)
+
+
+### Bug Fixes
+
+* **extension:** handle errors fetching mountpoints ([bf2ca96](https://github.com/adobe/helix-sidekick/commit/bf2ca9659f7a870b2938c573fc215d46d3e603f8))
+
 # [3.18.0](https://github.com/adobe/helix-sidekick/compare/v3.17.3...v3.18.0) (2021-11-02)
 
 
