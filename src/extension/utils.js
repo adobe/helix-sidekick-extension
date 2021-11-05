@@ -166,24 +166,37 @@ async function getProjectConfig(owner, repo, ref) {
   return cfg;
 }
 
-export async function addConfig({ giturl, project, hlx3 }, cb) {
+export async function assembleConfig({
+  giturl,
+  mountpoints,
+  hlx3,
+  project,
+  host,
+}) {
   const { owner, repo, ref } = getGitHubSettings(giturl);
   const projectConfig = await getProjectConfig(owner, repo, ref);
-  const mountpoints = await getMountpoints(owner, repo, ref);
+  return {
+    id: `${owner}/${repo}/${ref}`,
+    ...projectConfig,
+    project,
+    host,
+    hlx3,
+    giturl,
+    owner,
+    repo,
+    ref,
+    mountpoints: mountpoints || await getMountpoints(owner, repo, ref),
+  };
+}
+
+export async function addConfig(input, cb) {
+  const config = await assembleConfig(input);
+  const {
+    owner, repo, ref, mountpoints,
+  } = config;
   getState(({ configs }) => {
     /* eslint-disable no-alert */
     if (!configs.find((cfg) => owner === cfg.owner && repo === cfg.repo && ref === cfg.ref)) {
-      const config = {
-        id: `${owner}/${repo}/${ref}`,
-        giturl,
-        owner,
-        repo,
-        ref,
-        mountpoints,
-        project,
-        hlx3,
-        ...projectConfig,
-      };
       configs.push(config);
       browser.storage.sync
         .set({ hlxSidekickConfigs: configs })
