@@ -252,6 +252,7 @@ window.addEventListener('DOMContentLoaded', () => {
       await addConfig({
         giturl,
         project: document.getElementById('project').value,
+        hlx3: true,
       }, (added) => {
         if (added) {
           drawConfigs();
