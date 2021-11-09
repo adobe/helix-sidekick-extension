@@ -948,7 +948,9 @@
       if (!this.status.apiUrl) {
         const { href, pathname } = this.location;
         const apiUrl = getAdminUrl(
-          this.config, this.isContent() ? 'preview' : 'code', this.isEditor() ? '/' : pathname,
+          this.config,
+          this.isContent() ? 'preview' : 'code',
+          this.isEditor() ? '/' : pathname,
         );
         if (this.isEditor()) {
           apiUrl.search = new URLSearchParams([
@@ -1254,6 +1256,7 @@
      * @fires Sidekick#modalshown
      * @returns {Sidekick} The sidekick
      */
+    // eslint-disable-next-line default-param-last
     showModal(msg, sticky = false, level = 2, callback) {
       if (!this._modal) {
         const $spinnerWrap = appendTag(this.shadowRoot, {
@@ -1405,8 +1408,10 @@
       try {
         if (config.hlx3) {
           // update preview
-          resp = await fetch(getAdminUrl(config, this.isContent() ? 'preview' : 'code', path),
-            { method: 'POST' });
+          resp = await fetch(
+            getAdminUrl(config, this.isContent() ? 'preview' : 'code', path),
+            { method: 'POST' },
+          );
         } else {
           resp = await this.publish(path, true);
         }
@@ -1437,8 +1442,10 @@
       try {
         if (config.hlx3) {
           // delete preview
-          resp = await fetch(getAdminUrl(config, this.isContent() ? 'preview' : 'code', path),
-            { method: 'DELETE' });
+          resp = await fetch(
+            getAdminUrl(config, this.isContent() ? 'preview' : 'code', path),
+            { method: 'DELETE' },
+          );
           if (status.live && status.live.lastModified) {
             await this.unpublish(path);
           }

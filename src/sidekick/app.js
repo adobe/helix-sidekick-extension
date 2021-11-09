@@ -50,7 +50,8 @@
         if (owner && repo) {
           // merge base config with potential pre-existing config
           window.hlx.sidekickConfig = Object.assign(
-            window.hlx.sidekickConfig || {}, baseConfig,
+            window.hlx.sidekickConfig || {},
+            baseConfig,
           );
           // look for extended config in project
           let configOrigin = '';
