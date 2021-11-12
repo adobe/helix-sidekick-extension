@@ -1,3 +1,11 @@
+## [3.18.2](https://github.com/adobe/helix-sidekick/compare/v3.18.1...v3.18.2) (2021-11-12)
+
+
+### Bug Fixes
+
+* **extension:** make hlx3 default when adding manually ([4c40b6f](https://github.com/adobe/helix-sidekick/commit/4c40b6f5fb87b0ea626be124037b56663717f3a6))
+* **extension:** update gh settings when edited ([e86587a](https://github.com/adobe/helix-sidekick/commit/e86587a5dbd8f4df65cd4d81697eaee3779b1113))
+
 ## [3.18.1](https://github.com/adobe/helix-sidekick/compare/v3.18.0...v3.18.1) (2021-11-04)
 
 
