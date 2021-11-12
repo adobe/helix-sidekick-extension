@@ -1,3 +1,10 @@
+# [3.19.0](https://github.com/adobe/helix-sidekick/compare/v3.18.2...v3.19.0) (2021-11-12)
+
+
+### Features
+
+* deploy to new helix website ([e10b053](https://github.com/adobe/helix-sidekick/commit/e10b0538a055048e0de3a81481b5b4227e91dc99))
+
 ## [3.18.2](https://github.com/adobe/helix-sidekick/compare/v3.18.1...v3.18.2) (2021-11-12)
 
 
