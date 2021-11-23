@@ -966,15 +966,15 @@
             let msg = '';
             switch (resp.status) {
               case 401:
-                msg = 'Not authorized to access page. Check your login or network status.';
+                msg = 'You are not authorized to access this page. Check your login or network status.';
                 break;
               case 404:
                 msg = this.isEditor()
-                  ? 'Page not found. Check Helix access to this document or Sidekick configuration.'
-                  : 'Page not found. Check your URL or Sidekick configuration.';
+                  ? 'Page not found. Check your Sidekick configuration and make sure Helix has access to this document.'
+                  : 'Page not found. Check your Sidekick configuration or URL.';
                 break;
               default:
-                msg = 'Failed to fetch status. Please try again later.';
+                msg = 'Failed to fetch the page status. Please try again later.';
             }
             throw new Error(`${resp.status}: ${msg}`);
           }
@@ -984,7 +984,7 @@
           try {
             return resp.json();
           } catch (e) {
-            throw new Error('Invalid server response. Check your URL or Sidekick configuration.');
+            throw new Error('Invalid server response. Check your Sidekick configuration or URL.');
           }
         })
         .then((json) => Object.assign(this.status, json))
