@@ -80,13 +80,34 @@ const MOCKS = {
   purge: [{ status: 'ok' }],
   html: '<html></html>',
   json: '{}',
+  error401: {
+    status: 401,
+    body: 'Unauthorized',
+  }, 
+  error404: {
+    status: 404,
+    body: 'Not found',
+  }, 
+  error500: {
+    status: 500,
+    body: 'Server error',
+  }, 
+  error504: {
+    status: 504,
+    body: 'Gateway timeout',
+  }, 
 };
 
-const toResp = (resp) => ({
-  status: resp ? 200 : 404,
-  // eslint-disable-next-line no-nested-ternary
-  body: resp ? (typeof resp === 'object' ? JSON.stringify(resp) : resp) : '',
-});
+const toResp = (resp) => {
+  if (typeof resp  === 'object' && resp.body) {
+    return resp;
+  } else {
+    return {
+      status: resp ? 200 : 404,
+      body: resp ? (typeof resp === 'object' ? JSON.stringify(resp) : resp) : '',
+    };
+  }
+};
 
 const getPlugins = async (p) => p.evaluate(
   () => Array.from(window.hlx.sidekick
@@ -142,6 +163,9 @@ const clickButton = async (p, id) => p.evaluate((buttonId) => {
   };
   click(window.hlx.sidekick.shadowRoot.querySelector(`.hlx-sk button.${buttonId}`));
 }, id);
+
+const getNotification = async (p) => await p.evaluate(() => window.hlx.sidekick.shadowRoot
+  .querySelector('.hlx-sk-overlay .modal')?.textContent || '');
 
 const mockStandardResponses = async (p, opts = {}) => {
   const {
@@ -293,6 +317,7 @@ module.exports = {
   checkEventFired,
   execPlugin,
   clickButton,
+  getNotification,
   mockStandardResponses,
   testPageRequests,
   sleep,
