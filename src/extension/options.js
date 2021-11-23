@@ -146,6 +146,7 @@ function editConfig(i) {
           project: document.querySelector('#edit-project').value,
           host: document.querySelector('#edit-host').value,
           hlx3: document.querySelector('#edit-hlx3').checked,
+          devMode: document.querySelector('#edit-devMode').checked,
         };
         hlxSidekickConfigs[i] = {
           ...config,
@@ -176,6 +177,10 @@ function editConfig(i) {
           field.value = config[key] || '';
         }
         field.setAttribute('placeholder', i18n(`config_manual_${key}_placeholder`));
+        const label = document.querySelector(`#configEditor label[for="${field.id}"]`);
+        if (label) {
+          label.textContent = i18n(`config_manual_${key}`);
+        }
       });
       // focus first field
       const firstField = editor.querySelector('input, textarea');
@@ -211,6 +216,17 @@ function clearForms() {
   document.querySelectorAll('input, textarea').forEach((field) => {
     field.value = '';
   });
+}
+
+function setDevMode(devMode, cb) {
+  browser.storage.local
+    .set({
+      hlxSidekickDevMode: devMode,
+    })
+    .then(() => {
+      if (typeof cb === 'function') cb(devMode);
+    })
+    .catch((e) => log.error('error setting display', e));
 }
 
 window.addEventListener('DOMContentLoaded', () => {
@@ -263,5 +279,26 @@ window.addEventListener('DOMContentLoaded', () => {
       // eslint-disable-next-line no-alert
       window.alert(i18n('config_invalid_giturl'));
     }
+  });
+
+  // enable dev mode
+  getState(({ devMode }) => {
+    const devModeEnabled = window.location.search === '?devMode';
+    if (devModeEnabled) {
+      document.body.classList.add('advanced');
+      const input = document.getElementById('devModeSwitch');
+      input.checked = devMode;
+      input.addEventListener('click', () => setDevMode(input.checked));
+    }
+    // add devMode link to nav
+    const devModeLink = document.createElement('a');
+    devModeLink.textContent = i18n('advanced');
+    devModeLink.title = i18n('advanced');
+    devModeLink.addEventListener('click', () => {
+      window.location.href = `${window.location.pathname}${window.location.search === '?devMode' ? '' : '?devMode'}`;
+    });
+    const devModeListItem = document.createElement('li');
+    devModeListItem.append(devModeLink);
+    document.querySelector('nav > ul').append(devModeListItem);
   });
 });

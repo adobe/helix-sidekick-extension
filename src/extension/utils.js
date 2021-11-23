@@ -71,9 +71,11 @@ export function getGitHubSettings(giturl) {
 export async function getState(cb) {
   if (typeof cb === 'function') {
     const { hlxSidekickDisplay = false } = await browser.storage.local.get('hlxSidekickDisplay');
+    const { hlxSidekickDevMode = false } = await browser.storage.local.get('hlxSidekickDevMode');
     const { hlxSidekickConfigs = [] } = await browser.storage.sync.get('hlxSidekickConfigs');
     cb({
       display: hlxSidekickDisplay,
+      devMode: hlxSidekickDevMode,
       configs: hlxSidekickConfigs,
     });
   }
@@ -176,6 +178,7 @@ export async function assembleConfig({
   hlx3,
   project,
   host,
+  devMode,
 }) {
   const { owner, repo, ref } = getGitHubSettings(giturl);
   const projectConfig = await getProjectConfig(owner, repo, ref);
@@ -185,6 +188,7 @@ export async function assembleConfig({
     project,
     host,
     hlx3,
+    devMode,
     giturl,
     owner,
     repo,
