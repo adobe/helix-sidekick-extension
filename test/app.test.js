@@ -76,6 +76,11 @@ describe('Test sidekick bookmarklet', () => {
     await page.reload({ waitUntil: 'load' });
     msg = await getNotification(page);
     assert.ok((await getNotification(page)).startsWith('504'), `Expected 504 message, but got ${msg}`);
+    // click overlay and check if sidekick gets deleted
+    await page.evaluate(() => window.hlx.sidekick.shadowRoot
+      .querySelector('.hlx-sk-overlay')
+      .dispatchEvent(new MouseEvent('click')));
+    assert.strictEqual(await page.evaluate(() => window.hlx.sidekick), undefined, 'Did not delete sidekick');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Checks for hlx3 config/URL mismatch', async () => {
