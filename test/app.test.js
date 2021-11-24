@@ -53,7 +53,7 @@ describe('Test sidekick bookmarklet', () => {
     assert.strictEqual(zIndex, '9999999', 'Did not apply default CSS');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
-  it.only('Handles errors fetching status from admin API', async () => {
+  it('Handles errors fetching status from admin API', async () => {
     const page = getPage();
     let msg;
     await mockStandardResponses(page, {
