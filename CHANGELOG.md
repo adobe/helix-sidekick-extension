@@ -1,3 +1,10 @@
+## [3.20.1](https://github.com/adobe/helix-sidekick/compare/v3.20.0...v3.20.1) (2021-11-24)
+
+
+### Bug Fixes
+
+* properly clean up after status error ([2fe212b](https://github.com/adobe/helix-sidekick/commit/2fe212b3240e95601b1d8082e591c43265ea43e7))
+
 # [3.20.0](https://github.com/adobe/helix-sidekick/compare/v3.19.0...v3.20.0) (2021-11-24)
 
 
