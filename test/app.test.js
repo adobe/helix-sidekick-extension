@@ -30,6 +30,7 @@ const {
   getPage,
   startBrowser,
   stopBrowser,
+  getNotification,
 } = require('./utils');
 
 const fixturesPrefix = `file://${__dirname}/fixtures`;
@@ -52,20 +53,34 @@ describe('Test sidekick bookmarklet', () => {
     assert.strictEqual(zIndex, '9999999', 'Did not apply default CSS');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
-  it('Renders with irrelevant config', async () => {
+  it('Handles errors fetching status from admin API', async () => {
     const page = getPage();
-    await mockStandardResponses(page);
-    await page.goto(`${fixturesPrefix}/config-wrong.html`, { waitUntil: 'load' });
-    const skHandle = await page.evaluate(() => !!window.hlx.sidekick
-      .shadowRoot.querySelector('.hlx-sk'));
-    assert.ok(skHandle, 'Did not render without config');
-    const plugins = await getPlugins(page);
-    assert.strictEqual(plugins.length, 0, 'Rendered unexpected plugins');
-    const zIndex = await page.evaluate(() => {
-      const root = window.hlx.sidekick.shadowRoot.querySelector('.hlx-sk');
-      return window.getComputedStyle(root).getPropertyValue('z-index');
+    let msg;
+    await mockStandardResponses(page, {
+      mockResponses: [
+        MOCKS.error401,
+        MOCKS.error404,
+        MOCKS.error500,
+        MOCKS.error504,
+      ],
     });
-    assert.strictEqual(zIndex, '9999999', 'Did not apply default CSS');
+    await page.goto(`${fixturesPrefix}/config-default.html`, { waitUntil: 'load' });
+    msg = await getNotification(page);
+    assert.ok(msg.startsWith('401'), `Expected 401 message, but got ${msg}`);
+    await page.reload({ waitUntil: 'load' });
+    msg = await getNotification(page);
+    assert.ok((await getNotification(page)).startsWith('404'), `Expected 404 message, but got ${msg}`);
+    await page.reload({ waitUntil: 'load' });
+    msg = await getNotification(page);
+    assert.ok((await getNotification(page)).startsWith('500'), `Expected 500 message, but got ${msg}`);
+    await page.reload({ waitUntil: 'load' });
+    msg = await getNotification(page);
+    assert.ok((await getNotification(page)).startsWith('504'), `Expected 504 message, but got ${msg}`);
+    // click overlay and check if sidekick gets deleted
+    await page.evaluate(() => window.hlx.sidekick.shadowRoot
+      .querySelector('.hlx-sk-overlay')
+      .dispatchEvent(new MouseEvent('click')));
+    assert.strictEqual(await page.evaluate(() => window.hlx.sidekick), undefined, 'Did not delete sidekick');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Checks for hlx3 config/URL mismatch', async () => {
@@ -388,22 +403,16 @@ describe('Test sidekick bookmarklet', () => {
     await page.goto(`${fixturesPrefix}/config-none.html`, { waitUntil: 'load' });
 
     // shows notification
-    assert.strictEqual(await page.evaluate(() => {
-      window.hlx.sidekick.notify('Lorem ipsum');
-      return window.hlx.sidekick.shadowRoot.querySelector('.hlx-sk-overlay .modal').textContent;
-    }), 'Lorem ipsum', 'Did show notification');
+    await page.evaluate(() => window.hlx.sidekick.notify('Lorem ipsum'));
+    assert.strictEqual(await getNotification(page), 'Lorem ipsum', 'Did show notification');
 
     // shows sticky modal
-    assert.strictEqual(await page.evaluate(() => {
-      window.hlx.sidekick.showModal('Sticky', true);
-      return window.hlx.sidekick.shadowRoot.querySelector('.hlx-sk-overlay .modal.wait').textContent;
-    }), 'Sticky', 'Did show sticky modal');
+    await page.evaluate(() => window.hlx.sidekick.showModal('Sticky', true));
+    assert.strictEqual(await getNotification(page), 'Sticky', 'Did show sticky modal');
 
     // hides sticky modal
-    assert.strictEqual(await page.evaluate(() => {
-      window.hlx.sidekick.hideModal();
-      return window.hlx.sidekick.shadowRoot.querySelector('.hlx-sk-overlay').classList.contains('hlx-sk-hidden');
-    }), true, 'Did not hide sticky modal');
+    await page.evaluate(() => window.hlx.sidekick.hideModal());
+    assert.strictEqual(await getNotification(page), '', 'Did not hide sticky modal');
 
     // shows multi-line notification
     assert.strictEqual(await page.evaluate(() => {
