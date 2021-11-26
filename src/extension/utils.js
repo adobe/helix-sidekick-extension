@@ -18,6 +18,8 @@ export const SHARE_URL = 'https://www.hlx.live/tools/sidekick/?';
 
 export const GH_URL = 'https://github.com/';
 
+export const DEV_URL = 'http://localhost:3000';
+
 export const log = {
   LEVEL: 2,
   /* eslint-disable no-console */
@@ -71,15 +73,21 @@ export function getGitHubSettings(giturl) {
 export async function getState(cb) {
   if (typeof cb === 'function') {
     const { hlxSidekickDisplay = false } = await browser.storage.local.get('hlxSidekickDisplay');
+    const { hlxSidekickProxyUrl } = await browser.storage.local.get('hlxSidekickProxyUrl');
     const { hlxSidekickConfigs = [] } = await browser.storage.sync.get('hlxSidekickConfigs');
     cb({
       display: hlxSidekickDisplay,
+      proxyUrl: hlxSidekickProxyUrl,
       configs: hlxSidekickConfigs,
     });
   }
 }
 
-export function getConfigMatches(configs, tabUrl) {
+export function getConfigMatches(configs, tabUrl, proxyUrl) {
+  if (tabUrl.startsWith(DEV_URL) && proxyUrl) {
+    log.info('matching against proxy url', proxyUrl);
+    tabUrl = proxyUrl;
+  }
   const matches = [];
   const checkHost = new URL(tabUrl).host;
   configs.forEach((config) => {
@@ -91,8 +99,7 @@ export function getConfigMatches(configs, tabUrl) {
       mountpoints,
       hlx3,
     } = config;
-    const match = checkHost === 'localhost:3000' // local development
-      || (host && checkHost === host) // production host
+    const match = (host && checkHost === host) // production host
       || (checkHost.endsWith(`--${repo}--${owner}.hlx.live`) || checkHost === outerHost) // outer CDN
       || checkHost.endsWith(`--${repo}--${owner}.hlx${hlx3 ? '3' : ''}.page`) // inner CDN with any ref
       || mountpoints // editor
@@ -220,7 +227,7 @@ export async function addConfig(input, cb) {
   });
 }
 
-export function setDisplay(display, cb) {
+export async function setDisplay(display, cb) {
   browser.storage.local
     .set({
       hlxSidekickDisplay: display,
@@ -229,6 +236,17 @@ export function setDisplay(display, cb) {
       if (typeof cb === 'function') cb(display);
     })
     .catch((e) => log.error('error setting display', e));
+}
+
+export async function setProxyUrl(proxyUrl, cb) {
+  browser.storage.local
+    .set({
+      hlxSidekickProxyUrl: proxyUrl,
+    })
+    .then(() => {
+      if (typeof cb === 'function') cb(proxyUrl);
+    })
+    .catch((e) => log.error('error setting proxyUrl', e));
 }
 
 export function toggleDisplay(cb) {

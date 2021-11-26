@@ -15,6 +15,7 @@
 import {
   GH_URL,
   SHARE_URL,
+  DEV_URL,
   url,
   log,
   i18n,
@@ -24,6 +25,7 @@ import {
   addConfig,
   getShareSettings,
   getGitHubSettings,
+  setProxyUrl,
 } from './utils.js';
 
 /**
@@ -76,13 +78,13 @@ async function checkContextMenu(tabUrl, configs) {
  * @param {number} id The ID of the tab
  */
 function checkTab(id) {
-  getState(({ configs }) => {
+  getState(({ configs, proxyUrl }) => {
     browser.tabs
       .get(id)
       .then(async (tab = {}) => {
         if (!tab.url) return;
         checkContextMenu(tab.url, configs);
-        const matches = getConfigMatches(configs, tab.url);
+        const matches = getConfigMatches(configs, tab.url, proxyUrl);
         log.debug('checking', id, tab.url, matches);
         const allowed = matches.length > 0;
         if (allowed) {
@@ -174,6 +176,42 @@ function toggle(id) {
         .catch((e) => log.error('error propagating display state', e));
     }
   });
+
+  // retrieve proxy url from local development
+  browser.webRequest.onHeadersReceived.addListener(
+    (details) => {
+      browser.tabs
+        .query({
+          currentWindow: true,
+          active: true,
+        })
+        .then(async (tabs) => {
+          if (Array.isArray(tabs) && tabs.length > 0) {
+            const rUrl = new URL(details.url);
+            const tabUrl = new URL(tabs[0].url);
+            if (tabUrl.pathname === rUrl.pathname) {
+              const { responseHeaders } = details;
+              // try "via" response header
+              const via = responseHeaders.find((h) => h.name.toLowerCase() === 'via')?.value;
+              const proxyHost = via?.split(' ')[1];
+              if (proxyHost && proxyHost !== 'varnish') {
+                const proxyUrl = new URL(tabs[0].url);
+                proxyUrl.hostname = proxyHost;
+                proxyUrl.protocol = 'https';
+                proxyUrl.port = '';
+                await setProxyUrl(
+                  proxyUrl.toString(),
+                  (purl) => log.info('new proxy url', purl),
+                );
+              }
+            }
+          }
+        })
+        .catch((e) => log.debug('failed to retrieve proxy url', e));
+    },
+    { urls: [`${DEV_URL}/*`] },
+    ['responseHeaders'],
+  );
 })();
 
 // announce sidekick display state

@@ -13,7 +13,7 @@
 
 'use strict';
 
-import { log, setDisplay } from './utils.js';
+import { DEV_URL, log, setDisplay } from './utils.js';
 
 export default async function injectSidekick(config, display) {
   if (typeof config !== 'object') {
@@ -39,7 +39,7 @@ export default async function injectSidekick(config, display) {
     } = config;
     let configOrigin = '';
     if (devMode) {
-      configOrigin = 'http://localhost:3000';
+      configOrigin = DEV_URL;
     } else {
       configOrigin = `https://${ref}--${repo}--${owner}.hlx.live`;
     }

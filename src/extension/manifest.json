@@ -12,6 +12,7 @@
     "contextMenus",
     "storage",
 	  "tabs",
+    "webRequest",
     "https://*/*",
     "http://localhost:3000/*"
   ],
