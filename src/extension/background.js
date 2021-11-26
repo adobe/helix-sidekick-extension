@@ -88,15 +88,23 @@ function checkTab(id) {
         log.debug('checking', id, tab.url, matches);
         const allowed = matches.length > 0;
         if (allowed) {
-          // enable extension for this tab
-          browser.pageAction.show(id);
-          browser.tabs.executeScript(id, {
-            file: './content.js',
-          });
+          try {
+            // enable extension for this tab
+            browser.pageAction.show(id);
+            browser.tabs.executeScript(id, {
+              file: './content.js',
+            });
+          } catch (e) {
+            log.error('error enabling extension', id, e);
+          }
         } else {
-          // disable extension for this tab
-          browser.pageAction.hide(id);
-          // check if active tab has share URL and ask to add config
+          try {
+            // disable extension for this tab
+            browser.pageAction.hide(id);
+            // check if active tab has share URL and ask to add config
+          } catch (e) {
+            log.error('error disabling extension', id, e);
+          }
         }
       })
       .catch((e) => log.error('error checking tab', id, e));

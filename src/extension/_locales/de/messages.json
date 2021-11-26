@@ -48,7 +48,7 @@
     "message": "Mit Teilen-URL hinzufügen"
   },
   "config_shareurl_description": {
-    "message": "Frage jemanden, der schon einen Sidekick hat, seine URL durch Klicken auf das Teilen-Symbol rechts mit dir zu teilen."
+    "message": "Bitte jemanden mit einem Sidekick, dessen URL durch Klicken auf das Teilen-Symbol rechts mit dir zu teilen."
   },
   "config_shareurl_placeholder": {
     "message": "Teilen-URL: https://www.hlx.page/tools/sidekick/..."
@@ -76,6 +76,12 @@
   },
   "config_manual_project_placeholder": {
     "message": "Projektname (optional)"
+  },
+  "config_manual_hlx3": {
+    "message": "Helix 3"
+  },
+  "config_manual_devMode": {
+    "message": "Projektkonfiguration lokal testen"
   },
   "config_add_success": {
     "message": "Projekt zu Helix Sidekick hinzugefügt"
@@ -115,5 +121,17 @@
   },
   "config_picker_button_title": {
     "message": "$1 tippen um $2 auszuwählen"
+  },
+  "extensions": {
+    "message": "Erweiterungen"
+  },
+  "help": {
+    "message": "Hilfe"
+  },
+  "advanced": {
+    "message": "Fortgeschritten"
+  },
+  "developer_mode": {
+    "message": "Sidekick lokal testen"
   }
 }

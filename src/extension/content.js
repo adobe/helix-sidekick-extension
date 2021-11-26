@@ -23,7 +23,9 @@
   } = await import('./utils.js');
 
   const inject = (config = window.hlx.selectedSidekickConfig) => {
-    getState(({ configs, display, proxyUrl }) => {
+    getState(({
+      configs, display, devMode, proxyUrl,
+    }) => {
       let matches = [];
       if (!config) {
         // find config matches
@@ -43,7 +45,7 @@
         // user selected config or single match, remember and show sidekick
         window.hlx.selectedSidekickConfig = config;
         import('./sidekick.js')
-          .then((mod) => mod.default(config, display))
+          .then((mod) => mod.default(config, display, devMode))
           .catch((e) => log.error('failed to load sidekick', e));
       } else if (matches.length > 0) {
         log.info('content.js: multiple configs found, inject config picker', matches);
