@@ -23,7 +23,14 @@ governing permissions and limitations under the License.
         <p class="mandatory"><input id="edit-giturl"></p>
         <p class="mandatory"><input id="edit-mountpoints"></p>
         <p><input id="edit-host"></p>
-        <p><input id="edit-hlx3" type="checkbox" checked> Helix 3</p>
+        <p>
+          <input id="edit-hlx3" type="checkbox" checked>
+          <label for="edit-hlx3"></label>
+        </p>
+        <p class="advanced-only">
+          <input type="checkbox" id="edit-devMode">
+          <label for="edit-devMode"></label>
+        </p>
         <p>
           <button></button>
           <button></button>
@@ -37,19 +44,23 @@ governing permissions and limitations under the License.
 		<h1>Chrome</h1>
 		<ul>
 			<li class="selected">
-				<a href="chrome://extensions" target="_blank">Extensions</a>
+				<a>__MSG_extensions__</a>
 				<ul>
-            <li id="extShortName">Helix Sidekick</li>
+            <li id="extShortName">__MSG_title__</li>
         </ul>
 			</li>
-			<li><a href="https://github.com/rofe/helix-sidekick/blob/main/README.md" target="_blank">Help</a></li>
+			<li><a href="__MSG_homepage__" target="_blank" title="__MSG_help__">__MSG_help__</a></li>
 		</ul>
 	</nav>
 	<header>
 		<h1>
-			<span id="extName">Helix Sidekick</span>
+			<span id="extName">__MSG_title__</span>
 		</h1>
-  </header>
+    <span class="devMode-container advanced-only">
+      <label for="devModeSwitch">__MSG_developer_mode__</label>
+      <input type="checkbox" id="devModeSwitch">
+    </span>
+</header>
   <main>
     <div class="settings-sections">
       <h2 class="settings-section-title">__MSG_config_projects__</h2>
@@ -71,8 +82,8 @@ governing permissions and limitations under the License.
           <p><button id="addManualConfigButton" title="__MSG_add__">__MSG_add__</button></p>
         </div>
       </section>
+      <span class="advanced-only">
       <hr>
-
       <h2 class="settings-section-title warn">__MSG_config_reset__</h2>
 
       <section id="reset" class="warn">
@@ -81,6 +92,7 @@ governing permissions and limitations under the License.
           <p><button id="resetButton" class="warn" title="__MSG_config_delete_all__">__MSG_config_delete_all__</button></p>
         </div>
       </section>
+      </span>
     </main>
 </body>
 </html>

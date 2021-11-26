@@ -15,7 +15,7 @@
 
 import { log, setDisplay } from './utils.js';
 
-export default async function injectSidekick(config, display) {
+export default async function injectSidekick(config, display, skDevMode) {
   if (typeof config !== 'object') {
     log.warn('sidekick.js: invalid config', config);
     return;
@@ -31,18 +31,18 @@ export default async function injectSidekick(config, display) {
       .filter(([k]) => ['owner', 'repo', 'ref', 'hlx3', 'devMode'].includes(k)));
     log.debug('sidekick.js: curated config', JSON.stringify(window.hlx.sidekickConfig));
     // inject sidekick
-    await import('https://www.hlx.live/tools/sidekick/module.js');
+    const moduleContainer = skDevMode
+      ? 'http://localhost:3000/src/sidekick'
+      : 'https://www.hlx.live/tools/sidekick';
+    await import(`${moduleContainer}/module.js`);
 
     // look for extended config in project
     const {
       owner, repo, ref, devMode,
     } = config;
-    let configOrigin = '';
-    if (devMode) {
-      configOrigin = 'http://localhost:3000';
-    } else {
-      configOrigin = `https://${ref}--${repo}--${owner}.hlx.live`;
-    }
+    const configOrigin = devMode
+      ? 'http://localhost:3000'
+      : `https://${ref}--${repo}--${owner}.hlx.live`;
     try {
       await import(`${configOrigin}/tools/sidekick/config.js`);
     } catch (e) {
