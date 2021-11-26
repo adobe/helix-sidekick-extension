@@ -1,3 +1,10 @@
+# [3.21.0](https://github.com/adobe/helix-sidekick/compare/v3.20.1...v3.21.0) (2021-11-26)
+
+
+### Features
+
+* enable local testing ([78e6621](https://github.com/adobe/helix-sidekick/commit/78e66213feec405be1cccbeceeb9a70d4ab941c5))
+
 ## [3.20.1](https://github.com/adobe/helix-sidekick/compare/v3.20.0...v3.20.1) (2021-11-24)
 
 
