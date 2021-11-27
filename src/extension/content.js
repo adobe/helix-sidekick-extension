@@ -23,11 +23,13 @@
   } = await import('./utils.js');
 
   const inject = (config = window.hlx.selectedSidekickConfig) => {
-    getState(({ configs, display, devMode }) => {
+    getState(({
+      configs, display, devMode, proxyUrl,
+    }) => {
       let matches = [];
       if (!config) {
         // find config matches
-        matches = getConfigMatches(configs, window.location.href);
+        matches = getConfigMatches(configs, window.location.href, proxyUrl);
         log.debug('content.js: found matches', matches.length);
         if (matches.length === 0) {
           // no config matches, do nothing

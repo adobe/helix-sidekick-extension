@@ -13,7 +13,7 @@
 
 'use strict';
 
-import { log, setDisplay } from './utils.js';
+import { DEV_URL, log, setDisplay } from './utils.js';
 
 export default async function injectSidekick(config, display, skDevMode) {
   if (typeof config !== 'object') {
@@ -41,7 +41,7 @@ export default async function injectSidekick(config, display, skDevMode) {
       owner, repo, ref, devMode,
     } = config;
     const configOrigin = devMode
-      ? 'http://localhost:3000'
+      ? DEV_URL
       : `https://${ref}--${repo}--${owner}.hlx.live`;
     try {
       await import(`${configOrigin}/tools/sidekick/config.js`);
