@@ -1402,19 +1402,19 @@
       if (this.status.error) {
         return this;
       }
-      const { config, location, status } = this;
+      const { config, location: { href, search }, status } = this;
       this.showModal('Please wait …', true);
       if (!status.webPath) {
         console.log('not ready yet, trying again in a second ...');
         window.setTimeout(() => this.switchEnv(targetEnv, open), 1000);
         return this;
       }
-      const envUrl = `https://${config[hostType]}${status.webPath}`;
+      const envUrl = `https://${config[hostType]}${status.webPath}${search}`;
       if (config.hlx3 && targetEnv === 'preview' && this.isEditor()) {
         await this.update();
       }
       fireEvent(this, 'envswitched', {
-        sourceUrl: location.href,
+        sourceUrl: href,
         targetUrl: envUrl,
       });
       // switch or open env

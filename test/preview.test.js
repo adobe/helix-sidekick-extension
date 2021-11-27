@@ -129,4 +129,29 @@ describe('Test preview plugin', () => {
       plugin: 'preview',
     });
   }).timeout(IT_DEFAULT_TIMEOUT);
+
+  it('Preview plugin preserves query parameters and hash when switching to preview', async () => {
+    const page = getPage();
+    const apiMock = MOCKS.api.pages;
+    await testPageRequests({
+      page,
+      url: `${fixturesPrefix}/preserve-query-params.html`,
+      check: (req) => {
+        if (req.url().includes('main--pages--adobe.hlx3.page')) {
+          // check query params in request to preview url
+          assert.ok(
+            req.url() === `https://main--pages--adobe.hlx3.page${apiMock.webPath}?foo=bar`,
+            'Query parameters and hash not preserved',
+          );
+          return true;
+        }
+        // ignore otherwise
+        return false;
+      },
+      mockResponses: [
+        apiMock,
+      ],
+      plugin: 'preview',
+    });
+  }).timeout(IT_DEFAULT_TIMEOUT);
 });
