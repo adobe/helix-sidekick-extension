@@ -1,3 +1,10 @@
+# [3.22.0](https://github.com/adobe/helix-sidekick/compare/v3.21.0...v3.22.0) (2021-11-27)
+
+
+### Features
+
+* auto-pick project in local dev ([575249a](https://github.com/adobe/helix-sidekick/commit/575249aa0366c938fff74a672c8ade72aa410738))
+
 # [3.21.0](https://github.com/adobe/helix-sidekick/compare/v3.20.1...v3.21.0) (2021-11-26)
 
 
