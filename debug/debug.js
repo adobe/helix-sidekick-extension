@@ -14,7 +14,7 @@ const express = require('express');
 const fs = require('fs-extra');
 const debugServer = express();
 const title = 'Helix Sidekick Debug Server';
-const port = 3000;
+const port = 3001;
 
 debugServer.get('/', (_, res) => {
   res.redirect(301, '/debug/index.html')
