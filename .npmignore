@@ -1,5 +1,6 @@
 *.tgz
 .circleci/
+.debug/
 .eslintignore
 .eslintrc.js
 .github/
