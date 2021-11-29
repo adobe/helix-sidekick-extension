@@ -16,8 +16,8 @@ const debugServer = express();
 const title = 'Helix Sidekick Debug Server';
 const port = 3000;
 
-debugServer.get('/', (req, res) => {
-  res.send(fs.readFileSync(`${__dirname}/index.html`, 'utf-8'));
+debugServer.get('/', (_, res) => {
+  res.redirect(301, '/debug/index.html')
 });
 
 debugServer.use(express.static('.', {
