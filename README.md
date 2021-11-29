@@ -80,9 +80,7 @@ You can leverage Helix CLI for local testing. If you haven't already installed i
 #### Test a local Sidekick version
 
 1. Run `npm start` on your local checkout of this repository
-2. Install a Sidekick bookmarklet for your project: https://www.hlx.live/tools/sidekick/
-3. Edit the bookmarklet URL by replacing `https://www.live/tools/sidekick/app.js` with `http://localhost:3000/src/sidekick/app.js`
-4. Click the bookmarklet to launch your local version
+2. Go to `http://localhost:3001/ and follow the instructions.
 
 #### Test a local project config
 
