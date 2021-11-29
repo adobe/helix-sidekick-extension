@@ -79,15 +79,13 @@ You can leverage Helix CLI for local testing. If you haven't already installed i
 
 #### Test a local Sidekick version
 
-1. Run `hlx up --no-pages-proxy --no-open` on your local checkout of this repository
-2. Install a Sidekick bookmarklet for your project: https://www.hlx.live/tools/sidekick/
-3. Edit the bookmarklet URL by replacing `https://www.live/tools/sidekick/app.js` with `http://localhost:3000/src/sidekick/app.js`
-4. Click the bookmarklet to launch your local version
+1. Run `npm start` on your local checkout of this repository
+2. Go to `http://localhost:3001/ and follow the instructions.
 
 #### Test a local project config
 
 If you want to test a [config](#configuration) file before deploying it to your project:
-1. Run `hlx up --no-pages-proxy --no-open` on your local checkout of the project repository
+1. Run `hlx up` on your local checkout of the project repository
 2. Install a Sidekick bookmarklet for your project: https://www.hlx.live/tools/sidekick/
 3. Edit the bookmarklet URL by appending `,"devMode":"true"` after `"ref":"*"` (`*` being your project branch)
 4. Click the bookmarklet to launch Sidekick using your local config

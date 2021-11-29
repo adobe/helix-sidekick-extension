@@ -32,7 +32,7 @@ export default async function injectSidekick(config, display, skDevMode) {
     log.debug('sidekick.js: curated config', JSON.stringify(window.hlx.sidekickConfig));
     // inject sidekick
     const moduleContainer = skDevMode
-      ? 'http://localhost:3000/src/sidekick'
+      ? 'http://localhost:3001/src/sidekick'
       : 'https://www.hlx.live/tools/sidekick';
     await import(`${moduleContainer}/module.js`);
 

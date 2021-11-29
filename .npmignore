@@ -12,6 +12,7 @@
 .tidelift.yml
 build
 coverage
+debug
 junit
 logs
 node_modules/
