@@ -1,3 +1,11 @@
+## [3.23.1](https://github.com/adobe/helix-sidekick/compare/v3.23.0...v3.23.1) (2021-11-29)
+
+
+### Bug Fixes
+
+* preserve hash when switching env ([6f6d0d7](https://github.com/adobe/helix-sidekick/commit/6f6d0d7d7b6a02347def47d6f93faee0c98af3e4))
+* preserve query params when switching env ([c658047](https://github.com/adobe/helix-sidekick/commit/c65804730069dfc07f82a796d06461930832fe53))
+
 # [3.23.0](https://github.com/adobe/helix-sidekick/compare/v3.22.0...v3.23.0) (2021-11-29)
 
 
