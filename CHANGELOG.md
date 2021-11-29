@@ -1,3 +1,10 @@
+# [3.23.0](https://github.com/adobe/helix-sidekick/compare/v3.22.0...v3.23.0) (2021-11-29)
+
+
+### Features
+
+* use status API ([cc0a5fb](https://github.com/adobe/helix-sidekick/commit/cc0a5fb050a6b17f43b67d498765a0fb37ee4375))
+
 # [3.22.0](https://github.com/adobe/helix-sidekick/compare/v3.21.0...v3.22.0) (2021-11-27)
 
 
