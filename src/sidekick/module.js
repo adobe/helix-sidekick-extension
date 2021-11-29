@@ -949,14 +949,12 @@
         const { href, pathname } = this.location;
         const apiUrl = getAdminUrl(
           this.config,
-          this.isContent() ? 'preview' : 'code',
-          this.isEditor() ? '/' : pathname,
+          'status',
+          this.isEditor() ? '' : pathname,
         );
-        if (this.isEditor()) {
-          apiUrl.search = new URLSearchParams([
-            ['editUrl', href],
-          ]).toString();
-        }
+        apiUrl.search = new URLSearchParams([
+          ['editUrl', this.isEditor() ? href : 'auto'],
+        ]).toString();
         this.status.apiUrl = apiUrl.toString();
       }
       fetch(this.status.apiUrl, { cache: 'no-store' })
