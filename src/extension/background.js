@@ -198,20 +198,22 @@ function toggle(id) {
             const rUrl = new URL(details.url);
             const tabUrl = new URL(tabs[0].url);
             if (tabUrl.pathname === rUrl.pathname) {
-              const { responseHeaders } = details;
-              // try "via" response header
-              const via = responseHeaders.find((h) => h.name.toLowerCase() === 'via')?.value;
-              const proxyHost = via?.split(' ')[1];
-              if (proxyHost && proxyHost !== 'varnish') {
-                const proxyUrl = new URL(tabs[0].url);
-                proxyUrl.hostname = proxyHost;
-                proxyUrl.protocol = 'https';
-                proxyUrl.port = '';
-                await setProxyUrl(
-                  proxyUrl.toString(),
-                  (purl) => log.info('new proxy url', purl),
-                );
-              }
+              setProxyUrl('', async () => {
+                const { responseHeaders } = details;
+                // try "via" response header
+                const via = responseHeaders.find((h) => h.name.toLowerCase() === 'via')?.value;
+                const proxyHost = via?.split(' ')[1];
+                if (proxyHost && proxyHost !== 'varnish') {
+                  const proxyUrl = new URL(tabs[0].url);
+                  proxyUrl.hostname = proxyHost;
+                  proxyUrl.protocol = 'https';
+                  proxyUrl.port = '';
+                  await setProxyUrl(
+                    proxyUrl.toString(),
+                    (purl) => log.info('new proxy url', purl),
+                  );
+                }
+              });
             }
           }
         })
