@@ -36,10 +36,10 @@ The bookmarklet configures the Sidekick for a single project and needs to be reo
 1. Click the extensions ("puzzle piece") icon next to Chrome's address bar to see a list of all extensions. Verify that there's a grayed out Helix icon like this:<br />
 ![Extension icon disabled](docs/imgs/install_toolbar_icon.png)<br />
 Click the pin button next to it to make sure it is always visible.
-1. Now click the Helix icon and select _Options_:<br />
+1. Now click the extension's Helix icon and select _Options_:<br />
 ![Extension box](docs/imgs/install_contextmenu_options.png)<br />
 On this page, you can add Helix projects by either pasting a share URL* or a GitHub URL in the respective fields and clicking _Add_. This page will also allow you to view, edit and delete existing projects.
-   1. Alternatively, you can also navigate to a share URL* where the Sidekick extension will ask you if you wish to add the project. Click OK to add.
+   1. Alternatively, you can also navigate to a share URL* or a GitHub project, click the extension's Helix icon and select _Add project_.
 1. Navigate to your project's homepage and click on the (now colored) Helix icon to toggle the Sidekick.
 
 \* Share URLs start with `https://www.hlx.live/tools/sidekick/...`
