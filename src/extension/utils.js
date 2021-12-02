@@ -105,6 +105,7 @@ export function getConfigMatches(configs, tabUrl, proxyUrl) {
       || (checkHost.endsWith(`--${repo}--${owner}.hlx.live`) || checkHost === outerHost) // outer CDN
       || checkHost.endsWith(`--${repo}--${owner}.hlx${hlx3 ? '3' : ''}.page`) // inner CDN with any ref
       || mountpoints // editor
+        .filter((mp) => !!mp)
         .map((mp) => {
           const mpUrl = new URL(mp);
           return [mpUrl.host, mpUrl.pathname];
