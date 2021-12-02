@@ -1407,7 +1407,10 @@
         window.setTimeout(() => this.switchEnv(targetEnv, open), 1000);
         return this;
       }
-      const envUrl = `https://${config[hostType]}${status.webPath}${search}${hash}`;
+      let envUrl = `https://${config[hostType]}${status.webPath}`;
+      if (!this.isEditor()) {
+        envUrl += `${search}${hash}`;
+      }
       if (config.hlx3 && targetEnv === 'preview' && this.isEditor()) {
         await this.update();
       }
