@@ -154,4 +154,30 @@ describe('Test preview plugin', () => {
       plugin: 'preview',
     });
   }).timeout(IT_DEFAULT_TIMEOUT);
+
+  it('Preview plugin does not forward onedrive query parameters when switching to preview', async () => {
+    const page = getPage();
+    const apiMock = MOCKS.api.blog;
+    await testPageRequests({
+      page,
+      url: `${fixturesPrefix}/preview-onedrive-hlx3.html`,
+      check: (req) => {
+        if (req.url().includes('master--theblog--adobe.hlx3.page')) {
+          // check query params in request to preview url
+          assert.strictEqual(
+            new URL(req.url()).search,
+            '',
+            'Query parameters and hash not preserved',
+          );
+          return true;
+        }
+        // ignore otherwise
+        return false;
+      },
+      mockResponses: [
+        apiMock,
+      ],
+      plugin: 'preview',
+    });
+  }).timeout(IT_DEFAULT_TIMEOUT);
 });
