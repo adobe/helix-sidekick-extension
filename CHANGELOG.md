@@ -1,3 +1,10 @@
+# [3.24.0](https://github.com/adobe/helix-sidekick/compare/v3.23.2...v3.24.0) (2021-12-02)
+
+
+### Features
+
+* switch to new admin host ([fd60a01](https://github.com/adobe/helix-sidekick/commit/fd60a012fcdd17bc49e91f23e825b6a46eddeec1))
+
 ## [3.23.2](https://github.com/adobe/helix-sidekick/compare/v3.23.1...v3.23.2) (2021-12-02)
 
 
