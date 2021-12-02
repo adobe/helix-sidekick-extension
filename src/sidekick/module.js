@@ -529,7 +529,7 @@
    */
   function getAdminUrl({ owner, repo, ref }, api, path) {
     return new URL([
-      'https://admin.hlx3.page/',
+      'https://admin.hlx.page/',
       api,
       `/${owner}`,
       `/${repo}`,

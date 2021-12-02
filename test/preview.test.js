@@ -90,7 +90,7 @@ describe('Test preview plugin', () => {
         if (req.method() === 'POST') {
           // check post request to preview url
           assert.ok(
-            req.url() === `https://admin.hlx3.page/preview/adobe/theblog/master${apiMock.webPath}`,
+            req.url() === `https://admin.hlx.page/preview/adobe/theblog/master${apiMock.webPath}`,
             'Preview URL not updated',
           );
           return true;
@@ -112,7 +112,7 @@ describe('Test preview plugin', () => {
       page,
       url: `${fixturesPrefix}/edit-production.html`,
       check: (req) => {
-        if (req.url().includes('.hlx.page/')) {
+        if (req.url().includes('master--theblog--adobe')) {
           // check request to preview url
           assert.ok(
             req.url() === `https://master--theblog--adobe.hlx.page${apiMock.webPath}`,

@@ -186,7 +186,7 @@ const mockStandardResponses = async (p, opts = {}) => {
     } else if (req.url().endsWith('/tools/sidekick/config.js')
       && check(req)) {
       req.respond(toResp(configJs));
-    } else if (req.url().startsWith('https://admin.hlx3.page/')) {
+    } else if (req.url().startsWith('https://admin.hlx.page/')) {
       req.respond(toResp(mockResponses.shift()));
     } else if (req.url() === 'https://www.hlx.live/tools/sidekick/module.js') {
       try {
