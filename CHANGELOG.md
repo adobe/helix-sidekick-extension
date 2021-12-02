@@ -1,3 +1,11 @@
+## [3.23.2](https://github.com/adobe/helix-sidekick/compare/v3.23.1...v3.23.2) (2021-12-02)
+
+
+### Bug Fixes
+
+* don't append editor search params ([fab6ea2](https://github.com/adobe/helix-sidekick/commit/fab6ea278953582004cc01c2804fc373aaf239ae))
+* **extension:** check for empty mountpoints ([f0a513a](https://github.com/adobe/helix-sidekick/commit/f0a513ac6493b6bca9a03a539e00a6fe3c85c31d))
+
 ## [3.23.1](https://github.com/adobe/helix-sidekick/compare/v3.23.0...v3.23.1) (2021-11-29)
 
 
