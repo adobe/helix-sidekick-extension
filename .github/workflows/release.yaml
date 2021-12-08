@@ -12,13 +12,13 @@ jobs:
         uses: actions/checkout@v2
         with:
           ssh-key: ${{ secrets.SSH-KEY }}
-      - name: Pack chrome extension
-        run: |
-          # write private key file
-          echo "${{secrets.CHROME_EXT_PEM}}" > .extension.pem
-          chmod 600 .extension.pem
-          # pack crx file
-          npm run pack
+    # - name: Pack chrome extension
+    #   run: |
+    #     # write private key file
+    #     echo "${{secrets.CHROME_EXT_PEM}}" > .extension.pem
+    #     chmod 600 .extension.pem
+    #     # pack crx file
+    #     npm run pack
       - name: Checkout target repo
         uses: actions/checkout@v2
         with:
