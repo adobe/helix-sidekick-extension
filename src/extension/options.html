@@ -84,9 +84,24 @@ governing permissions and limitations under the License.
       </section>
       <span class="advanced-only">
       <hr>
+      <h2 class="settings-section-title">__MSG_config_backup__</h2>
+      <section id="importSection">
+        <div>
+          <h3>__MSG_config_import__</h3>
+          <p class="help">__MSG_config_import_description__</p>
+          <p><input id="importFile" type="file" title="__MSG_config_import__" accept="application/json"></p>
+        </div>
+      </section>
+      <section id="exportSection">
+        <div>
+          <h3>__MSG_config_export__</h3>
+          <p class="help">__MSG_config_export_description__</p>
+          <p><button id="exportButton" title="__MSG_config_export__">__MSG_config_export__</button></p>
+        </div>
+      </section>
+      <hr>
       <h2 class="settings-section-title warn">__MSG_config_reset__</h2>
-
-      <section id="reset" class="warn">
+      <section id="resetSection" class="warn">
         <div>
           <p>__MSG_config_delete_all_description__</p>
           <p><button id="resetButton" class="warn" title="__MSG_config_delete_all__">__MSG_config_delete_all__</button></p>
