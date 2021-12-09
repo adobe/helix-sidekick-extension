@@ -542,8 +542,20 @@ describe('Test sidekick bookmarklet', () => {
     assert.deepStrictEqual(
       await page.evaluate(() => Array.from(document.querySelectorAll('html, #topnav'))
         .map((elem) => elem.style.marginTop)),
-      ['49px', '49px'],
+      ['49px', '69px'],
       'Did not push down custom elements',
+    );
+  }).timeout(IT_DEFAULT_TIMEOUT);
+
+  it('Push down adjusts height of office online frame', async () => {
+    const page = getPage();
+    await mockStandardResponses(page);
+    await page.goto(`${fixturesPrefix}/preview-onedrive.html`, { waitUntil: 'load' });
+    await sleep();
+    assert.deepStrictEqual(
+      await page.evaluate(() => document.getElementById('WebApplicationFrame').style.height),
+      'calc(100% - 49px)',
+      'Did not adjust height of editor iframe',
     );
   }).timeout(IT_DEFAULT_TIMEOUT);
 
