@@ -1041,6 +1041,10 @@
             newMarginTop += currentMarginTop;
           }
           elem.style.marginTop = `${newMarginTop}px`;
+          if (elem.id === 'WebApplicationFrame') {
+            // adjust height of office online frame
+            elem.style.height = `calc(100% - ${newMarginTop}px)`;
+          }
         });
       }
       fireEvent(this, 'shown');
@@ -1066,6 +1070,10 @@
         this.removeAttribute('pushdown');
         this.config.pushDownElements.forEach((elem) => {
           elem.style.marginTop = 'initial';
+          if (elem.id === 'WebApplicationFrame') {
+            // adjust height of office online frame
+            elem.style.height = '';
+          }
         });
       }
       fireEvent(this, 'hidden');
