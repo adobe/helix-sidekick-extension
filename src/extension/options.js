@@ -289,14 +289,21 @@ window.addEventListener('DOMContentLoaded', () => {
       if (window.confirm(i18n('config_import_confirm'))) {
         const reader = new FileReader();
         reader.addEventListener('load', () => {
-          const { configs: hlxSidekickConfigs } = JSON.parse(reader.result);
-          browser.storage.sync
-            .set({ hlxSidekickConfigs })
-            .then(() => {
-              // eslint-disable-next-line no-alert
-              window.alert(i18n('config_import_success'));
-              drawConfigs();
-            });
+          const { configs: importedConfigs } = JSON.parse(reader.result);
+          getState(({ configs }) => {
+            browser.storage.sync
+              .set({
+                hlxSidekickConfigs: {
+                  ...configs,
+                  ...importedConfigs,
+                },
+              })
+              .then(() => {
+                // eslint-disable-next-line no-alert
+                window.alert(i18n('config_import_success'));
+                drawConfigs();
+              });
+          });
         });
         try {
           reader.readAsText(files[0]);
