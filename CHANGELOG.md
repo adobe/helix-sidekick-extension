@@ -1,3 +1,10 @@
+# [3.25.0](https://github.com/adobe/helix-sidekick/compare/v3.24.0...v3.25.0) (2021-12-09)
+
+
+### Features
+
+* adjust height of office online frame ([79aea2f](https://github.com/adobe/helix-sidekick/commit/79aea2f335fec1300ce895597c9b5112ddd9c6ab))
+
 # [3.24.0](https://github.com/adobe/helix-sidekick/compare/v3.23.2...v3.24.0) (2021-12-02)
 
 
