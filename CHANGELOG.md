@@ -1,3 +1,11 @@
+## [3.26.1](https://github.com/adobe/helix-sidekick/compare/v3.26.0...v3.26.1) (2021-12-10)
+
+
+### Bug Fixes
+
+* no delete if no preview ([9ed88f8](https://github.com/adobe/helix-sidekick/commit/9ed88f80db11c236a7b0e38dcaf816c91a92867f))
+* no delete if no preview ([4eaaa5b](https://github.com/adobe/helix-sidekick/commit/4eaaa5bc91b0e655d563f4883e68ff94dc269919))
+
 # [3.26.0](https://github.com/adobe/helix-sidekick/compare/v3.25.0...v3.26.0) (2021-12-10)
 
 
