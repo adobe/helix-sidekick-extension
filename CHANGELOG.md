@@ -1,3 +1,10 @@
+# [3.27.0](https://github.com/adobe/helix-sidekick/compare/v3.26.1...v3.27.0) (2021-12-10)
+
+
+### Features
+
+* **extension:** import/export config ([93390ba](https://github.com/adobe/helix-sidekick/commit/93390bac17849f10229a598bb0bd9952304d0d57))
+
 ## [3.26.1](https://github.com/adobe/helix-sidekick/compare/v3.26.0...v3.26.1) (2021-12-10)
 
 
