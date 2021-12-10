@@ -1,10 +1,9 @@
 {
 	"manifest_version": 2,
 	"name": "__MSG_title__",
-  "version": "0.9.8",
+  "version": "0.9.9",
   "author": "Adobe",
   "homepage_url": "https://www.hlx.live/tools/sidekick/",
-  "update_url": "https://www.hlx.live/tools/sidekick/extension.xml",
   "default_locale": "en",
 	"options_page": "options.html",
 	"description": "__MSG_description__",

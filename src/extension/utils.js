@@ -172,10 +172,12 @@ async function getProjectConfig(owner, repo, ref) {
   const res = await fetch(configJS);
   if (res.ok) {
     const js = await res.text();
-    const [, host] = /host: ?["']{1}(.*)['"]{1}/.exec(js) || [];
-    if (host) {
-      cfg.host = host;
-    }
+    ['project', 'host', 'outerHost'].forEach((prop) => {
+      const [, value] = new RegExp(`${prop}: ?["']{1}(.*)['"]{1}`).exec(js) || [];
+      if (value) {
+        cfg[prop] = value;
+      }
+    });
   }
   return cfg;
 }
@@ -186,15 +188,21 @@ export async function assembleConfig({
   hlx3,
   project,
   host,
+  outerHost,
   devMode,
 }) {
   const { owner, repo, ref } = getGitHubSettings(giturl);
   const projectConfig = await getProjectConfig(owner, repo, ref);
+  // allow local project config overrides
+  project = project || projectConfig.project;
+  host = host || projectConfig.host;
+  outerHost = outerHost || projectConfig.outerHost;
+
   return {
     id: `${owner}/${repo}/${ref}`,
-    ...projectConfig,
     project,
     host,
+    outerHost,
     hlx3,
     devMode,
     giturl,
