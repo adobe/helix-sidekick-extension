@@ -290,20 +290,15 @@ window.addEventListener('DOMContentLoaded', () => {
         const reader = new FileReader();
         reader.addEventListener('load', () => {
           const { configs: importedConfigs } = JSON.parse(reader.result);
-          getState(({ configs }) => {
-            browser.storage.sync
-              .set({
-                hlxSidekickConfigs: {
-                  ...configs,
-                  ...importedConfigs,
-                },
-              })
-              .then(() => {
-                // eslint-disable-next-line no-alert
-                window.alert(i18n('config_import_success'));
-                drawConfigs();
-              });
-          });
+          browser.storage.sync
+            .set({
+              hlxSidekickConfigs: importedConfigs,
+            })
+            .then(() => {
+              // eslint-disable-next-line no-alert
+              window.alert(i18n('config_import_success'));
+              drawConfigs();
+            });
         });
         try {
           reader.readAsText(files[0]);
@@ -316,6 +311,8 @@ window.addEventListener('DOMContentLoaded', () => {
       // eslint-disable-next-line no-alert
       window.alert(i18n('config_invalid_import'));
     }
+    // reset file input
+    target.value = '';
   });
 
   // config export

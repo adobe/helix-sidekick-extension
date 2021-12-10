@@ -120,7 +120,7 @@
     "message": "Importiere eine Konfiguration von deinem Computer. Stelle sicher, dass du eine Sicherungskopie deiner jetzigen Konfiguration hast!"
   },
   "config_import_confirm": {
-    "message": "Möchtest du diese Konfiguration wirklich importieren?\n\nAchtung: Dies kann die existierende Konfiguration überschreiben!"
+    "message": "Möchtest du diese Konfiguration wirklich importieren und die jetzige überschreiben?"
   },
   "config_import_success": {
     "message": "Konfiguration erfolgreich importiert"

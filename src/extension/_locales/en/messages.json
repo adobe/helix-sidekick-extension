@@ -120,7 +120,7 @@
     "message": "Import a configuration from your computer. Make sure you have a backup of your current configuration!"
   },
   "config_import_confirm": {
-    "message": "Do you really want to import this configuration?\n\nCaution: This may overwrite existing projects!"
+    "message": "Do you really want to import this configuration and overwrite the current one?"
   },
   "config_import_success": {
     "message": "Configuration successfully imported"
