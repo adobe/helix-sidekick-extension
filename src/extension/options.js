@@ -281,6 +281,67 @@ window.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  // config import
+  document.getElementById('importFile').addEventListener('change', ({ target }) => {
+    const { files } = target;
+    if (files.length > 0) {
+      // eslint-disable-next-line no-alert
+      if (window.confirm(i18n('config_import_confirm'))) {
+        const reader = new FileReader();
+        reader.addEventListener('load', () => {
+          const { configs: importedConfigs } = JSON.parse(reader.result);
+          browser.storage.sync
+            .set({
+              hlxSidekickConfigs: importedConfigs,
+            })
+            .then(() => {
+              // eslint-disable-next-line no-alert
+              window.alert(i18n('config_import_success'));
+              drawConfigs();
+            });
+        });
+        try {
+          reader.readAsText(files[0]);
+        } catch (e) {
+          // eslint-disable-next-line no-alert
+          window.alert(i18n('config_import_failure'));
+        }
+      }
+    } else {
+      // eslint-disable-next-line no-alert
+      window.alert(i18n('config_invalid_import'));
+    }
+    // reset file input
+    target.value = '';
+  });
+
+  // config export
+  document.getElementById('exportButton').addEventListener('click', () => {
+    getState(({ configs }) => {
+      if (configs.length > 0) {
+        // prepare export data
+        const mf = browser.runtime.getManifest();
+        const info = {
+          name: mf.name,
+          version: mf.version,
+          date: new Date().toUTCString(),
+        };
+        const data = JSON.stringify({ info, configs }, null, '  ');
+        // create file link on the fly
+        const exportLink = document.createElement('a');
+        exportLink.download = `helix-sidekick-backup-${Date.now()}.json`;
+        exportLink.href = `data:application/json;charset=utf-8,${encodeURIComponent(data)}`;
+        // exportLink.classList.add('hidden');
+        document.body.append(exportLink);
+        exportLink.click();
+        exportLink.remove();
+      } else {
+        // eslint-disable-next-line no-alert
+        window.alert(i18n('config_invalid_export'));
+      }
+    });
+  });
+
   // enable dev mode
   getState(({ devMode }) => {
     const devModeEnabled = window.location.search === '?devMode';

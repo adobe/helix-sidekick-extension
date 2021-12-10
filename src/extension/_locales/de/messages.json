@@ -59,9 +59,6 @@
   "config_shareurl_copied": {
     "message": "Teilen-URL für $1 in die Zwischenablage kopiert"
   },
-  "config_shareurl_added": {
-    "message": "Projekt zu Helix Sidekick hinzugefügt"
-  },
   "config_manual_title": {
     "message": "Manuell hinzufügen"
   },
@@ -106,6 +103,36 @@
   },
   "config_invalid_giturl": {
     "message": "Ungültige Repository-URL"
+  },
+  "config_invalid_import": {
+    "message": "Wähle eine gültige Datei zum Importieren aus"
+  },
+  "config_invalid_export": {
+    "message": "Du hast noch keine Konfiguration zum Exportieren"
+  },
+  "config_backup": {
+    "message": "Datensicherung"
+  },
+  "config_import": {
+    "message": "Konfiguration importieren"
+  },
+  "config_import_description": {
+    "message": "Importiere eine Konfiguration von deinem Computer. Stelle sicher, dass du eine Sicherungskopie deiner jetzigen Konfiguration hast!"
+  },
+  "config_import_confirm": {
+    "message": "Möchtest du diese Konfiguration wirklich importieren und die jetzige überschreiben?"
+  },
+  "config_import_success": {
+    "message": "Konfiguration erfolgreich importiert"
+  },
+  "config_import_failure": {
+    "message": "Importieren der Konfiguration fehlgeschlagen"
+  },
+  "config_export": {
+    "message": "Konfiguration exportieren"
+  },
+  "config_export_description": {
+    "message": "Erstelle eine Sicherungskopie deiner Konfiguration auf deinen Computer."
   },
   "config_reset": {
     "message": "Zurücksetzen"
