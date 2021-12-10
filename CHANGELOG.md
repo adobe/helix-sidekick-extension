@@ -1,3 +1,10 @@
+## [3.27.1](https://github.com/adobe/helix-sidekick/compare/v3.27.0...v3.27.1) (2021-12-10)
+
+
+### Bug Fixes
+
+* **extension:** project config not applied ([7a1a811](https://github.com/adobe/helix-sidekick/commit/7a1a8117b42e06eeddf5fc142ec4f318e507fd36))
+
 # [3.27.0](https://github.com/adobe/helix-sidekick/compare/v3.26.1...v3.27.0) (2021-12-10)
 
 
