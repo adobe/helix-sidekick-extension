@@ -678,7 +678,8 @@
     sk.add({
       id: 'delete',
       condition: (sidekick) => sidekick.isHelix()
-        && (!sidekick.status.edit || !sidekick.status.edit.url), // show if no edit url
+        && (!sidekick.status.edit || !sidekick.status.edit.url) // show if no edit url
+        && (sidekick.status.preview && sidekick.status.preview.status !== 404), // preview exists
       button: {
         action: async () => {
           const { location, status } = sk;
@@ -692,9 +693,7 @@
           // have user confirm deletion
           if (window.confirm(`${sk.isContent()
             ? 'This page no longer has a source document'
-            : 'This file no longer exists in the repository'}
-            , deleting it cannot be undone!\n\n
-            Are you sure you want to delete it?`)) {
+            : 'This file no longer exists in the repository'}, deleting it cannot be undone!\n\nAre you sure you want to delete it?`)) {
             try {
               const resp = await sk.delete();
               if (!resp.ok && resp.status >= 400) {
@@ -1041,10 +1040,6 @@
             newMarginTop += currentMarginTop;
           }
           elem.style.marginTop = `${newMarginTop}px`;
-          if (elem.id === 'WebApplicationFrame') {
-            // adjust height of office online frame
-            elem.style.height = `calc(100% - ${newMarginTop}px)`;
-          }
         });
       }
       fireEvent(this, 'shown');
@@ -1070,10 +1065,6 @@
         this.removeAttribute('pushdown');
         this.config.pushDownElements.forEach((elem) => {
           elem.style.marginTop = 'initial';
-          if (elem.id === 'WebApplicationFrame') {
-            // adjust height of office online frame
-            elem.style.height = '';
-          }
         });
       }
       fireEvent(this, 'hidden');
