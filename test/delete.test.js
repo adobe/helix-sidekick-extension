@@ -227,4 +227,19 @@ describe('Test delete plugin', () => {
     const plugins = await getPlugins(page);
     assert.ok(!plugins.find((p) => p.id === 'delete'), 'Unexpected delete plugin found');
   }).timeout(IT_DEFAULT_TIMEOUT);
+
+  it('No delete plugin if preview does not exist', async () => {
+    const apiMock = { ...MOCKS.api.blog };
+    apiMock.preview.status = 404;
+    delete apiMock.edit;
+    const page = getPage();
+    await mockStandardResponses(page, {
+      mockResponses: [apiMock],
+    });
+    // open test page
+    await page.goto(`${fixturesPrefix}/reload-staging.html`, { waitUntil: 'load' });
+    await sleep();
+    const plugins = await getPlugins(page);
+    assert.ok(!plugins.find((p) => p.id === 'delete'), 'Unexpected delete plugin found');
+  }).timeout(IT_DEFAULT_TIMEOUT);
 });

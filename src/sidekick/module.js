@@ -687,7 +687,8 @@
     sk.add({
       id: 'delete',
       condition: (sidekick) => sidekick.isHelix()
-        && (!sidekick.status.edit || !sidekick.status.edit.url), // show if no edit url
+        && (!sidekick.status.edit || !sidekick.status.edit.url) // show if no edit url
+        && (sidekick.status.preview && sidekick.status.preview.status !== 404), // preview exists
       button: {
         action: async () => {
           const { location, status } = sk;
