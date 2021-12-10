@@ -4,7 +4,6 @@
   "version": "0.9.8",
   "author": "Adobe",
   "homepage_url": "https://www.hlx.live/tools/sidekick/",
-  "update_url": "https://www.hlx.live/tools/sidekick/extension.xml",
   "default_locale": "en",
 	"options_page": "options.html",
 	"description": "__MSG_description__",
