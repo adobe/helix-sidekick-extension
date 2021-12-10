@@ -501,12 +501,21 @@
    * @private
    * @param {Sidekick} sidekick The sidekick
    */
-  async function checkLastModified({ detail = {} }) {
-    const { data: status = {} } = detail;
-    const pLastMod = (status.preview && status.preview.lastModified) || null;
-    const sLastMod = (status.source && status.source.lastModified) || null;
-    console.log('preview up to date?', new Date(pLastMod) > new Date(sLastMod));
-    // TODO: do something with it
+  async function checkLastModified(sidekick) {
+    const { status } = sidekick;
+    console.log(status);
+    const editLastMod = (status.edit && status.edit.lastModified) || null;
+    const previewLastMod = (status.preview && status.preview.lastModified) || null;
+    const liveLastMod = (status.live && status.live.lastModified) || null;
+    console.log(editLastMod, previewLastMod, liveLastMod);
+    if (editLastMod && previewLastMod && new Date(editLastMod) > new Date(previewLastMod)) {
+      sidekick.get('reload').classList.add('update');
+      sidekick.get('reload').firstElementChild.textContent = '*';
+    }
+    if (liveLastMod && previewLastMod && new Date(liveLastMod) < new Date(previewLastMod)) {
+      sidekick.get('publish').classList.add('update');
+      sidekick.get('publish').firstElementChild.textContent = '*';
+    }
   }
 
   /**
