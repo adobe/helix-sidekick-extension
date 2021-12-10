@@ -1,3 +1,10 @@
+# [3.26.0](https://github.com/adobe/helix-sidekick/compare/v3.25.0...v3.26.0) (2021-12-10)
+
+
+### Features
+
+* show unpublished and source doc changes ([c6f2535](https://github.com/adobe/helix-sidekick/commit/c6f253533213e82515e916a04fe769f22d774b23))
+
 # [3.25.0](https://github.com/adobe/helix-sidekick/compare/v3.24.0...v3.25.0) (2021-12-09)
 
 
