@@ -687,7 +687,8 @@
     sk.add({
       id: 'delete',
       condition: (sidekick) => sidekick.isHelix()
-        && (!sidekick.status.edit || !sidekick.status.edit.url), // show if no edit url
+        && (!sidekick.status.edit || !sidekick.status.edit.url) // show if no edit url
+        && (sidekick.status.preview && sidekick.status.preview.status !== 404), // preview exists
       button: {
         action: async () => {
           const { location, status } = sk;
@@ -1048,10 +1049,6 @@
             newMarginTop += currentMarginTop;
           }
           elem.style.marginTop = `${newMarginTop}px`;
-          if (elem.id === 'WebApplicationFrame') {
-            // adjust height of office online frame
-            elem.style.height = `calc(100% - ${newMarginTop}px)`;
-          }
         });
       }
       fireEvent(this, 'shown');
@@ -1077,10 +1074,6 @@
         this.removeAttribute('pushdown');
         this.config.pushDownElements.forEach((elem) => {
           elem.style.marginTop = 'initial';
-          if (elem.id === 'WebApplicationFrame') {
-            // adjust height of office online frame
-            elem.style.height = '';
-          }
         });
       }
       fireEvent(this, 'hidden');
