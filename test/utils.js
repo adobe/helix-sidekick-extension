@@ -29,15 +29,16 @@ const MOCKS = {
     blog: {
       webPath: '/en/topics/bla.html',
       preview: {
-        lastModified: 'Fri, 18 Jun 2021 09:57:42 GMT',
+        lastModified: 'Fri, 18 Jun 2021 09:57:01 GMT',
       },
       live: {
-        lastModified: 'Fri, 18 Jun 2021 09:57:42 GMT',
+        lastModified: 'Fri, 18 Jun 2021 09:57:02 GMT',
       },
       source: {
-        lastModified: 'Fri, 18 Jun 2021 09:55:03 GMT',
+        lastModified: 'Fri, 18 Jun 2021 09:57:00 GMT',
       },
       edit: {
+        lastModified: 'Fri, 18 Jun 2021 09:57:00 GMT',
         url: 'https://adobe.sharepoint.com/:w:/r/sites/TheBlog/_layouts/15/Doc.aspx?sourcedoc=%7BE8EC80CB-24C3-4B95-B082-C51FD8BC8760%7D&file=bla.docx&action=default&mobileredirect=true',
       },
     },
@@ -114,12 +115,18 @@ const getPlugins = async (p) => p.evaluate(
     .shadowRoot
     .querySelectorAll('.hlx-sk > div.env > div, .hlx-sk > div:not(.env)'))
     .map((plugin) => ({
-      id: plugin.className,
+      id: plugin.className.split(' ')[0],
+      classes: plugin.className.split(' '),
       text: plugin.textContent,
       buttonPressed: plugin.querySelector(':scope > button')
         && plugin.querySelector(':scope > button').classList.contains('pressed'),
     })),
 );
+
+const getPlugin = async (p, id) => getPlugins(p)
+  .then((plugins) => {
+    return plugins.find((plugin) => plugin.id === id);
+  });
 
 const waitForEvent = async (p, type) => p.evaluate((evtType) => {
   if (!evtType) return;
@@ -313,6 +320,7 @@ module.exports = {
   IT_DEFAULT_TIMEOUT,
   MOCKS,
   getPlugins,
+  getPlugin,
   waitForEvent,
   checkEventFired,
   execPlugin,
