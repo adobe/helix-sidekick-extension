@@ -229,7 +229,7 @@ describe('Test publish plugin', () => {
     const apiMock1 = {
       ...MOCKS.api.blog,
       live: {
-        lastModified: new Date(new Date(MOCKS.api.blog.live.lastModified).setFullYear(2020))
+        lastModified: 'Fri, 18 Jun 2021 09:56:59 GMT',
       },
     };
     const apiMock2 = {
