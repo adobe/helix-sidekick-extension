@@ -22,12 +22,13 @@
     getConfigMatches,
   } = await import('./utils.js');
 
-  const inject = (config = window.hlx.selectedSidekickConfig) => {
+  const inject = (selectedConfig = window.hlx.selectedSidekickConfig) => {
     getState(({
       configs, display, devMode, proxyUrl,
     }) => {
       let matches = [];
-      if (!config) {
+      let matchingConfig;
+      if (!selectedConfig) {
         // find config matches
         matches = getConfigMatches(configs, window.location.href, proxyUrl);
         log.debug('content.js: found matches', matches.length);
@@ -37,18 +38,19 @@
         }
         if (matches.length === 1) {
           // single config match
-          [config] = matches;
+          [matchingConfig] = matches;
         }
       }
-      if (config) {
-        log.info('content.js: single config found, inject sidekick', config);
+      if (selectedConfig
+        || (matchingConfig && window.location.origin !== 'https://docs.google.com')) {
+        log.info('content.js: selected or single matching config found, inject sidekick');
         // user selected config or single match, remember and show sidekick
-        window.hlx.selectedSidekickConfig = config;
+        window.hlx.selectedSidekickConfig = selectedConfig;
         import('./sidekick.js')
-          .then((mod) => mod.default(config, display, devMode))
+          .then((mod) => mod.default(selectedConfig || matchingConfig, display, devMode))
           .catch((e) => log.error('failed to load sidekick', e));
       } else if (matches.length > 0) {
-        log.info('content.js: multiple configs found, inject config picker', matches);
+        log.info('content.js: gdrive or multiple matching configs found, inject config picker', matches);
         // multiple matches, show config picker
         import('./configpicker.js')
           .then((mod) => mod.default(matches, display, inject))
