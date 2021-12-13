@@ -21,7 +21,7 @@ export const GH_URL = 'https://github.com/';
 export const DEV_URL = 'http://localhost:3000';
 
 export const log = {
-  LEVEL: 2,
+  LEVEL: 5,
   /* eslint-disable no-console */
   debug: (...args) => log.LEVEL > 3 && console.log('DEBUG', ...args),
   info: (...args) => log.LEVEL > 2 && console.log('INFO', ...args),
@@ -113,11 +113,11 @@ export function getConfigMatches(configs, tabUrl, proxyUrl) {
         .some(([mpHost, mpPath]) => {
           if (checkHost === mpHost) {
             if (mpHost.endsWith('sharepoint.com')) {
-              if (tabUrl.includes('/AllItems.aspx?')) {
-                // sharepoint browser
+              if (!/^\/:[wx]:\/r\//.test(new URL(tabUrl).pathname)) {
+                // not an editor url
                 return false;
               }
-              // sharepoint file, check for site name in path
+              // editor url, check for site name in path
               const pathSegments = mpPath.split('/');
               pathSegments.shift();
               const site = encodeURIComponent(pathSegments
