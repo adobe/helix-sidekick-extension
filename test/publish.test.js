@@ -26,6 +26,7 @@ const {
   getPage,
   startBrowser,
   stopBrowser,
+  getPlugin,
 } = require('./utils');
 
 const fixturesPrefix = `file://${__dirname}/fixtures`;
@@ -221,5 +222,36 @@ describe('Test publish plugin', () => {
     await sleep();
     const plugins = await getPlugins(page);
     assert.ok(!plugins.find((p) => p.id === 'publish'), 'Unexpected publish plugin found');
+  }).timeout(IT_DEFAULT_TIMEOUT);
+
+  it('Publish plugin shows update indicator if preview is newer than live', async () => {
+    const page = getPage();
+    const apiMock1 = {
+      ...MOCKS.api.blog,
+      live: {
+        lastModified: 'Fri, 18 Jun 2021 09:56:59 GMT',
+      },
+    };
+    const apiMock2 = {
+      ...MOCKS.api.blog,
+      live: {
+        lastModified: null,
+      },
+    };
+    await mockStandardResponses(page, {
+      mockResponses: [MOCKS.api.blog, apiMock1, apiMock2],
+    });
+    // test newer live lastModified 
+    await page.goto(`${fixturesPrefix}/publish-staging-hlx3.html`, { waitUntil: 'load' });
+    await sleep();
+    assert.ok((await getPlugin(page, 'publish')).classes.length === 1, 'Publish plugin with unexpected update class');
+    // test older live lastModified
+    await page.reload({ waitUntil: 'load' });
+    await sleep();
+    assert.ok((await getPlugin(page, 'publish')).classes.includes('update'), 'Publish plugin without update class');
+    // test without live lastModified
+    await page.reload({ waitUntil: 'load' });
+    await sleep();
+    assert.ok((await getPlugin(page, 'publish')).classes.includes('update'), 'Publish plugin without update class');
   }).timeout(IT_DEFAULT_TIMEOUT);
 });

@@ -25,6 +25,7 @@ const {
   getPage,
   startBrowser,
   stopBrowser,
+  getPlugin,
 } = require('./utils');
 
 const fixturesPrefix = `file://${__dirname}/fixtures`;
@@ -154,5 +155,26 @@ describe('Test reload plugin', () => {
     await sleep();
     const plugins = await getPlugins(page);
     assert.ok(!plugins.find((p) => p.id === 'reload'), 'Unexpected reload plugin found');
+  }).timeout(IT_DEFAULT_TIMEOUT);
+
+  it('Reload plugin shows update indicator if edit is newer than preview', async () => {
+    const page = getPage();
+    const apiMock1 = {
+      ...MOCKS.api.blog,
+      preview: {
+        lastModified: new Date(new Date(MOCKS.api.blog.live.lastModified).setFullYear(2020))
+      },
+    };
+    await mockStandardResponses(page, {
+      mockResponses: [MOCKS.api.blog, apiMock1],
+    });
+    // test newer preview lastModified 
+    await page.goto(`${fixturesPrefix}/publish-staging-hlx3.html`, { waitUntil: 'load' });
+    await sleep();
+    assert.ok((await getPlugin(page, 'reload')).classes.length === 1, 'Reload plugin with unexpected update class');
+    // test with older preview lastModified
+    await page.reload({ waitUntil: 'load' });
+    await sleep();
+    assert.ok((await getPlugin(page, 'reload')).classes.includes('update'), 'Reload plugin without update class');
   }).timeout(IT_DEFAULT_TIMEOUT);
 });
