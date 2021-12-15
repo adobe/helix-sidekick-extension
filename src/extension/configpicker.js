@@ -16,7 +16,7 @@ import {
 } from './utils.js';
 
 function pushDownContent(display) {
-  if (this.location.host !== 'docs.google.com') {
+  if (window.location.host !== 'docs.google.com') {
     document.querySelectorAll('body, iframe#WebApplicationFrame, div#feds-header')
       .forEach((container) => {
         container.style.marginTop = display ? '49px' : 'initial';
