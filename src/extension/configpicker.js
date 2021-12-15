@@ -16,10 +16,12 @@ import {
 } from './utils.js';
 
 function pushDownContent(display) {
-  document.querySelectorAll('body, iframe#WebApplicationFrame, div#feds-header')
-    .forEach((container) => {
-      container.style.marginTop = display ? '49px' : 'initial';
-    });
+  if (window.location.host !== 'docs.google.com') {
+    document.querySelectorAll('body, iframe#WebApplicationFrame, div#feds-header')
+      .forEach((container) => {
+        container.style.marginTop = display ? '49px' : 'initial';
+      });
+  }
 }
 
 class ConfigPicker extends HTMLElement {
