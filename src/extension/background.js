@@ -90,7 +90,10 @@ function checkTab(id) {
         if (allowed) {
           try {
             // enable extension for this tab
-            browser.pageAction.show(id);
+            if (browser.pageAction.show) {
+              browser.pageAction.show(id);
+            }
+            // execute content script
             browser.tabs.executeScript(id, {
               file: './content.js',
             });
@@ -100,7 +103,9 @@ function checkTab(id) {
         } else {
           try {
             // disable extension for this tab
-            browser.pageAction.hide(id);
+            if (browser.pageAction.hide) {
+              browser.pageAction.hide(id);
+            }
             // check if active tab has share URL and ask to add config
           } catch (e) {
             log.error('error disabling extension', id, e);
