@@ -179,21 +179,36 @@
   margin-right: 8px;
 }
 
-.hlx-sk .env button,
-.hlx-sk .env button.pressed {
+.hlx-sk .env button.toggle {
+  display: none;
+  max-height: 28px;
+  font-size: 0;
+  line-height: 0;
+  margin-right: 0;
+}
+
+.hlx-sk .env button.toggle::after {
+  content: "...";
+  font-size: var(--hlx-sk-button-font-size);
+  line-height: 1;
+}
+
+
+.hlx-sk .env > div > button,
+.hlx-sk .env > div > button.pressed {
   margin-right: 0;
   border-right-width: 0;
   border-radius: 0;
 }
 
-.hlx-sk .env > div:first-child button,
-.hlx-sk .env > div:first-child button.pressed {
+.hlx-sk .env > div:first-of-type button,
+.hlx-sk .env > div:first-of-type button.pressed {
   border-top-left-radius: var(--hlx-sk-button-border-radius);
   border-bottom-left-radius: var(--hlx-sk-button-border-radius);
 }
 
-.hlx-sk .env > div:last-child button,
-.hlx-sk .env > div:last-child button.pressed {
+.hlx-sk .env > div:last-of-type button,
+.hlx-sk .env > div:last-of-type button.pressed {
   border-top-right-radius: var(--hlx-sk-button-border-radius);
   border-bottom-right-radius: var(--hlx-sk-button-border-radius);
   border-right-width: 1px;
@@ -268,6 +283,35 @@
   }
 }
 
+@media(max-width:768px) {
+  .hlx-sk {
+    background-image: none;
+    padding-left: 10px;
+  }
+
+  .hlx-sk {
+    padding-right: 40px;
+  }
+
+  .hlx-sk > .share {
+    display: none;
+  }
+}
+
+@media(max-width:650px) {
+  .hlx-sk .env button.toggle {
+    display: inline-block;
+  }
+
+  .hlx-sk .env.expanded button.toggle {
+    display: none;
+  }
+
+  .hlx-sk .env:not(.expanded):not(:empty) > div {
+    display: none;
+  }
+}
+
 /* i18n */
 
 .hlx-sk.hlx-sk-empty::before {
@@ -288,6 +332,10 @@
 
 .hlx-sk-overlay div.modal.wait:empty::before {
   content: "Please wait..."
+}
+
+.hlx-sk .env button.toggle::before {
+  content: "Environments";
 }
 
 .hlx-sk .preview button::before {
