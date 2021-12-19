@@ -1117,7 +1117,11 @@
         revertPushDownContent(this);
         window.removeEventListener('resize', this.pushDownContent);
       }
-      this.root.querySelector(':scope .env').classList.remove('expanded');
+      try {
+        this.root.querySelector(':scope .env').classList.remove('expanded');
+      } catch (e) {
+        // ignore
+      }
       fireEvent(this, 'hidden');
       return this;
     }
