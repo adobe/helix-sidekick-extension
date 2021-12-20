@@ -16,12 +16,12 @@ const archiver = require('archiver');
 
 const supportedBrowsers = ['chrome', 'safari', 'firefox'];
 
-function copyResources(browser) {
+async function copyResources(browser) {
   const sourceDir = './src/extension';
   const targetDir = `./dist/${browser}`;
   try {
-    fs.ensureDirSync(targetDir);
-    fs.copySync(sourceDir, targetDir, {
+    await fs.ensureDir(targetDir);
+    await fs.copy(sourceDir, targetDir, {
       overwrite: true,
       filter: (src) => src.split('/').pop() !== 'manifest.json',
     });
@@ -57,18 +57,18 @@ function copyManifestKeys(sourceObj, browser) {
   return targetObj;
 }
 
-function buildManifest(browser) {
+async function buildManifest(browser) {
   const targetPath = `./dist/${browser}/manifest.json`;
   let targetMF = {};
   try {
-    const sourceMF = JSON.parse(fs.readFileSync('./src/extension/manifest.json'));
+    const sourceMF = await fs.readJson('./src/extension/manifest.json');
     targetMF = copyManifestKeys(sourceMF, browser);
   } catch (e) {
     throw new Error(`  failed to read source manifest.json: ${e.message}`);
   }
   try {
-    fs.ensureFileSync(targetPath);
-    fs.writeFileSync(targetPath, JSON.stringify(targetMF, null, '  '), { encoding: 'utf-8' });
+    await fs.ensureFile(targetPath);
+    await fs.writeFile(targetPath, JSON.stringify(targetMF, null, '  '), { encoding: 'utf-8' });
   } catch (e) {
     throw new Error(`  failed to write target manifest.json: ${e.message}`);
   }
@@ -106,11 +106,11 @@ if (!supportedBrowsers.includes(browser)) {
 
 console.log(`building ${browser} extension...`);
 
-copyResources(browser);
-buildManifest(browser);
-
-if (browser === 'chrome') {
-  zipExtension(browser);
-}
-
-console.log('done.');
+copyResources(browser)
+  .then(() => buildManifest(browser))
+  .then(() => {
+    if (browser === 'chrome') {
+      zipExtension(browser);
+    }
+    console.log('done.');
+  });
