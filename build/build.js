@@ -64,15 +64,13 @@ function buildManifest(browser) {
     const sourceMF = JSON.parse(fs.readFileSync('./src/extension/manifest.json'));
     targetMF = copyManifestKeys(sourceMF, browser);
   } catch (e) {
-    console.error(`  failed to read source manifest.json: ${e.message}`);
-    process.exit(1);
+    throw new Error(`  failed to read source manifest.json: ${e.message}`);
   }
   try {
     fs.ensureFileSync(targetPath);
     fs.writeFileSync(targetPath, JSON.stringify(targetMF, null, '  '), { encoding: 'utf-8' });
   } catch (e) {
-    console.error(`  failed to write target manifest.json: ${e.message}`);
-    process.exit(1);
+    throw new Error(`  failed to write target manifest.json: ${e.message}`);
   }
   console.log(`  ${browser}-specific manifest.json created at ${targetPath}`);
 }
@@ -82,11 +80,10 @@ function zipExtension(browser) {
   const zip = `${dir}.zip`;
   const output = fs.createWriteStream(zip);
   const archive = archiver('zip', {
-    zlib: { level: 9 }
+    zlib: { level: 9 },
   });
-  archive.on('error', function(e) {
-    console.error(`  failed to zip extension: ${e.message}`);
-    process.exit(1);
+  archive.on('error', (e) => {
+    throw new Error(`failed to zip extension: ${e.message}`);
   });
 
   archive.pipe(output);
