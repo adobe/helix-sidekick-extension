@@ -1,3 +1,20 @@
+# [3.28.0](https://github.com/adobe/helix-sidekick/compare/v3.27.1...v3.28.0) (2021-12-20)
+
+
+### Bug Fixes
+
+* catch error in hide if sidekick is already gone ([56ef6d8](https://github.com/adobe/helix-sidekick/commit/56ef6d824feb028da5c10bfc8d15ea04b2f79f2c))
+* **extension:** config picker pushes down gdocs ([f70b82b](https://github.com/adobe/helix-sidekick/commit/f70b82bf0ba6c2e8f6019ddac0319d23a523edd7))
+* **extension:** config picker pushes down gdocs ([53ae107](https://github.com/adobe/helix-sidekick/commit/53ae1070e0d48965690387f15146685fda1fdd55))
+* **extension:** deal with mountpoint objects ([cdc8946](https://github.com/adobe/helix-sidekick/commit/cdc89465c0dd9abee1e58298d2a3767e13bc0cb2))
+* **extension:** more reasonable rendering rules ([8bf2a76](https://github.com/adobe/helix-sidekick/commit/8bf2a76602a5c7e5f8b5d773d202d173351bb01e))
+* show update indicator if no live lastModified ([9f2a15b](https://github.com/adobe/helix-sidekick/commit/9f2a15ba056bb2e054c71122cedbbbc3cbefcc21))
+
+
+### Features
+
+* use less space on small screens ([b1cec88](https://github.com/adobe/helix-sidekick/commit/b1cec88821da066837f989d81793b88e151c35ba))
+
 ## [3.27.1](https://github.com/adobe/helix-sidekick/compare/v3.27.0...v3.27.1) (2021-12-10)
 
 
