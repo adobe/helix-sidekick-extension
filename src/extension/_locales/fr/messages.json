@@ -162,9 +162,9 @@
     "message": "Aide"
   },
   "advanced": {
-    "message": "Avancé"
+    "message": "Avancées"
   },
   "developer_mode": {
-    "message": "Tester le Helux Sidekick localement"
+    "message": "Tester le Helix Sidekick localement"
   }
 }
