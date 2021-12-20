@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Adobe. All rights reserved.
+ * Copyright 2021 Adobe. All rights reserved.
  * This file is licensed to you under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License. You may obtain a copy
  * of the License at http://www.apache.org/licenses/LICENSE-2.0
@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 
- :root {
+:root {
   --background-color: 255, 255, 255;
   --text-color: 48, 57, 66;
   --link-color: 3, 95, 230;
@@ -52,130 +52,27 @@
 
 body {
 	margin: 0;
-	padding-left: 155px; /* width of sidebar */
-	padding-top: 70px; /* height of header */
+  padding: 0;
 	font-family: sans-serif;
 	font-size: 16px;
   color: rgb(var(--text-color));
   background-color: rgb(var(--background-color));
 }
 
-button/*, select:not([size]), select[size="1"], input[type="checkbox"], input[type="radio"]*/ {
-	-webkit-appearance: none;
-	position: relative;
-	margin: 0 1px 0 0;
-	padding: 0 10px;
-	min-width: 4em;
-	min-height: 2em;
-  background-image: var(--button-background-image);
-	border: 1px solid rgba(var(--text-color),0.25);
-	border-radius: 2px;
-	outline: none;
-	box-shadow: 0 1px 0 rgba(var(--text-color),0.1), inset 0 1px 2px rgba(var(--background-color),0.75);
-	color: rgb(var(--text-color));
-	font: inherit;
-	
-	-webkit-user-select: none;
-	        user-select: none;
-}
-select:not([size]), select[size="1"] {
-  padding-right: 20px;
-  background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABMAAAAICAYAAAAbQcSUAAAAaUlEQVQoz2P4//8/A7UwdkEGhiggTsODo4g2LBEImJmZvwE1/UfHIHGQPNGGAbHCggULFrKxsf1ENgjEB4mD5EnxJoaByAZB5Yk3DNlAPj6+L8gGkWUYzMC3b982IRtEtmFQjaxYxDAwAGi4TwMYKNLfAAAAAElFTkSuQmCC'), linear-gradient(#EDEDED, #EDEDED 38%, #DEDEDE);
-  background-position: right center;
-  background-repeat: no-repeat;
-}
-input[type="checkbox"], input[type="radio"] {
-  min-width: 0;  /* Override the padding, min-width, and */
-  min-height: 0; /* min-height inherited from buttons.   */
-  padding: 0;
-  vertical-align: middle;
-}
-input[type="checkbox"] {
-  bottom: 2px;
-  width: 13px;
-  height: 13px;
-}
-label > input[type="checkbox"] {
-  margin-right: 0.6em;
-}
-_input[type="checkbox"]:checked::before {
-  display: block;
-  width: 100%;
-  height: 100%;
-  background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAsAAAALCAYAAACprHcmAAAAcklEQVQY02NgwA/YoJgoEA/Es4DYgJBCJSBeD8SboRinBiYg7kZS2IosyQ/Eakh8LySFq4FYHFlxGRBvBOJYqMRqJMU+yApNkSRAeC0Sux3dfSCTetE0wKyXxOWhMKhTYIr9CAUXyJMzgLgBagBBgDPGAI2LGdNt0T1AAAAAAElFTkSuQmCC");
-  background-size: 100% 100%;
-  -webkit-user-select: none;
-      user-select: none;
-}
-input[type="radio"] {
-  bottom: 3px;
-  width: 15px;
-  height: 15px;
-  border-radius: 100%;
-}
-
-input[type="radio"]:checked::before {
-  content: '';
-  display: block;
-  position: absolute;
-  left: 3px;
-  right: 3px;
-  top: 3px;
-  bottom: 3px;
-
-  background-color: #666;
-  border-radius: 100%;
-}
-
-button:enabled:hover, select:not([size]):enabled:hover, select[size="1"]:enabled:hover, input[type="checkbox"]:enabled:hover, input[type="radio"]:enabled:hover {
-	background-image: var(--button-hover-background-image);
-  border-color: rgba(var(--text-color),0.3);
-}
-	select:not([size]):enabled:hover, select[size="1"]:enabled:hover {
-		background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABMAAAAICAYAAAAbQcSUAAAAaUlEQVQoz2P4//8/A7UwdkEGhiggTsODo4g2LBEImJmZvwE1/UfHIHGQPNGGAbHCggULFrKxsf1ENgjEB4mD5EnxJoaByAZB5Yk3DNlAPj6+L8gGkWUYzMC3b982IRtEtmFQjaxYxDAwAGi4TwMYKNLfAAAAAElFTkSuQmCC'), linear-gradient(#F0F0F0, #F0F0F0 38%, #E0E0E0);
-	}
-button:enabled:active, select:not([size]):enabled:active, select[size="1"]:enabled:active, input[type="checkbox"]:enabled:active {
-	background-image: var(--button-hover-background-image);
-	box-shadow: none;
-	text-shadow: none;
-}
-	select:not([size]):enabled:active, select[size="1"]:enabled:active {
-		background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABMAAAAICAYAAAAbQcSUAAAAaUlEQVQoz2P4//8/A7UwdkEGhiggTsODo4g2LBEImJmZvwE1/UfHIHGQPNGGAbHCggULFrKxsf1ENgjEB4mD5EnxJoaByAZB5Yk3DNlAPj6+L8gGkWUYzMC3b982IRtEtmFQjaxYxDAwAGi4TwMYKNLfAAAAAElFTkSuQmCC'), linear-gradient(#E7E7E7, #E7E7E7 38%, #D7D7D7);
-	}
-button:enabled:focus, select:not([size]):enabled:focus, select[size="1"]:enabled:focus, input[type="checkbox"]:enabled:focus, input[type="radio"]:enabled:focus {
-	-webkit-transition: border-color 200ms;
-	        transition: border-color 200ms;
-	border-color: rgb(var(--link-color));
-}
-button:disabled, select:not([size]):disabled, select[size="1"]:disabled, input[type="checkbox"]:disabled, input[type="radio"]:disabled {
-	background-image: var(--button-disabled-background-image);
-	border-color: rgba(80,80,80,0.2);
-	color: rgba(var(--text-color), 0.7);
-}
-	select:not([size]):disabled, select[size="1"]:disabled {
-		background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABMAAAAICAYAAAAbQcSUAAAAWklEQVQoz2P4//8/A7UwdkEGhiggTsODo4g2LBEIGhoa/uPCIHmiDQNihQULFizEZhBIHCRPijexGggzCCpPvGHoBiIbRJZhMAPfvn3bhGwQ2YZBNbJiEcPAAIgGZrTRc1ZLAAAAAElFTkSuQmCC'), linear-gradient(#F1F1F1, #F1F1F1 38%, #E6E6E6);
-	}
-	input[type="checkbox"]:disabled, input[type="radio"]:disabled {
-		opacity: 0.75;
-	}
 
 h1, h2, h3 {
-	font-weight: normal;
 	line-height: 1;
-	-webkit-user-select: none;
-	        user-select: none;
-	cursor: default;
 }
 h1 {
-	font-size: 1.5em;
-	margin: 21px 0 13px;
+	font-size: 2rem;
+	margin: 1.6rem 0 0.8em;
 }
 h3 {
-	font-size: 1.2em;
+	font-size: 1.2rem;
 	margin-bottom: 0.8em;
 }
 
-a:any-link {
+a, a:any-link {
   color: rgb(var(--link-color));
 }
 
@@ -183,65 +80,63 @@ p {
 	margin: 0.65em 0;
 }
 
-.sideBar {
+nav {
 	position: fixed;
-	top: 0;
-	bottom: 0;
-	left: 0;
-	width: 200px;
+	width: calc((100vw - 598px) / 2);
+  left: 0;
 }
-.sideBar h1 {
-	margin: 21px 0 1em 23px;
-	padding: 0;
-	color: rgb(var(--sidebar-color));
+nav .menu {
+  display: none;
 }
-.sideBar ul {
+nav > a {
+  font-size: 0;
+  line-height: 0;
+}
+nav ul {
 	list-style-type: none;
-	padding: 0;
+  padding: 0;
+  margin: 0;
+  text-align: right;
 }
-.sideBar ul > li {
-	padding-left: 18px;
-	-webkit-user-select: none;
-	        user-select: none;
-	cursor: pointer;
+nav ul > li {
+  margin: 0;
+	padding-right: 30px;
+  padding-bottom: 10px;
 }
-.sideBar > ul > li {
-	border-left: 6px solid transparent;
-}
-.sideBar ul > li.selected {
-	-webkit-border-start-color: rgb(var(--sidebar-selected-color));
+nav ul > li.selected {
 	cursor: default;
 	pointer-events: none;
 }
-.sideBar > ul > li:nth-of-type(2) {
-	margin-top: 27px;
-}
-.sideBar li a {
+nav li a, nav li a:any-link {
 	display: inline-block;
 	color: rgb(var(--sidebar-link-color));
 	text-decoration: none;
 	line-height: 17px;
-	margin: 6px 0;
+  cursor: pointer;
 }
-.sideBar, header {
+nav, header {
 	z-index: 3;
 }
 header {
 	position: fixed;
-	top: 0;
-	left: 200px;
-	right: 0;
+  top: 0;
+  left: 0;
+  right: 0;
 	border-bottom: 1px solid rgb(var(--border-color));
 	background: linear-gradient(rgb(var(--background-color)), rgb(var(--background-color)) 40%, rgba(var(--background-color), 0.92));
+  padding: 0 20px;
+  max-width: 580px;
 }
-header, section, hr {
-	max-width: 558px;
+
+header, main {
+  margin: 0 auto;
 }
 
 main {
-  max-width: 558px;
-  margin-left: 44px;
-
+  max-width: 578px;
+  margin-top: 70px;
+  padding: 20px 20px 40px 20px;
+	border-left: 1px solid rgb(var(--border-color));
 }
 section {
   padding-left: 18px;
@@ -249,16 +144,24 @@ section {
 	margin-top: 8px;
 	margin-bottom: 24px;
 }
+
+section:last-of-type {
+  margin-bottom: 0;
+}
+
 section h3 {
 	margin-left: -18px;
 }
 
 hr {
   margin: 6px 0;
+  padding-left: 18px;
+  padding-right: 18px;
   border: none;
 	border-top: 1px solid rgb(var(--border-color));
 }
-textarea, input {
+
+textarea, input[type="url"], input[type="text"] {
   font-family: sans-serif;
   width: 500px;
   padding: 5px;
@@ -352,9 +255,10 @@ section.config > div:nth-of-type(2) {
   text-align: right;
 }
 
-section.config button {
-  width: 80px;
+button {
+  min-width: 80px;
   margin: 6px 0;
+  padding: 3px 6px;
 }
 
 section.config button.success {
@@ -375,6 +279,14 @@ section.config p {
 section.config input.favorite {
   margin-top: 3px;
   margin-left: 10px;
+}
+
+section.config p .property {
+  margin-right: 10px;
+}
+
+section.config p .property::after {
+  content: ":";
 }
 
 section.config input.favorite::after {
@@ -404,11 +316,9 @@ section.config input.favorite::after {
 }
 
 .devMode-container {
-  position: absolute;
-  right: 0;
-  top: 30px;
   font-size: 0.75rem;
   color: rgb(var(--text-color-help));
+  padding: 10px 0;
 }
 
 .advanced-only {
@@ -417,4 +327,92 @@ section.config input.favorite::after {
 
 body.advanced .advanced-only {
   display: unset;
+}
+
+@media(max-width:899px) {
+  nav {
+    position: fixed;
+    width: 100%;
+    top: 0;
+  }
+  nav .menu-container {
+    position: relative;
+    display: block;
+  }
+  nav .menu {
+    margin: 38px 20px 33px 20px;
+  }
+  nav .menu,
+  nav .menu::after,
+  nav .menu::before {
+      box-sizing: border-box;
+      position: relative;
+      display: inline-block;
+      width: 20px;
+      max-width: 20px;
+      height: 2px;
+      background: rgb(var(--text-color));
+  }
+  nav .menu::after,
+  nav .menu::before {
+      content: "";
+      position: absolute;
+      top: -6px;
+  }
+  nav .menu::after {
+      top: 6px;
+  }
+  nav ul {
+    display: none;
+    position: fixed;
+    padding-top: 10px;
+    padding-left: 20px;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(var(--background-color));
+    text-align: left;
+  }
+  nav ul.appear {
+    display: block;
+  }
+  nav ul > li {
+    font-size: 1.3rem;
+    padding: 10px 0;
+  }
+  nav li a, nav li a:any-link {
+    /* color: rgb(var(--text-color)); */
+  }
+  header {
+    max-width: 100vw;
+    text-align: center;
+  }
+
+  main {
+    border: none;
+  }
+
+  section > div {
+    width: 100%;
+  }
+
+  h1 {
+    font-size: 1.6rem;
+  }
+
+  h2 {
+    font-size: 1.3rem;
+  }
+
+  textarea, input[type="text"], input[type="url"] {
+    width: 90%;
+  }
+
+  section.config p .property {
+    display: none;
+  }
+
+  #configEditor input[type="text"],
+  #configEditor input[type="url"] {
+    width: 90%;
+  }
 }

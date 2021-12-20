@@ -11,6 +11,9 @@
   "homepage": {
     "message": "https://www.hlx.live/tools/sidekick/"
   },
+  "docs": {
+    "message": "https://www.hlx.live/docs/sidekick"
+  },
   "save": {
     "message": "Speichern"
   },
@@ -19,6 +22,9 @@
   },
   "add": {
     "message": "Hinzufügen"
+  },
+  "config_toggle_menu": {
+    "message": "Menü anzeigen/verbergen"
   },
   "config_projects": {
     "message": "Projekte"

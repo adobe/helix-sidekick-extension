@@ -48,27 +48,29 @@ function getConfigFromTabUrl(tabUrl) {
  * @param {Object[]} configs The existing configurations
  */
 async function checkContextMenu(tabUrl, configs) {
-  // clear context menu
-  browser.contextMenus.removeAll();
-  // check if add project is applicable
-  if (configs && (tabUrl.startsWith(GH_URL) || tabUrl.startsWith(SHARE_URL))) {
-    const { giturl } = getConfigFromTabUrl(tabUrl);
-    if (giturl) {
-      const { owner, repo } = getGitHubSettings(giturl);
-      const configExists = !!configs.find((c) => c.owner === owner && c.repo === repo);
-      const enabled = !configExists;
-      const checked = configExists;
-      // add context menu item for adding project config
-      browser.contextMenus.create({
-        id: 'addProject',
-        title: i18n('config_project_add'),
-        contexts: [
-          'page_action',
-        ],
-        type: 'checkbox',
-        enabled,
-        checked,
-      });
+  if (browser.contextMenus) {
+    // clear context menu
+    browser.contextMenus.removeAll();
+    // check if add project is applicable
+    if (configs && (tabUrl.startsWith(GH_URL) || tabUrl.startsWith(SHARE_URL))) {
+      const { giturl } = getConfigFromTabUrl(tabUrl);
+      if (giturl) {
+        const { owner, repo } = getGitHubSettings(giturl);
+        const configExists = !!configs.find((c) => c.owner === owner && c.repo === repo);
+        const enabled = !configExists;
+        const checked = configExists;
+        // add context menu item for adding project config
+        browser.contextMenus.create({
+          id: 'addProject',
+          title: i18n('config_project_add'),
+          contexts: [
+            'page_action',
+          ],
+          type: 'checkbox',
+          enabled,
+          checked,
+        });
+      }
     }
   }
 }
@@ -90,7 +92,10 @@ function checkTab(id) {
         if (allowed) {
           try {
             // enable extension for this tab
-            browser.pageAction.show(id);
+            if (browser.pageAction.show) {
+              browser.pageAction.show(id);
+            }
+            // execute content script
             browser.tabs.executeScript(id, {
               file: './content.js',
             });
@@ -100,7 +105,9 @@ function checkTab(id) {
         } else {
           try {
             // disable extension for this tab
-            browser.pageAction.hide(id);
+            if (browser.pageAction.hide) {
+              browser.pageAction.hide(id);
+            }
             // check if active tab has share URL and ask to add config
           } catch (e) {
             log.error('error disabling extension', id, e);
@@ -140,11 +147,13 @@ function toggle(id) {
     },
   };
 
-  // add listener for clicks on context menu item
-  browser.contextMenus.onClicked.addListener(async ({ menuItemId }, tab) => {
-    if (!tab.url) return;
-    contextMenuActions[menuItemId](tab.url);
-  });
+  if (browser.contextMenus) {
+    // add listener for clicks on context menu item
+    browser.contextMenus.onClicked.addListener(async ({ menuItemId }, tab) => {
+      if (!tab.url) return;
+      contextMenuActions[menuItemId](tab.url);
+    });
+  }
 
   // toggle the sidekick when the browser action is clicked
   browser.pageAction.onClicked.addListener(({ id }) => {
@@ -185,43 +194,45 @@ function toggle(id) {
     }
   });
 
-  // retrieve proxy url from local development
-  browser.webRequest.onHeadersReceived.addListener(
-    (details) => {
-      browser.tabs
-        .query({
-          currentWindow: true,
-          active: true,
-        })
-        .then(async (tabs) => {
-          if (Array.isArray(tabs) && tabs.length > 0) {
-            const rUrl = new URL(details.url);
-            const tabUrl = new URL(tabs[0].url);
-            if (tabUrl.pathname === rUrl.pathname) {
-              setProxyUrl('', async () => {
-                const { responseHeaders } = details;
-                // try "via" response header
-                const via = responseHeaders.find((h) => h.name.toLowerCase() === 'via')?.value;
-                const proxyHost = via?.split(' ')[1];
-                if (proxyHost && proxyHost !== 'varnish') {
-                  const proxyUrl = new URL(tabs[0].url);
-                  proxyUrl.hostname = proxyHost;
-                  proxyUrl.protocol = 'https';
-                  proxyUrl.port = '';
-                  await setProxyUrl(
-                    proxyUrl.toString(),
-                    (purl) => log.info('new proxy url', purl),
-                  );
-                }
-              });
+  if (browser.webRequest) {
+    // retrieve proxy url from local development
+    browser.webRequest.onHeadersReceived.addListener(
+      (details) => {
+        browser.tabs
+          .query({
+            currentWindow: true,
+            active: true,
+          })
+          .then(async (tabs) => {
+            if (Array.isArray(tabs) && tabs.length > 0) {
+              const rUrl = new URL(details.url);
+              const tabUrl = new URL(tabs[0].url);
+              if (tabUrl.pathname === rUrl.pathname) {
+                setProxyUrl('', async () => {
+                  const { responseHeaders } = details;
+                  // try "via" response header
+                  const via = responseHeaders.find((h) => h.name.toLowerCase() === 'via')?.value;
+                  const proxyHost = via?.split(' ')[1];
+                  if (proxyHost && proxyHost !== 'varnish') {
+                    const proxyUrl = new URL(tabs[0].url);
+                    proxyUrl.hostname = proxyHost;
+                    proxyUrl.protocol = 'https';
+                    proxyUrl.port = '';
+                    await setProxyUrl(
+                      proxyUrl.toString(),
+                      (purl) => log.info('new proxy url', purl),
+                    );
+                  }
+                });
+              }
             }
-          }
-        })
-        .catch((e) => log.debug('failed to retrieve proxy url', e));
-    },
-    { urls: [`${DEV_URL}/*`] },
-    ['responseHeaders'],
-  );
+          })
+          .catch((e) => log.debug('failed to retrieve proxy url', e));
+      },
+      { urls: [`${DEV_URL}/*`] },
+      ['responseHeaders'],
+    );
+  }
 })();
 
 // announce sidekick display state

@@ -13,18 +13,19 @@ governing permissions and limitations under the License.
 <html>
 <head>
   <meta http-equiv="Content-Security-Policy" content="script-src * 'unsafe-inline' blob: data: filesystem:">
-	<title>Helix Sidekick</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Helix Sidekick</title>
 	<link rel="stylesheet" type="text/css" href="./options.css" />
   <script src="./options.js" type="module"></script>
   <template id="configEditorTemplate">
     <section id="configEditor" class="config">
       <div>
-        <p><input id="edit-project"></p>
-        <p class="mandatory"><input id="edit-giturl"></p>
-        <p class="mandatory"><input id="edit-mountpoints"></p>
-        <p><input id="edit-host"></p>
+        <p><input type="text" id="edit-project"></p>
+        <p class="mandatory"><input type="url" id="edit-giturl"></p>
+        <p class="mandatory"><input type="url" id="edit-mountpoints"></p>
+        <p><input type="text" id="edit-host"></p>
         <p>
-          <input id="edit-hlx3" type="checkbox" checked>
+          <input type="checkbox" id="edit-hlx3" checked>
           <label for="edit-hlx3"></label>
         </p>
         <p class="advanced-only">
@@ -40,56 +41,50 @@ governing permissions and limitations under the License.
   </template>
 </head>
 <body>
-	<nav class="sideBar">
-		<h1>Chrome</h1>
-		<ul>
-			<li class="selected">
-				<a>__MSG_extensions__</a>
-				<ul>
-            <li id="extShortName">__MSG_title__</li>
-        </ul>
-			</li>
-			<li><a href="__MSG_homepage__" target="_blank" title="__MSG_help__">__MSG_help__</a></li>
-		</ul>
-	</nav>
 	<header>
-		<h1>
-			<span id="extName">__MSG_title__</span>
-		</h1>
-    <span class="devMode-container advanced-only">
-      <label for="devModeSwitch">__MSG_developer_mode__</label>
-      <input type="checkbox" id="devModeSwitch">
-    </span>
-</header>
+		<h1>__MSG_title__</h1>
+  </header>
   <main>
-    <div class="settings-sections">
-      <h2 class="settings-section-title">__MSG_config_projects__</h2>
+    <nav>
+      <a id="navToggle" href="#" title="__MSG_config_toggle_menu__"><span class="menu-container"><i class="menu"></i></span></a>
+      <ul>
+        <li><a href="__MSG_docs__" target="_blank" title="__MSG_help__">__MSG_help__</a></li>
+      </ul>
+    </nav>
+    <span class="advanced-only">
+      <div class="devMode-container">
+        <input type="checkbox" id="devModeSwitch">
+        <label for="devModeSwitch">__MSG_developer_mode__</label>
+      </div>
+    </span>
+    <div>
+    <h2>__MSG_config_projects__</h2>
     </div>
     <div id="configs"></div>
       <section id="addShareConfigSection">
         <div>
           <h3>__MSG_config_shareurl_title__</h3>
           <p class="help">__MSG_config_shareurl_description__</p>
-          <p class="mandatory"><input id="shareurl" placeholder="__MSG_config_shareurl_placeholder__"></p>
+          <p class="mandatory"><input type="url" id="shareurl" placeholder="__MSG_config_shareurl_placeholder__"></p>
           <p><button id="addShareConfigButton" title="__MSG_add__">__MSG_add__</button></p>
         </div>
       </section>
       <section id="addManualConfigSection">
         <div>
           <h3>__MSG_config_manual_title__</h3>
-          <p class="mandatory"><input id="giturl" placeholder="__MSG_config_manual_giturl_placeholder__"></p>
-          <p><input id="project" placeholder="__MSG_config_manual_project_placeholder__"></p>
+          <p class="mandatory"><input type="url" id="giturl" placeholder="__MSG_config_manual_giturl_placeholder__"></p>
+          <p><input type="text" id="project" placeholder="__MSG_config_manual_project_placeholder__"></p>
           <p><button id="addManualConfigButton" title="__MSG_add__">__MSG_add__</button></p>
         </div>
       </section>
       <span class="advanced-only">
       <hr>
-      <h2 class="settings-section-title">__MSG_config_backup__</h2>
+      <h2>__MSG_config_backup__</h2>
       <section id="importSection">
         <div>
           <h3>__MSG_config_import__</h3>
           <p class="help">__MSG_config_import_description__</p>
-          <p><input id="importFile" type="file" title="__MSG_config_import__" accept="application/json"></p>
+          <p><input type="text" id="importFile" type="file" title="__MSG_config_import__" accept="application/json"></p>
         </div>
       </section>
       <section id="exportSection">
@@ -100,7 +95,7 @@ governing permissions and limitations under the License.
         </div>
       </section>
       <hr>
-      <h2 class="settings-section-title warn">__MSG_config_reset__</h2>
+      <h2 class="warn">__MSG_config_reset__</h2>
       <section id="resetSection" class="warn">
         <div>
           <p>__MSG_config_delete_all_description__</p>
