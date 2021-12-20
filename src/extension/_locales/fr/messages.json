@@ -45,7 +45,7 @@
     "message": "Contenu"
   },
   "config_project_pick": {
-    "message": "Choisir un projet:"
+    "message": "Choisir un projet :"
   },
   "config_project_add": {
     "message": "Ajouter un projet"
@@ -54,7 +54,7 @@
     "message": "Ajouter via une URL de partage"
   },
   "config_shareurl_description": {
-    "message": "Demander à quelqu'un de partager son Sidekick: il lui suffit de cliquer sur le bouton partage du côté droit du Sidekick."
+    "message": "Demander à quelqu'un de partager son Sidekick : il lui suffit de cliquer sur le bouton partage du côté droit du Sidekick."
   },
   "config_shareurl_placeholder": {
     "message": "URL de partage: https://www.hlx.live/sidekick..."
@@ -138,7 +138,7 @@
     "message": "Exporter la configuration"
   },
   "config_export_description": {
-    "message": "Sauvegarder votre configuration sur votre ordinateur."
+    "message": "Sauvegarder la configuration actuelle sur votre ordinateur."
   },
   "config_reset": {
     "message": "Reset"
