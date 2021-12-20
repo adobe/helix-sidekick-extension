@@ -3,7 +3,7 @@
     "message": "Helix Sidekick (Beta)"
   },
   "description": {
-    "message": "Helix Sidekick peut être utilisé pour plusieurs projets et à travers plusieurs onglets et fenêtres du navigateur."
+    "message": "Le Helix Sidekick peut être utilisé avec plusieurs projets et à travers différents onglets et fenêtres du navigateur."
   },
   "description_shortcut": {
     "message": "Afficher / cacher le Helix Sidekick"
@@ -30,7 +30,7 @@
     "message": "Projets"
   },
   "config_project_empty": {
-    "message": "Vous n'avez ajouté aucun projet."
+    "message": "Vous n'avez pas encore ajouté de projet."
   },
   "config_project_exists": {
     "message": "Une configuration pour ce projet existe déjà."
@@ -54,7 +54,7 @@
     "message": "Ajouter via une URL de partage"
   },
   "config_shareurl_description": {
-    "message": "Demander à quelqu'un de partager son Sidekick : il lui suffit de cliquer sur le bouton partage du côté droit du Sidekick."
+    "message": "Demander à quelqu'un de partager une configuration de son Helix Sidekick : il lui suffit de cliquer sur le bouton partage du côté droit du Helix Sidekick."
   },
   "config_shareurl_placeholder": {
     "message": "URL de partage: https://www.hlx.live/sidekick..."
