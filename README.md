@@ -99,7 +99,7 @@ If you want to test a [config](#configuration) file before deploying it to your 
 4. Click the bookmarklet to launch Sidekick using your local config
 
 #### Testing a local Chrome extension
-1. Run `npm run build-chrome`
+1. Run `npm run build:chrome`
 1. Open Chrome and navigate to `chrome://extensions`
 1. Turn on _Developer mode_ at the top right of the header bar<br />
 ![Developer mode](docs/imgs/install_developer_mode.png)
