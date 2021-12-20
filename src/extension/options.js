@@ -57,12 +57,12 @@ function drawConfigs() {
       section.innerHTML = `
   <div>
     <h4>${project || 'Helix Project'}</h4>
-    <p>${i18n('config_project_innerhost')}: ${drawLink(innerHost)}</p>
+    <p><span class="property">${i18n('config_project_innerhost')}</span>${drawLink(innerHost)}</p>
     ${mountpoints.length
-    ? `<p>${i18n('config_project_mountpoints')}: ${mountpoints.map((mp) => drawLink(mp)).join(' ')}</p>`
+    ? `<p><span class="property">${i18n('config_project_mountpoints')}</span>${mountpoints.map((mp) => drawLink(mp)).join(' ')}</p>`
     : ''}
     ${host
-    ? `<p>${i18n('config_project_host')}: ${drawLink(host)}</p>`
+    ? `<p><span class="property">${i18n('config_project_host')}</span>${drawLink(host)}</p>`
     : ''}
     </div>
   <div>
@@ -343,6 +343,16 @@ window.addEventListener('DOMContentLoaded', () => {
     });
   });
 
+  // nav toggle
+  document.getElementById('navToggle').addEventListener('click', () => {
+    document.querySelector('nav ul').classList.toggle('appear');
+  });
+  document.querySelectorAll('nav ul li a').forEach((a) => {
+    a.addEventListener('click', () => {
+      document.querySelector('nav ul').classList.remove('appear');
+    });
+  });
+
   // enable dev mode
   getState(({ devMode }) => {
     const devModeEnabled = window.location.search === '?devMode';
@@ -356,6 +366,8 @@ window.addEventListener('DOMContentLoaded', () => {
     const devModeLink = document.createElement('a');
     devModeLink.textContent = i18n('advanced');
     devModeLink.title = i18n('advanced');
+    devModeLink.setAttribute('aria-role', 'link');
+    devModeLink.setAttribute('tabindex', 0);
     devModeLink.addEventListener('click', () => {
       window.location.href = `${window.location.pathname}${window.location.search === '?devMode' ? '' : '?devMode'}`;
     });
