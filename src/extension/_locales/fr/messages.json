@@ -1,0 +1,170 @@
+{
+  "title": {
+    "message": "Helix Sidekick (Beta)"
+  },
+  "description": {
+    "message": "Le Helix Sidekick peut être utilisé avec plusieurs projets et à travers différents onglets et fenêtres du navigateur."
+  },
+  "description_shortcut": {
+    "message": "Afficher / cacher le Helix Sidekick"
+  },
+  "homepage": {
+    "message": "https://www.hlx.live/tools/sidekick/"
+  },
+  "docs": {
+    "message": "https://www.hlx.live/docs/sidekick"
+  },
+  "save": {
+    "message": "Sauvegarger"
+  },
+  "cancel": {
+    "message": "Annuler"
+  },
+  "add": {
+    "message": "Ajouter"
+  },
+  "config_toggle_menu": {
+    "message": "Afficher/cacher le menu"
+  },
+  "config_projects": {
+    "message": "Projets"
+  },
+  "config_project_empty": {
+    "message": "Vous n'avez pas encore ajouté de projet."
+  },
+  "config_project_exists": {
+    "message": "Une configuration pour ce projet existe déjà."
+  },
+  "config_project_host": {
+    "message": "Production"
+  },
+  "config_project_innerhost": {
+    "message": "Aperçu"
+  },
+  "config_project_mountpoints": {
+    "message": "Contenu"
+  },
+  "config_project_pick": {
+    "message": "Choisir un projet :"
+  },
+  "config_project_add": {
+    "message": "Ajouter un projet"
+  },
+  "config_shareurl_title": {
+    "message": "Ajouter via une URL de partage"
+  },
+  "config_shareurl_description": {
+    "message": "Demander à quelqu'un de partager une configuration de son Helix Sidekick : il lui suffit de cliquer sur le bouton partage du côté droit du Helix Sidekick."
+  },
+  "config_shareurl_placeholder": {
+    "message": "URL de partage: https://www.hlx.live/sidekick..."
+  }, 
+  "config_shareurl_share_title": {
+    "message": "Configuration du Helix Sidekick pour $1"
+  },
+  "config_shareurl_copied": {
+    "message": "L'URL de partage pour $1 a été copiée dans le presse-papiers"
+  },
+  "config_manual_title": {
+    "message": "Ajouter manuellement"
+  },
+  "config_manual_giturl_placeholder": {
+    "message": "URL du code dans GitHub: https://github.com/..."
+  },
+  "config_manual_host_placeholder": {
+    "message": "Nom de l'hôte de production (facultatif)"
+  },
+  "config_manual_mountpoints_placeholder": {
+    "message": "URL du contenu: https://..."
+  },
+  "config_manual_project_placeholder": {
+    "message": "Nom du projet (facultatif)"
+  },
+  "config_manual_hlx3": {
+    "message": "Helix 3"
+  },
+  "config_manual_devMode": {
+    "message": "Configuration locale du projet de test"
+  },
+  "config_add_success": {
+    "message": "Le projet a été ajouté au Helix Sidekick"
+  },
+  "config_add_no_mountpoint": {
+    "message": "Le projet a été ajouté au Helix Sidekick, mais ...\n\nLe contenu n'a pas pu être récupéré, vous ne pourrez pas utilisé le Helix Sidekick en mode édition pour le moment. Pour l'ajouter manuellement, cliquez sur le bouton Editer dans la configuration du projet."
+  },
+  "config_share": {
+    "message": "Partager"
+  },
+  "config_edit": {
+    "message": "Editer"
+  },
+  "config_delete": {
+    "message": "Supprimer"
+  },
+  "config_delete_confirm": {
+    "message": "Voulez-vous vraiment supprimer ce projet ?"
+  },
+  "config_invalid_shareurl": {
+    "message": "URL de partage incorrecte"
+  },
+  "config_invalid_giturl": {
+    "message": "URL du code dans GitHub incorrecte"
+  },
+  "config_invalid_import": {
+    "message": "Fichier à importer invalide"
+  },
+  "config_invalid_export": {
+    "message": "Vous n'avez aucune configuration à exporter"
+  },
+  "config_backup": {
+    "message": "Sauvegarder"
+  },
+  "config_import": {
+    "message": "Importer une configuration"
+  },
+  "config_import_description": {
+    "message": "Importer une configuration depuis votre ordinateur. Vérifier d'abord que vous avez une sauvegarde de votre configuration actuelle !"
+  },
+  "config_import_confirm": {
+    "message": "Voulez-vous vraiment importer cette configuration et remplacer votre configuration actuelle ?"
+  },
+  "config_import_success": {
+    "message": "La configuration a été importée"
+  },
+  "config_import_failure": {
+    "message": "Impossible d'importer la configuration"
+  },
+  "config_export": {
+    "message": "Exporter la configuration"
+  },
+  "config_export_description": {
+    "message": "Sauvegarder la configuration actuelle sur votre ordinateur."
+  },
+  "config_reset": {
+    "message": "Reset"
+  },
+  "config_delete_all": {
+    "message": "Supprimer toutes les configurations"
+  },
+  "config_delete_all_description": {
+    "message": "Attention: cette action est irréversible !"
+  },
+  "config_delete_all_confirm": {
+    "message": "Voulez-vous vraiment supprimer toutes les configurations ?"
+  },
+  "config_picker_button_title": {
+    "message": "Appuyer sur $1 pour choisir $2"
+  },
+  "extensions": {
+    "message": "Extensions"
+  },
+  "help": {
+    "message": "Aide"
+  },
+  "advanced": {
+    "message": "Avancées"
+  },
+  "developer_mode": {
+    "message": "Tester le Helix Sidekick localement"
+  }
+}
