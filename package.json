@@ -12,7 +12,7 @@
     "commit": "git-cz",
     "build": "npm run build-safari && npm run build-chrome",
     "build-safari": "node ./build/build.js safari",
-    "build-chrome": "node ./build/build.js chrome",
+    "build:chrome": "node ./build/build.js chrome",
     "pack-chrome": "npm install --no-save crx3 && ./node_modules/.bin/crx3 src/extension -o src/sidekick/extension.crx -x src/sidekick/extension.xml --crxURL https://www.hlx.live/tools/sidekick/extension.crx -p .extension.pem"
   },
   "repository": {
