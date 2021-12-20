@@ -1,3 +1,17 @@
+# [3.30.0](https://github.com/adobe/helix-sidekick/compare/v3.29.0...v3.30.0) (2021-12-20)
+
+
+### Bug Fixes
+
+* typos ([669b59c](https://github.com/adobe/helix-sidekick/commit/669b59c4e428c2a6470ccfafa76af963df805823))
+
+
+### Features
+
+* fine tuning ([6fe9bbb](https://github.com/adobe/helix-sidekick/commit/6fe9bbb9abbc428476a61820dcacf81d0ff13158))
+* fr translations ([9574ac8](https://github.com/adobe/helix-sidekick/commit/9574ac8160b26cd9ede004920df974f2fd0105b9))
+* minor ([8692d00](https://github.com/adobe/helix-sidekick/commit/8692d00e85172846b119761ec10fff261a0a96af))
+
 # [3.29.0](https://github.com/adobe/helix-sidekick/compare/v3.28.0...v3.29.0) (2021-12-20)
 
 
