@@ -1,3 +1,10 @@
+## [3.31.1](https://github.com/adobe/helix-sidekick/compare/v3.31.0...v3.31.1) (2021-12-20)
+
+
+### Bug Fixes
+
+* **extension:** import broken ([5856252](https://github.com/adobe/helix-sidekick/commit/58562522bfd624f1ae1b36f44c6b5ccde41e9fc1))
+
 # [3.31.0](https://github.com/adobe/helix-sidekick/compare/v3.30.0...v3.31.0) (2021-12-20)
 
 
