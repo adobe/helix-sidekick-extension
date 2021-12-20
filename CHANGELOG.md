@@ -1,3 +1,10 @@
+# [3.31.0](https://github.com/adobe/helix-sidekick/compare/v3.30.0...v3.31.0) (2021-12-20)
+
+
+### Features
+
+* **extension:** build tooling for different browsers ([a660e94](https://github.com/adobe/helix-sidekick/commit/a660e94161e8af14fe37ebbcf9ea8b8fd914b4f6))
+
 # [3.30.0](https://github.com/adobe/helix-sidekick/compare/v3.29.0...v3.30.0) (2021-12-20)
 
 
