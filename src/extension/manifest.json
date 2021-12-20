@@ -7,7 +7,7 @@
   "default_locale": "en",
 	"options_page": "options.html",
 	"description": "__MSG_description__",
-	"permissions": [
+	"__chrome__permissions": [
     "contextMenus",
     "storage",
     "tabs",
@@ -15,7 +15,15 @@
     "https://*/*",
     "http://localhost:3000/*"
   ],
-  "background": {
+	"__safari__permissions": [
+    "contextMenus",
+    "storage",
+    "tabs",
+    "https://*/*",
+    "http://localhost:3000/*"
+  ],
+	"background": {
+    "__safari__persistent": false,
   	"page": "background.html"
   },
   "web_accessible_resources": [

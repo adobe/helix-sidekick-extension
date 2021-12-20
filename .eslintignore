@@ -1,3 +1,5 @@
 .vscode/*
 coverage/*
 debug/*
+dist/*
+build/*
