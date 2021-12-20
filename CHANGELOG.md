@@ -1,3 +1,16 @@
+# [3.29.0](https://github.com/adobe/helix-sidekick/compare/v3.28.0...v3.29.0) (2021-12-20)
+
+
+### Bug Fixes
+
+* **extension:** safari cannot show/hide pageAction ([5890d0a](https://github.com/adobe/helix-sidekick/commit/5890d0a0ebb79215d20136c2ea2472d74d4bbcb1))
+
+
+### Features
+
+* **extension:** make options page responsive ([6972850](https://github.com/adobe/helix-sidekick/commit/6972850300e48fcb9a661455b26041a72e6b58d1))
+* **extension:** test for api features ([08adb91](https://github.com/adobe/helix-sidekick/commit/08adb91e720456b0cb2c3cb837a6a7be0bf8cdb8))
+
 # [3.28.0](https://github.com/adobe/helix-sidekick/compare/v3.27.1...v3.28.0) (2021-12-20)
 
 
