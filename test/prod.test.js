@@ -17,91 +17,60 @@ const assert = require('assert');
 
 const {
   IT_DEFAULT_TIMEOUT,
-  MOCKS,
-  testPageRequests,
-  getPage,
   startBrowser,
   stopBrowser,
-} = require('./utils');
-
-const fixturesPrefix = `file://${__dirname}/fixtures`;
+} = require('./utils.js');
+const { SidekickTest } = require('./SidekickTest.js');
 
 describe('Test production plugin', () => {
   beforeEach(startBrowser);
   afterEach(stopBrowser);
 
   it('Production plugin switches to production from gdrive URL', async () => {
-    const page = getPage();
-    const apiMock = MOCKS.api.pages;
-    await testPageRequests({
-      page,
-      url: `${fixturesPrefix}/preview-gdrive.html`,
-      popupCheck: (req) => {
-        if (req.url().includes('.adobe.com/')) {
-          // check request to production url
-          assert.ok(
-            req.url() === `https://pages.adobe.com${apiMock.webPath}`,
-            'Production URL not called',
-          );
-          return true;
-        }
-        // ignore otherwise
-        return false;
-      },
-      mockResponses: [
-        apiMock,
-      ],
+    const { popupOpened } = await new SidekickTest({
+      setup: 'pages',
+      url: 'https://docs.google.com/document/d/2E1PNphAhTZAZrDjevM0BX7CZr7KjomuBO6xE1TUo9NU/edit',
       plugin: 'prod',
-    });
+    }).run();
+    assert.strictEqual(
+      popupOpened,
+      'https://pages.adobe.com/creativecloud/en/test',
+      'Production URL not opened',
+    );
   }).timeout(IT_DEFAULT_TIMEOUT);
 
-  it('Production plugin switches to production from staging URL', async () => {
-    const page = getPage();
-    const apiMock = MOCKS.api.pages;
-    await testPageRequests({
-      page,
-      url: `${fixturesPrefix}/is-preview.html`,
-      check: (req) => {
-        if (req.url().includes('.adobe.com/')) {
-          // check request to production url
-          assert.ok(
-            req.url() === `https://blog.adobe.com${apiMock.webPath}`,
-            'Production URL not called',
-          );
-          return true;
-        }
-        // ignore otherwise
-        return false;
-      },
-      mockResponses: [
-        apiMock,
-      ],
+  it('Production plugin switches to production from onedrive URL', async () => {
+    const { popupOpened } = await new SidekickTest({
+      url: 'https://adobe.sharepoint.com/:w:/r/sites/TheBlog/_layouts/15/Doc.aspx?sourcedoc=%7BE8EC80CB-24C3-4B95-B082-C51FD8BC8760%7D&file=bla.docx&action=default&mobileredirect=true',
       plugin: 'prod',
-    });
+    }).run();
+    assert.strictEqual(
+      popupOpened,
+      'https://blog.adobe.com/en/topics/bla',
+      'Production URL not opened',
+    );
+  }).timeout(IT_DEFAULT_TIMEOUT);
+
+  it('Production plugin switches to production from preview URL', async () => {
+    const { requestsMade } = await new SidekickTest({
+      plugin: 'prod',
+    }).run();
+    assert.strictEqual(
+      requestsMade.pop().url,
+      'https://blog.adobe.com/en/topics/bla',
+      'Production URL not opened',
+    );
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Production plugin switches to production from live URL', async () => {
-    const page = getPage();
-    const apiMock = MOCKS.api.pages;
-    await testPageRequests({
-      page,
-      url: `${fixturesPrefix}/is-live.html`,
-      check: (req) => {
-        if (req.url().includes('.adobe.com/')) {
-          // check request to production url
-          assert.ok(
-            req.url() === `https://blog.adobe.com${apiMock.webPath}`,
-            'Production URL not called',
-          );
-          return true;
-        }
-        // ignore otherwise
-        return false;
-      },
-      mockResponses: [
-        apiMock,
-      ],
+    const { requestsMade } = await new SidekickTest({
+      url: 'https://main--blog--adobe.hlx.live/en/topics/bla?foo=bar',
       plugin: 'prod',
-    });
+    }).run();
+    assert.strictEqual(
+      requestsMade.pop().url,
+      'https://blog.adobe.com/en/topics/bla?foo=bar',
+      'Production URL not opened',
+    );
   }).timeout(IT_DEFAULT_TIMEOUT);
 });

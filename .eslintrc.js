@@ -29,7 +29,10 @@ module.exports = {
     jsyaml: true,
   },
   ignorePatterns: [
-    'test/**/*.js',
+    '.vscode/*',
+    'coverage/*',
+    'debug/*',
+    'dist/*',
     'src/extension/lib/*.js',
   ],
   rules: {

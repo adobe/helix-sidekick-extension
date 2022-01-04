@@ -17,167 +17,98 @@ const assert = require('assert');
 
 const {
   IT_DEFAULT_TIMEOUT,
-  MOCKS,
-  testPageRequests,
-  getPage,
   startBrowser,
   stopBrowser,
-} = require('./utils');
-
-const fixturesPrefix = `file://${__dirname}/fixtures`;
+} = require('./utils.js');
+const { SidekickTest } = require('./SidekickTest.js');
 
 describe('Test preview plugin', () => {
   beforeEach(startBrowser);
   afterEach(stopBrowser);
 
   it('Preview plugin switches to preview from gdrive URL', async () => {
-    const page = getPage();
-    const apiMock = MOCKS.api.pages;
-    await testPageRequests({
-      page,
-      url: `${fixturesPrefix}/preview-gdrive.html`,
-      popupCheck: (req) => {
-        if (req.url().includes('.hlx.page/')) {
-          // check request to preview url
-          assert.ok(
-            req.url() === `https://master--pages--adobe.hlx.page${apiMock.webPath}`,
-            'Preview URL not called',
-          );
-          return true;
-        }
-        // ignore otherwise
-        return false;
-      },
-      mockResponses: [
-        apiMock,
-      ],
+    const { popupOpened } = await new SidekickTest({
+      setup: 'pages',
+      url: 'https://docs.google.com/document/d/2E1PNphAhTZAZrDjevM0BX7CZr7KjomuBO6xE1TUo9NU/edit',
       plugin: 'preview',
-    });
+    }).run();
+    assert.strictEqual(
+      popupOpened,
+      'https://main--pages--adobe.hlx3.page/creativecloud/en/test',
+      'Preview URL not opened',
+    );
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Preview plugin switches to preview from onedrive URL', async () => {
-    const page = getPage();
-    const apiMock = MOCKS.api.blog;
-    await testPageRequests({
-      page,
-      url: `${fixturesPrefix}/preview-onedrive.html`,
-      popupCheck: (req) => {
-        if (req.url().includes('.hlx.page/')) {
-          // check request to preview url
-          assert.ok(
-            req.url() === `https://master--theblog--adobe.hlx.page${apiMock.webPath}`,
-            'Preview URL not called',
-          );
-          return true;
-        }
-        // ignore otherwise
-        return false;
-      },
-      mockResponses: [
-        apiMock,
-      ],
+    const { popupOpened } = await new SidekickTest({
+      url: 'https://adobe.sharepoint.com/:w:/r/sites/TheBlog/_layouts/15/Doc.aspx?sourcedoc=%7BE8EC80CB-24C3-4B95-B082-C51FD8BC8760%7D&file=bla.docx&action=default&mobileredirect=true',
       plugin: 'preview',
-    });
+    }).run();
+    assert.strictEqual(
+      popupOpened,
+      'https://main--blog--adobe.hlx3.page/en/topics/bla',
+      'Preview URL not opened',
+    );
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Preview plugin updates preview when switching from editor', async () => {
-    const page = getPage();
-    const apiMock = MOCKS.api.blog;
-    await testPageRequests({
-      page,
-      url: `${fixturesPrefix}/preview-onedrive-hlx3.html`,
-      check: (req) => {
-        if (req.method() === 'POST') {
-          // check post request to preview url
-          assert.ok(
-            req.url() === `https://admin.hlx.page/preview/adobe/theblog/master${apiMock.webPath}`,
-            'Preview URL not updated',
-          );
-          return true;
-        }
-        // ignore otherwise
-        return false;
-      },
-      mockResponses: [
-        apiMock,
-      ],
+    const { requestsMade } = await new SidekickTest({
+      url: 'https://adobe.sharepoint.com/:w:/r/sites/TheBlog/_layouts/15/Doc.aspx?sourcedoc=%7BE8EC80CB-24C3-4B95-B082-C51FD8BC8760%7D&file=bla.docx&action=default&mobileredirect=true',
       plugin: 'preview',
-    });
+    }).run();
+    assert.ok(
+      requestsMade
+        .filter((r) => r.method === 'POST')
+        .find((r) => r.url.startsWith('https://admin.hlx.page/preview/')),
+      'Preview URL not updated',
+    );
+  }).timeout(IT_DEFAULT_TIMEOUT);
+
+  it('Preview plugin switches to preview from live URL', async () => {
+    const { navigated } = await new SidekickTest({
+      url: 'https://main--blog--adobe.hlx.live/en/topics/bla',
+      plugin: 'preview',
+    }).run();
+    assert.strictEqual(
+      navigated,
+      'https://main--blog--adobe.hlx3.page/en/topics/bla',
+      'Preview URL not opened',
+    );
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Preview plugin switches to preview from production URL', async () => {
-    const page = getPage();
-    const apiMock = MOCKS.api.blog;
-    await testPageRequests({
-      page,
-      url: `${fixturesPrefix}/edit-production.html`,
-      check: (req) => {
-        if (req.url().includes('master--theblog--adobe')) {
-          // check request to preview url
-          assert.ok(
-            req.url() === `https://master--theblog--adobe.hlx.page${apiMock.webPath}`,
-            'Preview URL not called',
-          );
-          return true;
-        }
-        // ignore otherwise
-        return false;
-      },
-      mockResponses: [
-        apiMock,
-      ],
+    const { navigated } = await new SidekickTest({
+      url: 'https://blog.adobe.com/en/topics/bla',
       plugin: 'preview',
-    });
+    }).run();
+    assert.strictEqual(
+      navigated,
+      'https://main--blog--adobe.hlx3.page/en/topics/bla',
+      'Preview URL not opened',
+    );
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Preview plugin preserves query parameters and hash when switching to preview', async () => {
-    const page = getPage();
-    const apiMock = MOCKS.api.pages;
-    await testPageRequests({
-      page,
-      url: `${fixturesPrefix}/preserve-query-params.html`,
-      check: (req) => {
-        if (req.url().includes('main--pages--adobe.hlx3.page')) {
-          // check query params in request to preview url
-          assert.ok(
-            req.url() === `https://main--pages--adobe.hlx3.page${apiMock.webPath}?foo=bar`,
-            'Query parameters and hash not preserved',
-          );
-          return true;
-        }
-        // ignore otherwise
-        return false;
-      },
-      mockResponses: [
-        apiMock,
-      ],
+    const { navigated } = await new SidekickTest({
+      url: 'https://main--blog--adobe.hlx.live/en/topics/bla?foo=bar',
       plugin: 'preview',
-    });
+    }).run();
+    assert.strictEqual(
+      navigated,
+      'https://main--blog--adobe.hlx3.page/en/topics/bla?foo=bar',
+      'Query parameters not preserved',
+    );
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Preview plugin does not forward onedrive query parameters when switching to preview', async () => {
-    const page = getPage();
-    const apiMock = MOCKS.api.blog;
-    await testPageRequests({
-      page,
-      url: `${fixturesPrefix}/preview-onedrive-hlx3.html`,
-      check: (req) => {
-        if (req.url().includes('master--theblog--adobe.hlx3.page')) {
-          // check query params in request to preview url
-          assert.strictEqual(
-            new URL(req.url()).search,
-            '',
-            'Query parameters and hash not preserved',
-          );
-          return true;
-        }
-        // ignore otherwise
-        return false;
-      },
-      mockResponses: [
-        apiMock,
-      ],
+    const { popupOpened } = await new SidekickTest({
+      url: 'https://adobe.sharepoint.com/:w:/r/sites/TheBlog/_layouts/15/Doc.aspx?sourcedoc=%7BE8EC80CB-24C3-4B95-B082-C51FD8BC8760%7D&file=bla.docx&action=default&mobileredirect=true',
       plugin: 'preview',
-    });
+    }).run();
+    assert.strictEqual(
+      popupOpened,
+      'https://main--blog--adobe.hlx3.page/en/topics/bla',
+      'Unexpected editor query parameters forwarded',
+    );
   }).timeout(IT_DEFAULT_TIMEOUT);
 });

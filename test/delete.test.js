@@ -17,229 +17,89 @@ const assert = require('assert');
 
 const {
   IT_DEFAULT_TIMEOUT,
-  MOCKS,
-  getPlugins,
-  mockStandardResponses,
-  testPageRequests,
-  sleep,
-  getPage,
   startBrowser,
   stopBrowser,
-} = require('./utils');
-
-const fixturesPrefix = `file://${__dirname}/fixtures`;
+} = require('./utils.js');
+const { SidekickTest } = require('./SidekickTest.js');
 
 describe('Test delete plugin', () => {
   beforeEach(startBrowser);
   afterEach(stopBrowser);
 
-  it('Delete plugin sends purge request from preview URL and redirects to homepage', async () => {
-    const page = getPage();
-    const apiMock = { ...MOCKS.api.blog };
-    delete apiMock.edit;
-    let purged = false;
-    let redirected = false;
-    // wait for delete confirmation dialog and accept it
-    page.on('dialog', async (dialog) => {
-      if (dialog.type() === 'confirm') {
-        assert.ok(
-          dialog.message().includes('Are you sure you want to delete it?'),
-          `Unexpected dialog message: "${dialog.message()}"`,
-        );
-        dialog.accept();
-      }
-    });
-    await testPageRequests({
-      page,
-      url: `${fixturesPrefix}/reload-staging.html`,
-      check: (req) => {
-        if (!purged && req.method() === 'POST') {
-          // intercept purge request
-          const headers = req.headers();
-          purged = req.url() === `https://theblog--adobe.hlx.page${apiMock.webPath}`
-            && headers['x-forwarded-host'] === 'master--theblog--adobe.hlx.page';
-        } else if (req.url() === 'https://theblog--adobe.hlx.page/') {
-          redirected = true;
-          return true;
-        }
-        return false;
-      },
-      checkCondition: (request) => request.url().startsWith('https://')
-        || request.url().endsWith('reload-staging.html'),
-      mockResponses: [
-        apiMock,
-        MOCKS.purge,
-      ],
+  it('Delete plugin uses preview API if page not published', async () => {
+    const test = new SidekickTest({
+      acceptDialogs: true,
       plugin: 'delete',
     });
-    // check result
-    assert.ok(purged, 'Purge request not sent');
-    assert.ok(redirected, 'Redirect to homepage not triggered');
+    test.apiResponses[0].edit = {}; // no source doc
+    test.apiResponses[0].live = {}; // not published
+    const { dialog, requestsMade } = await test.run();
+    const delReq = requestsMade.find((r) => r.method === 'DELETE');
+    const homeReq = requestsMade.pop();
+    assert.ok(
+      dialog && dialog.message.includes('Are you sure you want to delete it?'),
+      `Unexpected dialog: "${dialog}"`,
+    );
+    assert.ok(
+      delReq && delReq.url.startsWith('https://admin.hlx.page/preview/'),
+      'Preview API not called',
+    );
+    assert.ok(
+      homeReq && homeReq.url === 'https://main--blog--adobe.hlx3.page/',
+      'Redirect to homepage not triggered',
+    );
   }).timeout(IT_DEFAULT_TIMEOUT);
 
-  it('Delete plugin uses preview API in hlx3 mode if page not published', async () => {
-    const page = getPage();
-    const apiMock = { ...MOCKS.api.blog };
-    delete apiMock.edit;
-    delete apiMock.live;
-    let apiCalled = false;
-    let redirected = false;
-    // wait for delete confirmation dialog and accept it
-    page.on('dialog', async (dialog) => {
-      if (dialog.type() === 'confirm') {
-        assert.ok(
-          dialog.message().includes('Are you sure you want to delete it?'),
-          `Unexpected dialog message: "${dialog.message()}"`,
-        );
-        dialog.accept();
-      }
-    });
-    await testPageRequests({
-      page,
-      url: `${fixturesPrefix}/reload-staging-hlx3.html`,
-      check: (req) => {
-        if (!apiCalled && req.method() === 'DELETE') {
-          // intercept api request
-          apiCalled = req.url().endsWith(`/preview/adobe/theblog/master${apiMock.webPath}`);
-        } else if (req.url() === 'https://master--theblog--adobe.hlx3.page/') {
-          // reload triggered
-          redirected = true;
-          return true;
-        }
-        return false;
-      },
-      checkCondition: (request) => request.url().startsWith('https://')
-        || request.url().endsWith('reload-staging-hlx3.html'),
-      mockResponses: [
-        apiMock,
-        'deleted',
-      ],
+  it('Delete plugin uses preview and live API if page published', async () => {
+    const test = new SidekickTest({
+      acceptDialogs: true,
       plugin: 'delete',
     });
-    // check result
-    assert.ok(apiCalled, 'Preview API not called');
-    assert.ok(redirected, 'Redirect to homepage not triggered');
+    test.apiResponses[0].edit = {}; // no source doc
+    const { dialog, requestsMade } = await test.run();
+    const delPreviewReq = requestsMade.find((r) => r.method === 'DELETE' && r.url.includes('/preview/'));
+    const delLiveReq = requestsMade.find((r) => r.method === 'DELETE' && r.url.includes('/live/'));
+    const homeReq = requestsMade.pop();
+    assert.ok(
+      dialog && dialog.message.includes('Are you sure you want to delete it?'),
+      `Unexpected dialog: "${dialog}"`,
+    );
+    assert.ok(delPreviewReq, 'Preview API not called');
+    assert.ok(delLiveReq, 'Live API not called');
+    assert.ok(
+      homeReq && homeReq.url === 'https://main--blog--adobe.hlx3.page/',
+      'Redirect to homepage not triggered',
+    );
   }).timeout(IT_DEFAULT_TIMEOUT);
 
-  it('Delete plugin uses preview and live API in hlx3 mode if page published', async () => {
-    const page = getPage();
-    const apiMock = { ...MOCKS.api.blog };
-    delete apiMock.edit;
-    let previewDeleted = false;
-    let liveDeleted = false;
-    let redirected = false;
-    // wait for delete confirmation dialog and accept it
-    page.on('dialog', async (dialog) => {
-      if (dialog.type() === 'confirm') {
-        assert.ok(
-          dialog.message().includes('Are you sure you want to delete it?'),
-          `Unexpected dialog message: "${dialog.message()}"`,
-        );
-        dialog.accept();
-      }
-    });
-    await testPageRequests({
-      page,
-      url: `${fixturesPrefix}/reload-staging-hlx3.html`,
-      check: (req) => {
-        if (req.method() === 'DELETE') {
-          // intercept api request
-          if (!previewDeleted
-            && req.url().endsWith(`/preview/adobe/theblog/master${apiMock.webPath}`)) {
-            previewDeleted = true;
-          } else if (!liveDeleted
-            && req.url().endsWith(`/live/adobe/theblog/master${apiMock.webPath}`)) {
-            liveDeleted = true;
-          }
-        } else if (req.url() === 'https://master--theblog--adobe.hlx3.page/') {
-          // reload triggered
-          redirected = true;
-          return true;
-        }
-        return false;
-      },
-      checkCondition: (request) => request.url().startsWith('https://')
-        || request.url().endsWith('reload-staging-hlx3.html'),
-      mockResponses: [
-        apiMock,
-        MOCKS.json,
-        MOCKS.json,
-      ],
+  it('Delete plugin uses code API', async () => {
+    const test = new SidekickTest({
+      type: 'xml',
+      acceptDialogs: true,
       plugin: 'delete',
     });
-    // check result
-    assert.ok(previewDeleted, 'Preview API not called');
-    assert.ok(liveDeleted, 'Live API not called');
-    assert.ok(redirected, 'Redirect to homepage not triggered');
-  }).timeout(IT_DEFAULT_TIMEOUT);
-
-  it('Delete plugin uses code API in hlx3 mode', async () => {
-    const page = getPage();
-    const apiMock = { ...MOCKS.api.blogCode };
-    delete apiMock.edit;
-    let apiCalled = false;
-    let redirected = false;
-    // wait for delete confirmation dialog and accept it
-    page.on('dialog', async (dialog) => {
-      if (dialog.type() === 'confirm') {
-        assert.ok(
-          dialog.message().includes('Are you sure you want to delete it?'),
-          `Unexpected dialog message: "${dialog.message()}"`,
-        );
-        dialog.accept();
-      }
-    });
-    await testPageRequests({
-      page,
-      url: `${fixturesPrefix}/reload-staging-code-hlx3.html`,
-      check: (req) => {
-        if (!apiCalled && req.method() === 'DELETE') {
-          // intercept api request
-          apiCalled = req.url().endsWith(`/code/adobe/theblog/master${apiMock.webPath}`);
-        } else if (req.url() === 'https://master--theblog--adobe.hlx3.page/') {
-          // reload triggered
-          redirected = true;
-          return true;
-        }
-        return false;
-      },
-      checkCondition: (request) => request.url().startsWith('https://')
-        || request.url().endsWith('reload-staging-code-hlx3.html'),
-      mockResponses: [
-        apiMock,
-        'deleted',
-      ],
-      plugin: 'delete',
-    });
-    // check result
-    assert.ok(apiCalled, 'Code API not called');
-    assert.ok(redirected, 'Redirect to homepage not triggered');
+    test.apiResponses[0].edit = {}; // no source doc
+    const { dialog, requestsMade } = await test.run();
+    const delReq = requestsMade.find((r) => r.method === 'DELETE');
+    assert.ok(
+      dialog && dialog.message.includes('Are you sure you want to delete it?'),
+      `Unexpected dialog: "${dialog}"`,
+    );
+    assert.ok(
+      delReq && delReq.url.startsWith('https://admin.hlx.page/code/'),
+      'Code API not called',
+    );
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('No delete plugin if source document exists', async () => {
-    const page = getPage();
-    await mockStandardResponses(page, {
-      mockResponses: [MOCKS.api.blog],
-    });
-    // open test page
-    await page.goto(`${fixturesPrefix}/reload-staging.html`, { waitUntil: 'load' });
-    await sleep();
-    const plugins = await getPlugins(page);
+    const { plugins } = await new SidekickTest().run();
     assert.ok(!plugins.find((p) => p.id === 'delete'), 'Unexpected delete plugin found');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('No delete plugin if preview does not exist', async () => {
-    const apiMock = { ...MOCKS.api.blog };
-    apiMock.preview.status = 404;
-    delete apiMock.edit;
-    const page = getPage();
-    await mockStandardResponses(page, {
-      mockResponses: [apiMock],
-    });
-    // open test page
-    await page.goto(`${fixturesPrefix}/reload-staging.html`, { waitUntil: 'load' });
-    await sleep();
-    const plugins = await getPlugins(page);
+    const test = new SidekickTest();
+    test.apiResponses[0].preview = {}; // no preview
+    const { plugins } = await test.run();
     assert.ok(!plugins.find((p) => p.id === 'delete'), 'Unexpected delete plugin found');
   }).timeout(IT_DEFAULT_TIMEOUT);
 });

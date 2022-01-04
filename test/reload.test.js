@@ -17,164 +17,59 @@ const assert = require('assert');
 
 const {
   IT_DEFAULT_TIMEOUT,
-  MOCKS,
-  getPlugins,
-  mockStandardResponses,
-  testPageRequests,
-  sleep,
-  getPage,
   startBrowser,
   stopBrowser,
-  getPlugin,
-} = require('./utils');
-
-const fixturesPrefix = `file://${__dirname}/fixtures`;
+} = require('./utils.js');
+const { SidekickTest } = require('./SidekickTest.js');
 
 describe('Test reload plugin', () => {
   beforeEach(startBrowser);
   afterEach(stopBrowser);
 
-  it('Reload plugin sends purge request from preview URL and reloads page', async () => {
-    const page = getPage();
-    const apiMock = MOCKS.api.blog;
-    let loads = 0;
-    let purged = false;
-    let reloaded = false;
-    await testPageRequests({
-      page,
-      url: `${fixturesPrefix}/reload-staging.html`,
-      check: (req) => {
-        if (!purged && req.method() === 'POST') {
-          // intercept purge request
-          const headers = req.headers();
-          purged = req.url() === `https://theblog--adobe.hlx.page${apiMock.webPath}`
-            && headers['x-forwarded-host'] === 'master--theblog--adobe.hlx.page';
-        } else if (req.url().endsWith('reload-staging.html')) {
-          loads += 1;
-          if (loads === 2) {
-            reloaded = true;
-            return true;
-          }
-        }
-        return false;
-      },
-      checkCondition: (request) => request.url().startsWith('https://')
-        || request.url().endsWith('reload-staging.html'),
-      mockResponses: [
-        apiMock,
-        MOCKS.purge,
-      ],
+  it('Reload plugin uses preview API', async () => {
+    const { requestsMade, navigated } = await new SidekickTest({
       plugin: 'reload',
-    });
-    // check result
-    assert.ok(purged, 'Purge request not sent');
-    assert.ok(reloaded, 'Reload not triggered');
+    }).run();
+    const reloadReq = requestsMade.find((r) => r.method === 'POST');
+    assert.ok(
+      reloadReq && reloadReq.url.startsWith('https://admin.hlx.page/preview/'),
+      'Preview URL not updated',
+    );
+    assert.ok(
+      navigated,
+      'Reload not triggered',
+    );
   }).timeout(IT_DEFAULT_TIMEOUT);
 
-  it('Reload plugin uses preview API in hlx3 mode', async () => {
-    const page = getPage();
-    const apiMock = MOCKS.api.blog;
-    let loads = 0;
-    let apiCalled = false;
-    let reloaded = false;
-    await testPageRequests({
-      page,
-      url: `${fixturesPrefix}/reload-staging-hlx3.html`,
-      check: (req) => {
-        if (!apiCalled && req.method() === 'POST') {
-          // intercept api request
-          apiCalled = req.url().endsWith(`/preview/adobe/theblog/master${apiMock.webPath}`);
-        } else if (req.url().endsWith('reload-staging-hlx3.html')) {
-          loads += 1;
-          if (loads === 2) {
-            // reload triggered
-            reloaded = true;
-            return true;
-          }
-        }
-        return false;
-      },
-      checkCondition: (request) => request.url().startsWith('https://')
-        || request.url().endsWith('reload-staging-hlx3.html'),
-      mockResponses: [
-        apiMock,
-        apiMock,
-      ],
+  it('Reload plugin uses code API', async () => {
+    const { requestsMade, navigated } = await new SidekickTest({
+      type: 'xml',
       plugin: 'reload',
-    });
-    // check result
-    assert.ok(apiCalled, 'Preview API not called');
-    assert.ok(reloaded, 'Reload not triggered');
-  }).timeout(IT_DEFAULT_TIMEOUT);
-
-  it('Reload plugin uses code API in hlx3 mode', async () => {
-    const page = getPage();
-    const apiMock = MOCKS.api.blogCode;
-    let loads = 0;
-    let apiCalled = false;
-    let reloaded = false;
-    await testPageRequests({
-      page,
-      url: `${fixturesPrefix}/reload-staging-code-hlx3.html`,
-      check: (req) => {
-        if (!apiCalled && req.method() === 'POST') {
-          // intercept api request
-          apiCalled = req.url().endsWith(`/code/adobe/theblog/master${apiMock.webPath}`);
-        } else if (req.url().endsWith('reload-staging-code-hlx3.html')) {
-          loads += 1;
-          if (loads === 2) {
-            // reload triggered
-            reloaded = true;
-            return true;
-          }
-        }
-        return false;
-      },
-      checkCondition: (request) => request.url().startsWith('https://')
-        || request.url().endsWith('reload-staging-code-hlx3.html'),
-      mockResponses: [
-        apiMock,
-        apiMock,
-      ],
-      plugin: 'reload',
-    });
-    // check result
-    assert.ok(apiCalled, 'Code API not called');
-    assert.ok(reloaded, 'Reload not triggered');
+    }).run();
+    const reloadReq = requestsMade.find((r) => r.method === 'POST');
+    assert.ok(
+      reloadReq && reloadReq.url.startsWith('https://admin.hlx.page/code/'),
+      'Code API not called',
+    );
+    assert.ok(navigated, 'Reload not triggered');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('No reload plugin without source document', async () => {
-    const page = getPage();
-    const apiMock = { ...MOCKS.api.blog };
-    delete apiMock.edit;
-    await mockStandardResponses(page, {
-      mockResponses: [apiMock],
-    });
-    // open test page
-    await page.goto(`${fixturesPrefix}/reload-staging.html`, { waitUntil: 'load' });
-    await sleep();
-    const plugins = await getPlugins(page);
+    const test = new SidekickTest();
+    test.apiResponses[0].edit = {}; // no source doc
+    const { plugins } = await test.run();
     assert.ok(!plugins.find((p) => p.id === 'reload'), 'Unexpected reload plugin found');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Reload plugin shows update indicator if edit is newer than preview', async () => {
-    const page = getPage();
-    const apiMock1 = {
-      ...MOCKS.api.blog,
-      preview: {
-        lastModified: new Date(new Date(MOCKS.api.blog.live.lastModified).setFullYear(2020))
-      },
-    };
-    await mockStandardResponses(page, {
-      mockResponses: [MOCKS.api.blog, apiMock1],
-    });
-    // test newer preview lastModified 
-    await page.goto(`${fixturesPrefix}/publish-staging-hlx3.html`, { waitUntil: 'load' });
-    await sleep();
-    assert.ok((await getPlugin(page, 'reload')).classes.length === 1, 'Reload plugin with unexpected update class');
-    // test with older preview lastModified
-    await page.reload({ waitUntil: 'load' });
-    await sleep();
-    assert.ok((await getPlugin(page, 'reload')).classes.includes('update'), 'Reload plugin without update class');
+    const test = new SidekickTest();
+    const previewLastMod = test.apiResponses[0].preview.lastModified;
+    test.apiResponses[0].preview.lastModified = new Date(new Date(previewLastMod)
+      .setFullYear(2020)).toUTCString();
+    const { plugins } = await test.run();
+    assert.ok(
+      plugins.find((p) => p.id === 'reload')?.classes.includes('update'),
+      'Reload plugin without update class',
+    );
   }).timeout(IT_DEFAULT_TIMEOUT);
 });
