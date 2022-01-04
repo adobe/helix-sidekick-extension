@@ -10,7 +10,6 @@
  * governing permissions and limitations under the License.
  */
 /* eslint-env mocha */
-/* global window */
 
 'use strict';
 
@@ -18,240 +17,85 @@ const assert = require('assert');
 
 const {
   IT_DEFAULT_TIMEOUT,
-  MOCKS,
-  getPlugins,
-  mockStandardResponses,
-  testPageRequests,
-  sleep,
-  getPage,
   startBrowser,
   stopBrowser,
-  getPlugin,
-} = require('./utils');
-
-const fixturesPrefix = `file://${__dirname}/fixtures`;
+} = require('./utils.js');
+const { SidekickTest } = require('./SidekickTest.js');
 
 describe('Test publish plugin', () => {
   beforeEach(startBrowser);
   afterEach(stopBrowser);
 
-  it('Publish plugin sends purge request from preview URL and redirects to production URL', async () => {
-    const page = getPage();
-    const apiMock = MOCKS.api.blog;
-    let purged = false;
-    let redirected = false;
-    await testPageRequests({
-      page,
-      url: `${fixturesPrefix}/publish-staging.html`,
-      check: (req) => {
-        if (!purged && req.method() === 'POST') {
-          // intercept purge request
-          const headers = req.headers();
-          purged = req.url() === `https://theblog--adobe.hlx.page${apiMock.webPath}`
-            && headers['x-forwarded-host'].split(',').length === 3;
-        } else if (req.url().startsWith('https://blog.adobe.com')) {
-          // intercept redirect to production
-          redirected = true;
-          return true;
-        }
-        return false;
-      },
-      mockResponses: [
-        apiMock,
-        MOCKS.purge,
-      ],
+  it('Publish plugin uses live API', async () => {
+    const { requestsMade, navigated } = await new SidekickTest({
       plugin: 'publish',
-    });
-    // check result
-    assert.ok(purged, 'Purge request not sent');
-    assert.ok(redirected, 'Redirect not sent');
+    }).run();
+    const publishReq = requestsMade.find((r) => r.method === 'POST');
+    assert.ok(
+      publishReq && publishReq.url.startsWith('https://admin.hlx.page/live/'),
+      'Live API not called',
+    );
+    assert.strictEqual(navigated, 'https://blog.adobe.com/en/topics/bla', 'Redirect not sent');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
-  it('Publish plugin also purges dependencies', async () => {
-    const page = getPage();
-    const apiMock = MOCKS.api.blog;
-    const dependencies = [
-      '/en/topics/foo.html',
-      'bar.html?step=1',
-    ];
-    const purged = [];
-    await testPageRequests({
-      page,
-      url: `${fixturesPrefix}/publish-staging.html`,
-      prep: async (p) => {
-        // add publish dependencies
-        await p.evaluate((deps) => {
-          window.hlx.dependencies = deps;
-        }, dependencies);
-      },
-      check: (req) => {
-        if (req.method() === 'POST') {
-          // check result
-          const purgeUrl = new URL(req.url());
-          purged.push(`${purgeUrl.pathname}${purgeUrl.search}`);
-        }
-        return purged.length === 3;
-      },
-      mockResponses: [
-        apiMock,
-        MOCKS.purge,
-        MOCKS.purge,
-        MOCKS.purge,
-      ],
+  it('Publish plugin also publishes dependencies', async () => {
+    const { requestsMade } = await new SidekickTest({
       plugin: 'publish',
-    });
-    assert.deepStrictEqual(purged, [
-      '/en/topics/bla.html',
-      '/en/topics/foo.html',
-      '/en/topics/bar.html?step=1',
-    ], 'Purge request not sent');
-  }).timeout(IT_DEFAULT_TIMEOUT);
-
-  it('Publish plugin refuses to publish without production host', async () => {
-    const page = getPage();
-    const apiMock = MOCKS.api.blog;
-    let noPurge = true;
-    await testPageRequests({
-      page,
-      url: `${fixturesPrefix}/publish-staging.html`,
-      prep: async (p) => {
-        // remove production host from config
-        await p.evaluate(() => {
-          delete window.hlx.sidekick.config.outerHost;
-          delete window.hlx.sidekick.config.host;
-        });
-      },
-      check: (req) => {
-        if (req.method() === 'POST') {
-          // intercept purge request
-          noPurge = false;
-          return true;
-        }
-        return false;
-      },
-      mockResponses: [
-        apiMock,
-      ],
-      plugin: 'publish',
-      timeout: 5000,
-    });
-    assert.ok(noPurge, 'Did not purge inner host only');
-  }).timeout(IT_DEFAULT_TIMEOUT);
-
-  it('Publish plugin uses publish API in hlx3 mode', async () => {
-    const page = getPage();
-    const apiMock = MOCKS.api.blog;
-    let apiCalled = false;
-    let redirected = false;
-    await testPageRequests({
-      page,
-      url: `${fixturesPrefix}/publish-staging-hlx3.html`,
-      check: (req) => {
-        if (!apiCalled && req.method() === 'POST') {
-          // intercept purge request
-          apiCalled = req.url().endsWith('/live/adobe/theblog/main/en/topics/bla.html');
-        } else if (req.url().startsWith('https://blog.adobe.com')) {
-          redirected = true;
-          return true;
-        }
-        return false;
-      },
-      mockResponses: [
-        apiMock,
-        apiMock,
-        MOCKS.html,
-        MOCKS.html,
-      ],
-      plugin: 'publish',
-    });
-    // check result
-    assert.ok(apiCalled, 'Purge request not sent');
-    assert.ok(redirected, 'Redirect not sent');
+      post: (p) => p.evaluate(() => {
+        window.hlx.dependencies = [
+          '/en/topics/foo',
+          'bar',
+        ];
+      }),
+    }).run();
+    const publishReqs = requestsMade.filter((r) => r.method === 'POST');
+    assert.strictEqual(publishReqs.length, 3, 'Unexpected number of publish requests');
+    assert.ok(
+      publishReqs[1].url.endsWith('/en/topics/foo') && publishReqs[2].url.endsWith('/en/topics/bar'),
+      'Dependencies not published in expected order',
+    );
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Publish plugin redirects to live instead of bring-your-own-CDN production host', async () => {
-    const page = getPage();
-    const apiMock = MOCKS.api.blog;
-    let redirected = false;
-    await testPageRequests({
-      page,
-      url: `${fixturesPrefix}/publish-staging.html`,
-      prep: async (p) => {
-        // set byocdn flag
-        await p.evaluate(() => {
-          window.hlx.sidekick.config.byocdn = true;
-        });
-      },
-      check: (req) => {
-        if (req.url().startsWith('https://theblog--adobe.hlx.live')) {
-          // intercept redirect to live
-          redirected = true;
-          return true;
-        }
-        return false;
-      },
-      mockResponses: [
-        apiMock,
-        MOCKS.purge,
-      ],
+    const test = new SidekickTest({
       plugin: 'publish',
     });
-    // check result
-    assert.ok(redirected, 'Redirect to live not sent');
+    test.sidekickConfig.byocdn = true;
+    const { navigated } = await test.run();
+    assert.strictEqual(
+      navigated,
+      'https://main--blog--adobe.hlx.live/en/topics/bla',
+      'Redirect to live not sent',
+    );
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('No publish plugin on bring-your-own-CDN production host', async () => {
-    const page = getPage();
-    await mockStandardResponses(page);
-    // open test page
-    await page.goto(`${fixturesPrefix}/publish-byocdn.html`, { waitUntil: 'load' });
-    await sleep();
-    const plugins = await getPlugins(page);
+    const test = new SidekickTest({
+      url: 'https://blog.adobe.com/en/topics/bla',
+    });
+    test.sidekickConfig.byocdn = true;
+    const { plugins } = await test.run();
     assert.ok(!plugins.find((p) => p.id === 'publish'), 'Unexpected publish plugin found');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('No publish plugin without source document', async () => {
-    const page = getPage();
-    const apiMock = { ...MOCKS.api.blog };
-    delete apiMock.edit;
-    await mockStandardResponses(page, {
-      mockResponses: [apiMock],
+    const test = new SidekickTest({
+      url: 'https://blog.adobe.com/en/topics/bla',
     });
-    // open test page
-    await page.goto(`${fixturesPrefix}/publish-staging.html`, { waitUntil: 'load' });
-    await sleep();
-    const plugins = await getPlugins(page);
+    test.apiResponses[0].edit = {}; // no source doc
+    const { plugins } = await test.run();
     assert.ok(!plugins.find((p) => p.id === 'publish'), 'Unexpected publish plugin found');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
-  it('Publish plugin shows update indicator if preview is newer than live', async () => {
-    const page = getPage();
-    const apiMock1 = {
-      ...MOCKS.api.blog,
-      live: {
-        lastModified: 'Fri, 18 Jun 2021 09:56:59 GMT',
-      },
-    };
-    const apiMock2 = {
-      ...MOCKS.api.blog,
-      live: {
-        lastModified: null,
-      },
-    };
-    await mockStandardResponses(page, {
-      mockResponses: [MOCKS.api.blog, apiMock1, apiMock2],
-    });
-    // test newer live lastModified 
-    await page.goto(`${fixturesPrefix}/publish-staging-hlx3.html`, { waitUntil: 'load' });
-    await sleep();
-    assert.ok((await getPlugin(page, 'publish')).classes.length === 1, 'Publish plugin with unexpected update class');
-    // test older live lastModified
-    await page.reload({ waitUntil: 'load' });
-    await sleep();
-    assert.ok((await getPlugin(page, 'publish')).classes.includes('update'), 'Publish plugin without update class');
-    // test without live lastModified
-    await page.reload({ waitUntil: 'load' });
-    await sleep();
-    assert.ok((await getPlugin(page, 'publish')).classes.includes('update'), 'Publish plugin without update class');
+  it('Reload plugin shows update indicator if edit is newer than preview', async () => {
+    const test = new SidekickTest();
+    const liveLastMod = test.apiResponses[0].live.lastModified;
+    test.apiResponses[0].live.lastModified = new Date(new Date(liveLastMod)
+      .setFullYear(2020)).toUTCString();
+    const { plugins } = await test.run();
+    assert.ok(
+      plugins.find((p) => p.id === 'publish')?.classes.includes('update'),
+      'Publish plugin without update class',
+    );
   }).timeout(IT_DEFAULT_TIMEOUT);
 });

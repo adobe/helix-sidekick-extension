@@ -17,83 +17,39 @@ const assert = require('assert');
 
 const {
   IT_DEFAULT_TIMEOUT,
-  MOCKS,
-  getPlugins,
-  mockStandardResponses,
-  testPageRequests,
-  sleep,
-  getPage,
   startBrowser,
   stopBrowser,
-} = require('./utils');
-
-const fixturesPrefix = `file://${__dirname}/fixtures`;
+} = require('./utils.js');
+const { SidekickTest } = require('./SidekickTest.js');
 
 describe('Test unpublish plugin', () => {
   beforeEach(startBrowser);
   afterEach(stopBrowser);
 
-  it('Unpublish plugin uses live API in hlx3 mode', async () => {
-    const page = getPage();
-    const apiMock = { ...MOCKS.api.blog };
-    delete apiMock.edit;
-    let apiCalled = false;
-    // wait for delete confirmation dialog and accept it
-    page.on('dialog', async (dialog) => {
-      if (dialog.type() === 'confirm') {
-        assert.ok(
-          dialog.message().includes('Are you sure you want to unpublish it?'),
-          `Unexpected dialog message: "${dialog.message()}"`,
-        );
-        dialog.accept();
-      }
-    });
-    await testPageRequests({
-      page,
-      url: `${fixturesPrefix}/publish-staging-hlx3.html`,
-      check: (req) => {
-        if (!apiCalled && req.method() === 'DELETE') {
-          // intercept api request
-          apiCalled = req.url().endsWith(`/live/adobe/theblog/main${apiMock.webPath}`);
-          return true;
-        }
-        return false;
-      },
-      checkCondition: (request) => request.url().startsWith('https://'),
-      mockResponses: [
-        apiMock,
-        MOCKS.json,
-      ],
+  it('Unpublish plugin uses live API', async () => {
+    const test = new SidekickTest({
+      acceptDialogs: true,
       plugin: 'unpublish',
     });
-    // check result
-    assert.ok(apiCalled, 'Live API not called');
+    test.apiResponses[0].edit = {}; // no source doc
+    const { requestsMade } = await test.run();
+    const unpublishReq = requestsMade.find((r) => r.method === 'DELETE');
+    assert.ok(
+      unpublishReq && unpublishReq.url.startsWith('https://admin.hlx.page/live/'),
+      'Live API not called',
+    );
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('No unpublish plugin if source document still exists', async () => {
-    const page = getPage();
-    await mockStandardResponses(page, {
-      mockResponses: [MOCKS.api.blog],
-    });
-    // open test page
-    await page.goto(`${fixturesPrefix}/reload-staging-hlx3.html`, { waitUntil: 'load' });
-    await sleep();
-    const plugins = await getPlugins(page);
+    const { plugins } = await new SidekickTest().run();
     assert.ok(!plugins.find((p) => p.id === 'unpublish'), 'Unexpected unpublish plugin found');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('No unpublish plugin if page not published', async () => {
-    const page = getPage();
-    const apiMock = { ...MOCKS.api.blog };
-    delete apiMock.edit;
-    delete apiMock.live.lastModified;
-    await mockStandardResponses(page, {
-      mockResponses: [apiMock],
-    });
-    // open test page
-    await page.goto(`${fixturesPrefix}/reload-staging-hlx3.html`, { waitUntil: 'load' });
-    await sleep();
-    const plugins = await getPlugins(page);
+    const test = new SidekickTest();
+    test.apiResponses[0].edit = {}; // no source doc
+    test.apiResponses[0].live = {}; // page not published
+    const { plugins } = await test.run();
     assert.ok(!plugins.find((p) => p.id === 'unpublish'), 'Unexpected unpublish plugin found');
   }).timeout(IT_DEFAULT_TIMEOUT);
 });

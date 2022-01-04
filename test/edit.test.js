@@ -17,83 +17,42 @@ const assert = require('assert');
 
 const {
   IT_DEFAULT_TIMEOUT,
-  MOCKS,
-  testPageRequests,
-  mockStandardResponses,
-  getPlugins,
-  sleep,
-  getPage,
   startBrowser,
   stopBrowser,
-} = require('./utils');
-
-const fixturesPrefix = `file://${__dirname}/fixtures`;
+} = require('./utils.js');
+const { SidekickTest } = require('./SidekickTest.js');
 
 describe('Test edit plugin', () => {
   beforeEach(startBrowser);
   afterEach(stopBrowser);
 
-  it('Edit plugin switches to editor from preview URL', async () => {
-    const page = getPage();
-    const apiMock = MOCKS.api.blog;
-    await testPageRequests({
-      page,
-      url: `${fixturesPrefix}/edit-staging.html`,
-      popupCheck: (req) => {
-        try {
-          // check request to edit url
-          assert.ok(req.url() === apiMock.edit.url, 'Edit URL not called');
-          return true;
-        } catch (e) {
-          // ignore otherwise
-          return false;
-        }
-      },
-      mockResponses: [
-        apiMock,
-      ],
+  it('Edit plugin opens editor from preview URL', async () => {
+    const { popupOpened } = await new SidekickTest({
       plugin: 'edit',
-      events: [
-        'statusfetched',
-        'contextloaded',
-      ],
-    });
+      pluginSleep: 2000,
+    }).run();
+    assert.ok(
+      popupOpened && popupOpened.startsWith('https://login.microsoftonline.com/'),
+      'Microsoft login page not shown',
+    );
   }).timeout(IT_DEFAULT_TIMEOUT);
 
-  it('Edit plugin switches to editor from production URL', async () => {
-    const page = getPage();
-    const apiMock = MOCKS.api.blog;
-    await testPageRequests({
-      page,
-      url: `${fixturesPrefix}/edit-production.html`,
-      popupCheck: (req) => {
-        try {
-          // check request to edit url
-          assert.ok(req.url() === apiMock.edit.url, 'Edit URL not called');
-          return true;
-        } catch (e) {
-          // ignore otherwise
-          return false;
-        }
-      },
-      mockResponses: [
-        apiMock,
-      ],
+  it('Edit plugin opens editor from production URL', async () => {
+    const { popupOpened } = await new SidekickTest({
+      url: 'https://blog.adobe.com/en/topics/bla',
       plugin: 'edit',
-    });
+      pluginSleep: 2000,
+    }).run();
+    assert.ok(
+      popupOpened && popupOpened.startsWith('https://login.microsoftonline.com/'),
+      'Microsoft login page not shown',
+    );
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('No edit plugin without source document', async () => {
-    const page = getPage();
-    const apiMock = { ...MOCKS.api.blog };
-    delete apiMock.edit;
-    await mockStandardResponses(page, {
-      mockResponses: [apiMock],
-    });
-    // open test page
-    await page.goto(`${fixturesPrefix}/edit-staging.html`, { waitUntil: 'load' });
-    await sleep();
-    const plugins = await getPlugins(page);
+    const test = new SidekickTest();
+    delete test.apiResponses[0].edit;
+    const { plugins } = await test.run();
     assert.ok(!plugins.find((p) => p.id === 'edit'), 'Unexpected edit plugin found');
   }).timeout(IT_DEFAULT_TIMEOUT);
 });

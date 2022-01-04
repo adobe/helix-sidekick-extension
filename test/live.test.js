@@ -10,7 +10,6 @@
  * governing permissions and limitations under the License.
  */
 /* eslint-env mocha */
-/* global window */
 
 'use strict';
 
@@ -18,62 +17,67 @@ const assert = require('assert');
 
 const {
   IT_DEFAULT_TIMEOUT,
-  MOCKS,
-  getPlugins,
-  mockStandardResponses,
-  testPageRequests,
-  sleep,
-  getPage,
   startBrowser,
   stopBrowser,
-} = require('./utils');
-
-const fixturesPrefix = `file://${__dirname}/fixtures`;
+} = require('./utils.js');
+const { SidekickTest } = require('./SidekickTest.js');
 
 describe('Test live plugin', () => {
   beforeEach(startBrowser);
   afterEach(stopBrowser);
 
-  it('Live plugin switches to live from gdrive URL', async () => {
-    const page = getPage();
-    const apiMock = MOCKS.api.pages;
-    await testPageRequests({
-      page,
-      url: `${fixturesPrefix}/preview-gdrive.html`,
-      popupCheck: (req) => {
-        if (req.url().includes('.hlx.live/')) {
-          // check request to live url
-          assert.ok(
-            req.url() === `https://pages--adobe.hlx.live${apiMock.webPath}`,
-            'Live URL not called',
-          );
-          return true;
-        }
-        // ignore otherwise
-        return false;
-      },
-      mockResponses: [
-        apiMock,
-      ],
-      plugin: 'live',
-    });
+  it('Live plugin without production host', async () => {
+    const { plugins } = await new SidekickTest().run();
+    assert.ok(plugins.find((p) => p.id === 'live'), 'Live plugin not found');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
-  it('Live plugin without host in hlx3 mode', async () => {
-    const page = getPage();
-    await mockStandardResponses(page);
-    // open test page
-    await page.goto(`${fixturesPrefix}/config-hlx3-no-host.html`, { waitUntil: 'load' });
-    await sleep();
-    const plugins = await getPlugins(page);
-    // check for live plugin
-    assert.ok(plugins.find((plugin) => plugin.id === 'live'), 'Live plugin not shown');
-    // check outerHost
-    const outerHost = await page.evaluate(() => window.hlx.sidekick.config.outerHost);
+  it('Live plugin switches to live from gdrive URL', async () => {
+    const { popupOpened } = await new SidekickTest({
+      setup: 'pages',
+      url: 'https://docs.google.com/document/d/2E1PNphAhTZAZrDjevM0BX7CZr7KjomuBO6xE1TUo9NU/edit',
+      plugin: 'live',
+      pluginSleep: 2000,
+    }).run();
     assert.strictEqual(
-      outerHost,
-      'main--theblog--adobe.hlx.live',
-      `Outer CDN not as expected: ${outerHost}`,
+      popupOpened,
+      'https://main--pages--adobe.hlx.live/creativecloud/en/test',
+      'Live URL not opened',
+    );
+  }).timeout(IT_DEFAULT_TIMEOUT);
+
+  it('Live plugin switches to live from onedrive URL', async () => {
+    const { popupOpened } = await new SidekickTest({
+      url: 'https://adobe.sharepoint.com/:w:/r/sites/TheBlog/_layouts/15/Doc.aspx?sourcedoc=%7BE8EC80CB-24C3-4B95-B082-C51FD8BC8760%7D&file=bla.docx&action=default&mobileredirect=true',
+      plugin: 'live',
+      pluginSleep: 2000,
+    }).run();
+    assert.strictEqual(
+      popupOpened,
+      'https://main--blog--adobe.hlx.live/en/topics/bla',
+      'Live URL not opened',
+    );
+  }).timeout(IT_DEFAULT_TIMEOUT);
+
+  it('Live plugin switches to live from preview URL', async () => {
+    const { requestsMade } = await new SidekickTest({
+      plugin: 'live',
+    }).run();
+    assert.strictEqual(
+      requestsMade.pop().url,
+      'https://main--blog--adobe.hlx.live/en/topics/bla',
+      'Live URL not opened',
+    );
+  }).timeout(IT_DEFAULT_TIMEOUT);
+
+  it('Live plugin switches to live from production URL', async () => {
+    const { requestsMade } = await new SidekickTest({
+      url: 'https://blog.adobe.com/en/topics/bla',
+      plugin: 'live',
+    }).run();
+    assert.strictEqual(
+      requestsMade.pop().url,
+      'https://main--blog--adobe.hlx.live/en/topics/bla',
+      'Live URL not opened',
     );
   }).timeout(IT_DEFAULT_TIMEOUT);
 });
