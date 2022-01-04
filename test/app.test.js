@@ -472,6 +472,39 @@ describe('Test sidekick bookmarklet', () => {
     }).run();
     assert.strictEqual(checkPageResult, '', 'Pushed down content');
   }).timeout(IT_DEFAULT_TIMEOUT);
+
+  it('Shows special view for JSON file', async () => {
+    const { checkPageResult } = await new SidekickTest({
+      type: 'json',
+      checkPage: (p) => p.evaluate(() => window.hlx.sidekick
+        .shadowRoot
+        .querySelector('.hlx-sk-special-view')),
+    }).run();
+    assert.ok(checkPageResult, 'Did not show data view for JSON file');
+  }).timeout(IT_DEFAULT_TIMEOUT);
+
+  it('Shows custom view for JSON file', async () => {
+    const { checkPageResult: [text, color] } = await new SidekickTest({
+      type: 'json',
+      configJs: `window.hlx.initSidekick({
+        specialViews: [
+          {
+            path: '**.json',
+            js: (container) => {
+              container.textContent = 'Custom JSON view';
+            },
+            css: '.hlx-sk-special-view { color: orange }',
+          },
+        ],
+      })`,
+      checkPage: (p) => p.evaluate(() => {
+        const view = window.hlx.sidekick.shadowRoot.querySelector('.hlx-sk-special-view');
+        return view ? [view.textContent, window.getComputedStyle(view).color] : [];
+      }),
+    }).run();
+    assert.strictEqual(text, 'Custom JSON view', 'Did not show custom view for JSON file');
+    assert.strictEqual(color, 'rgb(255, 165, 0)', 'Did not apply custom styling to special view');
+  }).timeout(IT_DEFAULT_TIMEOUT);
 });
 
 describe('makeHostHelixCompliant', () => {
