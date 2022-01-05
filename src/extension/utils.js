@@ -96,7 +96,11 @@ export function getConfigMatches(configs, tabUrl, proxyUrl) {
     tabUrl = proxyUrl;
   }
   const matches = [];
-  const checkHost = new URL(tabUrl).host;
+  const {
+    host: checkHost,
+    pathname,
+    searchParams,
+  } = new URL(tabUrl);
   configs.forEach((config) => {
     const {
       owner,
@@ -118,7 +122,11 @@ export function getConfigMatches(configs, tabUrl, proxyUrl) {
         .some(([mpHost, mpPath]) => {
           if (checkHost === mpHost) {
             if (mpHost.endsWith('sharepoint.com')) {
-              if (!/^\/:[wx]:\/r\//.test(new URL(tabUrl).pathname)) {
+              const res = /^\/:(.):\//.exec(pathname);
+              if (res && !'wx'.includes(res[1])) {
+                // editor url, but neither word nor excel
+                return false;
+              } else if (!/\/doc\d?\.aspx$/i.test(pathname) || !searchParams.has('sourcedoc')) {
                 // not an editor url
                 return false;
               }
@@ -127,7 +135,7 @@ export function getConfigMatches(configs, tabUrl, proxyUrl) {
               pathSegments.shift();
               const site = encodeURIComponent(pathSegments
                 .find((s) => s !== 's' && s !== 'sites' && !s.startsWith(':')));
-              return new URL(tabUrl).pathname.includes(`/sites/${site}/`);
+              return pathname.includes(`/sites/${site}/`);
             } else if (checkHost === 'drive.google.com') {
               // gdrive browser
               return false;
