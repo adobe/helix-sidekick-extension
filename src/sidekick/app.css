@@ -42,7 +42,7 @@
   --hlx-sk-modal-font-size: 1.5rem;
   --hlx-sk-special-view-button-color: rgba(0,0,0, 0.5);
   --hlx-sk-special-view-table-border: rgba(0,0,0, 0.5);
-    --wait-animation: hlx-sk-heartbeat 2s ease-in-out infinite both;
+  --wait-animation: hlx-sk-heartbeat 2s ease-in-out infinite both;
 }
 
 @media (prefers-color-scheme: dark) {
