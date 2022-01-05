@@ -122,11 +122,11 @@ export function getConfigMatches(configs, tabUrl, proxyUrl) {
         .some(([mpHost, mpPath]) => {
           if (checkHost === mpHost) {
             if (mpHost.endsWith('sharepoint.com')) {
-              const res = /^\/:(.+):\//.exec(pathname);
+              const res = /^\/:(.):\//.exec(pathname);
               if (res && !'wx'.includes(res[1])) {
                 // editor url, but neither word nor excel
                 return false;
-              } else if (!/doc\d?\.aspx$/i.test(pathname) || !searchParams.has('sourcedoc')) {
+              } else if (!/\/doc\d?\.aspx$/i.test(pathname) || !searchParams.has('sourcedoc')) {
                 // not an editor url
                 return false;
               }
