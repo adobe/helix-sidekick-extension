@@ -1,3 +1,11 @@
+## [3.31.2](https://github.com/adobe/helix-sidekick/compare/v3.31.1...v3.31.2) (2022-01-05)
+
+
+### Bug Fixes
+
+* **extension:** improved regexps ([6a97ccd](https://github.com/adobe/helix-sidekick/commit/6a97ccd3df3b00cf77a1b02e4eac4ce8f2022228))
+* **extension:** sidekick not showing on new docs ([d077b3f](https://github.com/adobe/helix-sidekick/commit/d077b3f5c61e2d07bafe87124146c0d65e821e87))
+
 ## [3.31.1](https://github.com/adobe/helix-sidekick/compare/v3.31.0...v3.31.1) (2021-12-20)
 
 
