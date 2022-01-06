@@ -1,3 +1,10 @@
+## [3.32.2](https://github.com/adobe/helix-sidekick/compare/v3.32.1...v3.32.2) (2022-01-06)
+
+
+### Bug Fixes
+
+* limit image size in json view ([b9a1c9d](https://github.com/adobe/helix-sidekick/commit/b9a1c9df1ed38bc0b9e33ef53ce684794cbf11cb))
+
 ## [3.32.1](https://github.com/adobe/helix-sidekick/compare/v3.32.0...v3.32.1) (2022-01-06)
 
 
