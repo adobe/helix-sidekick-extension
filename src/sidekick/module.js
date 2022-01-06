@@ -556,10 +556,12 @@
     const editLastMod = (status.edit && status.edit.lastModified) || null;
     const previewLastMod = (status.preview && status.preview.lastModified) || null;
     const liveLastMod = (status.live && status.live.lastModified) || null;
-    if (editLastMod && previewLastMod && new Date(editLastMod) > new Date(previewLastMod)) {
+    if (sidekick.get('reload')
+      && editLastMod && previewLastMod && new Date(editLastMod) > new Date(previewLastMod)) {
       sidekick.get('reload').classList.add('update');
     }
-    if (!liveLastMod || (previewLastMod && new Date(liveLastMod) < new Date(previewLastMod))) {
+    if (sidekick.get('publish')
+      && (!liveLastMod || (previewLastMod && new Date(liveLastMod) < new Date(previewLastMod)))) {
       sidekick.get('publish').classList.add('update');
     }
   }
