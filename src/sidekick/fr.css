@@ -67,7 +67,7 @@
 }
 
 .hlx-sk-special-view .description::before {
-  content: "Rendu de données convivial."
+  content: "Aperçu des données."
 }
 
 .hlx-sk-special-view button.close::before {
