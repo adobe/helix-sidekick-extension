@@ -1,3 +1,10 @@
+## [3.32.1](https://github.com/adobe/helix-sidekick/compare/v3.32.0...v3.32.1) (2022-01-06)
+
+
+### Bug Fixes
+
+* js error in checkLastMofied ([720dea0](https://github.com/adobe/helix-sidekick/commit/720dea0ac341a7524734bb8918dfcecfe2ba4c24))
+
 # [3.32.0](https://github.com/adobe/helix-sidekick/compare/v3.31.2...v3.32.0) (2022-01-06)
 
 
