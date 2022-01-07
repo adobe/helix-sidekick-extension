@@ -1,3 +1,10 @@
+# [3.33.0](https://github.com/adobe/helix-sidekick/compare/v3.32.2...v3.33.0) (2022-01-07)
+
+
+### Features
+
+* json view enhancements ([dc1cbee](https://github.com/adobe/helix-sidekick/commit/dc1cbee3c46ee48e7303ee2598c25c5152fa021a))
+
 ## [3.32.2](https://github.com/adobe/helix-sidekick/compare/v3.32.1...v3.32.2) (2022-01-06)
 
 
