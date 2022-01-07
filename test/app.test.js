@@ -505,6 +505,29 @@ describe('Test sidekick bookmarklet', () => {
     assert.strictEqual(text, 'Custom JSON view', 'Did not show custom view for JSON file');
     assert.strictEqual(color, 'rgb(255, 165, 0)', 'Did not apply custom styling to special view');
   }).timeout(IT_DEFAULT_TIMEOUT);
+
+  it('Shows custom view with external CSS', async () => {
+    const { checkPageResult: [text, color] } = await new SidekickTest({
+      type: 'json',
+      configJs: `window.hlx.initSidekick({
+        specialViews: [
+          {
+            path: '**.json',
+            js: (container) => {
+              container.textContent = 'External CSS';
+            },
+            css: '${__dirname}/fixtures/custom-json-view.css',
+          },
+        ],
+      })`,
+      checkPage: (p) => p.evaluate(() => {
+        const view = window.hlx.sidekick.shadowRoot.querySelector('.hlx-sk-special-view');
+        return view ? [view.textContent, window.getComputedStyle(view).color] : [];
+      }),
+    }).run();
+    assert.strictEqual(text, 'External CSS', 'Did not show custom view for JSON file');
+    assert.strictEqual(color, 'rgb(0, 255, 0)', 'Did not apply custom styling to special view');
+  }).timeout(IT_DEFAULT_TIMEOUT);
 });
 
 describe('makeHostHelixCompliant', () => {
