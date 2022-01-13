@@ -80,4 +80,11 @@ describe('Test live plugin', () => {
       'Live URL not opened',
     );
   }).timeout(IT_DEFAULT_TIMEOUT);
+
+  it('No live plugin if page not published', async () => {
+    const test = new SidekickTest();
+    test.apiResponses[0].live = {};
+    const { plugins } = await test.run();
+    assert.ok(!plugins.find((p) => p.id === 'live'), 'Unexpected live plugin found');
+  }).timeout(IT_DEFAULT_TIMEOUT);
 });

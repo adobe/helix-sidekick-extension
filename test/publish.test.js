@@ -56,6 +56,21 @@ describe('Test publish plugin', () => {
     );
   }).timeout(IT_DEFAULT_TIMEOUT);
 
+  it('Publish plugin busts client cache', async () => {
+    const { requestsMade } = await new SidekickTest({
+      plugin: 'publish',
+    }).run();
+    const afterPublish = requestsMade.slice(requestsMade.findIndex((r) => r.method === 'POST') + 1);
+    assert.ok(
+      afterPublish[0] && afterPublish[0].url.startsWith('https://main--blog--adobe.hlx.live/'),
+      'Client cache for live not busted',
+    );
+    assert.ok(
+      afterPublish[1] && afterPublish[1].url.startsWith('https://blog.adobe.com/'),
+      'Client cache for production not busted',
+    );
+  }).timeout(IT_DEFAULT_TIMEOUT);
+
   it('Publish plugin redirects to live instead of bring-your-own-CDN production host', async () => {
     const test = new SidekickTest({
       plugin: 'publish',
@@ -87,7 +102,7 @@ describe('Test publish plugin', () => {
     assert.ok(!plugins.find((p) => p.id === 'publish'), 'Unexpected publish plugin found');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
-  it('Reload plugin shows update indicator if edit is newer than preview', async () => {
+  it('Publish plugin shows update indicator if edit is newer than preview', async () => {
     const test = new SidekickTest();
     const liveLastMod = test.apiResponses[0].live.lastModified;
     test.apiResponses[0].live.lastModified = new Date(new Date(liveLastMod)
