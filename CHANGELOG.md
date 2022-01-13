@@ -1,3 +1,10 @@
+# [3.35.0](https://github.com/adobe/helix-sidekick/compare/v3.34.0...v3.35.0) (2022-01-13)
+
+
+### Features
+
+* support multi-sheet in json view ([af91255](https://github.com/adobe/helix-sidekick/commit/af91255d56f0c7d0094e50e775c1b261409d54a8))
+
 # [3.34.0](https://github.com/adobe/helix-sidekick/compare/v3.33.0...v3.34.0) (2022-01-13)
 
 
