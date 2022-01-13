@@ -1,3 +1,11 @@
+## [3.35.1](https://github.com/adobe/helix-sidekick/compare/v3.35.0...v3.35.1) (2022-01-13)
+
+
+### Bug Fixes
+
+* prevent re-entry in json view ([8748069](https://github.com/adobe/helix-sidekick/commit/87480697abf9ed18769f78b8f88e81d523ad4619))
+* prevent re-entry in json view ([13ac467](https://github.com/adobe/helix-sidekick/commit/13ac467d89a6a56b46467d99af669a22018d0a49))
+
 # [3.35.0](https://github.com/adobe/helix-sidekick/compare/v3.34.0...v3.35.0) (2022-01-13)
 
 
