@@ -56,11 +56,17 @@ describe('Test preview plugin', () => {
       url: 'https://adobe.sharepoint.com/:w:/r/sites/TheBlog/_layouts/15/Doc.aspx?sourcedoc=%7BE8EC80CB-24C3-4B95-B082-C51FD8BC8760%7D&file=bla.docx&action=default&mobileredirect=true',
       plugin: 'preview',
     }).run();
+    const updateReq = requestsMade
+      .filter((r) => r.method === 'POST')
+      .find((r) => r.url.startsWith('https://admin.hlx.page/preview/'));
     assert.ok(
-      requestsMade
-        .filter((r) => r.method === 'POST')
-        .find((r) => r.url.startsWith('https://admin.hlx.page/preview/')),
+      updateReq,
       'Preview URL not updated',
+    );
+    const afterUpdate = requestsMade.slice(requestsMade.indexOf(updateReq) + 1);
+    assert.ok(
+      afterUpdate[0] && afterUpdate[0].url.startsWith('https://main--blog--adobe.hlx3.page/'),
+      'Client cache not busted',
     );
   }).timeout(IT_DEFAULT_TIMEOUT);
 

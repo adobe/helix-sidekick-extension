@@ -54,6 +54,17 @@ describe('Test reload plugin', () => {
     assert.ok(navigated, 'Reload not triggered');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
+  it('Reload plugin busts client cache', async () => {
+    const { requestsMade } = await new SidekickTest({
+      plugin: 'reload',
+    }).run();
+    const afterReload = requestsMade.slice(requestsMade.findIndex((r) => r.method === 'POST') + 1);
+    assert.ok(
+      afterReload[0] && afterReload[0].url.startsWith('https://main--blog--adobe.hlx3.page/'),
+      'Client cache not busted',
+    );
+  }).timeout(IT_DEFAULT_TIMEOUT);
+
   it('No reload plugin without source document', async () => {
     const test = new SidekickTest();
     test.apiResponses[0].edit = {}; // no source doc

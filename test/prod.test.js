@@ -73,4 +73,11 @@ describe('Test production plugin', () => {
       'Production URL not opened',
     );
   }).timeout(IT_DEFAULT_TIMEOUT);
+
+  it('No production plugin if page not published', async () => {
+    const test = new SidekickTest();
+    test.apiResponses[0].live = {};
+    const { plugins } = await test.run();
+    assert.ok(!plugins.find((p) => p.id === 'prod'), 'Unexpected production plugin found');
+  }).timeout(IT_DEFAULT_TIMEOUT);
 });
