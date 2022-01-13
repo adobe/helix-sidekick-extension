@@ -1,3 +1,11 @@
+# [3.34.0](https://github.com/adobe/helix-sidekick/compare/v3.33.0...v3.34.0) (2022-01-13)
+
+
+### Features
+
+* improved publishing workflow ([4fa948d](https://github.com/adobe/helix-sidekick/commit/4fa948d440b0b76ecc52ca342b85635a793fa6ff))
+* support multi-sheet in json view ([7763df3](https://github.com/adobe/helix-sidekick/commit/7763df3b069f2c1d4b3ac24722796525e30deb88))
+
 # [3.33.0](https://github.com/adobe/helix-sidekick/compare/v3.32.2...v3.33.0) (2022-01-07)
 
 
