@@ -1044,7 +1044,7 @@
         pathname,
       },
     } = sk;
-    if (specialView && !specialView.shown) {
+    if (specialView && !getSpecialView(sk)) {
       try {
         const { js, css, cssLoaded } = specialView;
         if (css && !cssLoaded) {
@@ -1095,7 +1095,6 @@
       } catch (e) {
         console.log('failed to draw view', e);
       }
-      specialView.shown = true;
     }
     return null;
   }
@@ -1106,7 +1105,7 @@
    * @param {Sidekick} sk The sidekick
    */
   function hideSpecialView(sk) {
-    const { config, specialView } = sk;
+    const { config } = sk;
     const view = getSpecialView(sk);
     if (view) {
       config.pushDownElements = config.pushDownElements.filter((el) => el !== view);
@@ -1123,7 +1122,6 @@
         }
       });
     }
-    specialView.shown = false;
   }
 
   /**
