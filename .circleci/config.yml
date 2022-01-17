@@ -5,6 +5,11 @@ executors:
     - image: circleci/node:14
     environment:
       NPM_CONFIG_PREFIX: ~/.npm-global
+  ubuntu16:
+    docker:
+    - image: ubuntu:16.04
+    environment:
+    - GOOGLE_APP_ID: ccfggkjabjahcjoljmgmklhpaccedipo
 
 orbs:
   puppeteer: threetreeslight/puppeteer@0.1.2
@@ -57,6 +62,23 @@ jobs:
       - run:
           name: Semantic Release
           command: npm run semantic-release
+  deploy-extension:
+    executor: ubuntu16
+    steps:
+      - run:
+          name: "Install Dependencies for Chrome Web Store Deployment"
+          command: |
+            apt-get update
+            apt-get -y install curl jq
+      - run:
+          name: Build Chrome Extension
+          command: npm run build:chrome
+      - run:
+          name: "Upload & Publish Extension to Chrome Web Store"
+          command: |
+            ACCESS_TOKEN=$(curl "https://accounts.google.com/o/oauth2/token" -d "client_id=${GOOGLE_CLIENT_ID}&client_secret=${GOOGLE_CLIENT_SECRET}&refresh_token=${GOOGLE_REFRESH_TOKEN}&grant_type=refresh_token&redirect_uri=urn:ietf:wg:oauth:2.0:oob" | jq -r .access_token)
+            curl -H "Authorization: Bearer ${ACCESS_TOKEN}" -H "x-goog-api-version: 2" -X PUT -T ./dist/chrome.zip -v "https://www.googleapis.com/upload/chromewebstore/v1.1/items/${GOOGLE_APP_ID}"
+            curl -H "Authorization: Bearer ${ACCESS_TOKEN}" -H "x-goog-api-version: 2" -H "Content-Length: 0" -X POST -v "https://www.googleapis.com/chromewebstore/v1.1/items/${GOOGLE_APP_ID}/publish"
 
 workflows:
   version: 2
@@ -70,3 +92,10 @@ workflows:
         filters:
           branches:
             only: main
+    - deploy-extension:
+        context: Project Helix
+        filters:
+          branches:
+            only: main
+          tags:
+            only: /v[\d|\.]*/
