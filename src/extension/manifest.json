@@ -1,1 +1,60 @@
-{"manifest_version":2,"name":"__MSG_title__","version":"3.35.1","author":"Adobe","homepage_url":"https://www.hlx.live/tools/sidekick/","default_locale":"en","options_page":"options.html","description":"__MSG_description__","__chrome__permissions":["contextMenus","storage","tabs","webRequest","https://*/*","http://localhost:3000/*"],"__safari__permissions":["contextMenus","storage","tabs","https://*/*","http://localhost:3000/*"],"background":{"__safari__persistent":false,"page":"background.html"},"web_accessible_resources":["configpicker.js","lib/polyfills.min.js","lib/js-yaml.min.js","sidekick.js","utils.js"],"page_action":{"default_title":"__MSG_title__","default_icon":{"16":"icons/helix_logo_16.png","32":"icons/helix_logo_32.png","48":"icons/helix_logo_48.png","128":"icons/helix_logo_128.png"}},"commands":{"_execute_page_action":{"suggested_key":{"default":"Ctrl+Shift+H","mac":"MacCtrl+Shift+H"},"description":"__MSG_description_shortcut__"}},"icons":{"16":"icons/helix_logo_16.png","32":"icons/helix_logo_32.png","48":"icons/helix_logo_48.png","128":"icons/helix_logo_128.png"}}
+{
+    "manifest_version": 2,
+    "name": "__MSG_title__",
+    "version": "0.9.15",
+    "author": "Adobe",
+    "homepage_url": "https://www.hlx.live/tools/sidekick/",
+    "default_locale": "en",
+    "options_page": "options.html",
+    "description": "__MSG_description__",
+    "__chrome__permissions": [
+      "contextMenus",
+      "storage",
+      "tabs",
+      "webRequest",
+      "https://*/*",
+      "http://localhost:3000/*"
+    ],
+    "__safari__permissions": [
+      "contextMenus",
+      "storage",
+      "tabs",
+      "https://*/*",
+      "http://localhost:3000/*"
+    ],
+    "background": {
+      "__safari__persistent": false,
+      "page": "background.html"
+    },
+    "web_accessible_resources": [
+      "configpicker.js",
+      "lib/polyfills.min.js",
+      "lib/js-yaml.min.js",
+      "sidekick.js",
+      "utils.js"
+    ],
+    "page_action": {
+      "default_title": "__MSG_title__",
+      "default_icon": {
+        "16": "icons/helix_logo_16.png",
+        "32": "icons/helix_logo_32.png",
+        "48": "icons/helix_logo_48.png",
+        "128": "icons/helix_logo_128.png"
+      }
+    },
+    "commands": {
+      "_execute_page_action": {
+        "suggested_key": {
+          "default": "Ctrl+Shift+H",
+          "mac": "MacCtrl+Shift+H"
+        },
+        "description": "__MSG_description_shortcut__"
+      }
+    },
+    "icons": {
+      "16": "icons/helix_logo_16.png",
+      "32": "icons/helix_logo_32.png",
+      "48": "icons/helix_logo_48.png",
+      "128": "icons/helix_logo_128.png"
+    }
+  }
