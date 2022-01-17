@@ -22,7 +22,7 @@ try {
   const json = JSON.parse(fs.readFileSync(manifest));
   const { version: oldVersion } = json;
   json.version = version;
-  fs.writeJsonSync(manifest, json);
+  fs.writeJsonSync(manifest, json, { spaces: 2 });
   const msg = `chore(release): update manifest version to ${version} [skip ci]`;
   shell.exec(`git add ${manifest} && git commit -m"${msg}" && git push`);
   console.log(`manifest version updated from ${oldVersion} to ${version}`);
