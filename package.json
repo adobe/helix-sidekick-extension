@@ -10,10 +10,11 @@
     "docs": "npx jsdoc2md -c .jsdoc.json --files 'src/**/*.js'  > docs/API.md",
     "semantic-release": "semantic-release",
     "commit": "git-cz",
+    "update-version": "node ./build/updateVersion.js",
     "build": "npm run build:safari && npm run build:chrome",
     "build:safari": "node ./build/build.js safari",
     "build:chrome": "node ./build/build.js chrome",
-    "pack:chrome": "npm install --no-save crx3 && ./node_modules/.bin/crx3 src/extension -o src/sidekick/extension.crx -x src/sidekick/extension.xml --crxURL https://www.hlx.live/tools/sidekick/extension.crx -p .extension.pem"
+    "publish:chrome": "node ./build/publish.js chrome"
   },
   "repository": {
     "type": "git",
@@ -27,6 +28,7 @@
   "homepage": "https://github.com/adobe/helix-sidekick#readme",
   "devDependencies": {
     "@adobe/eslint-config-helix": "1.3.2",
+    "@adobe/helix-fetch": "3.0.0",
     "@babel/eslint-parser": "7.16.5",
     "@semantic-release/changelog": "6.0.1",
     "@semantic-release/git": "10.0.1",
@@ -46,7 +48,8 @@
     "mocha": "9.1.4",
     "nyc": "15.1.0",
     "puppeteer": "13.0.1",
-    "semantic-release": "18.0.1"
+    "semantic-release": "18.0.1",
+    "shelljs": "0.8.5"
   },
   "lint-staged": {
     "*.js": "eslint"
