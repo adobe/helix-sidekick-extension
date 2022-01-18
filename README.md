@@ -122,9 +122,9 @@ The Sidekick module and bookmarklet gets staged automatically each time a pull r
 1. Once approved, merge the RC PR to deploy the changes into production
 
 ### Deploying the Chrome extension
-The Chrome extension is deployed via Chrome Developer Dashboard. Follow [these instructions](https://adobe.sharepoint.com/sites/Adobe-GooglePartnership/SitePages/Publishing-Chrome-Browser-Plugins.aspx) to obtain access.
-1. Update the version in the `src/extension/manifest.json` according to semantic versioning rules
-1. Run `npm run build:chrome`
+The Chrome extension is built and uploaded automatically each time a pull request is merged into `main` and, once reviewed by Google, auto-published and pushed to users' browsers.
+
+If you have to re-deploy manually, or make changes to the store page, you can gain access to the Chrome Developer Dashboard by following [these instructions](https://adobe.sharepoint.com/sites/Adobe-GooglePartnership/SitePages/Publishing-Chrome-Browser-Plugins.aspx):
 1. Go to the [Chrome Developer Dashboard](https://chrome.google.com/webstore/devconsole/3b37cd65-9569-47a0-a13c-da1857a2c9dc)
 1. Switch to the _Adobe Inc._ publisher at the top right
 1. Click the _Helix Sidekick_ item in the extension list
@@ -132,4 +132,3 @@ The Chrome extension is deployed via Chrome Developer Dashboard. Follow [these i
 1. Click _Upload new package_
 1. Upload `dist > chrome.zip`
 1. Click _Submit for review_
-1. Once reviewed by Google, the new version will be auto-published and pushed to users' browsers
