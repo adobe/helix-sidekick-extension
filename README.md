@@ -2,8 +2,6 @@
 
 > Browser extension for authoring Helix projects
 
-Note: This browser extension wraps https://github.com/adobe/helix-sidekick
-
 ## Status
 [![codecov](https://img.shields.io/codecov/c/github/adobe/helix-sidekick-extension.svg)](https://codecov.io/gh/adobe/helix-sidekick-extension)
 [![CircleCI](https://img.shields.io/circleci/project/github/adobe/helix-sidekick-extension.svg)](https://circleci.com/gh/adobe/helix-sidekick-extension)
@@ -14,13 +12,7 @@ Note: This browser extension wraps https://github.com/adobe/helix-sidekick
 
 ## Installation
 
-### Extension (experimental)
-
-The bookmarklet configures the Sidekick for a single project and needs to be reopened in every new browser tab. Use the browser extension to:
-- keep the Sidekick open (or closed) while reloading or navigating multiple browser tabs
-- configure Sidekick for multiple projects without cluttering your browser's bookmark bar
-
-Note: The extension loads the same Sidekick module as the bookmarklet.
+Note: The extension loads the same [Sidekick module](https://github.com/adobe/helix-sidekick) as the bookmarklet.
 
 #### Installing the Chrome extension
 1. Go to the [Chrome Web Store](https://chrome.google.com/webstore/detail/helix-sidekick-extension-beta/ccfggkjabjahcjoljmgmklhpaccedipo)
@@ -79,9 +71,12 @@ $ npm run lint
 ## Deployment
 
 ### Deploying the Chrome extension
-The Chrome extension is deployed via Chrome Developer Dashboard. Follow [these instructions](https://adobe.sharepoint.com/sites/Adobe-GooglePartnership/SitePages/Publishing-Chrome-Browser-Plugins.aspx) to obtain access.
-1. Update the version in the `src/extension/manifest.json` according to semantic versioning rules
-1. Run `npm run build:chrome`
+The Chrome extension is built and uploaded automatically each time a pull request is merged into `main` and, once reviewed by Google, auto-published and pushed to users' browsers.
+
+#### CI setup
+The following environment variables are required to be set in the CircleCI project settings: `GOOGLE_APP_ID`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` and `GOOGLE_REFRESH_TOKEN`. See [here](https://circleci.com/blog/continuously-deploy-a-chrome-extension/) for detailed instructions how to obain and generate them.
+
+If you have to re-deploy manually or make changes to the store page, you can gain access to the Chrome Developer Dashboard by following [these instructions](https://adobe.sharepoint.com/sites/Adobe-GooglePartnership/SitePages/Publishing-Chrome-Browser-Plugins.aspx):
 1. Go to the [Chrome Developer Dashboard](https://chrome.google.com/webstore/devconsole/3b37cd65-9569-47a0-a13c-da1857a2c9dc)
 1. Switch to the _Adobe Inc._ publisher at the top right
 1. Click the _Helix Sidekick_ item in the extension list
@@ -89,4 +84,3 @@ The Chrome extension is deployed via Chrome Developer Dashboard. Follow [these i
 1. Click _Upload new package_
 1. Upload `dist > chrome.zip`
 1. Click _Submit for review_
-1. Once reviewed by Google, the new version will be auto-published and pushed to users' browsers

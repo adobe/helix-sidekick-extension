@@ -13,6 +13,9 @@ module.exports = {
       'message': 'chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}',
     }],
     ['@semantic-release/github', {}],
+    ['@semantic-release/exec', {
+      publishCmd: 'npm run build:chrome && npm run publish:chrome',
+    }],
   ],
   branches: ['main'],
 };
