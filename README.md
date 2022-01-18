@@ -2,8 +2,6 @@
 
 > Browser extension for authoring Helix projects
 
-Note: This browser extension wraps https://github.com/adobe/helix-sidekick
-
 ## Status
 [![codecov](https://img.shields.io/codecov/c/github/adobe/helix-sidekick-extension.svg)](https://codecov.io/gh/adobe/helix-sidekick-extension)
 [![CircleCI](https://img.shields.io/circleci/project/github/adobe/helix-sidekick-extension.svg)](https://circleci.com/gh/adobe/helix-sidekick-extension)
@@ -14,13 +12,7 @@ Note: This browser extension wraps https://github.com/adobe/helix-sidekick
 
 ## Installation
 
-### Extension (experimental)
-
-The bookmarklet configures the Sidekick for a single project and needs to be reopened in every new browser tab. Use the browser extension to:
-- keep the Sidekick open (or closed) while reloading or navigating multiple browser tabs
-- configure Sidekick for multiple projects without cluttering your browser's bookmark bar
-
-Note: The extension loads the same Sidekick module as the bookmarklet.
+Note: The extension loads the same [Sidekick module](https://github.com/adobe/helix-sidekick) as the bookmarklet.
 
 #### Installing the Chrome extension
 1. Go to the [Chrome Web Store](https://chrome.google.com/webstore/detail/helix-sidekick-extension-beta/ccfggkjabjahcjoljmgmklhpaccedipo)
