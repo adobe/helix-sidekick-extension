@@ -81,7 +81,10 @@ $ npm run lint
 ### Deploying the Chrome extension
 The Chrome extension is built and uploaded automatically each time a pull request is merged into `main` and, once reviewed by Google, auto-published and pushed to users' browsers.
 
-If you have to re-deploy manually, or make changes to the store page, you can gain access to the Chrome Developer Dashboard by following [these instructions](https://adobe.sharepoint.com/sites/Adobe-GooglePartnership/SitePages/Publishing-Chrome-Browser-Plugins.aspx):
+#### CI setup
+The following environment variables are required to be set in the CircleCI project settings: `GOOGLE_APP_ID`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` and `GOOGLE_REFRESH_TOKEN`. See [here](https://circleci.com/blog/continuously-deploy-a-chrome-extension/) for detailed instructions how to obain and generate them.
+
+If you have to re-deploy manually or make changes to the store page, you can gain access to the Chrome Developer Dashboard by following [these instructions](https://adobe.sharepoint.com/sites/Adobe-GooglePartnership/SitePages/Publishing-Chrome-Browser-Plugins.aspx):
 1. Go to the [Chrome Developer Dashboard](https://chrome.google.com/webstore/devconsole/3b37cd65-9569-47a0-a13c-da1857a2c9dc)
 1. Switch to the _Adobe Inc._ publisher at the top right
 1. Click the _Helix Sidekick_ item in the extension list
