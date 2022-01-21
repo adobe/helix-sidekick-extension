@@ -66,9 +66,9 @@ export function getGitHubSettings(giturl) {
     if (segs.length >= 2) {
       // need at least owner and repo
       return {
-        owner: segs[0],
-        repo: segs[1],
-        ref: (segs[2] === 'tree' ? segs[3] : undefined) || 'main',
+        owner: segs[0].toLowerCase(),
+        repo: segs[1].toLowerCase(),
+        ref: (segs[2] === 'tree' ? segs[3].toLowerCase() : undefined) || 'main',
       };
     }
   }
@@ -111,8 +111,8 @@ export function getConfigMatches(configs, tabUrl, proxyUrl) {
       hlx3,
     } = config;
     const match = (host && checkHost === host) // production host
-      || (checkHost.endsWith(`--${repo}--${owner}.hlx.live`) || checkHost === outerHost) // outer CDN
-      || checkHost.endsWith(`--${repo}--${owner}.hlx${hlx3 ? '3' : ''}.page`) // inner CDN with any ref
+      || (checkHost.endsWith(`--${repo.toLowerCase()}--${owner.toLowerCase()}.hlx.live`) || checkHost === outerHost) // outer CDN
+      || checkHost.endsWith(`--${repo.toLowerCase()}--${owner.toLowerCase()}.hlx${hlx3 ? '3' : ''}.page`) // inner CDN with any ref
       || mountpoints // editor
         .filter((mp) => !!mp)
         .map((mp) => {
