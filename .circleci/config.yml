@@ -49,6 +49,9 @@ jobs:
   semantic-release:
     executor: node14
     steps:
+    - add_ssh_keys:
+        fingerprints:
+          - "89:43:ce:9f:4a:d4:ad:32:47:ef:46:db:03:cd:e4:31"
       - setup
       - run:
           name: revert changes to package-lock.json
