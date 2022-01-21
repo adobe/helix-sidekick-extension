@@ -54,8 +54,8 @@ async function publishExtension(browser) {
       throw new Error(`upload failed: ${uploadResp.status} ${await uploadResp.text()}`);
     }
     const { uploadState, itemError } = await uploadResp.json();
-    const { error_detail: message } = itemError[0];
     if (uploadState === 'FAILURE') {
+      const message = itemError && itemError[0] && itemError[0].error_detail;
       throw new Error(`upload failed: ${message}`);
     }
 
