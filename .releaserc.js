@@ -14,7 +14,7 @@ module.exports = {
     }],
     ['@semantic-release/github', {}],
     ['@semantic-release/exec', {
-      publishCmd: 'npm run build:chrome && npm run publish:chrome',
+      publishCmd: 'npm run release:chrome',
     }],
   ],
   branches: ['main'],
