@@ -1,6 +1,6 @@
 {
   "name": "@adobe/helix-sidekick-extension",
-  "version": "0.9.15",
+  "version": "3.35.2",
   "description": "Helix Sidekick Extension",
   "scripts": {
     "lint": "./node_modules/.bin/eslint .",
