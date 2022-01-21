@@ -24,7 +24,10 @@ try {
   json.version = version;
   fs.writeJsonSync(manifest, json, { spaces: 2 });
   const msg = `chore(release): update manifest version to ${version} [skip ci]`;
-  shell.exec(`git add ${manifest} && git commit -m"${msg}" && git push`);
+  const { code, stderr } = shell.exec(`git add ${manifest} && git commit -m"${msg}" && git push`);
+  if (code > 0) {
+    throw new Error(stderr);
+  }
   console.log(`manifest version updated from ${oldVersion} to ${version}`);
 } catch (e) {
   throw new Error(`failed to update manifest version: ${e.message}`);
