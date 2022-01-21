@@ -131,10 +131,10 @@ export function getConfigMatches(configs, tabUrl, proxyUrl) {
                 return false;
               }
               // editor url, check for site name in path
-              const pathSegments = mpPath.split('/');
-              pathSegments.shift();
-              const site = encodeURIComponent(pathSegments
-                .find((s) => s !== 's' && s !== 'sites' && !s.startsWith(':')));
+              if (!mpPath.includes('/sites/')) {
+                return false;
+              }
+              const site = mpPath.split('/sites/')[1].split('/').shift();
               return pathname.includes(`/sites/${site}/`);
             } else if (checkHost === 'drive.google.com') {
               // gdrive browser
