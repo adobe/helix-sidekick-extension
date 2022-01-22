@@ -80,9 +80,6 @@
   "config_manual_project_placeholder": {
     "message": "Projektname (optional)"
   },
-  "config_manual_hlx3": {
-    "message": "Helix 3"
-  },
   "config_manual_devMode": {
     "message": "Projektkonfiguration lokal testen"
   },
@@ -151,6 +148,9 @@
   },
   "config_delete_all_confirm": {
     "message": "Möchtest du wirklich alle Einstellungen löschen?"
+  },
+  "config_unsupported_legacy": {
+    "message": "Diese Site wird nicht mehr unterstützt"
   },
   "config_picker_button_title": {
     "message": "$1 tippen um $2 auszuwählen"

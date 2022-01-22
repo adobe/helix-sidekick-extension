@@ -108,11 +108,11 @@ export function getConfigMatches(configs, tabUrl, proxyUrl) {
       host,
       outerHost,
       mountpoints,
-      hlx3,
     } = config;
     const match = (host && checkHost === host) // production host
       || (checkHost.endsWith(`--${repo.toLowerCase()}--${owner.toLowerCase()}.hlx.live`) || checkHost === outerHost) // outer CDN
-      || checkHost.endsWith(`--${repo.toLowerCase()}--${owner.toLowerCase()}.hlx${hlx3 ? '3' : ''}.page`) // inner CDN with any ref
+      || checkHost.endsWith(`--${repo.toLowerCase()}--${owner.toLowerCase()}.hlx3.page`) // inner CDN with any ref
+      || checkHost.endsWith(`${repo.toLowerCase()}--${owner.toLowerCase()}.hlx.page`) // legacy inner CDN with any ref
       || mountpoints // editor
         .filter((mp) => !!mp)
         .map((mp) => {
@@ -158,7 +158,6 @@ export function getShareSettings(shareurl) {
     try {
       const params = new URL(shareurl).searchParams;
       const giturl = params.get('giturl');
-      const hlx3 = params.get('hlx3') !== 'false';
       // check gh url
       if (Object.keys(getGitHubSettings(giturl)).length !== 3) {
         throw new Error();
@@ -166,7 +165,6 @@ export function getShareSettings(shareurl) {
       return {
         giturl,
         project: params.get('project'),
-        hlx3,
       };
     } catch (e) {
       log.error('error getting sidekick settings from share url', e);
@@ -198,7 +196,6 @@ async function getProjectConfig(owner, repo, ref) {
 export async function assembleConfig({
   giturl,
   mountpoints,
-  hlx3,
   project,
   host,
   outerHost,
@@ -216,7 +213,6 @@ export async function assembleConfig({
     project,
     host,
     outerHost,
-    hlx3,
     devMode,
     giturl,
     owner,
