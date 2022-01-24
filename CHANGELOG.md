@@ -1,3 +1,20 @@
+# [4.0.0](https://github.com/adobe/helix-sidekick-extension/compare/v3.35.3...v4.0.0) (2022-01-24)
+
+
+### chore
+
+* ensure major release [skip ci] ([444fd72](https://github.com/adobe/helix-sidekick-extension/commit/444fd7247efb85d3bfa76973b85d1627feed06c5))
+
+
+### Features
+
+* remove hlx2 support ([cb3acd5](https://github.com/adobe/helix-sidekick-extension/commit/cb3acd50b1d223fe1b1b159fe34bb84b0a811f18))
+
+
+### BREAKING CHANGES
+
+* Older projects will no longer be able to use the sidekick
+
 ## [3.35.3](https://github.com/adobe/helix-sidekick-extension/compare/v3.35.2...v3.35.3) (2022-01-21)
 
 
