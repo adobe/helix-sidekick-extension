@@ -50,13 +50,14 @@ function drawConfigs() {
     configs.forEach(({
       owner, repo, ref, mountpoints, project, host, hlx3,
     }, i) => {
+      const legacy = hlx3 !== undefined && hlx3 === false;
       const innerHost = getInnerHost(owner, repo, ref, hlx3);
       const section = document.createElement('section');
       section.id = `config-${i}`;
-      section.className = 'config';
+      section.className = `config${legacy ? ' unsupported' : ''} `;
       section.innerHTML = `
   <div>
-    <h4>${project || 'Helix Project'}</h4>
+    <h4>${project || 'Helix Project'}${legacy ? `<span>(${i18n('config_unsupported_legacy')})</span>` : ''}</h4>
     <p><span class="property">${i18n('config_project_innerhost')}</span>${drawLink(innerHost)}</p>
     ${mountpoints.length
     ? `<p><span class="property">${i18n('config_project_mountpoints')}</span>${mountpoints.map((mp) => drawLink(mp)).join(' ')}</p>`
@@ -66,8 +67,8 @@ function drawConfigs() {
     : ''}
     </div>
   <div>
-    <button class="shareConfig" title="${i18n('config_share')}">${i18n('config_share')}</button>
-    <button class="editConfig" title="${i18n('config_edit')}">${i18n('config_edit')}</button>
+    <button class="shareConfig" title="${i18n('config_share')}"${legacy ? ' disabled' : ''}>${i18n('config_share')}</button>
+    <button class="editConfig" title="${i18n('config_edit')}"${legacy ? ' disabled' : ''}>${i18n('config_edit')}</button>
     <button class="deleteConfig" title="${i18n('config_delete')}">${i18n('config_delete')}</button>
   </div>`;
       container.appendChild(section);
@@ -146,7 +147,6 @@ function editConfig(i) {
           ],
           project: document.querySelector('#edit-project').value,
           host: document.querySelector('#edit-host').value,
-          hlx3: document.querySelector('#edit-hlx3').checked,
           devMode: document.querySelector('#edit-devMode').checked,
         };
         hlxSidekickConfigs[i] = {
@@ -269,7 +269,6 @@ window.addEventListener('DOMContentLoaded', () => {
       await addConfig({
         giturl,
         project: document.getElementById('project').value,
-        hlx3: true,
       }, (added) => {
         if (added) {
           drawConfigs();

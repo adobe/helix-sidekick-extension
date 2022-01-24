@@ -37,7 +37,6 @@ function getConfigFromTabUrl(tabUrl) {
   const cfg = getShareSettings(tabUrl);
   if (!cfg.giturl && tabUrl.startsWith(GH_URL)) {
     cfg.giturl = tabUrl;
-    cfg.hlx3 = true;
   }
   return cfg;
 }
