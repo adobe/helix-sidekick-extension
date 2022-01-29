@@ -164,7 +164,22 @@
   "advanced": {
     "message": "Advanced"
   },
+  "config_development": {
+    "message": "Development"
+  },
   "developer_mode": {
     "message": "Test Sidekick locally"
+  },
+  "developer_mode_description": {
+    "message": "Invoke a local development version of the Sidekick"
+  },
+  "admin_version": {
+    "message": "Use a specific Helix Admin API version"
+  },
+  "admin_version_description": {
+    "message": "Caution: This can have unexpected side effects!"
+  },
+  "admin_version_placeholder": {
+    "message": "Admin Version: x.y.z"
   }
 }

@@ -18,7 +18,7 @@ governing permissions and limitations under the License.
 	<link rel="stylesheet" type="text/css" href="./options.css" />
   <script src="./options.js" type="module"></script>
   <template id="configEditorTemplate">
-    <section id="configEditor" class="config">
+    <div id="configEditor" class="config">
       <div>
         <p><input type="text" id="edit-project"></p>
         <p class="mandatory"><input type="url" id="edit-giturl"></p>
@@ -33,7 +33,7 @@ governing permissions and limitations under the License.
           <button></button>
         </p>
       </div>
-    </section>
+    </div>
   </template>
 </head>
 <body>
@@ -47,58 +47,69 @@ governing permissions and limitations under the License.
         <li><a href="__MSG_docs__" target="_blank" title="__MSG_help__">__MSG_help__</a></li>
       </ul>
     </nav>
-    <span class="advanced-only">
-      <div class="devMode-container">
-        <input type="checkbox" id="devModeSwitch">
-        <label for="devModeSwitch">__MSG_developer_mode__</label>
+    <div id="projects" class="area expanded">
+      <h2>__MSG_config_projects__</h2>
+      <div id="configs"></div>
+        <div>
+          <div>
+            <h3>__MSG_config_shareurl_title__</h3>
+            <p class="help">__MSG_config_shareurl_description__</p>
+            <p class="mandatory"><input type="url" id="shareurl" placeholder="__MSG_config_shareurl_placeholder__"></p>
+            <p><button id="addShareConfigButton" title="__MSG_add__">__MSG_add__</button></p>
+          </div>
+        </div>
+        <div>
+          <div>
+            <h3>__MSG_config_manual_title__</h3>
+            <p class="mandatory"><input type="url" id="giturl" placeholder="__MSG_config_manual_giturl_placeholder__"></p>
+            <p><input type="text" id="project" placeholder="__MSG_config_manual_project_placeholder__"></p>
+            <p><button id="addManualConfigButton" title="__MSG_add__">__MSG_add__</button></p>
+          </div>
+        </div>
       </div>
-    </span>
-    <div>
-    <h2>__MSG_config_projects__</h2>
-    </div>
-    <div id="configs"></div>
-      <section id="addShareConfigSection">
+      <div id="backup" class="area advanced-only">
+        <h2>__MSG_config_backup__</h2>
         <div>
-          <h3>__MSG_config_shareurl_title__</h3>
-          <p class="help">__MSG_config_shareurl_description__</p>
-          <p class="mandatory"><input type="url" id="shareurl" placeholder="__MSG_config_shareurl_placeholder__"></p>
-          <p><button id="addShareConfigButton" title="__MSG_add__">__MSG_add__</button></p>
+          <div>
+            <h3>__MSG_config_import__</h3>
+            <p class="help">__MSG_config_import_description__</p>
+            <p><input id="importFile" type="file" title="__MSG_config_import__" accept="application/json"></p>
+         </div>
         </div>
-      </section>
-      <section id="addManualConfigSection">
         <div>
-          <h3>__MSG_config_manual_title__</h3>
-          <p class="mandatory"><input type="url" id="giturl" placeholder="__MSG_config_manual_giturl_placeholder__"></p>
-          <p><input type="text" id="project" placeholder="__MSG_config_manual_project_placeholder__"></p>
-          <p><button id="addManualConfigButton" title="__MSG_add__">__MSG_add__</button></p>
+          <div>
+            <h3>__MSG_config_export__</h3>
+            <p class="help">__MSG_config_export_description__</p>
+            <p><button id="exportButton" title="__MSG_config_export__">__MSG_config_export__</button></p>
+          </div>
         </div>
-      </section>
-      <span class="advanced-only">
-      <hr>
-      <h2>__MSG_config_backup__</h2>
-      <section id="importSection">
+      </div>
+      <div id="developer" class="area advanced-only">
+        <h2>__MSG_config_development__</h2>
         <div>
-          <h3>__MSG_config_import__</h3>
-          <p class="help">__MSG_config_import_description__</p>
-          <p><input id="importFile" type="file" title="__MSG_config_import__" accept="application/json"></p>
+          <h3>__MSG_developer_mode__</h3>
+          <input type="checkbox" id="devModeSwitch">
+          <label for="devModeSwitch">__MSG_developer_mode_description__</label>
         </div>
-      </section>
-      <section id="exportSection">
         <div>
-          <h3>__MSG_config_export__</h3>
-          <p class="help">__MSG_config_export_description__</p>
-          <p><button id="exportButton" title="__MSG_config_export__">__MSG_config_export__</button></p>
+          <h3>__MSG_admin_version__</h3>
+          <p class="warn">__MSG_admin_version_description__</p>
+          <p><input type="text" class="version" id="adminVersion" placeholder="__MSG_admin_version_placeholder__"></p>
+          <p>
+            <button id="adminVersionSave" title="__MSG_save__">__MSG_save__</button>
+            <button id="adminVersionReset" title="__MSG_config_reset__">__MSG_config_reset__</button>
+          </p>
         </div>
-      </section>
-      <hr>
-      <h2 class="warn">__MSG_config_reset__</h2>
-      <section id="resetSection" class="warn">
-        <div>
-          <p>__MSG_config_delete_all_description__</p>
-          <p><button id="resetButton" class="warn" title="__MSG_config_delete_all__">__MSG_config_delete_all__</button></p>
+      </div>
+      <div id="reset" class="area advanced-only">
+        <h2 class="warn">__MSG_config_reset__</h2>
+        <div class="warn">
+          <div>
+            <p>__MSG_config_delete_all_description__</p>
+            <p><button id="resetButton" class="warn" title="__MSG_config_delete_all__">__MSG_config_delete_all__</button></p>
+          </div>
         </div>
-      </section>
-      </span>
+      </div>
     </main>
 </body>
 </html>
