@@ -1,3 +1,10 @@
+# [4.1.0](https://github.com/adobe/helix-sidekick-extension/compare/v4.0.0...v4.1.0) (2022-01-31)
+
+
+### Features
+
+* support admin version ([a2bef98](https://github.com/adobe/helix-sidekick-extension/commit/a2bef98e2ea97714016e7a22367c3b62285b1741))
+
 # [4.0.0](https://github.com/adobe/helix-sidekick-extension/compare/v3.35.3...v4.0.0) (2022-01-24)
 
 
