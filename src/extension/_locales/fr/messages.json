@@ -180,6 +180,6 @@
     "message": "Caution: This can have unexpected side effects!"
   },
   "admin_version_placeholder": {
-    "message": "Admin Version: x.y.z"
+    "message": "Version de l'Admin: x.y.z"
   }
 }
