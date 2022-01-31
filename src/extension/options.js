@@ -219,13 +219,11 @@ function clearForms() {
   });
 }
 
-function setDevMode(devMode, cb) {
+function setConfigObject(obj, cb) {
   browser.storage.local
-    .set({
-      hlxSidekickDevMode: devMode,
-    })
+    .set(obj)
     .then(() => {
-      if (typeof cb === 'function') cb(devMode);
+      if (typeof cb === 'function') cb(obj);
     })
     .catch((e) => log.error('error setting display', e));
 }
@@ -352,26 +350,53 @@ window.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // enable dev mode
-  getState(({ devMode }) => {
+  // add devMode link to nav
+  const isDevMode = window.location.search === '?devMode';
+  const devModeLink = document.createElement('a');
+  devModeLink.textContent = i18n('advanced');
+  devModeLink.title = i18n('advanced');
+  devModeLink.setAttribute('aria-role', 'link');
+  devModeLink.setAttribute('tabindex', 0);
+  devModeLink.addEventListener('click', ({ target }) => {
+    window.location.href = `${window.location.pathname}${isDevMode ? '' : '?devMode'}`;
+    target.parentElement.classList.toggle('selected');
+  });
+  const devModeListItem = document.createElement('li');
+  devModeListItem.className = isDevMode ? 'selected' : '';
+  devModeListItem.append(devModeLink);
+  document.querySelector('nav > ul').append(devModeListItem);
+
+  // area toggles
+  document.querySelectorAll('.area > h2').forEach(($title) => {
+    $title.addEventListener('click', ({ target }) => {
+      target.parentElement.classList.toggle('expanded');
+    });
+  });
+
+  // enable dev mode and admin version
+  getState(({ devMode, adminVersion = null }) => {
     const devModeEnabled = window.location.search === '?devMode';
     if (devModeEnabled) {
       document.body.classList.add('advanced');
       const input = document.getElementById('devModeSwitch');
       input.checked = devMode;
-      input.addEventListener('click', () => setDevMode(input.checked));
+      input.addEventListener('click', () => setConfigObject({
+        hlxSidekickDevMode: input.checked,
+      }));
+
+      const adminVersionField = document.getElementById('adminVersion');
+      const adminVersionSave = document.getElementById('adminVersionSave');
+      const adminVersionReset = document.getElementById('adminVersionReset');
+      adminVersionField.value = adminVersion || '';
+      adminVersionSave.addEventListener('click', () => setConfigObject({
+        hlxSidekickAdminVersion: adminVersionField.value,
+      }));
+      adminVersionReset.addEventListener('click', () => {
+        adminVersionField.value = '';
+        setConfigObject({
+          hlxSidekickAdminVersion: null,
+        });
+      });
     }
-    // add devMode link to nav
-    const devModeLink = document.createElement('a');
-    devModeLink.textContent = i18n('advanced');
-    devModeLink.title = i18n('advanced');
-    devModeLink.setAttribute('aria-role', 'link');
-    devModeLink.setAttribute('tabindex', 0);
-    devModeLink.addEventListener('click', () => {
-      window.location.href = `${window.location.pathname}${window.location.search === '?devMode' ? '' : '?devMode'}`;
-    });
-    const devModeListItem = document.createElement('li');
-    devModeListItem.append(devModeLink);
-    document.querySelector('nav > ul').append(devModeListItem);
   });
 });

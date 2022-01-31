@@ -44,6 +44,7 @@
       --button-disabled-background-image: linear-gradient(#121212, #121212 38%, #212121);
       --sidebar-color: 163, 158, 153;
       --sidebar-link-color: 102, 102, 102;
+      --sidebar-selected-color: 51, 87, 153;
       --input-border-color: 153, 153, 153;
       --editor-background-color: 34, 34, 34;
       --config-title-color: 188, 188, 188;
@@ -103,17 +104,17 @@ nav ul > li {
 	padding-right: 30px;
   padding-bottom: 10px;
 }
-nav ul > li.selected {
-	cursor: default;
-	pointer-events: none;
-}
-nav li a, nav li a:any-link {
+nav ul > li a, nav ul > li a:any-link {
 	display: inline-block;
 	color: rgb(var(--sidebar-link-color));
 	text-decoration: none;
 	line-height: 17px;
   cursor: pointer;
 }
+nav ul > li.selected a, nav ul > li.selected a:any-link {
+	color: rgb(var(--sidebar-selected-color));
+}
+
 nav, header {
 	z-index: 3;
 }
@@ -135,9 +136,55 @@ header, main {
 main {
   max-width: 578px;
   margin-top: 70px;
-  padding: 20px 20px 40px 20px;
-	border-left: 1px solid rgb(var(--border-color));
+  padding: 20px 20px 0 20px;
+	border: 1px solid rgb(var(--border-color));
 }
+
+.area:not(:first-of-type) {
+	border-top: 1px solid rgb(var(--border-color));
+}
+
+.area:not(:last-of-type) {
+  margin-bottom: 24px;
+}
+
+.area > h2 {
+  cursor: pointer;
+}
+
+.area > h2::after {
+  border-style: solid;
+  border-width: 1px 1px 0 0;
+  content: '';
+  display: inline-block;
+  height: 0.45em;
+  left: 0.15em;
+  position: relative;
+  margin-top: 2px;
+  transform: rotate(135deg);
+  vertical-align: top;
+  width: 0.45em;
+  margin-left: 10px;
+}
+
+.area.expanded > h2::after {
+  margin-top: 10px;
+  transform: rotate(-45deg);
+}
+
+.area > div {
+  display: none;
+  padding-top: 10px;
+}
+
+.area > div:first-of-type {
+  padding-top: 0;
+}
+
+.area.expanded > div {
+  display: block;
+}
+
 section {
   padding-left: 18px;
   padding-right: 18px;
@@ -147,10 +194,6 @@ section {
 
 section:last-of-type {
   margin-bottom: 0;
-}
-
-section h3 {
-	margin-left: -18px;
 }
 
 hr {
@@ -171,8 +214,9 @@ textarea, input[type="url"], input[type="text"] {
 	border: solid rgb(var(--input-border-color)) 1px;
 }
 
-input[type=number] {
-	width:80px;
+input.version,
+input[type="number"] {
+	width: 152px;
 }
 
 input[disabled] {
@@ -209,6 +253,10 @@ section > div {
 
 section > div:first-of-type {
 	margin-right:20px;
+}
+
+#configs {
+  padding-top: 0;
 }
 
 #configs:empty {
@@ -323,18 +371,12 @@ section.config input.favorite::after {
   margin-right: 10px;
 }
 
-.devMode-container {
-  font-size: 0.75rem;
-  color: rgb(var(--text-color-help));
-  padding: 10px 0;
-}
-
 .advanced-only {
   display: none;
 }
 
 body.advanced .advanced-only {
-  display: unset;
+  display: block;
 }
 
 @media(max-width:899px) {
@@ -408,7 +450,7 @@ body.advanced .advanced-only {
     font-size: 1.3rem;
   }
 
-  textarea, input[type="text"], input[type="url"] {
+  textarea, input[type="text"]:not(.version), input[type="url"] {
     width: 90%;
   }
 

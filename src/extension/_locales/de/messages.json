@@ -164,7 +164,22 @@
   "advanced": {
     "message": "Fortgeschritten"
   },
+  "config_development": {
+    "message": "Entwicklung"
+  },
   "developer_mode": {
     "message": "Sidekick lokal testen"
+  },
+  "developer_mode_description": {
+    "message": "Eine lokale Entwicklungsversion aufrufen"
+  },
+  "admin_version": {
+    "message": "Eine spexifische Version des Helix Admin API verwenden"
+  },
+  "admin_version_description": {
+    "message": "Achtung: Dies kann unerwartete Nebenwirkungen haben!"
+  },
+  "admin_version_placeholder": {
+    "message": "Admin-Version: x.y.z"
   }
 }

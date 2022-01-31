@@ -79,11 +79,13 @@ export async function getState(cb) {
   if (typeof cb === 'function') {
     const { hlxSidekickDisplay = false } = await browser.storage.local.get('hlxSidekickDisplay');
     const { hlxSidekickDevMode = false } = await browser.storage.local.get('hlxSidekickDevMode');
+    const { hlxSidekickAdminVersion = false } = await browser.storage.local.get('hlxSidekickAdminVersion');
     const { hlxSidekickProxyUrl } = await browser.storage.local.get('hlxSidekickProxyUrl');
     const { hlxSidekickConfigs = [] } = await browser.storage.sync.get('hlxSidekickConfigs');
     cb({
       display: hlxSidekickDisplay,
       devMode: hlxSidekickDevMode,
+      adminVersion: hlxSidekickAdminVersion,
       proxyUrl: hlxSidekickProxyUrl,
       configs: hlxSidekickConfigs,
     });
