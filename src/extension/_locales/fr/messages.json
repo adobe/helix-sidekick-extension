@@ -171,7 +171,7 @@
     "message": "Tester le Helix Sidekick localement"
   },
   "developer_mode_description": {
-    "message": "Invoke a local development version of the Sidekick"
+    "message": "Invoquer une version locale du Helix Sidekick"
   },
   "admin_version": {
     "message": "Use a specific Helix Admin API version"
