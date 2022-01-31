@@ -177,7 +177,7 @@
     "message": "Utiliser une versions spécifique de l'API Helix Admin"
   },
   "admin_version_description": {
-    "message": "Caution: This can have unexpected side effects!"
+    "message": "Attention: ceci peut avoir des effets indésirables!"
   },
   "admin_version_placeholder": {
     "message": "Version de l'Admin: x.y.z"
