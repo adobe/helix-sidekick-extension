@@ -1,3 +1,10 @@
+## [4.1.1](https://github.com/adobe/helix-sidekick-extension/compare/v4.1.0...v4.1.1) (2022-02-01)
+
+
+### Bug Fixes
+
+* scroll exapnded option area into view ([b4f26dc](https://github.com/adobe/helix-sidekick-extension/commit/b4f26dc83061195d606e969749cd41ca887050e5))
+
 # [4.1.0](https://github.com/adobe/helix-sidekick-extension/compare/v4.0.0...v4.1.0) (2022-01-31)
 
 
