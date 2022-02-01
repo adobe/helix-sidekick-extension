@@ -369,7 +369,9 @@ window.addEventListener('DOMContentLoaded', () => {
   // area toggles
   document.querySelectorAll('.area > h2').forEach(($title) => {
     $title.addEventListener('click', ({ target }) => {
-      target.parentElement.classList.toggle('expanded');
+      const $parent = target.parentElement;
+      $parent.classList.toggle('expanded');
+      $parent.scrollIntoView();
     });
   });
 
