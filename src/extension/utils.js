@@ -14,7 +14,7 @@
 
 import {} from './lib/polyfills.min.js';
 
-export const SHARE_URL = 'https://www.hlx.live/tools/sidekick/?';
+export const SHARE_PREFIX = '/tools/sidekick/';
 
 export const GH_URL = 'https://github.com/';
 
@@ -156,7 +156,7 @@ export function getConfigMatches(configs, tabUrl, proxyUrl) {
 }
 
 export function getShareSettings(shareurl) {
-  if (typeof shareurl === 'string' && shareurl.startsWith(SHARE_URL)) {
+  if (typeof shareurl === 'string' && new URL(shareurl).pathname === SHARE_PREFIX) {
     try {
       const params = new URL(shareurl).searchParams;
       const giturl = params.get('giturl');
@@ -227,11 +227,11 @@ export async function assembleConfig({
 export async function addConfig(input, cb) {
   const config = await assembleConfig(input);
   const {
-    owner, repo, ref, mountpoints,
+    owner, repo, mountpoints,
   } = config;
   getState(({ configs }) => {
     /* eslint-disable no-alert */
-    if (!configs.find((cfg) => owner === cfg.owner && repo === cfg.repo && ref === cfg.ref)) {
+    if (!configs.find((cfg) => owner === cfg.owner && repo === cfg.repo)) {
       configs.push(config);
       browser.storage.sync
         .set({ hlxSidekickConfigs: configs })
@@ -249,6 +249,23 @@ export async function addConfig(input, cb) {
     }
     /* eslint-enable no-alert */
   });
+}
+
+export async function deleteConfig(i, cb) {
+  // eslint-disable-next-line no-alert
+  if (window.confirm(i18n('config_delete_confirm'))) {
+    browser.storage.sync
+      .get('hlxSidekickConfigs')
+      .then(({ hlxSidekickConfigs = [] }) => {
+        hlxSidekickConfigs.splice(i, 1);
+        return hlxSidekickConfigs;
+      })
+      .then((hlxSidekickConfigs) => browser.storage.sync.set({ hlxSidekickConfigs }))
+      .then(() => {
+        if (typeof cb === 'function') cb(true);
+      })
+      .catch((e) => log.error('error deleting config', e));
+  }
 }
 
 export async function setDisplay(display, cb) {

@@ -21,6 +21,7 @@ import {
   getShareSettings,
   i18n,
   addConfig,
+  deleteConfig,
   assembleConfig,
 } from './utils.js';
 
@@ -79,11 +80,11 @@ function drawConfigs() {
     });
     // wire edit buttons
     document.querySelectorAll('button.editConfig').forEach((button, i) => {
-      button.addEventListener('click', (evt) => editConfig(i, evt));
+      button.addEventListener('click', () => editConfig(i));
     });
     // wire delete buttons
     document.querySelectorAll('button.deleteConfig').forEach((button, i) => {
-      button.addEventListener('click', (evt) => deleteConfig(i, evt));
+      button.addEventListener('click', () => deleteConfig(i, drawConfigs));
     });
   });
 }
@@ -196,21 +197,6 @@ function editConfig(i) {
           btn.disabled = true;
         });
     });
-}
-
-function deleteConfig(i) {
-  // eslint-disable-next-line no-alert
-  if (window.confirm(i18n('config_delete_confirm'))) {
-    browser.storage.sync
-      .get('hlxSidekickConfigs')
-      .then(({ hlxSidekickConfigs = [] }) => {
-        hlxSidekickConfigs.splice(i, 1);
-        return hlxSidekickConfigs;
-      })
-      .then((hlxSidekickConfigs) => browser.storage.sync.set({ hlxSidekickConfigs }))
-      .then(() => drawConfigs())
-      .catch((e) => log.error('error deleting config', e));
-  }
 }
 
 function clearForms() {
