@@ -73,11 +73,15 @@
       }
     });
   };
-  window.hlx = window.hlx || {};
-  if (!window.hlx.sidekickGeneratorInstrumented) {
-    window.addEventListener('sidekickGeneratorReady', () => {
-      run();
-    });
-    window.hlx.sidekickGeneratorInstrumented = true;
+  if (!window.sidekickGeneratorReady) {
+    // wait for sidekick generator ready event
+    if (!window.sidekickGeneratorInstrumented) {
+      window.addEventListener('sidekickGeneratorReady', () => {
+        run();
+      });
+      window.sidekickGeneratorInstrumented = true;
+    }
+  } else {
+    run();
   }
 })();
