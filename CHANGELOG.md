@@ -1,3 +1,10 @@
+# [4.2.0](https://github.com/adobe/helix-sidekick-extension/compare/v4.1.1...v4.2.0) (2022-02-07)
+
+
+### Features
+
+* simplify adding project from share url ([9d376f8](https://github.com/adobe/helix-sidekick-extension/commit/9d376f8cf10630a15645f592837619b05aa085f7))
+
 ## [4.1.1](https://github.com/adobe/helix-sidekick-extension/compare/v4.1.0...v4.1.1) (2022-02-01)
 
 
