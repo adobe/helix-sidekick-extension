@@ -14,9 +14,8 @@
 
 import {
   GH_URL,
-  SHARE_URL,
+  SHARE_PREFIX,
   DEV_URL,
-  url,
   log,
   i18n,
   getState,
@@ -51,7 +50,7 @@ async function checkContextMenu(tabUrl, configs) {
     // clear context menu
     browser.contextMenus.removeAll();
     // check if add project is applicable
-    if (configs && (tabUrl.startsWith(GH_URL) || tabUrl.startsWith(SHARE_URL))) {
+    if (configs && (tabUrl.startsWith(GH_URL) || new URL(tabUrl).pathname === SHARE_PREFIX)) {
       const { giturl } = getConfigFromTabUrl(tabUrl);
       if (giturl) {
         const { owner, repo } = getGitHubSettings(giturl);
@@ -85,6 +84,17 @@ function checkTab(id) {
       .then(async (tab = {}) => {
         if (!tab.url) return;
         checkContextMenu(tab.url, configs);
+        if (new URL(tab.url).pathname === SHARE_PREFIX) {
+          log.debug('share url detected, inject install helper');
+          try {
+            // instrument generator page
+            browser.tabs.executeScript(id, {
+              file: './installhelper.js',
+            });
+          } catch (e) {
+            log.error('error instrumenting generator page', id, e);
+          }
+        }
         const matches = getConfigMatches(configs, tab.url, proxyUrl);
         log.debug('checking', id, tab.url, matches);
         const allowed = matches.length > 0;
@@ -136,12 +146,7 @@ function toggle(id) {
     addProject: async (tabUrl) => {
       const cfg = getConfigFromTabUrl(tabUrl);
       if (cfg.giturl) {
-        await addConfig(cfg, (added) => {
-          if (added && tabUrl !== url('options.html')) {
-            // redirect to options page
-            window.open(url('options.html'));
-          }
-        });
+        await addConfig(cfg);
       }
     },
   };
