@@ -59,11 +59,15 @@ export default async function injectSidekick(config, display, skDevMode) {
         window.clearInterval(window.hlx.sidekickWait);
         delete window.hlx.sidekickWait;
         // set display to false if user clicks close button
-        window.hlx.sidekick.shadowRoot
-          .querySelector('.hlx-sk > button.close')
-          .addEventListener('click', () => {
-            setDisplay(false);
-          });
+        window.hlx.sidekick.addEventListener('hidden', () => {
+          setDisplay(false);
+        });
+        // show help content if not acknowledged yet
+        // load help.json
+
+        window.hlx.sidekick.addEventListener('helpacknowledged', () => {
+          console.log('help ACKed');
+        });
       }
     }, 200);
   }
