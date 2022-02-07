@@ -55,18 +55,21 @@ export default async function injectSidekick(config, display, skDevMode) {
 
     // wait for sidekick to instrument
     window.hlx.sidekickWait = window.setInterval(() => {
-      if (window.hlx.sidekick) {
+      const sk = window.hlx.sidekick;
+      if (sk) {
         window.clearInterval(window.hlx.sidekickWait);
         delete window.hlx.sidekickWait;
         // set display to false if user clicks close button
-        window.hlx.sidekick.addEventListener('hidden', () => {
+        sk.addEventListener('hidden', () => {
           setDisplay(false);
         });
         // show help content if not acknowledged yet
-        // load help.json
+        // fetch help.json
+        // check for ack(s) in chrome.storage and build help steps
 
-        window.hlx.sidekick.addEventListener('helpacknowledged', () => {
+        sk.addEventListener('helpacknowledged', () => {
           console.log('help ACKed');
+          // save ack in chrome.storage
         });
       }
     }, 200);
