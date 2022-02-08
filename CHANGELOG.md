@@ -1,3 +1,31 @@
+## [4.2.3](https://github.com/adobe/helix-sidekick-extension/compare/v4.2.2...v4.2.3) (2022-02-08)
+
+
+### Bug Fixes
+
+* check for query param ([71fe059](https://github.com/adobe/helix-sidekick-extension/commit/71fe059510b76fa9dbe758febc18d7da6da98b30))
+
+## [4.2.2](https://github.com/adobe/helix-sidekick-extension/compare/v4.2.1...v4.2.2) (2022-02-08)
+
+
+### Bug Fixes
+
+* unstable share URL instrumentation ([11f1877](https://github.com/adobe/helix-sidekick-extension/commit/11f18774e2ba486525dc2e44d97f04da9dfbe900))
+
+## [4.2.1](https://github.com/adobe/helix-sidekick-extension/compare/v4.2.0...v4.2.1) (2022-02-08)
+
+
+### Bug Fixes
+
+* share URL instrumentation not run ([c82725e](https://github.com/adobe/helix-sidekick-extension/commit/c82725ef02f10f82cb61bbde5b876015233de291))
+
+# [4.2.0](https://github.com/adobe/helix-sidekick-extension/compare/v4.1.1...v4.2.0) (2022-02-07)
+
+
+### Features
+
+* simplify adding project from share url ([9d376f8](https://github.com/adobe/helix-sidekick-extension/commit/9d376f8cf10630a15645f592837619b05aa085f7))
+
 ## [4.1.1](https://github.com/adobe/helix-sidekick-extension/compare/v4.1.0...v4.1.1) (2022-02-01)
 
 
