@@ -23,6 +23,7 @@ import {
   addConfig,
   deleteConfig,
   assembleConfig,
+  setConfig,
 } from './utils.js';
 
 function getInnerHost(owner, repo, ref, hlx3) {
@@ -205,15 +206,6 @@ function clearForms() {
   });
 }
 
-function setConfigObject(obj, cb) {
-  browser.storage.local
-    .set(obj)
-    .then(() => {
-      if (typeof cb === 'function') cb(obj);
-    })
-    .catch((e) => log.error('error setting display', e));
-}
-
 window.addEventListener('DOMContentLoaded', () => {
   // i18n
   document.body.innerHTML = document.body.innerHTML
@@ -368,7 +360,7 @@ window.addEventListener('DOMContentLoaded', () => {
       document.body.classList.add('advanced');
       const input = document.getElementById('devModeSwitch');
       input.checked = devMode;
-      input.addEventListener('click', () => setConfigObject({
+      input.addEventListener('click', () => setConfig('local', {
         hlxSidekickDevMode: input.checked,
       }));
 
@@ -376,12 +368,12 @@ window.addEventListener('DOMContentLoaded', () => {
       const adminVersionSave = document.getElementById('adminVersionSave');
       const adminVersionReset = document.getElementById('adminVersionReset');
       adminVersionField.value = adminVersion || '';
-      adminVersionSave.addEventListener('click', () => setConfigObject({
+      adminVersionSave.addEventListener('click', () => setConfig('local', {
         hlxSidekickAdminVersion: adminVersionField.value,
       }));
       adminVersionReset.addEventListener('click', () => {
         adminVersionField.value = '';
-        setConfigObject({
+        setConfig('local', {
           hlxSidekickAdminVersion: null,
         });
       });

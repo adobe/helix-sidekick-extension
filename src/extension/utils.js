@@ -75,13 +75,26 @@ export function getGitHubSettings(giturl) {
   return {};
 }
 
+export async function getConfig(type, prop) {
+  return browser.storage[type].get(prop);
+}
+
+export async function setConfig(type, obj, cb) {
+  return browser.storage[type]
+    .set(obj)
+    .then(() => {
+      if (typeof cb === 'function') cb(obj);
+    })
+    .catch((e) => log.error('error setting display', e));
+}
+
 export async function getState(cb) {
   if (typeof cb === 'function') {
-    const { hlxSidekickDisplay = false } = await browser.storage.local.get('hlxSidekickDisplay');
-    const { hlxSidekickDevMode = false } = await browser.storage.local.get('hlxSidekickDevMode');
-    const { hlxSidekickAdminVersion = false } = await browser.storage.local.get('hlxSidekickAdminVersion');
-    const { hlxSidekickProxyUrl } = await browser.storage.local.get('hlxSidekickProxyUrl');
-    const { hlxSidekickConfigs = [] } = await browser.storage.sync.get('hlxSidekickConfigs');
+    const { hlxSidekickDisplay = false } = await getConfig('local', 'hlxSidekickDisplay');
+    const { hlxSidekickDevMode = false } = await getConfig('local', 'hlxSidekickDevMode');
+    const { hlxSidekickAdminVersion = false } = await getConfig('local', 'hlxSidekickAdminVersion');
+    const { hlxSidekickProxyUrl } = await getConfig('local', 'hlxSidekickProxyUrl');
+    const { hlxSidekickConfigs = [] } = await getConfig('sync', 'hlxSidekickConfigs');
     cb({
       display: hlxSidekickDisplay,
       devMode: hlxSidekickDevMode,
@@ -233,8 +246,7 @@ export async function addConfig(input, cb) {
     /* eslint-disable no-alert */
     if (!configs.find((cfg) => owner === cfg.owner && repo === cfg.repo)) {
       configs.push(config);
-      browser.storage.sync
-        .set({ hlxSidekickConfigs: configs })
+      setConfig('sync', { hlxSidekickConfigs: configs })
         .then(() => (typeof cb === 'function' ? cb(true) : null))
         .then(() => log.info('added config', config))
         .catch((e) => log.error('error adding config', e));
@@ -254,13 +266,12 @@ export async function addConfig(input, cb) {
 export async function deleteConfig(i, cb) {
   // eslint-disable-next-line no-alert
   if (window.confirm(i18n('config_delete_confirm'))) {
-    browser.storage.sync
-      .get('hlxSidekickConfigs')
+    getConfig('sync', 'hlxSidekickConfigs')
       .then(({ hlxSidekickConfigs = [] }) => {
         hlxSidekickConfigs.splice(i, 1);
         return hlxSidekickConfigs;
       })
-      .then((hlxSidekickConfigs) => browser.storage.sync.set({ hlxSidekickConfigs }))
+      .then((hlxSidekickConfigs) => setConfig('sync', { hlxSidekickConfigs }))
       .then(() => {
         if (typeof cb === 'function') cb(true);
       })
@@ -269,10 +280,9 @@ export async function deleteConfig(i, cb) {
 }
 
 export async function setDisplay(display, cb) {
-  browser.storage.local
-    .set({
-      hlxSidekickDisplay: display,
-    })
+  setConfig('local', {
+    hlxSidekickDisplay: display,
+  })
     .then(() => {
       if (typeof cb === 'function') cb(display);
     })
@@ -280,10 +290,9 @@ export async function setDisplay(display, cb) {
 }
 
 export async function setProxyUrl(proxyUrl, cb) {
-  browser.storage.local
-    .set({
-      hlxSidekickProxyUrl: proxyUrl,
-    })
+  setConfig('local', {
+    hlxSidekickProxyUrl: proxyUrl,
+  })
     .then(() => {
       if (typeof cb === 'function') cb(proxyUrl);
     })

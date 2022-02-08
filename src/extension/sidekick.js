@@ -15,6 +15,25 @@
 
 import { DEV_URL, log, setDisplay } from './utils.js';
 
+async function getHelpContent() {
+  window.hlx = window.hlx || {};
+  if (!window.hlx.sidekickHelp) {
+    const resp = await fetch('https://www.hlx.live/tools/sidekick/help.json');
+    if (resp.ok) {
+      const json = await resp.json();
+      window.hlx.sidekickHelp = {
+        topics: json['help-topics'].data,
+        steps: json['help-steps'].data,
+      };
+    }
+  }
+  return window.hlx.sidekickHelp;
+}
+
+async function getHelpAckStatus() {
+  return false;
+}
+
 export default async function injectSidekick(config, display, skDevMode) {
   if (typeof config !== 'object') {
     log.warn('sidekick.js: invalid config', config);
@@ -54,7 +73,7 @@ export default async function injectSidekick(config, display, skDevMode) {
     }
 
     // wait for sidekick to instrument
-    window.hlx.sidekickWait = window.setInterval(() => {
+    window.hlx.sidekickWait = window.setInterval(async () => {
       const sk = window.hlx.sidekick;
       if (sk) {
         window.clearInterval(window.hlx.sidekickWait);
@@ -64,11 +83,25 @@ export default async function injectSidekick(config, display, skDevMode) {
           setDisplay(false);
         });
         // show help content if not acknowledged yet
-        // fetch help.json
-        // check for ack(s) in chrome.storage and build help steps
+        const help = await getHelpContent();
+        console.log(help);
+        const topic = help.topics.find((t) => (!t.condition || sk[t.condition]())
+          && !getHelpAckStatus(t.id));
+        if (topic) {
+          // check for ack(s) in chrome.storage and build help steps
+          sk.addEventListener('statusfetched', () => {
+            sk.showHelp({
+              id: 'test',
+              steps: [{
+                message: 'Just a test',
+                selector: '.env',
+              }],
+            });
+          });
+        }
 
-        sk.addEventListener('helpacknowledged', () => {
-          console.log('help ACKed');
+        sk.addEventListener('helpacknowledged', ({ detail }) => {
+          console.log('help ACKed', detail);
           // save ack in chrome.storage
         });
       }
