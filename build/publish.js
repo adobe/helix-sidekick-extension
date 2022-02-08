@@ -37,7 +37,8 @@ async function publishExtension(browser) {
       ]),
     });
     if (!tokenResp.ok) {
-      throw new Error(`failed to retrieve access token: ${tokenResp.status} ${await tokenResp.text()}`);
+      const msg = await tokenResp.text();
+      throw new Error(`failed to retrieve access token: ${tokenResp.status} ${msg}`);
     }
     const { access_token: ACCESS_TOKEN } = await tokenResp.json();
 
