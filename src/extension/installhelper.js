@@ -36,8 +36,11 @@
       }
       log.debug('installhelper.js: run instrumentation', giturl);
 
-      // find bookmarklet container
+      // find containers
       const bookmarkletContainer = document.querySelector('#sidekick-generator-bookmarklet');
+      const addProjectContainer = document.querySelector('#sidekick-generator-extension-add-project');
+      const deleteProjectContainer = document.querySelector('#sidekick-generator-extension-delete-project');
+
       if (!bookmarkletContainer) {
         log.debug('installhelper.js: expected content not found, ignoring');
       }
@@ -46,29 +49,35 @@
       const configIndex = configs.findIndex((cfg) => cfg.owner === owner && cfg.repo === repo);
       if (configIndex < 0 && owner && repo) {
         log.info('installhelper.js: project not added yet');
-        const addProjectContainer = document.querySelector('#sidekick-generator-extension-add-project');
         if (addProjectContainer) {
           // instrument add project button
           const button = addProjectContainer.querySelector('a');
-          button.addEventListener('click', () => {
-            addConfig({ giturl, project }, () => window.location.reload());
-          });
-          // show add project container, hide bookmarklet container
-          addProjectContainer.parentElement.classList.remove('hidden');
-          bookmarkletContainer.parentElement.classList.add('hidden');
+          if (button.dataset.sidekickExtension !== giturl) {
+            button.onclick = () => {
+              addConfig({ giturl, project }, () => window.location.reload());
+            };
+            button.dataset.sidekickExtension = giturl;
+            // show add project container, hide others
+            bookmarkletContainer.parentElement.classList.add('hidden');
+            addProjectContainer.parentElement.classList.remove('hidden');
+            deleteProjectContainer.parentElement.classList.add('hidden');
+          }
         }
       } else {
         log.info('installhelper.js: project added');
-        const deleteProjectContainer = document.querySelector('#sidekick-generator-extension-delete-project');
         if (deleteProjectContainer) {
           // instrument delete project button
           const button = deleteProjectContainer.querySelector('a');
-          button.addEventListener('click', () => {
-            deleteConfig(configIndex, () => window.location.reload());
-          });
-          // show delete project container, hide bookmarklet container
-          deleteProjectContainer.parentElement.classList.remove('hidden');
-          bookmarkletContainer.parentElement.classList.add('hidden');
+          if (button.dataset.sidekickExtension !== giturl) {
+            button.onclick = () => {
+              deleteConfig(configIndex, () => window.location.reload());
+            };
+            button.dataset.sidekickExtension = giturl;
+            // show delete project container, hide bookmarklet container
+            bookmarkletContainer.parentElement.classList.add('hidden');
+            addProjectContainer.parentElement.classList.add('hidden');
+            deleteProjectContainer.parentElement.classList.remove('hidden');
+          }
         }
       }
     });
@@ -76,9 +85,10 @@
   if (!document.querySelector('#sidekick-generator-bookmarklet')) {
     // wait for sidekick generator ready event
     if (!window.sidekickGeneratorInstrumented) {
-      window.addEventListener('sidekickGeneratorReady', () => {
+      window.addEventListener('sidekickGeneratorReady', (evt) => {
+        evt.stopImmediatePropagation();
         run();
-      });
+      }, true);
       window.sidekickGeneratorInstrumented = true;
     }
   } else {
