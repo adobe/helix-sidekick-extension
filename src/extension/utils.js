@@ -112,9 +112,10 @@ export function getConfigMatches(configs, tabUrl, proxyUrl) {
       mountpoints,
     } = config;
     const match = (host && checkHost === host) // production host
-      || (checkHost.endsWith(`--${repo.toLowerCase()}--${owner.toLowerCase()}.hlx.live`) || checkHost === outerHost) // outer CDN
-      || checkHost.endsWith(`--${repo.toLowerCase()}--${owner.toLowerCase()}.hlx3.page`) // inner CDN with any ref
-      || checkHost.endsWith(`${repo.toLowerCase()}--${owner.toLowerCase()}.hlx.page`) // legacy inner CDN with any ref
+      || (checkHost.endsWith(`--${repo.toLowerCase()}--${owner.toLowerCase()}.hlx.live`)
+        || checkHost === outerHost) // outer
+      || checkHost.endsWith(`--${repo.toLowerCase()}--${owner.toLowerCase()}.hlx3.page`) // inner
+      || checkHost.endsWith(`${repo.toLowerCase()}--${owner.toLowerCase()}.hlx.page`) // hlx2 inner
       || mountpoints // editor
         .filter((mp) => !!mp)
         .map((mp) => {
