@@ -73,7 +73,7 @@
       }
     });
   };
-  if (!window.sidekickGeneratorReady) {
+  if (!document.querySelector('#sidekick-generator-bookmarklet')) {
     // wait for sidekick generator ready event
     if (!window.sidekickGeneratorInstrumented) {
       window.addEventListener('sidekickGeneratorReady', () => {
