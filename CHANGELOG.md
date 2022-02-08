@@ -1,3 +1,10 @@
+## [4.2.1](https://github.com/adobe/helix-sidekick-extension/compare/v4.2.0...v4.2.1) (2022-02-08)
+
+
+### Bug Fixes
+
+* share URL instrumentation not run ([c82725e](https://github.com/adobe/helix-sidekick-extension/commit/c82725ef02f10f82cb61bbde5b876015233de291))
+
 # [4.2.0](https://github.com/adobe/helix-sidekick-extension/compare/v4.1.1...v4.2.0) (2022-02-07)
 
 
