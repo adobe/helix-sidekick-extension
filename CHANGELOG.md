@@ -1,3 +1,10 @@
+## [4.2.2](https://github.com/adobe/helix-sidekick-extension/compare/v4.2.1...v4.2.2) (2022-02-08)
+
+
+### Bug Fixes
+
+* unstable share URL instrumentation ([11f1877](https://github.com/adobe/helix-sidekick-extension/commit/11f18774e2ba486525dc2e44d97f04da9dfbe900))
+
 ## [4.2.1](https://github.com/adobe/helix-sidekick-extension/compare/v4.2.0...v4.2.1) (2022-02-08)
 
 
