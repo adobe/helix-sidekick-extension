@@ -1,3 +1,10 @@
+## [4.2.3](https://github.com/adobe/helix-sidekick-extension/compare/v4.2.2...v4.2.3) (2022-02-08)
+
+
+### Bug Fixes
+
+* check for query param ([71fe059](https://github.com/adobe/helix-sidekick-extension/commit/71fe059510b76fa9dbe758febc18d7da6da98b30))
+
 ## [4.2.2](https://github.com/adobe/helix-sidekick-extension/compare/v4.2.1...v4.2.2) (2022-02-08)
 
 
