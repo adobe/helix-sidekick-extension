@@ -161,14 +161,16 @@ export function getShareSettings(shareurl) {
     try {
       const params = new URL(shareurl).searchParams;
       const giturl = params.get('giturl');
-      // check gh url
-      if (Object.keys(getGitHubSettings(giturl)).length !== 3) {
-        throw new Error();
+      if (giturl) {
+        // check gh url
+        if (Object.keys(getGitHubSettings(giturl)).length !== 3) {
+          throw new Error();
+        }
+        return {
+          giturl,
+          project: params.get('project'),
+        };
       }
-      return {
-        giturl,
-        project: params.get('project'),
-      };
     } catch (e) {
       log.error('error getting sidekick settings from share url', e);
     }
