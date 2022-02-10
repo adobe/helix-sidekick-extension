@@ -3,7 +3,7 @@
     "message": "Helix Sidekick (Beta)"
   },
   "description": {
-    "message": "Benutze den Helix Sidekick in mehreren Helix-Projekten und über mehrere Browserfenster hinweg."
+    "message": "Helix Sidekick bietet Autoren in Helix-Projekten eine Werkzeugleiste mit kontextuellen Funktionen wie Vorschau oder Publizieren."
   },
   "description_shortcut": {
     "message": "Helix Sidekick ein-/ausschalten"
@@ -162,7 +162,12 @@
     "message": "Hilfe"
   },
   "advanced": {
-    "message": "Fortgeschritten"
+    "message": "Fortgeschritten",
+    "description": "Advanced config mode"
+  },
+  "standard": {
+    "message": "Standard",
+    "description": "Standard config mode"
   },
   "config_development": {
     "message": "Entwicklung"
@@ -181,5 +186,22 @@
   },
   "admin_version_placeholder": {
     "message": "Admin-Version: x.y.z"
+  },
+  "config_help": {
+    "message": "Hilfe"
+  },
+  "help_user_status": {
+    "message": "Verfügbare Hilfethemen"
+  },
+  "help_user_status_check_all": {
+    "message": "Alle markieren",
+    "description": "Check all help topics"
+  },
+  "help_user_status_uncheck_all": {
+    "message": "Alle abwählen",
+    "description": "Uncheck all help topics"
+  },
+  "help_user_status_description": {
+    "message": "Markierte Themen werden nicht mehr angezeigt. Entferne das Häkchen neben einem Thema, welches du noch einmal sehen möchtest."
   }
 }

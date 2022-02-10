@@ -13,26 +13,13 @@
 
 'use strict';
 
-import { DEV_URL, log, setDisplay } from './utils.js';
-
-async function getHelpContent() {
-  window.hlx = window.hlx || {};
-  if (!window.hlx.sidekickHelp) {
-    const resp = await fetch('https://www.hlx.live/tools/sidekick/help.json');
-    if (resp.ok) {
-      const json = await resp.json();
-      window.hlx.sidekickHelp = {
-        topics: json['help-topics'].data,
-        steps: json['help-steps'].data,
-      };
-    }
-  }
-  return window.hlx.sidekickHelp;
-}
-
-async function getHelpAckStatus() {
-  return false;
-}
+import {
+  DEV_URL,
+  log,
+  getConfig,
+  setConfig,
+  setDisplay,
+} from './utils.js';
 
 export default async function injectSidekick(config, display, skDevMode) {
   if (typeof config !== 'object') {
@@ -82,27 +69,31 @@ export default async function injectSidekick(config, display, skDevMode) {
         sk.addEventListener('hidden', () => {
           setDisplay(false);
         });
-        // show help content if not acknowledged yet
-        const help = await getHelpContent();
-        console.log(help);
-        const topic = help.topics.find((t) => (!t.condition || sk[t.condition]())
-          && !getHelpAckStatus(t.id));
+
+        // find next unacknowledged help topic with matching condition
+        const helpContent = await getConfig('sync', 'hlxSidekickHelpContent') || [];
+        const topic = helpContent
+          .find((t) => (!t.condition || sk[t.condition]()) && t.userStatus !== 'acknowledged');
         if (topic) {
-          // check for ack(s) in chrome.storage and build help steps
+          log.info(`next help topic to show: ${topic.title}`);
           sk.addEventListener('statusfetched', () => {
-            sk.showHelp({
-              id: 'test',
-              steps: [{
-                message: 'Just a test',
-                selector: '.env',
-              }],
-            });
+            sk.showHelp(topic);
           });
         }
-
-        sk.addEventListener('helpacknowledged', ({ detail }) => {
-          console.log('help ACKed', detail);
-          // save ack in chrome.storage
+        sk.addEventListener('helpacknowledged', async ({ detail = {} }) => {
+          log.error('help topic acknowledged', detail);
+          const { data: id } = detail;
+          if (id) {
+            const hlxSidekickHelpContent = await getConfig('sync', 'hlxSidekickHelpContent') || [];
+            const ackTopic = hlxSidekickHelpContent.find((t) => t.id === id);
+            log.error('help topic acknowledged', hlxSidekickHelpContent, id, ackTopic);
+            if (ackTopic) {
+              ackTopic.userStatus = 'acknowledged';
+              setConfig('sync', {
+                hlxSidekickHelpContent,
+              });
+            }
+          }
         });
       }
     }, 200);

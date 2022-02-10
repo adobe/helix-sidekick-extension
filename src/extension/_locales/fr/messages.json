@@ -162,7 +162,12 @@
     "message": "Aide"
   },
   "advanced": {
-    "message": "Avancées"
+    "message": "Avancées",
+    "description": "Advanced config mode"
+  },
+  "standard": {
+    "message": "Standard",
+    "description": "Standard config mode"
   },
   "config_development": {
     "message": "Développement"
@@ -181,5 +186,22 @@
   },
   "admin_version_placeholder": {
     "message": "Version de l'Admin: x.y.z"
+  },
+  "config_help": {
+    "message": "Aide"
+  },
+  "help_user_status": {
+    "message": "Help topics"
+  },
+  "help_user_status_check_all": {
+    "message": "Check all",
+    "description": "Check all help topics"
+  },
+  "help_user_status_uncheck_all": {
+    "message": "Uncheck all",
+    "description": "Uncheck all help topics"
+  },
+  "help_user_status_description": {
+    "message": "Checked topics will not be shown anymore. If you wish to see a topic again, remove its checkmark."
   }
 }

@@ -76,7 +76,8 @@ export function getGitHubSettings(giturl) {
 }
 
 export async function getConfig(type, prop) {
-  return browser.storage[type].get(prop);
+  const cfg = await browser.storage[type].get(prop);
+  return cfg[prop];
 }
 
 export async function setConfig(type, obj, cb) {
@@ -90,17 +91,17 @@ export async function setConfig(type, obj, cb) {
 
 export async function getState(cb) {
   if (typeof cb === 'function') {
-    const { hlxSidekickDisplay = false } = await getConfig('local', 'hlxSidekickDisplay');
-    const { hlxSidekickDevMode = false } = await getConfig('local', 'hlxSidekickDevMode');
-    const { hlxSidekickAdminVersion = false } = await getConfig('local', 'hlxSidekickAdminVersion');
-    const { hlxSidekickProxyUrl } = await getConfig('local', 'hlxSidekickProxyUrl');
-    const { hlxSidekickConfigs = [] } = await getConfig('sync', 'hlxSidekickConfigs');
+    const display = await getConfig('local', 'hlxSidekickDisplay') || false;
+    const devMode = await getConfig('local', 'hlxSidekickDevMode') || false;
+    const adminVersion = await getConfig('local', 'hlxSidekickAdminVersion');
+    const proxyUrl = await getConfig('local', 'hlxSidekickProxyUrl');
+    const configs = await getConfig('sync', 'hlxSidekickConfigs') || [];
     cb({
-      display: hlxSidekickDisplay,
-      devMode: hlxSidekickDevMode,
-      adminVersion: hlxSidekickAdminVersion,
-      proxyUrl: hlxSidekickProxyUrl,
-      configs: hlxSidekickConfigs,
+      display,
+      devMode,
+      adminVersion,
+      proxyUrl,
+      configs,
     });
   }
 }
@@ -270,7 +271,7 @@ export async function deleteConfig(i, cb) {
   // eslint-disable-next-line no-alert
   if (window.confirm(i18n('config_delete_confirm'))) {
     getConfig('sync', 'hlxSidekickConfigs')
-      .then(({ hlxSidekickConfigs = [] }) => {
+      .then((hlxSidekickConfigs = []) => {
         hlxSidekickConfigs.splice(i, 1);
         return hlxSidekickConfigs;
       })
