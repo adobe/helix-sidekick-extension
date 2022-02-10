@@ -81,12 +81,11 @@ export default async function injectSidekick(config, display, skDevMode) {
           });
         }
         sk.addEventListener('helpacknowledged', async ({ detail = {} }) => {
-          log.error('help topic acknowledged', detail);
           const { data: id } = detail;
           if (id) {
             const hlxSidekickHelpContent = await getConfig('sync', 'hlxSidekickHelpContent') || [];
             const ackTopic = hlxSidekickHelpContent.find((t) => t.id === id);
-            log.error('help topic acknowledged', hlxSidekickHelpContent, id, ackTopic);
+            log.debug('help topic acknowledged', hlxSidekickHelpContent, id, ackTopic);
             if (ackTopic) {
               ackTopic.userStatus = 'acknowledged';
               setConfig('sync', {
