@@ -202,6 +202,6 @@
     "description": "Uncheck all help topics"
   },
   "help_user_status_description": {
-    "message": "Markierte Themen werden nicht mehr angezeigt. Entferne das Häkchen neben einem Thema, welches du noch einmal sehen möchtest."
+    "message": "Markierte Themen werden nicht mehr angezeigt. Entferne das Häkchen neben einem Thema, das du noch einmal sehen möchtest."
   }
 }
