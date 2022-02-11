@@ -1,3 +1,10 @@
+## [5.0.2](https://github.com/adobe/helix-sidekick-extension/compare/v5.0.1...v5.0.2) (2022-02-11)
+
+
+### Bug Fixes
+
+* **configpicker:** close button regression ([8a608c1](https://github.com/adobe/helix-sidekick-extension/commit/8a608c1c2818f6a38f244ca9a93c04d652f1ae03))
+
 ## [5.0.1](https://github.com/adobe/helix-sidekick-extension/compare/v5.0.0...v5.0.1) (2022-02-11)
 
 
