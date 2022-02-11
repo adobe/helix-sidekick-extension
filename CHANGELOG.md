@@ -1,3 +1,23 @@
+# [5.0.0](https://github.com/adobe/helix-sidekick-extension/compare/v4.2.3...v5.0.0) (2022-02-11)
+
+
+### chore
+
+* **ci:** force major release ([9c7113e](https://github.com/adobe/helix-sidekick-extension/commit/9c7113e0e74d35f19b2aec281c2f0eb297716d5d))
+
+
+### Features
+
+* filter help topics by target version ([00117f1](https://github.com/adobe/helix-sidekick-extension/commit/00117f13f2cd292ccc7d47faa0041d39e6489198))
+* show help (wip) ([26a9664](https://github.com/adobe/helix-sidekick-extension/commit/26a9664888fe0bcc37bd64dfa7751c574282524a))
+* show help (wip) ([9d376d9](https://github.com/adobe/helix-sidekick-extension/commit/9d376d9e8d87170a16ea6b9e9cf179fbab06ec5e))
+* show help content ([aa2fb82](https://github.com/adobe/helix-sidekick-extension/commit/aa2fb820f8dff09bfe70f7e28892641ecd585cee))
+
+
+### BREAKING CHANGES
+
+* **ci:** major UX changes
+
 ## [4.2.3](https://github.com/adobe/helix-sidekick-extension/compare/v4.2.2...v4.2.3) (2022-02-08)
 
 
