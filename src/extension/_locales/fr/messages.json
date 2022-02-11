@@ -187,21 +187,21 @@
   "admin_version_placeholder": {
     "message": "Version de l'Admin: x.y.z"
   },
-  "config_help": {
-    "message": "Aide"
+  "config_ux": {
+    "message": "Expérience utilisateur"
   },
   "help_user_status": {
-    "message": "Help topics"
+    "message": "Sujets d'aide disponibles"
   },
   "help_user_status_check_all": {
-    "message": "Check all",
+    "message": "Sélectionner tous",
     "description": "Check all help topics"
   },
   "help_user_status_uncheck_all": {
-    "message": "Uncheck all",
+    "message": "Annuler tous",
     "description": "Uncheck all help topics"
   },
   "help_user_status_description": {
-    "message": "Checked topics will not be shown anymore. If you wish to see a topic again, remove its checkmark."
+    "message": "Les sujets sélectionnés ne seront plus affichés. Décochez la case à côté d'un sujet que vous souhaitez revoir."
   }
 }

@@ -187,8 +187,8 @@
   "admin_version_placeholder": {
     "message": "Admin-Version: x.y.z"
   },
-  "config_help": {
-    "message": "Hilfe"
+  "config_ux": {
+    "message": "Benutzererlebnis"
   },
   "help_user_status": {
     "message": "Verfügbare Hilfethemen"
