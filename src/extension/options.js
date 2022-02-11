@@ -355,7 +355,7 @@ window.addEventListener('DOMContentLoaded', () => {
       const topicContainer = list.appendChild(document.createElement('li'));
       const { id, title, userStatus } = topic;
       const checkbox = topicContainer.appendChild(document.createElement('input'));
-      checkbox.id = id;
+      checkbox.id = `help-topic-${id}`;
       checkbox.type = 'checkbox';
       checkbox.checked = userStatus === 'acknowledged';
       checkbox.addEventListener('click', () => {
@@ -363,10 +363,10 @@ window.addEventListener('DOMContentLoaded', () => {
         updateHelpTopic(helpContent, id, newUserStatus);
       });
       const label = topicContainer.appendChild(document.createElement('label'));
-      label.setAttribute('for', id);
+      label.setAttribute('for', checkbox.id);
       label.textContent = title;
     });
-    if (helpContent.length > 0) {
+    if (helpContent.length > 1) {
       // enable check-all/uncheck-all buttons
       const checkAllButton = document.getElementById('helpTopicsCheckAll');
       checkAllButton.removeAttribute('disabled');
