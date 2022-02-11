@@ -44,16 +44,20 @@ class ConfigPicker extends HTMLElement {
     label.textContent = i18n('config_project_pick');
     root.append(label);
 
+    const configContainer = root.appendChild(document.createElement('div'));
+    configContainer.className = 'plugin-container';
+
     this.configs.forEach(({ id, project }, i) => {
       const btn = document.createElement('button');
       btn.id = `${id}`;
       btn.innerHTML = `${project || id} <sup style="font-size:0.5rem">${i + 1}</sup>`;
       btn.title = i18n('config_picker_button_title', [i + 1, project || id]);
       btn.addEventListener('click', (evt) => this.pickByClick(evt.target));
-      root.append(btn);
+      configContainer.append(btn);
     });
-    const closeBtn = root.appendChild(document.createElement('button'));
-    closeBtn.textContent = '✕';
+    const featureContainer = root.appendChild(document.createElement('div'));
+    featureContainer.className = 'feature-container';
+    const closeBtn = featureContainer.appendChild(document.createElement('button'));
     closeBtn.className = 'close';
     closeBtn.title = i18n('cancel');
     closeBtn.addEventListener('click', () => {
