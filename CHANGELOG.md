@@ -1,3 +1,10 @@
+## [5.0.1](https://github.com/adobe/helix-sidekick-extension/compare/v5.0.0...v5.0.1) (2022-02-11)
+
+
+### Bug Fixes
+
+* i18n description limit ([11f2388](https://github.com/adobe/helix-sidekick-extension/commit/11f238832bf8ee798efd1f9f32ccc9a8e49b6c09))
+
 # [5.0.0](https://github.com/adobe/helix-sidekick-extension/compare/v4.2.3...v5.0.0) (2022-02-11)
 
 
