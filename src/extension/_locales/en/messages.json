@@ -3,7 +3,7 @@
     "message": "Helix Sidekick (Beta)"
   },
   "description": {
-    "message": "Helix Sidekick provides authors in Helix projects with an extensible toolbar containing context-aware actions like Preview or Publish."
+    "message": "Helix Sidekick provides authors in Helix projects with an extensible toolbar containing actions like Preview or Publish."
   },
   "description_shortcut": {
     "message": "Toggle Helix Sidekick"
