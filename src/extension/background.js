@@ -150,20 +150,35 @@ async function updateHelpContent() {
   const resp = await fetch(`https://www.hlx.live${lang}/tools/sidekick/help.json`);
   if (resp.ok) {
     try {
+      const [major, minor, patch] = browser.runtime.getManifest().version.split('.');
       const json = await resp.json();
       const incomingTopics = (json['help-topics'] && json['help-topics'].data) || [];
       const incomingSteps = (json['help-steps'] && json['help-steps'].data) || [];
-      const updatedHelpContent = incomingTopics.map((incoming) => {
-        const index = hlxSidekickHelpContent.findIndex((existing) => existing.id === incoming.id);
-        return {
-          ...(index >= 0 ? hlxSidekickHelpContent[index] : {}),
-          ...incoming,
-          steps: incoming.steps
-            .split(',')
-            .map((id) => id.trim())
-            .map((id) => incomingSteps.find((step) => step.id === id)),
-        };
-      });
+      const updatedHelpContent = incomingTopics
+        .filter((incoming) => {
+          // filter topics by target version
+          const { targetVersion } = incoming;
+          if (targetVersion) {
+            const [targetMajor, targetMinor, targetPatch] = targetVersion.split('.');
+            if ((targetMajor && +major < +targetMajor)
+              || (targetMinor && +minor < +targetMinor)
+              || (targetPatch && +patch < +targetPatch)) {
+              return false;
+            }
+          }
+          return true;
+        })
+        .map((incoming) => {
+          const index = hlxSidekickHelpContent.findIndex((existing) => existing.id === incoming.id);
+          return {
+            ...(index >= 0 ? hlxSidekickHelpContent[index] : {}),
+            ...incoming,
+            steps: incoming.steps
+              .split(',')
+              .map((id) => id.trim())
+              .map((id) => incomingSteps.find((step) => step.id === id)),
+          };
+        });
       log.info('updated help content', updatedHelpContent);
       await setConfig('sync', {
         hlxSidekickHelpContent: updatedHelpContent,
