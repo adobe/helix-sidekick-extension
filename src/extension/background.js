@@ -25,6 +25,8 @@ import {
   getShareSettings,
   getGitHubSettings,
   setProxyUrl,
+  setConfig,
+  getConfig,
 } from './utils.js';
 
 /**
@@ -138,9 +140,64 @@ function toggle(id) {
 }
 
 /**
+ * Updates the help content according to the browser language
+ * while respecting previous user acknowledgements.
+ */
+async function updateHelpContent() {
+  const hlxSidekickHelpContent = await getConfig('sync', 'hlxSidekickHelpContent') || [];
+  log.debug('existing help content', hlxSidekickHelpContent);
+  const lang = navigator.language.startsWith('en') ? '' : `/${navigator.language.split('-')[0]}`;
+  const resp = await fetch(`https://www.hlx.live${lang}/tools/sidekick/help.json`);
+  if (resp.ok) {
+    try {
+      const [major, minor, patch] = browser.runtime.getManifest().version.split('.');
+      const json = await resp.json();
+      const incomingTopics = (json['help-topics'] && json['help-topics'].data) || [];
+      const incomingSteps = (json['help-steps'] && json['help-steps'].data) || [];
+      const updatedHelpContent = incomingTopics
+        .filter((incoming) => {
+          // filter topics by target version
+          const { targetVersion } = incoming;
+          if (targetVersion) {
+            const [targetMajor, targetMinor, targetPatch] = targetVersion.split('.');
+            if ((targetMajor && +major < +targetMajor)
+              || (targetMinor && +minor < +targetMinor)
+              || (targetPatch && +patch < +targetPatch)) {
+              return false;
+            }
+          }
+          return true;
+        })
+        .map((incoming) => {
+          const index = hlxSidekickHelpContent.findIndex((existing) => existing.id === incoming.id);
+          return {
+            ...(index >= 0 ? hlxSidekickHelpContent[index] : {}),
+            ...incoming,
+            steps: incoming.steps
+              .split(',')
+              .map((id) => id.trim())
+              .map((id) => incomingSteps.find((step) => step.id === id)),
+          };
+        });
+      log.info('updated help content', updatedHelpContent);
+      await setConfig('sync', {
+        hlxSidekickHelpContent: updatedHelpContent,
+      });
+    } catch (e) {
+      log.error('failed to update help content', e);
+    }
+  }
+}
+
+/**
  * Adds the listeners for the extension.
  */
 (() => {
+  browser.runtime.onInstalled.addListener(async () => {
+    log.info('sidekick extension installed');
+    await updateHelpContent();
+  });
+
   // actions for context menu items
   const contextMenuActions = {
     addProject: async (tabUrl) => {

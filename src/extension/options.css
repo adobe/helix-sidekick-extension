@@ -81,6 +81,15 @@ p {
 	margin: 0.65em 0;
 }
 
+ul.quiet {
+  list-style: none;
+  padding-left: 0;
+}
+
+li {
+  padding: 5px 0;
+}
+
 nav {
 	position: fixed;
 	width: calc((100vw - 598px) / 2);

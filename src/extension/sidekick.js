@@ -13,7 +13,13 @@
 
 'use strict';
 
-import { DEV_URL, log, setDisplay } from './utils.js';
+import {
+  DEV_URL,
+  log,
+  getConfig,
+  setConfig,
+  setDisplay,
+} from './utils.js';
 
 export default async function injectSidekick(config, display, skDevMode) {
   if (typeof config !== 'object') {
@@ -54,16 +60,40 @@ export default async function injectSidekick(config, display, skDevMode) {
     }
 
     // wait for sidekick to instrument
-    window.hlx.sidekickWait = window.setInterval(() => {
-      if (window.hlx.sidekick) {
+    window.hlx.sidekickWait = window.setInterval(async () => {
+      const sk = window.hlx.sidekick;
+      if (sk) {
         window.clearInterval(window.hlx.sidekickWait);
         delete window.hlx.sidekickWait;
         // set display to false if user clicks close button
-        window.hlx.sidekick.shadowRoot
-          .querySelector('.hlx-sk > button.close')
-          .addEventListener('click', () => {
-            setDisplay(false);
+        sk.addEventListener('hidden', () => {
+          setDisplay(false);
+        });
+
+        // find next unacknowledged help topic with matching condition
+        const helpContent = await getConfig('sync', 'hlxSidekickHelpContent') || [];
+        const topic = helpContent
+          .find((t) => (!t.condition || sk[t.condition]()) && t.userStatus !== 'acknowledged');
+        if (topic) {
+          log.info(`next help topic to show: ${topic.title}`);
+          sk.addEventListener('statusfetched', () => {
+            sk.showHelp(topic);
           });
+        }
+        sk.addEventListener('helpacknowledged', async ({ detail = {} }) => {
+          const { data: id } = detail;
+          if (id) {
+            const hlxSidekickHelpContent = await getConfig('sync', 'hlxSidekickHelpContent') || [];
+            const ackTopic = hlxSidekickHelpContent.find((t) => t.id === id);
+            log.debug('help topic acknowledged', hlxSidekickHelpContent, id, ackTopic);
+            if (ackTopic) {
+              ackTopic.userStatus = 'acknowledged';
+              setConfig('sync', {
+                hlxSidekickHelpContent,
+              });
+            }
+          }
+        });
       }
     }, 200);
   }

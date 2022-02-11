@@ -3,7 +3,7 @@
     "message": "Helix Sidekick (Beta)"
   },
   "description": {
-    "message": "Use Helix Sidekick on multiple projects and across multiple tabs and windows."
+    "message": "Helix Sidekick provides authors in Helix projects with an extensible toolbar containing context-aware actions like Preview or Publish."
   },
   "description_shortcut": {
     "message": "Toggle Helix Sidekick"
@@ -162,7 +162,12 @@
     "message": "Help"
   },
   "advanced": {
-    "message": "Advanced"
+    "message": "Advanced",
+    "description": "Advanced config mode"
+  },
+  "standard": {
+    "message": "Standard",
+    "description": "Standard config mode"
   },
   "config_development": {
     "message": "Development"
@@ -181,5 +186,22 @@
   },
   "admin_version_placeholder": {
     "message": "Admin Version: x.y.z"
+  },
+  "config_ux": {
+    "message": "User experience"
+  },
+  "help_user_status": {
+    "message": "Available help topics"
+  },
+  "help_user_status_check_all": {
+    "message": "Check all",
+    "description": "Check all help topics"
+  },
+  "help_user_status_uncheck_all": {
+    "message": "Uncheck all",
+    "description": "Uncheck all help topics"
+  },
+  "help_user_status_description": {
+    "message": "Checked topics will not be shown anymore. Remove the checkmark next to a topic you wish to see again."
   }
 }

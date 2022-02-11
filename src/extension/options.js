@@ -23,6 +23,8 @@ import {
   addConfig,
   deleteConfig,
   assembleConfig,
+  setConfig,
+  getConfig,
 } from './utils.js';
 
 function getInnerHost(owner, repo, ref, hlx3) {
@@ -205,13 +207,20 @@ function clearForms() {
   });
 }
 
-function setConfigObject(obj, cb) {
-  browser.storage.local
-    .set(obj)
-    .then(() => {
-      if (typeof cb === 'function') cb(obj);
-    })
-    .catch((e) => log.error('error setting display', e));
+async function updateHelpTopic(helpContent, topicId, userStatus) {
+  let updated = false;
+  const newHelpContent = helpContent.map((topic) => {
+    if (topic.id === topicId) {
+      topic.userStatus = userStatus;
+      updated = true;
+    }
+    return topic;
+  });
+  if (updated) {
+    await setConfig('sync', {
+      hlxSidekickHelpContent: newHelpContent,
+    });
+  }
 }
 
 window.addEventListener('DOMContentLoaded', () => {
@@ -336,11 +345,63 @@ window.addEventListener('DOMContentLoaded', () => {
     });
   });
 
+  // list help topics and user status
+  (async () => {
+    const helpContainer = document.getElementById('helpTopics');
+    const helpContent = await getConfig('sync', 'hlxSidekickHelpContent') || [];
+    const list = helpContainer.appendChild(document.createElement('ul'));
+    list.className = 'quiet';
+    helpContent.forEach((topic) => {
+      const topicContainer = list.appendChild(document.createElement('li'));
+      const { id, title, userStatus } = topic;
+      const checkbox = topicContainer.appendChild(document.createElement('input'));
+      checkbox.id = `help-topic-${id}`;
+      checkbox.type = 'checkbox';
+      checkbox.checked = userStatus === 'acknowledged';
+      checkbox.addEventListener('click', () => {
+        const newUserStatus = checkbox.checked ? 'acknowledged' : '';
+        updateHelpTopic(helpContent, id, newUserStatus);
+      });
+      const label = topicContainer.appendChild(document.createElement('label'));
+      label.setAttribute('for', checkbox.id);
+      label.textContent = title;
+    });
+    if (helpContent.length > 1) {
+      // enable check-all/uncheck-all buttons
+      const checkAllButton = document.getElementById('helpTopicsCheckAll');
+      checkAllButton.removeAttribute('disabled');
+      checkAllButton.addEventListener(
+        'click',
+        () => {
+          helpContent.forEach(async (topic) => {
+            updateHelpTopic(helpContent, topic.id, 'acknowledged');
+          });
+          helpContainer.querySelectorAll(':scope input[type="checkbox"]').forEach((cb) => {
+            cb.checked = true;
+          });
+        },
+      );
+      const uncheckAllButton = document.getElementById('helpTopicsUncheckAll');
+      uncheckAllButton.removeAttribute('disabled');
+      uncheckAllButton.addEventListener(
+        'click',
+        () => {
+          helpContent.forEach(async (topic) => {
+            updateHelpTopic(helpContent, topic.id, '');
+          });
+          helpContainer.querySelectorAll(':scope input[type="checkbox"]').forEach((cb) => {
+            cb.checked = false;
+          });
+        },
+      );
+    }
+  })();
+
   // add devMode link to nav
   const isDevMode = window.location.search === '?devMode';
   const devModeLink = document.createElement('a');
-  devModeLink.textContent = i18n('advanced');
-  devModeLink.title = i18n('advanced');
+  devModeLink.textContent = i18n(isDevMode ? 'standard' : 'advanced');
+  devModeLink.title = i18n(isDevMode ? 'standard' : 'advanced');
   devModeLink.setAttribute('aria-role', 'link');
   devModeLink.setAttribute('tabindex', 0);
   devModeLink.addEventListener('click', ({ target }) => {
@@ -368,7 +429,7 @@ window.addEventListener('DOMContentLoaded', () => {
       document.body.classList.add('advanced');
       const input = document.getElementById('devModeSwitch');
       input.checked = devMode;
-      input.addEventListener('click', () => setConfigObject({
+      input.addEventListener('click', () => setConfig('local', {
         hlxSidekickDevMode: input.checked,
       }));
 
@@ -376,12 +437,12 @@ window.addEventListener('DOMContentLoaded', () => {
       const adminVersionSave = document.getElementById('adminVersionSave');
       const adminVersionReset = document.getElementById('adminVersionReset');
       adminVersionField.value = adminVersion || '';
-      adminVersionSave.addEventListener('click', () => setConfigObject({
+      adminVersionSave.addEventListener('click', () => setConfig('local', {
         hlxSidekickAdminVersion: adminVersionField.value,
       }));
       adminVersionReset.addEventListener('click', () => {
         adminVersionField.value = '';
-        setConfigObject({
+        setConfig('local', {
           hlxSidekickAdminVersion: null,
         });
       });
