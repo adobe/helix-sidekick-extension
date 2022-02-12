@@ -30,5 +30,6 @@ try {
   }
   console.log(`manifest version updated from ${oldVersion} to ${version}`);
 } catch (e) {
-  throw new Error(`failed to update manifest version: ${e.message}`);
+  console.error(`failed to update manifest version: ${e.message}`);
+  process.exit(1);
 }

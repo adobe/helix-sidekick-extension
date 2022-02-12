@@ -97,7 +97,7 @@ function zipExtension(browser) {
 const browser = process.argv[2];
 if (!browser) {
   console.log(`specify one of the following browers: ${supportedBrowsers.join(', ')}`);
-  process.exit(0);
+  process.exit(1);
 }
 if (!supportedBrowsers.includes(browser)) {
   console.error(`unsupported browser ${browser}`);
@@ -113,4 +113,8 @@ copyResources(browser)
       zipExtension(browser);
     }
     console.log('done.');
+  })
+  .catch((e) => {
+    console.error(e);
+    process.exit(1);
   });

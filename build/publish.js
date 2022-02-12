@@ -94,4 +94,8 @@ if (!supportedBrowsers.includes(browser)) {
 console.log(`publishing chrome extension ${GOOGLE_APP_ID}...`);
 
 publishExtension(browser)
-  .then(() => console.log('done.'));
+  .then(() => console.log('done.'))
+  .catch((e) => {
+    console.error(e);
+    process.exit(1);
+  });
