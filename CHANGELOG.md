@@ -1,3 +1,10 @@
+## [5.0.3](https://github.com/adobe/helix-sidekick-extension/compare/v5.0.2...v5.0.3) (2022-02-12)
+
+
+### Bug Fixes
+
+* force patch release for [#34](https://github.com/adobe/helix-sidekick-extension/issues/34) ([56c8ceb](https://github.com/adobe/helix-sidekick-extension/commit/56c8cebf4f12d21df42927f2e51c2119306581fd))
+
 ## [5.0.2](https://github.com/adobe/helix-sidekick-extension/compare/v5.0.1...v5.0.2) (2022-02-11)
 
 
