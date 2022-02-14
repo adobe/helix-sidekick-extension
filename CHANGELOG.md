@@ -1,3 +1,10 @@
+# [5.1.0](https://github.com/adobe/helix-sidekick-extension/compare/v5.0.3...v5.1.0) (2022-02-14)
+
+
+### Features
+
+* option to push down content ([c6e1f4a](https://github.com/adobe/helix-sidekick-extension/commit/c6e1f4aad996afc200b015b230decdefb433e548))
+
 ## [5.0.3](https://github.com/adobe/helix-sidekick-extension/compare/v5.0.2...v5.0.3) (2022-02-12)
 
 
