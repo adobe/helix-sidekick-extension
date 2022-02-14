@@ -24,7 +24,7 @@
 
   const inject = (selectedConfig = window.hlx.selectedSidekickConfig) => {
     getState(({
-      configs, display, devMode, proxyUrl, adminVersion,
+      configs, display, devMode, proxyUrl, adminVersion, pushDown,
     }) => {
       let matches = [];
       let matchingConfig;
@@ -49,6 +49,9 @@
         const config = selectedConfig || matchingConfig;
         if (adminVersion) {
           config.adminVersion = adminVersion;
+        }
+        if (pushDown) {
+          config.pushDown = true;
         }
         import('./sidekick.js')
           .then((mod) => mod.default(config, display, devMode))

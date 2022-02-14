@@ -34,7 +34,7 @@ export default async function injectSidekick(config, display, skDevMode) {
     log.debug('sidekick.js: no sidekick yet, create it');
     // reduce config to only include properties relevant for sidekick
     window.hlx.sidekickConfig = Object.fromEntries(Object.entries(config)
-      .filter(([k]) => ['owner', 'repo', 'ref', 'hlx3', 'devMode', 'adminVersion'].includes(k)));
+      .filter(([k]) => ['owner', 'repo', 'ref', 'hlx3', 'devMode', 'pushDown', 'adminVersion'].includes(k)));
     log.debug('sidekick.js: curated config', JSON.stringify(window.hlx.sidekickConfig));
     // inject sidekick
     const moduleContainer = skDevMode

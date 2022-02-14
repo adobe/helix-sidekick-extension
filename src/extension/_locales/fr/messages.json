@@ -190,6 +190,12 @@
   "config_ux": {
     "message": "Expérience utilisateur"
   },
+  "push_down_content": {
+    "message": "Push down content instead of overlaying"
+  },
+  "push_down_content_description": {
+    "message": "Note: Depending on the site's structure, this may require custom project configuration to work as expected."
+  },
   "help_user_status": {
     "message": "Sujets d'aide disponibles"
   },

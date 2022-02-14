@@ -345,6 +345,15 @@ window.addEventListener('DOMContentLoaded', () => {
     });
   });
 
+  // push down toggle
+  (async () => {
+    const input = document.getElementById('pushDownSwitch');
+    input.checked = await getConfig('sync', 'hlxSidekickPushDown');
+    input.addEventListener('click', () => setConfig('sync', {
+      hlxSidekickPushDown: input.checked,
+    }));
+  })();
+
   // list help topics and user status
   (async () => {
     const helpContainer = document.getElementById('helpTopics');
