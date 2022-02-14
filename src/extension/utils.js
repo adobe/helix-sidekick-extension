@@ -95,12 +95,16 @@ export async function getState(cb) {
     const devMode = await getConfig('local', 'hlxSidekickDevMode') || false;
     const adminVersion = await getConfig('local', 'hlxSidekickAdminVersion');
     const proxyUrl = await getConfig('local', 'hlxSidekickProxyUrl');
+
+    const pushDown = await getConfig('sync', 'hlxSidekickPushDown') || false;
     const configs = await getConfig('sync', 'hlxSidekickConfigs') || [];
+
     cb({
       display,
       devMode,
       adminVersion,
       proxyUrl,
+      pushDown,
       configs,
     });
   }

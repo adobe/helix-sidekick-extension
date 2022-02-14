@@ -190,6 +190,12 @@
   "config_ux": {
     "message": "Benutzererlebnis"
   },
+  "push_down_content": {
+    "message": "Inhalte runterdrücken statt überlappen"
+  },
+  "push_down_content_description": {
+    "message": "Beachte: Abhängig von der Struktur der Site kann für eine erwartungsgemässe Funktionsweise projektspezifische Konfiguration nötig sein."
+  },
   "help_user_status": {
     "message": "Verfügbare Hilfethemen"
   },
