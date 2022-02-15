@@ -27,8 +27,8 @@ import {
   getConfig,
 } from './utils.js';
 
-function getInnerHost(owner, repo, ref, hlx3) {
-  return `${ref}--${repo}--${owner}.hlx${hlx3 ? '3' : ''}.page`;
+function getInnerHost(owner, repo, ref, legacy) {
+  return `${ref}--${repo}--${owner}.hlx${!legacy ? '3' : ''}.page`;
 }
 
 function isValidGitHubURL(giturl) {
@@ -53,8 +53,8 @@ function drawConfigs() {
     configs.forEach(({
       owner, repo, ref, mountpoints, project, host, hlx3,
     }, i) => {
-      const legacy = hlx3 !== undefined && hlx3 === false;
-      const innerHost = getInnerHost(owner, repo, ref, hlx3);
+      const legacy = hlx3 === false;
+      const innerHost = getInnerHost(owner, repo, ref, legacy);
       const section = document.createElement('section');
       section.id = `config-${i}`;
       section.className = `config${legacy ? ' unsupported' : ''} `;
