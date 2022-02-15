@@ -1,3 +1,11 @@
+## [5.1.1](https://github.com/adobe/helix-sidekick-extension/compare/v5.1.0...v5.1.1) (2022-02-15)
+
+
+### Bug Fixes
+
+* options page shows hlx.page preview urls ([7d65f2b](https://github.com/adobe/helix-sidekick-extension/commit/7d65f2b5b6681bf45cba1edb2bbb01cc0a059dee))
+* support mountpoints in personal sharepoint ([42c38f2](https://github.com/adobe/helix-sidekick-extension/commit/42c38f2e10a209e8f138a64bc2c924b65d2b1893))
+
 # [5.1.0](https://github.com/adobe/helix-sidekick-extension/compare/v5.0.3...v5.1.0) (2022-02-14)
 
 
