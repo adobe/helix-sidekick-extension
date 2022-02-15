@@ -23,10 +23,10 @@ export const DEV_URL = 'http://localhost:3000';
 export const log = {
   LEVEL: 2,
   /* eslint-disable no-console */
-  debug: (...args) => log.LEVEL > 3 && console.log('DEBUG', ...args),
-  info: (...args) => log.LEVEL > 2 && console.log('INFO', ...args),
-  warn: (...args) => log.LEVEL > 1 && console.log('WARN', ...args),
-  error: (...args) => log.LEVEL > 0 && console.log('ERROR', ...args),
+  debug: (...args) => (window.LOG_LEVEL || log.LEVEL) > 3 && console.log('DEBUG', ...args),
+  info: (...args) => (window.LOG_LEVEL || log.LEVEL) > 2 && console.log('INFO', ...args),
+  warn: (...args) => (window.LOG_LEVEL || log.LEVEL) > 1 && console.log('WARN', ...args),
+  error: (...args) => (window.LOG_LEVEL || log.LEVEL) > 0 && console.log('ERROR', ...args),
   /* eslint-enable no-console */
 };
 
@@ -110,6 +110,19 @@ export async function getState(cb) {
   }
 }
 
+function sameSharePointSite(mountpoint, pathname) {
+  const match = [
+    '/sites/',
+    '/personal/',
+    '/:f:/p/',
+  ].find((prefix) => mountpoint.includes(prefix));
+  if (match) {
+    const site = mountpoint.split(match)[1].split('/').shift();
+    return pathname.includes(`/${site}`);
+  }
+  return false;
+}
+
 export function getConfigMatches(configs, tabUrl, proxyUrl) {
   if (tabUrl.startsWith(DEV_URL) && proxyUrl) {
     log.info('matching against proxy url', proxyUrl);
@@ -152,11 +165,7 @@ export function getConfigMatches(configs, tabUrl, proxyUrl) {
                 return false;
               }
               // editor url, check for site name in path
-              if (!mpPath.includes('/sites/')) {
-                return false;
-              }
-              const site = mpPath.split('/sites/')[1].split('/').shift();
-              return pathname.includes(`/sites/${site}/`);
+              return sameSharePointSite(mpPath, pathname);
             } else if (checkHost === 'drive.google.com') {
               // gdrive browser
               return false;
