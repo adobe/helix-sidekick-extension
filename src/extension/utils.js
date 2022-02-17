@@ -40,6 +40,14 @@ export function url(path) {
   return chrome.runtime.getURL(path);
 }
 
+export function checkLastError() {
+  if (chrome.runtime.lastError) {
+    log.debug('chrome.runtime.lastError', chrome.runtime.lastError.message);
+    return chrome.runtime.lastError;
+  }
+  return null;
+}
+
 export async function getMountpoints(owner, repo, ref) {
   const fstab = `https://raw.githubusercontent.com/${owner}/${repo}/${ref}/fstab.yaml`;
   const res = await fetch(fstab);

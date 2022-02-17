@@ -16,8 +16,10 @@ import {
   GH_URL,
   SHARE_PREFIX,
   DEV_URL,
+  MANIFEST,
   log,
   i18n,
+  checkLastError,
   getState,
   getConfigMatches,
   toggleDisplay,
@@ -27,7 +29,6 @@ import {
   setProxyUrl,
   setConfig,
   getConfig,
-  MANIFEST,
 } from './utils.js';
 
 /**
@@ -84,9 +85,7 @@ async function checkContextMenu(tabUrl, configs) {
 function checkTab(id) {
   getState(({ configs, proxyUrl }) => {
     chrome.tabs.get(id, async (tab = {}) => {
-      if (chrome.runtime.lastError) {
-        log.debug('chrome.runtime.lastError', chrome.runtime.lastError.message);
-      }
+      checkLastError();
       if (!tab.url) return;
       checkContextMenu(tab.url, configs);
       if (new URL(tab.url).pathname === SHARE_PREFIX) {
@@ -246,6 +245,7 @@ async function updateHelpContent() {
       chrome.tabs.query({
         currentWindow: true,
       }, (tabs) => {
+        checkLastError();
         tabs.forEach(({ id, _, active = false }) => {
           if (!active) {
             // skip current tab
@@ -264,6 +264,7 @@ async function updateHelpContent() {
           currentWindow: true,
           active: true,
         }, async (tabs) => {
+          checkLastError();
           if (Array.isArray(tabs) && tabs.length > 0) {
             const rUrl = new URL(details.url);
             const tabUrl = new URL(tabs[0].url);
