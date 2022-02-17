@@ -20,6 +20,7 @@ async function copyResources(browser) {
   const sourceDir = './src/extension';
   const targetDir = `./dist/${browser}`;
   try {
+    await fs.remove(targetDir);
     await fs.ensureDir(targetDir);
     await fs.copy(sourceDir, targetDir, {
       overwrite: true,
