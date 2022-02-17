@@ -268,7 +268,7 @@ export async function addConfig(input, cb) {
         .then(() => log.info('added config', config))
         .catch((e) => log.error('error adding config', e));
       if (!mountpoints[0]) {
-        alert(i18n('config_add_no_mountpoint'));
+        window.alert(i18n('config_add_no_mountpoint'));
       } else {
         window.alert(i18n('config_add_success'));
       }

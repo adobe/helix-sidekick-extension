@@ -193,17 +193,19 @@ async function updateHelpContent() {
  * Adds the listeners for the extension.
  */
 (() => {
-  browser.runtime.onInstalled.addListener(async () => {
-    log.info('sidekick extension installed');
+  browser.runtime.onInstalled.addListener(async ({ reason }) => {
+    log.info(`sidekick extension installed (${reason})`);
     await updateHelpContent();
   });
 
   // actions for context menu items
   const contextMenuActions = {
-    addProject: async (tabUrl) => {
-      const cfg = getConfigFromTabUrl(tabUrl);
+    addProject: async ({ id, url }) => {
+      const cfg = getConfigFromTabUrl(url);
       if (cfg.giturl) {
-        await addConfig(cfg);
+        await addConfig(cfg, () => {
+          browser.tabs.reload(id, { bypassCache: true });
+        });
       }
     },
   };
@@ -212,7 +214,7 @@ async function updateHelpContent() {
     // add listener for clicks on context menu item
     browser.contextMenus.onClicked.addListener(async ({ menuItemId }, tab) => {
       if (!tab.url) return;
-      contextMenuActions[menuItemId](tab.url);
+      contextMenuActions[menuItemId](tab);
     });
   }
 
