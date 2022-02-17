@@ -1,3 +1,10 @@
+## [5.1.3](https://github.com/adobe/helix-sidekick-extension/compare/v5.1.2...v5.1.3) (2022-02-17)
+
+
+### Bug Fixes
+
+* reload page after adding project via context menu ([129cd59](https://github.com/adobe/helix-sidekick-extension/commit/129cd590df3a60a971b9e776d16ba2591757e8e2))
+
 ## [5.1.2](https://github.com/adobe/helix-sidekick-extension/compare/v5.1.1...v5.1.2) (2022-02-17)
 
 
