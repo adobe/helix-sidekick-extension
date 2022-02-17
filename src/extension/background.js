@@ -84,6 +84,9 @@ async function checkContextMenu(tabUrl, configs) {
 function checkTab(id) {
   getState(({ configs, proxyUrl }) => {
     chrome.tabs.get(id, async (tab = {}) => {
+      if (chrome.runtime.lastError) {
+        log.debug('chrome.runtime.lastError', chrome.runtime.lastError.message);
+      }
       if (!tab.url) return;
       checkContextMenu(tab.url, configs);
       if (new URL(tab.url).pathname === SHARE_PREFIX) {
