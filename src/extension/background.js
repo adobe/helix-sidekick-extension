@@ -16,8 +16,10 @@ import {
   GH_URL,
   SHARE_PREFIX,
   DEV_URL,
+  MANIFEST,
   log,
   i18n,
+  checkLastError,
   getState,
   getConfigMatches,
   toggleDisplay,
@@ -48,30 +50,31 @@ function getConfigFromTabUrl(tabUrl) {
  * @param {Object[]} configs The existing configurations
  */
 async function checkContextMenu(tabUrl, configs) {
-  if (browser.contextMenus) {
+  if (chrome.contextMenus) {
     // clear context menu
-    browser.contextMenus.removeAll();
-    // check if add project is applicable
-    if (configs && (tabUrl.startsWith(GH_URL) || new URL(tabUrl).pathname === SHARE_PREFIX)) {
-      const { giturl } = getConfigFromTabUrl(tabUrl);
-      if (giturl) {
-        const { owner, repo } = getGitHubSettings(giturl);
-        const configExists = !!configs.find((c) => c.owner === owner && c.repo === repo);
-        const enabled = !configExists;
-        const checked = configExists;
-        // add context menu item for adding project config
-        browser.contextMenus.create({
-          id: 'addProject',
-          title: i18n('config_project_add'),
-          contexts: [
-            'page_action',
-          ],
-          type: 'checkbox',
-          enabled,
-          checked,
-        });
+    chrome.contextMenus.removeAll(() => {
+      // check if add project is applicable
+      if (configs && (tabUrl.startsWith(GH_URL) || new URL(tabUrl).pathname === SHARE_PREFIX)) {
+        const { giturl } = getConfigFromTabUrl(tabUrl);
+        if (giturl) {
+          const { owner, repo } = getGitHubSettings(giturl);
+          const configExists = !!configs.find((c) => c.owner === owner && c.repo === repo);
+          const enabled = !configExists;
+          const checked = configExists;
+          // add context menu item for adding project config
+          chrome.contextMenus.create({
+            id: 'addProject',
+            title: i18n('config_project_add'),
+            contexts: [
+              'page_action',
+            ],
+            type: 'checkbox',
+            enabled,
+            checked,
+          });
+        }
       }
-    }
+    });
   }
 }
 
@@ -81,51 +84,49 @@ async function checkContextMenu(tabUrl, configs) {
  */
 function checkTab(id) {
   getState(({ configs, proxyUrl }) => {
-    browser.tabs
-      .get(id)
-      .then(async (tab = {}) => {
-        if (!tab.url) return;
-        checkContextMenu(tab.url, configs);
-        if (new URL(tab.url).pathname === SHARE_PREFIX) {
-          log.debug('share url detected, inject install helper');
-          try {
-            // instrument generator page
-            browser.tabs.executeScript(id, {
-              file: './installhelper.js',
-            });
-          } catch (e) {
-            log.error('error instrumenting generator page', id, e);
-          }
+    chrome.tabs.get(id, async (tab = {}) => {
+      checkLastError();
+      if (!tab.url) return;
+      checkContextMenu(tab.url, configs);
+      if (new URL(tab.url).pathname === SHARE_PREFIX) {
+        log.debug('share url detected, inject install helper');
+        try {
+          // instrument generator page
+          chrome.tabs.executeScript(id, {
+            file: './installhelper.js',
+          });
+        } catch (e) {
+          log.error('error instrumenting generator page', id, e);
         }
-        const matches = getConfigMatches(configs, tab.url, proxyUrl);
-        log.debug('checking', id, tab.url, matches);
-        const allowed = matches.length > 0;
-        if (allowed) {
-          try {
-            // enable extension for this tab
-            if (browser.pageAction.show) {
-              browser.pageAction.show(id);
-            }
-            // execute content script
-            browser.tabs.executeScript(id, {
-              file: './content.js',
-            });
-          } catch (e) {
-            log.error('error enabling extension', id, e);
+      }
+      const matches = getConfigMatches(configs, tab.url, proxyUrl);
+      log.debug('checking', id, tab.url, matches);
+      const allowed = matches.length > 0;
+      if (allowed) {
+        try {
+          // enable extension for this tab
+          if (chrome.pageAction.show) {
+            chrome.pageAction.show(id);
           }
-        } else {
-          try {
-            // disable extension for this tab
-            if (browser.pageAction.hide) {
-              browser.pageAction.hide(id);
-            }
-            // check if active tab has share URL and ask to add config
-          } catch (e) {
-            log.error('error disabling extension', id, e);
-          }
+          // execute content script
+          chrome.tabs.executeScript(id, {
+            file: './content.js',
+          });
+        } catch (e) {
+          log.error('error enabling extension', id, e);
         }
-      })
-      .catch((e) => log.error('error checking tab', id, e));
+      } else {
+        try {
+          // disable extension for this tab
+          if (chrome.pageAction.hide) {
+            chrome.pageAction.hide(id);
+          }
+          // check if active tab has share URL and ask to add config
+        } catch (e) {
+          log.error('error disabling extension', id, e);
+        }
+      }
+    });
   });
 }
 
@@ -150,7 +151,7 @@ async function updateHelpContent() {
   const resp = await fetch(`https://www.hlx.live${lang}/tools/sidekick/help.json`);
   if (resp.ok) {
     try {
-      const [major, minor, patch] = browser.runtime.getManifest().version.split('.');
+      const [major, minor, patch] = MANIFEST.version.split('.');
       const json = await resp.json();
       const incomingTopics = (json['help-topics'] && json['help-topics'].data) || [];
       const incomingSteps = (json['help-steps'] && json['help-steps'].data) || [];
@@ -193,7 +194,7 @@ async function updateHelpContent() {
  * Adds the listeners for the extension.
  */
 (() => {
-  browser.runtime.onInstalled.addListener(async ({ reason }) => {
+  chrome.runtime.onInstalled.addListener(async ({ reason }) => {
     log.info(`sidekick extension installed (${reason})`);
     await updateHelpContent();
   });
@@ -204,27 +205,27 @@ async function updateHelpContent() {
       const cfg = getConfigFromTabUrl(url);
       if (cfg.giturl) {
         await addConfig(cfg, () => {
-          browser.tabs.reload(id, { bypassCache: true });
+          chrome.tabs.reload(id, { bypassCache: true });
         });
       }
     },
   };
 
-  if (browser.contextMenus) {
+  if (chrome.contextMenus) {
     // add listener for clicks on context menu item
-    browser.contextMenus.onClicked.addListener(async ({ menuItemId }, tab) => {
+    chrome.contextMenus.onClicked.addListener(async ({ menuItemId }, tab) => {
       if (!tab.url) return;
       contextMenuActions[menuItemId](tab);
     });
   }
 
   // toggle the sidekick when the browser action is clicked
-  browser.pageAction.onClicked.addListener(({ id }) => {
+  chrome.pageAction.onClicked.addListener(({ id }) => {
     toggle(id);
   });
 
   // listen for url updates in any tab and inject sidekick if must be shown
-  browser.tabs.onUpdated.addListener((id, info) => {
+  chrome.tabs.onUpdated.addListener((id, info) => {
     // wait until the tab is done loading
     if (info.status === 'complete') {
       checkTab(id);
@@ -232,65 +233,61 @@ async function updateHelpContent() {
   });
 
   // re-check tabs when activated
-  browser.tabs.onActivated.addListener(({ tabId: id }) => {
+  chrome.tabs.onActivated.addListener(({ tabId: id }) => {
     checkTab(id);
   });
 
   // detect and propagate display changes
-  browser.storage.onChanged.addListener(({ hlxSidekickDisplay = null }, area) => {
+  chrome.storage.onChanged.addListener(({ hlxSidekickDisplay = null }, area) => {
     if (area === 'local' && hlxSidekickDisplay) {
       const display = hlxSidekickDisplay.newValue;
       log.info(`sidekick now ${display ? 'shown' : 'hidden'}`);
-      browser.tabs
-        .query({
-          currentWindow: true,
-        })
-        .then((tabs) => {
-          tabs.forEach(({ id, _, active = false }) => {
-            if (!active) {
-              // skip current tab
-              checkTab(id);
-            }
-          });
-        })
-        .catch((e) => log.error('error propagating display state', e));
+      chrome.tabs.query({
+        currentWindow: true,
+      }, (tabs) => {
+        checkLastError();
+        tabs.forEach(({ id, _, active = false }) => {
+          if (!active) {
+            // skip current tab
+            checkTab(id);
+          }
+        });
+      });
     }
   });
 
-  if (browser.webRequest) {
+  if (chrome.webRequest) {
     // retrieve proxy url from local development
-    browser.webRequest.onHeadersReceived.addListener(
+    chrome.webRequest.onHeadersReceived.addListener(
       (details) => {
-        browser.tabs
-          .query({
-            currentWindow: true,
-            active: true,
-          })
-          .then(async (tabs) => {
-            if (Array.isArray(tabs) && tabs.length > 0) {
-              const rUrl = new URL(details.url);
-              const tabUrl = new URL(tabs[0].url);
-              if (tabUrl.pathname === rUrl.pathname) {
-                setProxyUrl('', async () => {
-                  const { responseHeaders } = details;
-                  // try "via" response header
-                  const via = responseHeaders.find((h) => h.name.toLowerCase() === 'via')?.value;
-                  const proxyHost = via?.split(' ')[1];
-                  if (proxyHost && proxyHost !== 'varnish') {
-                    const proxyUrl = new URL(tabs[0].url);
-                    proxyUrl.hostname = proxyHost;
-                    proxyUrl.protocol = 'https';
-                    proxyUrl.port = '';
-                    await setProxyUrl(
-                      proxyUrl.toString(),
-                      (purl) => log.info('new proxy url', purl),
-                    );
-                  }
-                });
-              }
+        chrome.tabs.query({
+          currentWindow: true,
+          active: true,
+        }, async (tabs) => {
+          checkLastError();
+          if (Array.isArray(tabs) && tabs.length > 0) {
+            const rUrl = new URL(details.url);
+            const tabUrl = new URL(tabs[0].url);
+            if (tabUrl.pathname === rUrl.pathname) {
+              setProxyUrl('', async () => {
+                const { responseHeaders } = details;
+                // try "via" response header
+                const via = responseHeaders.find((h) => h.name.toLowerCase() === 'via')?.value;
+                const proxyHost = via?.split(' ')[1];
+                if (proxyHost && proxyHost !== 'varnish') {
+                  const proxyUrl = new URL(tabs[0].url);
+                  proxyUrl.hostname = proxyHost;
+                  proxyUrl.protocol = 'https';
+                  proxyUrl.port = '';
+                  await setProxyUrl(
+                    proxyUrl.toString(),
+                    (purl) => log.info('new proxy url', purl),
+                  );
+                }
+              });
             }
-          })
-          .catch((e) => log.debug('failed to retrieve proxy url', e));
+          }
+        });
       },
       { urls: [`${DEV_URL}/*`] },
       ['responseHeaders'],

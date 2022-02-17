@@ -24,7 +24,6 @@ module.exports = {
   },
   globals: {
     // required for extension
-    browser: true,
     chrome: true,
     jsyaml: true,
   },
