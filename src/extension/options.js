@@ -14,7 +14,7 @@
 'use strict';
 
 import {
-  log,
+  MANIFEST,
   getState,
   getGitHubSettings,
   isValidShareURL,
@@ -25,6 +25,7 @@ import {
   assembleConfig,
   setConfig,
   getConfig,
+  clearConfig,
 } from './utils.js';
 
 function getInnerHost(owner, repo, ref, legacy) {
@@ -92,113 +93,106 @@ function drawConfigs() {
 }
 
 function shareConfig(i, evt) {
-  browser.storage.sync
-    .get('hlxSidekickConfigs')
-    .then(({ hlxSidekickConfigs = [] }) => {
-      const config = hlxSidekickConfigs[i];
-      const shareUrl = new URL('https://www.hlx.live/tools/sidekick/');
-      shareUrl.search = new URLSearchParams([
-        ['project', config.project || ''],
-        ['giturl', `https://github.com/${config.owner}/${config.repo}${config.ref ? `/tree/${config.ref}` : ''}`],
-      ]).toString();
-      if (navigator.share) {
-        navigator.share({
-          title: i18n('config_shareurl_share_title', [config.project || config.innerHost]),
-          url: shareUrl.toString(),
-        });
-      } else {
-        navigator.clipboard.writeText(shareUrl.toString());
-        evt.target.classList.add('success');
-        evt.target.title = i18n('config_shareurl_copied', [config.project || config.innerHost]);
-        // notify(i18n('config_shareurl_copied'));
-        window.setTimeout(() => {
-          evt.target.classList.remove('success');
-          evt.target.title = 'Share';
-        }, 3000);
-      }
-    })
-    .catch((e) => log.error('error sharing config', e));
+  getState(({ configs = [] }) => {
+    const config = configs[i];
+    const shareUrl = new URL('https://www.hlx.live/tools/sidekick/');
+    shareUrl.search = new URLSearchParams([
+      ['project', config.project || ''],
+      ['giturl', `https://github.com/${config.owner}/${config.repo}${config.ref ? `/tree/${config.ref}` : ''}`],
+    ]).toString();
+    if (navigator.share) {
+      navigator.share({
+        title: i18n('config_shareurl_share_title', [config.project || config.innerHost]),
+        url: shareUrl.toString(),
+      });
+    } else {
+      navigator.clipboard.writeText(shareUrl.toString());
+      evt.target.classList.add('success');
+      evt.target.title = i18n('config_shareurl_copied', [config.project || config.innerHost]);
+      // notify(i18n('config_shareurl_copied'));
+      window.setTimeout(() => {
+        evt.target.classList.remove('success');
+        evt.target.title = 'Share';
+      }, 3000);
+    }
+  });
 }
 
 function editConfig(i) {
-  browser.storage.sync
-    .get('hlxSidekickConfigs')
-    .then(({ hlxSidekickConfigs = [] }) => {
-      const config = hlxSidekickConfigs[i];
-      const editorFragment = document.getElementById('configEditorTemplate').content.cloneNode(true);
-      const editor = editorFragment.querySelector('#configEditor');
-      const close = () => {
-        // unregister esc handler
-        window.removeEventListener('keyup', escHandler);
-        // redraw configs
+  getState(({ configs = [] }) => {
+    const config = configs[i];
+    const editorFragment = document.getElementById('configEditorTemplate').content.cloneNode(true);
+    const editor = editorFragment.querySelector('#configEditor');
+    const close = () => {
+      // unregister esc handler
+      window.removeEventListener('keyup', escHandler);
+      // redraw configs
+      drawConfigs();
+    };
+    const escHandler = (evt) => {
+      if (evt.key === 'Escape') {
+        close();
+      }
+    };
+    const buttons = editor.querySelectorAll('button');
+    // wire save button
+    buttons[0].textContent = i18n('save');
+    buttons[0].title = i18n('save');
+    buttons[0].addEventListener('click', async () => {
+      const input = {
+        giturl: document.querySelector('#edit-giturl').value,
+        mountpoints: [
+          document.querySelector('#edit-mountpoints').value,
+        ],
+        project: document.querySelector('#edit-project').value,
+        host: document.querySelector('#edit-host').value,
+        devMode: document.querySelector('#edit-devMode').checked,
+      };
+      configs[i] = {
+        ...config,
+        ...await assembleConfig(input),
+      };
+      setConfig('sync', { configs }, () => {
         drawConfigs();
-      };
-      const escHandler = (evt) => {
-        if (evt.key === 'Escape') {
-          close();
-        }
-      };
-      const buttons = editor.querySelectorAll('button');
-      // wire save button
-      buttons[0].textContent = i18n('save');
-      buttons[0].title = i18n('save');
-      buttons[0].addEventListener('click', async () => {
-        const input = {
-          giturl: document.querySelector('#edit-giturl').value,
-          mountpoints: [
-            document.querySelector('#edit-mountpoints').value,
-          ],
-          project: document.querySelector('#edit-project').value,
-          host: document.querySelector('#edit-host').value,
-          devMode: document.querySelector('#edit-devMode').checked,
-        };
-        hlxSidekickConfigs[i] = {
-          ...config,
-          ...await assembleConfig(input),
-        };
-        browser.storage.sync
-          .set({ hlxSidekickConfigs })
-          .then(() => {
-            drawConfigs();
-            close();
-          });
+        close();
       });
-      // wire cancel button
-      buttons[1].textContent = i18n('cancel');
-      buttons[1].title = i18n('cancel');
-      buttons[1].addEventListener('click', close);
-      // insert editor in place of config section
-      document.getElementById(`config-${i}`).replaceWith(editorFragment);
-      // pre-fill form
-      document.querySelectorAll('#configEditor input').forEach((field) => {
-        const key = field.id.split('-')[1];
-        const value = config[key];
-        if (typeof value === 'object') {
-          field.value = value[0] || '';
-        } else if (typeof value === 'boolean' && value) {
-          field.setAttribute('checked', value);
-        } else {
-          field.value = config[key] || '';
-        }
-        field.setAttribute('placeholder', i18n(`config_manual_${key}_placeholder`));
-        const label = document.querySelector(`#configEditor label[for="${field.id}"]`);
-        if (label) {
-          label.textContent = i18n(`config_manual_${key}`);
-        }
-      });
-      // focus first field
-      const firstField = editor.querySelector('input, textarea');
-      firstField.focus();
-      firstField.select();
-      // register esc handler
-      window.addEventListener('keyup', escHandler);
-      // disable other config buttons while editor is shown
-      document
-        .querySelectorAll('section.config:not(#configEditor) button')
-        .forEach((btn) => {
-          btn.disabled = true;
-        });
     });
+    // wire cancel button
+    buttons[1].textContent = i18n('cancel');
+    buttons[1].title = i18n('cancel');
+    buttons[1].addEventListener('click', close);
+    // insert editor in place of config section
+    document.getElementById(`config-${i}`).replaceWith(editorFragment);
+    // pre-fill form
+    document.querySelectorAll('#configEditor input').forEach((field) => {
+      const key = field.id.split('-')[1];
+      const value = config[key];
+      if (typeof value === 'object') {
+        field.value = value[0] || '';
+      } else if (typeof value === 'boolean' && value) {
+        field.setAttribute('checked', value);
+      } else {
+        field.value = config[key] || '';
+      }
+      field.setAttribute('placeholder', i18n(`config_manual_${key}_placeholder`));
+      const label = document.querySelector(`#configEditor label[for="${field.id}"]`);
+      if (label) {
+        label.textContent = i18n(`config_manual_${key}`);
+      }
+    });
+    // focus first field
+    const firstField = editor.querySelector('input, textarea');
+    firstField.focus();
+    firstField.select();
+    // register esc handler
+    window.addEventListener('keyup', escHandler);
+    // disable other config buttons while editor is shown
+    document
+      .querySelectorAll('section.config:not(#configEditor) button')
+      .forEach((btn) => {
+        btn.disabled = true;
+      });
+  });
 }
 
 function clearForms() {
@@ -232,11 +226,11 @@ window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('resetButton').addEventListener('click', () => {
     // eslint-disable-next-line no-alert
     if (window.confirm(i18n('config_delete_all_confirm'))) {
-      browser.storage.sync
-        .clear()
-        .then(() => browser.storage.local.clear())
-        .then(() => drawConfigs())
-        .catch((e) => log.error('error deleting all configs', e));
+      clearConfig('sync', () => {
+        clearConfig('local', () => {
+          drawConfigs();
+        });
+      });
     }
   });
 
@@ -283,15 +277,13 @@ window.addEventListener('DOMContentLoaded', () => {
         const reader = new FileReader();
         reader.addEventListener('load', () => {
           const { configs: importedConfigs } = JSON.parse(reader.result);
-          browser.storage.sync
-            .set({
-              hlxSidekickConfigs: importedConfigs,
-            })
-            .then(() => {
-              // eslint-disable-next-line no-alert
-              window.alert(i18n('config_import_success'));
-              drawConfigs();
-            });
+          setConfig('sync', {
+            hlxSidekickConfigs: importedConfigs,
+          }, () => {
+            // eslint-disable-next-line no-alert
+            window.alert(i18n('config_import_success'));
+            drawConfigs();
+          });
         });
         try {
           reader.readAsText(files[0]);
@@ -313,10 +305,9 @@ window.addEventListener('DOMContentLoaded', () => {
     getState(({ configs }) => {
       if (configs.length > 0) {
         // prepare export data
-        const mf = browser.runtime.getManifest();
         const info = {
-          name: mf.name,
-          version: mf.version,
+          name: MANIFEST.name,
+          version: MANIFEST.version,
           date: new Date().toUTCString(),
         };
         const data = JSON.stringify({ info, configs }, null, '  ');

@@ -13,6 +13,8 @@
 
 'use strict';
 
+import {} from './lib/polyfills.min.js';
+
 import {
   DEV_URL,
   log,

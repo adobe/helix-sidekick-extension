@@ -10,6 +10,8 @@
  * governing permissions and limitations under the License.
  */
 
+import {} from './lib/polyfills.min.js';
+
 import {
   i18n,
   setDisplay,

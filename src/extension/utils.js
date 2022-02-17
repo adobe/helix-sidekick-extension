@@ -12,7 +12,7 @@
 
 'use strict';
 
-import {} from './lib/polyfills.min.js';
+export const MANIFEST = chrome.runtime.getManifest();
 
 export const SHARE_PREFIX = '/tools/sidekick/';
 
@@ -32,12 +32,12 @@ export const log = {
 
 // shorthand for browser.i18n.getMessage()
 export function i18n(msg, subs) {
-  return browser.i18n.getMessage(msg, subs);
+  return chrome.i18n.getMessage(msg, subs);
 }
 
 // shorthand for browser.runtime.getURL()
 export function url(path) {
-  return browser.runtime.getURL(path);
+  return chrome.runtime.getURL(path);
 }
 
 export async function getMountpoints(owner, repo, ref) {
@@ -76,17 +76,24 @@ export function getGitHubSettings(giturl) {
 }
 
 export async function getConfig(type, prop) {
-  const cfg = await browser.storage[type].get(prop);
+  const cfg = await new Promise((resolve) => {
+    chrome.storage[type].get(prop, resolve);
+  });
   return cfg[prop];
 }
 
 export async function setConfig(type, obj, cb) {
-  return browser.storage[type]
-    .set(obj)
-    .then(() => {
-      if (typeof cb === 'function') cb(obj);
-    })
-    .catch((e) => log.error('error setting display', e));
+  return chrome.storage[type].set(obj, () => {
+    if (typeof cb === 'function') cb(obj);
+  });
+}
+
+export async function clearConfig(type, cb) {
+  chrome.storage[type].clear(() => {
+    if (typeof cb === 'function') {
+      cb(true);
+    }
+  });
 }
 
 export async function getState(cb) {
@@ -108,19 +115,6 @@ export async function getState(cb) {
       configs,
     });
   }
-}
-
-function sameSharePointSite(mountpoint, pathname) {
-  const match = [
-    '/sites/',
-    '/personal/',
-    '/:f:/p/',
-  ].find((prefix) => mountpoint.includes(prefix));
-  if (match) {
-    const site = mountpoint.split(match)[1].split('/').shift();
-    return pathname.includes(`/${site}`);
-  }
-  return false;
 }
 
 export function getConfigMatches(configs, tabUrl, proxyUrl) {
@@ -165,7 +159,11 @@ export function getConfigMatches(configs, tabUrl, proxyUrl) {
                 return false;
               }
               // editor url, check for site name in path
-              return sameSharePointSite(mpPath, pathname);
+              if (!mpPath.includes('/sites/')) {
+                return false;
+              }
+              const site = mpPath.split('/sites/')[1].split('/').shift();
+              return pathname.includes(`/sites/${site}/`);
             } else if (checkHost === 'drive.google.com') {
               // gdrive browser
               return false;
