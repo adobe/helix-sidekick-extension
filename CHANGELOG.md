@@ -1,3 +1,10 @@
+## [5.1.4](https://github.com/adobe/helix-sidekick-extension/compare/v5.1.3...v5.1.4) (2022-02-24)
+
+
+### Bug Fixes
+
+* **regression:** sharepoint url support ([3cb3384](https://github.com/adobe/helix-sidekick-extension/commit/3cb3384c3d17d4d0375d4730d96f9d68651e3224))
+
 ## [5.1.3](https://github.com/adobe/helix-sidekick-extension/compare/v5.1.2...v5.1.3) (2022-02-17)
 
 
