@@ -125,6 +125,20 @@ export async function getState(cb) {
   }
 }
 
+function sameSharePointSite(mountpoint, pathname) {
+  const match = [
+    '/sites/',
+    '/:f:/s/',
+    '/personal/',
+    '/:f:/p/',
+  ].find((prefix) => mountpoint.includes(prefix));
+  if (match) {
+    const site = mountpoint.split(match)[1].split('/').shift();
+    return pathname.includes(`/${site}`);
+  }
+  return false;
+}
+
 export function getConfigMatches(configs, tabUrl, proxyUrl) {
   if (tabUrl.startsWith(DEV_URL) && proxyUrl) {
     log.info('matching against proxy url', proxyUrl);
@@ -167,11 +181,7 @@ export function getConfigMatches(configs, tabUrl, proxyUrl) {
                 return false;
               }
               // editor url, check for site name in path
-              if (!mpPath.includes('/sites/')) {
-                return false;
-              }
-              const site = mpPath.split('/sites/')[1].split('/').shift();
-              return pathname.includes(`/sites/${site}/`);
+              return sameSharePointSite(mpPath, pathname);
             } else if (checkHost === 'drive.google.com') {
               // gdrive browser
               return false;
