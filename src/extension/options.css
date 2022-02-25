@@ -365,6 +365,7 @@ section.config input.favorite::after {
 #configEditor {
   background-color: rgb(var(--editor-background-color));
   display: block;
+  padding: 20px;
 }
 
 #configEditor > div {

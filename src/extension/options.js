@@ -125,20 +125,20 @@ function editConfig(i) {
     const editor = editorFragment.querySelector('#configEditor');
     const close = () => {
       // unregister esc handler
-      window.removeEventListener('keyup', escHandler);
+      window.removeEventListener('keyup', keyHandler);
       // redraw configs
       drawConfigs();
     };
-    const escHandler = (evt) => {
+    const keyHandler = (evt) => {
       if (evt.key === 'Escape') {
         close();
       }
+      if (evt.key === 'Enter') {
+        window.removeEventListener('keyup', keyHandler);
+        save();
+      }
     };
-    const buttons = editor.querySelectorAll('button');
-    // wire save button
-    buttons[0].textContent = i18n('save');
-    buttons[0].title = i18n('save');
-    buttons[0].addEventListener('click', async () => {
+    const save = async () => {
       const input = {
         giturl: document.querySelector('#edit-giturl').value,
         mountpoints: [
@@ -152,11 +152,18 @@ function editConfig(i) {
         ...config,
         ...await assembleConfig(input),
       };
-      setConfig('sync', { configs }, () => {
+      // unregister esc handler
+      window.removeEventListener('keyup', keyHandler);
+      // save configs
+      setConfig('sync', { hlxSidekickConfigs: configs }, () => {
         drawConfigs();
         close();
       });
-    });
+    };
+    const buttons = editor.querySelectorAll('button');
+    buttons[0].textContent = i18n('save');
+    buttons[0].title = i18n('save');
+    buttons[0].addEventListener('click', save);
     // wire cancel button
     buttons[1].textContent = i18n('cancel');
     buttons[1].title = i18n('cancel');
@@ -185,7 +192,9 @@ function editConfig(i) {
     firstField.focus();
     firstField.select();
     // register esc handler
-    window.addEventListener('keyup', escHandler);
+    window.addEventListener('keyup', keyHandler);
+    // register return handler
+
     // disable other config buttons while editor is shown
     document
       .querySelectorAll('section.config:not(#configEditor) button')
