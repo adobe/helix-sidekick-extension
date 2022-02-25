@@ -1,3 +1,10 @@
+## [5.1.5](https://github.com/adobe/helix-sidekick-extension/compare/v5.1.4...v5.1.5) (2022-02-25)
+
+
+### Bug Fixes
+
+* edits of project configs not persisted ([505c2e9](https://github.com/adobe/helix-sidekick-extension/commit/505c2e95f07ba291608899024c2341e53e398756))
+
 ## [5.1.4](https://github.com/adobe/helix-sidekick-extension/compare/v5.1.3...v5.1.4) (2022-02-24)
 
 
