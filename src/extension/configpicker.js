@@ -19,7 +19,7 @@ import {
 
 function pushDownContent(display) {
   if (window.location.host !== 'docs.google.com') {
-    document.querySelectorAll('body, iframe#WebApplicationFrame, div#feds-header')
+    document.querySelectorAll('html, iframe#WebApplicationFrame')
       .forEach((container) => {
         container.style.marginTop = display ? '49px' : 'initial';
       });
@@ -27,10 +27,11 @@ function pushDownContent(display) {
 }
 
 class ConfigPicker extends HTMLElement {
-  constructor(configs, callback) {
+  constructor(configs, pushDown, callback) {
     super();
     this.callback = callback || (() => {});
     this.configs = configs;
+    this.pushDown = pushDown;
     const shadow = this.attachShadow({ mode: 'open' });
 
     // todo: proper UI
@@ -68,6 +69,9 @@ class ConfigPicker extends HTMLElement {
     });
     window.setTimeout(() => root.querySelector('button').focus(), 200);
     root.addEventListener('keyup', (evt) => this.pickByKey(evt));
+    if (this.pushDown) {
+      pushDownContent(true);
+    }
   }
 
   pickByClick(btn) {
@@ -104,18 +108,19 @@ class ConfigPicker extends HTMLElement {
   destroy() {
     // document.body.removeEventListener('keyup', this.pickConfigByKey);
     this.replaceWith('');
-    pushDownContent(false);
+    if (this.pushDown) {
+      pushDownContent(false);
+    }
   }
 }
 
 window.customElements.define('helix-sidekick-config-picker', ConfigPicker);
 
-export default function injectConfigPicker(matches, display, inject) {
+export default function injectConfigPicker(matches, display, pushDown, inject) {
   const picker = document.querySelector('helix-sidekick-config-picker');
   if (display && !picker) {
     // add config picker
-    document.body.prepend(new ConfigPicker(matches, inject));
-    pushDownContent(true);
+    document.body.prepend(new ConfigPicker(matches, pushDown, inject));
   } else if (picker && !display) {
     picker.destroy();
   }
