@@ -1,3 +1,15 @@
+# [5.2.0](https://github.com/adobe/helix-sidekick-extension/compare/v5.1.5...v5.2.0) (2022-03-15)
+
+
+### Bug Fixes
+
+* config picker should respect pushDown flag ([7944ca7](https://github.com/adobe/helix-sidekick-extension/commit/7944ca7175d5cb4c3a0e7cf785f109fac843a95f))
+
+
+### Features
+
+* remember area states in options ([d2dbd7a](https://github.com/adobe/helix-sidekick-extension/commit/d2dbd7a36141f33202aeb77674232b1cf9d1498c))
+
 ## [5.1.5](https://github.com/adobe/helix-sidekick-extension/compare/v5.1.4...v5.1.5) (2022-02-25)
 
 
