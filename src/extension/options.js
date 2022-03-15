@@ -423,11 +423,22 @@ window.addEventListener('DOMContentLoaded', () => {
   document.querySelector('nav > ul').append(devModeListItem);
 
   // area toggles
-  document.querySelectorAll('.area > h2').forEach(($title) => {
+  document.querySelectorAll('.area > h2').forEach(async ($title) => {
+    const configId = `hlxSidekickOption-${$title.parentElement.id}`;
+    const state = await getConfig('local', configId);
+    if (state === 'expanded') {
+      $title.parentElement.classList.add('expanded');
+    } else if (state === 'collapsed') {
+      $title.parentElement.classList.remove('expanded');
+    }
     $title.addEventListener('click', ({ target }) => {
       const $parent = target.parentElement;
       $parent.classList.toggle('expanded');
-      $parent.scrollIntoView();
+      const config = {};
+      config[configId] = $parent.classList.contains('expanded') ? 'expanded' : 'collapsed';
+      setConfig('local', config, () => {
+        $parent.scrollIntoView();
+      });
     });
   });
 

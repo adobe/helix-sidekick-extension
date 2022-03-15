@@ -60,7 +60,7 @@
         log.info('content.js: gdrive or multiple matching configs found, inject config picker', matches);
         // multiple matches, show config picker
         import('./configpicker.js')
-          .then((mod) => mod.default(matches, display, inject))
+          .then((mod) => mod.default(matches, display, pushDown, inject))
           .catch((e) => log.error('failed to load config picker', e));
       }
     });
