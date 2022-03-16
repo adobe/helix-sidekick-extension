@@ -104,10 +104,20 @@ governing permissions and limitations under the License.
       </div>
       <div id="development" class="area advanced-only">
         <h2>__MSG_config_development__</h2>
+        <div><p class="warn">__MSG_caution_side_effects__</p></div>
         <div>
           <h3>__MSG_developer_mode__</h3>
           <input type="checkbox" id="devModeSwitch">
           <label for="devModeSwitch">__MSG_developer_mode_description__</label>
+        </div>
+        <div>
+          <h3>__MSG_branch_version__</h3>
+          <p class="warn">__MSG_branch_version_description__</p>
+          <p><input type="text" class="version" id="branchName" placeholder="__MSG_branch_version_placeholder__"></p>
+          <p>
+            <button id="branchNameSave" title="__MSG_save__">__MSG_save__</button>
+            <button id="branchNameReset" title="__MSG_config_reset__">__MSG_config_reset__</button>
+          </p>
         </div>
         <div>
           <h3>__MSG_admin_version__</h3>
@@ -120,7 +130,7 @@ governing permissions and limitations under the License.
         </div>
       </div>
       <div id="reset" class="area advanced-only">
-        <h2 class="warn">__MSG_config_reset__</h2>
+        <h2>__MSG_config_reset__</h2>
         <div class="warn">
           <div>
             <p>__MSG_config_delete_all_description__</p>

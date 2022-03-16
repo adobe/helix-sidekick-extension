@@ -23,7 +23,7 @@ import {
   setDisplay,
 } from './utils.js';
 
-export default async function injectSidekick(config, display, skDevMode) {
+export default async function injectSidekick(config, display, skDevMode, skBranchName) {
   if (typeof config !== 'object') {
     log.warn('sidekick.js: invalid config', config);
     return;
@@ -39,9 +39,12 @@ export default async function injectSidekick(config, display, skDevMode) {
       .filter(([k]) => ['owner', 'repo', 'ref', 'hlx3', 'devMode', 'pushDown', 'adminVersion'].includes(k)));
     log.debug('sidekick.js: curated config', JSON.stringify(window.hlx.sidekickConfig));
     // inject sidekick
-    const moduleContainer = skDevMode
-      ? 'http://localhost:3001/src/sidekick'
-      : 'https://www.hlx.live/tools/sidekick';
+    let moduleContainer = 'https://www.hlx.live/tools/sidekick';
+    if (skDevMode) {
+      moduleContainer = 'http://localhost:3001/src/sidekick';
+    } else if (skBranchName) {
+      moduleContainer = `https://sidekick-${skBranchName}--helix-website--adobe.hlx.live/tools/sidekick`;
+    }
     await import(`${moduleContainer}/module.js`);
 
     // look for extended config in project

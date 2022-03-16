@@ -172,17 +172,23 @@
   "config_development": {
     "message": "Développement"
   },
+  "caution_side_effects": {
+    "message": "Attention: effets indésirables!"
+  },
   "developer_mode": {
     "message": "Tester le Helix Sidekick localement"
   },
   "developer_mode_description": {
     "message": "Invoquer une version locale du Helix Sidekick"
   },
-  "admin_version": {
-    "message": "Utiliser une versions spécifique de l'API Helix Admin"
+  "branch_version": {
+    "message": "Tester une version de branche du Sidekick"
   },
-  "admin_version_description": {
-    "message": "Attention: ceci peut avoir des effets indésirables!"
+  "branch_version_placeholder": {
+    "message": "Nom de la branche: test"
+  },
+  "admin_version": {
+    "message": "Utiliser une version spécifique de l'API Helix Admin"
   },
   "admin_version_placeholder": {
     "message": "Version de l'Admin: x.y.z"
