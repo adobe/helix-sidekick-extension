@@ -181,10 +181,10 @@
   "developer_mode_description": {
     "message": "Invoquer une version locale du Helix Sidekick"
   },
-  "branch_version": {
+  "branch_name": {
     "message": "Tester une version de branche du Sidekick"
   },
-  "branch_version_placeholder": {
+  "branch_name_placeholder": {
     "message": "Nom de la branche: test"
   },
   "admin_version": {

@@ -181,10 +181,10 @@
   "developer_mode_description": {
     "message": "Eine lokale Entwicklungsversion des Sidekick aufrufen"
   },
-  "branch_version": {
+  "branch_name": {
     "message": "Eine Branch-Version des Sidekick testen"
   },
-  "branch_version_placeholder": {
+  "branch_name_placeholder": {
     "message": "Branch-Name: test"
   },
   "admin_version": {
