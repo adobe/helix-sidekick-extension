@@ -28,8 +28,8 @@ import {
   clearConfig,
 } from './utils.js';
 
-function getInnerHost(owner, repo, ref, legacy) {
-  return `${ref}--${repo}--${owner}.hlx${!legacy ? '3' : ''}.page`;
+function getInnerHost(owner, repo, ref) {
+  return `${ref}--${repo}--${owner}.hlx.page`;
 }
 
 function isValidGitHubURL(giturl) {
@@ -52,16 +52,15 @@ function drawConfigs() {
     const container = document.getElementById('configs');
     container.innerHTML = '';
     configs.forEach(({
-      owner, repo, ref, mountpoints, project, host, hlx3,
+      owner, repo, ref, mountpoints, project, host,
     }, i) => {
-      const legacy = hlx3 === false;
-      const innerHost = getInnerHost(owner, repo, ref, legacy);
+      const innerHost = getInnerHost(owner, repo, ref);
       const section = document.createElement('section');
       section.id = `config-${i}`;
-      section.className = `config${legacy ? ' unsupported' : ''} `;
+      section.className = 'config';
       section.innerHTML = `
   <div>
-    <h4>${project || 'Helix Project'}${legacy ? `<span>(${i18n('config_unsupported_legacy')})</span>` : ''}</h4>
+    <h4>${project || 'Helix Project'}</h4>
     <p><span class="property">${i18n('config_project_innerhost')}</span>${drawLink(innerHost)}</p>
     ${mountpoints.length
     ? `<p><span class="property">${i18n('config_project_mountpoints')}</span>${mountpoints.map((mp) => drawLink(mp)).join(' ')}</p>`
@@ -71,8 +70,8 @@ function drawConfigs() {
     : ''}
     </div>
   <div>
-    <button class="shareConfig" title="${i18n('config_share')}"${legacy ? ' disabled' : ''}>${i18n('config_share')}</button>
-    <button class="editConfig" title="${i18n('config_edit')}"${legacy ? ' disabled' : ''}>${i18n('config_edit')}</button>
+    <button class="shareConfig" title="${i18n('config_share')}">${i18n('config_share')}</button>
+    <button class="editConfig" title="${i18n('config_edit')}">${i18n('config_edit')}</button>
     <button class="deleteConfig" title="${i18n('config_delete')}">${i18n('config_delete')}</button>
   </div>`;
       container.appendChild(section);
@@ -406,21 +405,24 @@ window.addEventListener('DOMContentLoaded', () => {
     }
   })();
 
-  // add devMode link to nav
-  const isDevMode = window.location.search === '?devMode';
-  const devModeLink = document.createElement('a');
-  devModeLink.textContent = i18n(isDevMode ? 'standard' : 'advanced');
-  devModeLink.title = i18n(isDevMode ? 'standard' : 'advanced');
-  devModeLink.setAttribute('aria-role', 'link');
-  devModeLink.setAttribute('tabindex', 0);
-  devModeLink.addEventListener('click', ({ target }) => {
-    window.location.href = `${window.location.pathname}${isDevMode ? '' : '?devMode'}`;
+  // add advanced mode link to nav
+  const isAdvancedMode = window.location.search === '?advanced';
+  const advancedModeLink = document.createElement('a');
+  advancedModeLink.textContent = i18n(isAdvancedMode ? 'standard' : 'advanced');
+  advancedModeLink.title = i18n(isAdvancedMode ? 'standard' : 'advanced');
+  advancedModeLink.setAttribute('aria-role', 'link');
+  advancedModeLink.setAttribute('tabindex', 0);
+  advancedModeLink.addEventListener('click', ({ target }) => {
+    window.location.href = `${window.location.pathname}${isAdvancedMode ? '' : '?advanced'}`;
     target.parentElement.classList.toggle('selected');
   });
-  const devModeListItem = document.createElement('li');
-  devModeListItem.className = isDevMode ? 'selected' : '';
-  devModeListItem.append(devModeLink);
-  document.querySelector('nav > ul').append(devModeListItem);
+  const advancedModeListItem = document.createElement('li');
+  advancedModeListItem.className = isAdvancedMode ? 'selected' : '';
+  advancedModeListItem.append(advancedModeLink);
+  document.querySelector('nav > ul').append(advancedModeListItem);
+  if (isAdvancedMode) {
+    document.body.classList.add('advanced');
+  }
 
   // area toggles
   document.querySelectorAll('.area > h2').forEach(async ($title) => {
@@ -442,30 +444,49 @@ window.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // enable dev mode and admin version
-  getState(({ devMode, adminVersion = null }) => {
-    const devModeEnabled = window.location.search === '?devMode';
-    if (devModeEnabled) {
-      document.body.classList.add('advanced');
-      const input = document.getElementById('devModeSwitch');
-      input.checked = devMode;
-      input.addEventListener('click', () => setConfig('local', {
-        hlxSidekickDevMode: input.checked,
-      }));
+  // enable developer options
+  getState(({ devMode, branchName, adminVersion = null }) => {
+    const devModeSwitch = document.getElementById('devModeSwitch');
+    const branchNameField = document.getElementById('branchName');
+    const branchNameSave = document.getElementById('branchNameSave');
+    const branchNameReset = document.getElementById('branchNameReset');
+    const adminVersionField = document.getElementById('adminVersion');
+    const adminVersionSave = document.getElementById('adminVersionSave');
+    const adminVersionReset = document.getElementById('adminVersionReset');
 
-      const adminVersionField = document.getElementById('adminVersion');
-      const adminVersionSave = document.getElementById('adminVersionSave');
-      const adminVersionReset = document.getElementById('adminVersionReset');
-      adminVersionField.value = adminVersion || '';
-      adminVersionSave.addEventListener('click', () => setConfig('local', {
-        hlxSidekickAdminVersion: adminVersionField.value,
-      }));
-      adminVersionReset.addEventListener('click', () => {
-        adminVersionField.value = '';
-        setConfig('local', {
-          hlxSidekickAdminVersion: null,
-        });
+    devModeSwitch.checked = devMode;
+    devModeSwitch.addEventListener('click', () => setConfig('local', {
+      hlxSidekickDevMode: devModeSwitch.checked,
+      hlxSidekickBranchName: null,
+    }, () => {
+      branchNameField.value = '';
+    }));
+
+    branchNameField.value = branchName || '';
+    branchNameSave.addEventListener('click', () => {
+      setConfig('local', {
+        hlxSidekickBranchName: branchNameField.value,
+        hlxSidekickDevMode: false,
+      }, () => {
+        devModeSwitch.checked = false;
       });
-    }
+    });
+    branchNameReset.addEventListener('click', () => {
+      branchNameField.value = '';
+      setConfig('local', {
+        hlxSidekickBranchName: null,
+      });
+    });
+
+    adminVersionField.value = adminVersion || '';
+    adminVersionSave.addEventListener('click', () => setConfig('local', {
+      hlxSidekickAdminVersion: adminVersionField.value,
+    }));
+    adminVersionReset.addEventListener('click', () => {
+      adminVersionField.value = '';
+      setConfig('local', {
+        hlxSidekickAdminVersion: null,
+      });
+    });
   });
 });

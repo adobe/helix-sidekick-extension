@@ -108,6 +108,7 @@ export async function getState(cb) {
   if (typeof cb === 'function') {
     const display = await getConfig('local', 'hlxSidekickDisplay') || false;
     const devMode = await getConfig('local', 'hlxSidekickDevMode') || false;
+    const branchName = await getConfig('local', 'hlxSidekickBranchName');
     const adminVersion = await getConfig('local', 'hlxSidekickAdminVersion');
     const proxyUrl = await getConfig('local', 'hlxSidekickProxyUrl');
 
@@ -117,6 +118,7 @@ export async function getState(cb) {
     cb({
       display,
       devMode,
+      branchName,
       adminVersion,
       proxyUrl,
       pushDown,
@@ -161,8 +163,8 @@ export function getConfigMatches(configs, tabUrl, proxyUrl) {
     const match = (host && checkHost === host) // production host
       || (checkHost.endsWith(`--${repo.toLowerCase()}--${owner.toLowerCase()}.hlx.live`)
         || checkHost === outerHost) // outer
-      || checkHost.endsWith(`--${repo.toLowerCase()}--${owner.toLowerCase()}.hlx3.page`) // inner
-      || checkHost.endsWith(`${repo.toLowerCase()}--${owner.toLowerCase()}.hlx.page`) // hlx2 inner
+      || checkHost.endsWith(`--${repo.toLowerCase()}--${owner.toLowerCase()}.hlx3.page`) // hlx3
+      || checkHost.endsWith(`${repo.toLowerCase()}--${owner.toLowerCase()}.hlx.page`) // inner
       || mountpoints // editor
         .filter((mp) => !!mp)
         .map((mp) => {
