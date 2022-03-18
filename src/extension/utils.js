@@ -161,8 +161,8 @@ export function getConfigMatches(configs, tabUrl, proxyUrl) {
     const match = (host && checkHost === host) // production host
       || (checkHost.endsWith(`--${repo.toLowerCase()}--${owner.toLowerCase()}.hlx.live`)
         || checkHost === outerHost) // outer
-      || checkHost.endsWith(`--${repo.toLowerCase()}--${owner.toLowerCase()}.hlx3.page`) // inner
-      || checkHost.endsWith(`${repo.toLowerCase()}--${owner.toLowerCase()}.hlx.page`) // hlx2 inner
+      || checkHost.endsWith(`--${repo.toLowerCase()}--${owner.toLowerCase()}.hlx3.page`) // hlx3
+      || checkHost.endsWith(`${repo.toLowerCase()}--${owner.toLowerCase()}.hlx.page`) // inner
       || mountpoints // editor
         .filter((mp) => !!mp)
         .map((mp) => {

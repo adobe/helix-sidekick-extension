@@ -28,8 +28,8 @@ import {
   clearConfig,
 } from './utils.js';
 
-function getInnerHost(owner, repo, ref, legacy) {
-  return `${ref}--${repo}--${owner}.hlx${!legacy ? '3' : ''}.page`;
+function getInnerHost(owner, repo, ref) {
+  return `${ref}--${repo}--${owner}.hlx.page`;
 }
 
 function isValidGitHubURL(giturl) {
@@ -52,16 +52,15 @@ function drawConfigs() {
     const container = document.getElementById('configs');
     container.innerHTML = '';
     configs.forEach(({
-      owner, repo, ref, mountpoints, project, host, hlx3,
+      owner, repo, ref, mountpoints, project, host,
     }, i) => {
-      const legacy = hlx3 === false;
-      const innerHost = getInnerHost(owner, repo, ref, legacy);
+      const innerHost = getInnerHost(owner, repo, ref);
       const section = document.createElement('section');
       section.id = `config-${i}`;
-      section.className = `config${legacy ? ' unsupported' : ''} `;
+      section.className = 'config';
       section.innerHTML = `
   <div>
-    <h4>${project || 'Helix Project'}${legacy ? `<span>(${i18n('config_unsupported_legacy')})</span>` : ''}</h4>
+    <h4>${project || 'Helix Project'}</h4>
     <p><span class="property">${i18n('config_project_innerhost')}</span>${drawLink(innerHost)}</p>
     ${mountpoints.length
     ? `<p><span class="property">${i18n('config_project_mountpoints')}</span>${mountpoints.map((mp) => drawLink(mp)).join(' ')}</p>`
@@ -71,8 +70,8 @@ function drawConfigs() {
     : ''}
     </div>
   <div>
-    <button class="shareConfig" title="${i18n('config_share')}"${legacy ? ' disabled' : ''}>${i18n('config_share')}</button>
-    <button class="editConfig" title="${i18n('config_edit')}"${legacy ? ' disabled' : ''}>${i18n('config_edit')}</button>
+    <button class="shareConfig" title="${i18n('config_share')}">${i18n('config_share')}</button>
+    <button class="editConfig" title="${i18n('config_edit')}">${i18n('config_edit')}</button>
     <button class="deleteConfig" title="${i18n('config_delete')}">${i18n('config_delete')}</button>
   </div>`;
       container.appendChild(section);
