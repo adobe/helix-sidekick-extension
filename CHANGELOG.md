@@ -1,3 +1,11 @@
+# [5.3.0](https://github.com/adobe/helix-sidekick-extension/compare/v5.2.0...v5.3.0) (2022-03-18)
+
+
+### Features
+
+* invoke branch version of sidekick ([acd6aa1](https://github.com/adobe/helix-sidekick-extension/commit/acd6aa107201534136b37005965a2bb5a12bc6b0))
+* remove legacy support ([8ea58af](https://github.com/adobe/helix-sidekick-extension/commit/8ea58af7af89e4a8badb392c272357ee69c3ccdc))
+
 # [5.2.0](https://github.com/adobe/helix-sidekick-extension/compare/v5.1.5...v5.2.0) (2022-03-15)
 
 
