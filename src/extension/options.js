@@ -355,6 +355,11 @@ window.addEventListener('DOMContentLoaded', () => {
 
   // list help topics and user status
   (async () => {
+    const helpOptOutSwitch = document.getElementById('helpOptOutSwitch');
+    helpOptOutSwitch.checked = await getConfig('sync', 'hlxSidekickHelpOptOut') || false;
+    helpOptOutSwitch.addEventListener('click', () => setConfig('sync', {
+      hlxSidekickHelpOptOut: helpOptOutSwitch.checked,
+    }));
     const helpContainer = document.getElementById('helpTopics');
     const helpContent = await getConfig('sync', 'hlxSidekickHelpContent') || [];
     const list = helpContainer.appendChild(document.createElement('ul'));

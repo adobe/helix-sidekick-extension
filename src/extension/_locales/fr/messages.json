@@ -45,7 +45,10 @@
     "message": "Contenu"
   },
   "config_project_pick": {
-    "message": "Choisir un projet :"
+    "message": "Choisir un projet"
+  },
+  "config_project_pick_more": {
+    "message": "Plus..."
   },
   "config_project_add": {
     "message": "Ajouter un projet"
@@ -200,7 +203,13 @@
     "message": "Push down content instead of overlaying"
   },
   "push_down_content_description": {
-    "message": "Note: Depending on the site's structure, this may require custom project configuration to work as expected."
+    "message": "Note: En fonction de la structure du site, cela peut demander une configuration spécifique au projet."
+  },
+  "help_opt_out": {
+    "message": "Ne pas montrer l'aide"
+  },
+  "help_opt_out_alert": {
+    "message": "Aide désactivée. Vous pouvez la réactiver dans Options > Expérience utilisateur."
   },
   "help_user_status": {
     "message": "Sujets d'aide disponibles"

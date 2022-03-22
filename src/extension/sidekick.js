@@ -21,6 +21,7 @@ import {
   getConfig,
   setConfig,
   setDisplay,
+  i18n,
 } from './utils.js';
 
 export default async function injectSidekick(config, display, skDevMode, skBranchName) {
@@ -74,31 +75,38 @@ export default async function injectSidekick(config, display, skDevMode, skBranc
         sk.addEventListener('hidden', () => {
           setDisplay(false);
         });
-
-        // find next unacknowledged help topic with matching condition
-        const helpContent = await getConfig('sync', 'hlxSidekickHelpContent') || [];
-        const topic = helpContent
-          .find((t) => (!t.condition || sk[t.condition]()) && t.userStatus !== 'acknowledged');
-        if (topic) {
-          log.info(`next help topic to show: ${topic.title}`);
-          sk.addEventListener('statusfetched', () => {
-            sk.showHelp(topic);
+        const helpOptOut = await getConfig('sync', 'hlxSidekickHelpOptOut');
+        if (!helpOptOut) {
+          // find next unacknowledged help topic with matching condition
+          const helpContent = await getConfig('sync', 'hlxSidekickHelpContent') || [];
+          const topic = helpContent
+            .find((t) => (!t.condition || sk[t.condition]()) && t.userStatus !== 'acknowledged');
+          if (topic) {
+            log.info(`next help topic to show: ${topic.title}`);
+            sk.addEventListener('statusfetched', () => {
+              sk.showHelp(topic);
+            });
+          }
+          sk.addEventListener('helpoptedout', async () => {
+            setConfig('sync', {
+              hlxSidekickHelpOptOut: true,
+            }, () => sk.notify(i18n('help_opt_out_alert')));
+          });
+          sk.addEventListener('helpacknowledged', async ({ detail = {} }) => {
+            const { data: id } = detail;
+            if (id) {
+              const hlxSidekickHelpContent = await getConfig('sync', 'hlxSidekickHelpContent') || [];
+              const ackTopic = hlxSidekickHelpContent.find((t) => t.id === id);
+              log.debug('help topic acknowledged', hlxSidekickHelpContent, id, ackTopic);
+              if (ackTopic) {
+                ackTopic.userStatus = 'acknowledged';
+                setConfig('sync', {
+                  hlxSidekickHelpContent,
+                });
+              }
+            }
           });
         }
-        sk.addEventListener('helpacknowledged', async ({ detail = {} }) => {
-          const { data: id } = detail;
-          if (id) {
-            const hlxSidekickHelpContent = await getConfig('sync', 'hlxSidekickHelpContent') || [];
-            const ackTopic = hlxSidekickHelpContent.find((t) => t.id === id);
-            log.debug('help topic acknowledged', hlxSidekickHelpContent, id, ackTopic);
-            if (ackTopic) {
-              ackTopic.userStatus = 'acknowledged';
-              setConfig('sync', {
-                hlxSidekickHelpContent,
-              });
-            }
-          }
-        });
       }
     }, 200);
   }
