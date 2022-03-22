@@ -206,7 +206,7 @@
     "message": "Note: Depending on the site's structure, this may require custom project configuration to work as expected."
   },
   "help_opt_out": {
-    "message": "Don't show any help"
+    "message": "Ne pas montrer l'aide"
   },
   "help_opt_out_alert": {
     "message": "Help turned off. You can turn it back on under Options > User experience."
