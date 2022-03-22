@@ -26,6 +26,38 @@ function pushDownContent(display) {
   }
 }
 
+function getDropdownContainer(parent) {
+  let dropdown = parent.querySelector(':scope > .dropdown');
+  if (dropdown) {
+    return dropdown.lastElementChild;
+  }
+  dropdown = document.createElement('div');
+  dropdown.className = 'dropdown';
+  const toggle = dropdown.appendChild(document.createElement('button'));
+  toggle.setAttribute('tabindex', 0);
+  toggle.classList = 'dropdown-toggle';
+  toggle.title = i18n('config_project_pick_more');
+  toggle.textContent = i18n('config_project_pick_more');
+  toggle.addEventListener('click', (evt) => {
+    // collapse dropdown listener
+    const collapseDropdown = () => {
+      dropdown.classList.remove('dropdown-expanded');
+      document.removeEventListener('click', collapseDropdown);
+    };
+    dropdown.classList.toggle('dropdown-expanded');
+    if (dropdown.classList.contains('dropdown-expanded')) {
+      evt.stopPropagation();
+      window.setTimeout(() => {
+        document.addEventListener('click', collapseDropdown);
+      }, 100);
+    }
+  });
+  const dropdownContainer = dropdown.appendChild(document.createElement('div'));
+  dropdownContainer.className = 'dropdown-container';
+  parent.appendChild(dropdown);
+  return dropdownContainer;
+}
+
 class ConfigPicker extends HTMLElement {
   constructor(configs, pushDown, callback) {
     super();
@@ -42,20 +74,24 @@ class ConfigPicker extends HTMLElement {
     const root = shadow.appendChild(document.createElement('div'));
     root.className = 'hlx-sk';
 
+    const pluginContainer = root.appendChild(document.createElement('div'));
+    pluginContainer.className = 'plugin-container';
+    let configContainer = pluginContainer;
+
     const label = document.createElement('span');
     label.style.margin = '16px 8px 0 0';
-    label.textContent = i18n('config_project_pick');
-    root.append(label);
-
-    const configContainer = root.appendChild(document.createElement('div'));
-    configContainer.className = 'plugin-container';
+    label.textContent = `${i18n('config_project_pick')}:`;
+    root.prepend(label);
 
     this.configs.forEach(({ id, project }, i) => {
       const btn = document.createElement('button');
       btn.id = `${id}`;
-      btn.innerHTML = `${project || id} <sup style="font-size:0.5rem">${i + 1}</sup>`;
+      btn.innerHTML = `${project || id}`;
       btn.title = i18n('config_picker_button_title', [i + 1, project || id]);
       btn.addEventListener('click', (evt) => this.pickByClick(evt.target));
+      if (i >= 3) {
+        configContainer = getDropdownContainer(pluginContainer);
+      }
       configContainer.append(btn);
     });
     const featureContainer = root.appendChild(document.createElement('div'));
