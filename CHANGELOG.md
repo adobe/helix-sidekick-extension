@@ -1,3 +1,11 @@
+# [5.4.0](https://github.com/adobe/helix-sidekick-extension/compare/v5.3.0...v5.4.0) (2022-03-22)
+
+
+### Features
+
+* improve config picker UX ([8734e56](https://github.com/adobe/helix-sidekick-extension/commit/8734e56e408c4aac7e03b993d7f9bfe2a27ba2ca))
+* improve help UX ([2895f97](https://github.com/adobe/helix-sidekick-extension/commit/2895f97cdab0220b0cab75642e2a78b59b6746de))
+
 # [5.3.0](https://github.com/adobe/helix-sidekick-extension/compare/v5.2.0...v5.3.0) (2022-03-18)
 
 
