@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "__MSG_title__",
-  "version": "5.3.0",
+  "version": "5.4.0",
   "author": "Adobe",
   "homepage_url": "https://www.hlx.live/tools/sidekick/",
   "default_locale": "en",
