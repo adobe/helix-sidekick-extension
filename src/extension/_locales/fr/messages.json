@@ -209,7 +209,7 @@
     "message": "Ne pas montrer l'aide"
   },
   "help_opt_out_alert": {
-    "message": "Help turned off. You can turn it back on under Options > User experience."
+    "message": "Aide désactivée. Vous pouvez la réactiver dans Options > Expérience utilisateur."
   },
   "help_user_status": {
     "message": "Sujets d'aide disponibles"
