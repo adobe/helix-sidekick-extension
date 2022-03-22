@@ -45,7 +45,10 @@
     "message": "Inhalt"
   },
   "config_project_pick": {
-    "message": "Wähle ein Projekt aus:"
+    "message": "Wähle ein Projekt aus"
+  },
+  "config_project_pick_more": {
+    "message": "Mehr..."
   },
   "config_project_add": {
     "message": "Projekt hinzufügen"
@@ -201,6 +204,12 @@
   },
   "push_down_content_description": {
     "message": "Beachte: Abhängig von der Struktur der Site kann für eine erwartungsgemässe Funktionsweise projektspezifische Konfiguration nötig sein."
+  },
+  "help_opt_out": {
+    "message": "Keine Hilfe anzeigen"
+  },
+  "help_opt_out_alert": {
+    "message": "Hilfe ausgeschaltet. Du kannst sie unter Optionen > Benutzererlebnis wieder einschalten."
   },
   "help_user_status": {
     "message": "Verfügbare Hilfethemen"

@@ -45,7 +45,11 @@
     "message": "Content"
   },
   "config_project_pick": {
-    "message": "Pick a project:"
+    "message": "Pick a project"
+  },
+  "config_project_pick_more": {
+    "message": "More...",
+    "description": "More configurations"
   },
   "config_project_add": {
     "message": "Add project"
@@ -201,6 +205,12 @@
   },
   "push_down_content_description": {
     "message": "Note: Depending on the site's structure, this may require custom project configuration to work as expected."
+  },
+  "help_opt_out": {
+    "message": "Don't show any help"
+  },
+  "help_opt_out_alert": {
+    "message": "Help turned off. You can turn it back on on under Options > User experience."
   },
   "help_user_status": {
     "message": "Available help topics"
