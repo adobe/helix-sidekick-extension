@@ -203,7 +203,7 @@
     "message": "Push down content instead of overlaying"
   },
   "push_down_content_description": {
-    "message": "Note: Depending on the site's structure, this may require custom project configuration to work as expected."
+    "message": "Note: En fonction de la structure du site, cela peut demander une configuration spécifique au projet."
   },
   "help_opt_out": {
     "message": "Ne pas montrer l'aide"
