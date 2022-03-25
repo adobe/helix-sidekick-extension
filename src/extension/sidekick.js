@@ -37,16 +37,27 @@ export default async function injectSidekick(config, display, skDevMode, skBranc
     log.debug('sidekick.js: no sidekick yet, create it');
     // reduce config to only include properties relevant for sidekick
     window.hlx.sidekickConfig = Object.fromEntries(Object.entries(config)
-      .filter(([k]) => ['owner', 'repo', 'ref', 'devMode', 'pushDown', 'adminVersion'].includes(k)));
+      .filter(([k]) => [
+        'owner',
+        'repo',
+        'ref',
+        'host',
+        'devMode',
+        'pushDown',
+        'adminVersion',
+      ].includes(k)));
     log.debug('sidekick.js: curated config', JSON.stringify(window.hlx.sidekickConfig));
-    // inject sidekick
+    // define script url
     let moduleContainer = 'https://www.hlx.live/tools/sidekick';
     if (skDevMode) {
       moduleContainer = 'http://localhost:3001/src/sidekick';
     } else if (skBranchName) {
       moduleContainer = `https://sidekick-${skBranchName}--helix-website--adobe.hlx.live/tools/sidekick`;
     }
-    await import(`${moduleContainer}/module.js`);
+    const scriptUrl = `${moduleContainer}/module.js`;
+    window.hlx.sidekickConfig.scriptUrl = scriptUrl;
+    // inject sidekick
+    await import(scriptUrl);
 
     // look for extended config in project
     const {
