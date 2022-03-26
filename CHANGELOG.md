@@ -1,3 +1,10 @@
+## [5.4.1](https://github.com/adobe/helix-sidekick-extension/compare/v5.4.0...v5.4.1) (2022-03-26)
+
+
+### Bug Fixes
+
+* **regression:** use production host if configured in extension ([b453d10](https://github.com/adobe/helix-sidekick-extension/commit/b453d1066ad05bab853e41afe96e33337b292c16))
+
 # [5.4.0](https://github.com/adobe/helix-sidekick-extension/compare/v5.3.0...v5.4.0) (2022-03-22)
 
 
