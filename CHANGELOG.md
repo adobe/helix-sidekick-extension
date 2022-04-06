@@ -1,3 +1,10 @@
+# [5.5.0](https://github.com/adobe/helix-sidekick-extension/compare/v5.4.1...v5.5.0) (2022-04-06)
+
+
+### Features
+
+* user login, permissions and profile ([3453aea](https://github.com/adobe/helix-sidekick-extension/commit/3453aeaf45da7c61692f57f06ae14bc2064b777a))
+
 ## [5.4.1](https://github.com/adobe/helix-sidekick-extension/compare/v5.4.0...v5.4.1) (2022-03-26)
 
 
