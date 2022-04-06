@@ -1,3 +1,10 @@
+## [5.5.1](https://github.com/adobe/helix-sidekick-extension/compare/v5.5.0...v5.5.1) (2022-04-06)
+
+
+### Bug Fixes
+
+* config picker text too low ([898181e](https://github.com/adobe/helix-sidekick-extension/commit/898181e32426caab38831f8f1c4ec3fcfc4077b2))
+
 # [5.5.0](https://github.com/adobe/helix-sidekick-extension/compare/v5.4.1...v5.5.0) (2022-04-06)
 
 
