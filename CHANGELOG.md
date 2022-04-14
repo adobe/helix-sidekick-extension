@@ -1,3 +1,10 @@
+## [5.5.2](https://github.com/adobe/helix-sidekick-extension/compare/v5.5.1...v5.5.2) (2022-04-14)
+
+
+### Bug Fixes
+
+* more reliable project url detection ([3b8ba38](https://github.com/adobe/helix-sidekick-extension/commit/3b8ba380e63dfc66f6c60d011a0a2187a21f62a1))
+
 ## [5.5.1](https://github.com/adobe/helix-sidekick-extension/compare/v5.5.0...v5.5.1) (2022-04-06)
 
 
