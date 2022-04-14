@@ -136,7 +136,7 @@ function sameSharePointSite(mountpoint, pathname) {
   ].find((prefix) => mountpoint.includes(prefix));
   if (match) {
     const site = mountpoint.split(match)[1].split('/').shift();
-    return pathname.includes(`/${site}`);
+    return pathname.toLowerCase().includes(`/${site.toLowerCase()}`);
   }
   return false;
 }
@@ -164,7 +164,7 @@ export function getConfigMatches(configs, tabUrl, proxyUrl) {
       || (checkHost.endsWith(`--${repo.toLowerCase()}--${owner.toLowerCase()}.hlx.live`)
         || checkHost === outerHost) // outer
       || checkHost.endsWith(`--${repo.toLowerCase()}--${owner.toLowerCase()}.hlx3.page`) // hlx3
-      || checkHost.endsWith(`${repo.toLowerCase()}--${owner.toLowerCase()}.hlx.page`) // inner
+      || checkHost.endsWith(`--${repo.toLowerCase()}--${owner.toLowerCase()}.hlx.page`) // inner
       || mountpoints // editor
         .filter((mp) => !!mp)
         .map((mp) => {
