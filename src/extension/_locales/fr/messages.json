@@ -84,7 +84,13 @@
     "message": "Nom du projet (facultatif)"
   },
   "config_manual_devMode": {
-    "message": "Configuration locale du projet de test"
+    "message": "Tester configuration locale du projet"
+  },
+  "config_activate": {
+    "message": "Activer configuration"
+  },
+  "config_deactivate": {
+    "message": "Désactivater configuration"
   },
   "config_add_success": {
     "message": "Le projet a été ajouté au Helix Sidekick"
