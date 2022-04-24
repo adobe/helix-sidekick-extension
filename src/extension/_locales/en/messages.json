@@ -87,6 +87,12 @@
   "config_manual_devMode": {
     "message": "Test project configuration locally"
   },
+  "config_activate": {
+    "message": "Activate configuration"
+  },
+  "config_deactivate": {
+    "message": "Deactivate configuration"
+  },
   "config_add_success": {
     "message": "Project added to Helix Sidekick"
   },

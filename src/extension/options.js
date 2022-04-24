@@ -52,15 +52,21 @@ function drawConfigs() {
     const container = document.getElementById('configs');
     container.innerHTML = '';
     configs.forEach(({
-      owner, repo, ref, mountpoints, project, host,
+      owner, repo, ref, mountpoints, project, host, disabled,
     }, i) => {
       const innerHost = getInnerHost(owner, repo, ref);
       const section = document.createElement('section');
       section.id = `config-${i}`;
-      section.className = 'config';
+      section.classList.add('config');
+      if (disabled) {
+        section.classList.add('disabled');
+      }
       section.innerHTML = `
   <div>
-    <h4>${project || 'Helix Project'}</h4>
+    <h4>
+      <input type="checkbox" ${disabled ? '' : 'checked'} title="${i18n(disabled ? 'config_activate' : 'config_deactivate')}">
+      ${project || 'Helix Project'}
+    </h4>
     <p><span class="property">${i18n('config_project_innerhost')}</span>${drawLink(innerHost)}</p>
     ${mountpoints.length
     ? `<p><span class="property">${i18n('config_project_mountpoints')}</span>${mountpoints.map((mp) => drawLink(mp)).join(' ')}</p>`
@@ -74,6 +80,13 @@ function drawConfigs() {
     <button class="editConfig" title="${i18n('config_edit')}">${i18n('config_edit')}</button>
     <button class="deleteConfig" title="${i18n('config_delete')}">${i18n('config_delete')}</button>
   </div>`;
+      section.querySelector('input[type="checkbox').addEventListener('click', ({ target }) => {
+        const { checked } = target;
+        configs[i].disabled = !checked;
+        setConfig('sync', { hlxSidekickConfigs: configs }, () => {
+          drawConfigs();
+        });
+      });
       container.appendChild(section);
     });
     // wire share buttons

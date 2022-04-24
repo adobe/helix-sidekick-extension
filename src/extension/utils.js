@@ -152,7 +152,7 @@ export function getConfigMatches(configs, tabUrl, proxyUrl) {
     pathname,
     searchParams,
   } = new URL(tabUrl);
-  configs.forEach((config) => {
+  configs.filter((cfg) => !cfg.disabled).forEach((config) => {
     const {
       owner,
       repo,
@@ -250,6 +250,7 @@ export async function assembleConfig({
   host,
   outerHost,
   devMode,
+  disabled,
 }) {
   const { owner, repo, ref } = getGitHubSettings(giturl);
   const projectConfig = await getProjectConfig(owner, repo, ref);
@@ -264,6 +265,7 @@ export async function assembleConfig({
     host,
     outerHost,
     devMode,
+    disabled,
     giturl,
     owner,
     repo,

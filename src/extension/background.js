@@ -38,8 +38,20 @@ import {
  */
 function getConfigFromTabUrl(tabUrl) {
   const cfg = getShareSettings(tabUrl);
-  if (!cfg.giturl && tabUrl.startsWith(GH_URL)) {
-    cfg.giturl = tabUrl;
+  if (!cfg.giturl) {
+    if (tabUrl.startsWith(GH_URL)) {
+      cfg.giturl = tabUrl;
+    } else {
+      try {
+        const url = new URL(tabUrl);
+        const res = /(.*)--(.*)--(.*)\.hlx\.[page|live]/.exec(url.hostname);
+        if (res && res.length === 4) {
+          cfg.giturl = `${GH_URL}${res[3]}/${res[2]}/tree/${res[1]}`;
+        }
+      } catch (e) {
+        // ignore invalid url
+      }
+    }
   }
   return cfg;
 }
@@ -54,9 +66,9 @@ async function checkContextMenu(tabUrl, configs) {
     // clear context menu
     chrome.contextMenus.removeAll(() => {
       // check if add project is applicable
-      if (configs && (tabUrl.startsWith(GH_URL) || new URL(tabUrl).pathname === SHARE_PREFIX)) {
+      if (configs && configs.length > 0) {
         const { giturl } = getConfigFromTabUrl(tabUrl);
-        if (giturl) {
+        if (giturl && !chrome.runtime.lastError) {
           const { owner, repo } = getGitHubSettings(giturl);
           const configExists = !!configs.find((c) => c.owner === owner && c.repo === repo);
           const enabled = !configExists;

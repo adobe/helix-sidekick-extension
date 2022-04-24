@@ -294,6 +294,15 @@ section.config {
   border: solid 1px rgb(var(--border-color));
 }
 
+section.config.disabled {
+  background-color: rgb(var(--border-color), .3);
+}
+
+section.config.disabled h4,
+section.config.disabled p {
+    opacity: .6;
+}
+
 section.config > div:first-of-type {
   box-sizing: border-box;
   text-overflow: ellipsis;
@@ -373,7 +382,8 @@ section.config input.favorite::after {
   padding-bottom: 0;
 }
 
-#configEditor input[type="text"] {
+#configEditor input[type="text"],
+#configEditor input[type="url"] {
   width: 490px;
 }
 
@@ -466,10 +476,5 @@ body.advanced .advanced-only {
 
   section.config p .property {
     display: none;
-  }
-
-  #configEditor input[type="text"],
-  #configEditor input[type="url"] {
-    width: 90%;
   }
 }
