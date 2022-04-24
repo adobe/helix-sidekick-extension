@@ -63,7 +63,10 @@ function drawConfigs() {
       }
       section.innerHTML = `
   <div>
-    <h4><input type="checkbox" ${disabled ? '' : 'checked'}> ${project || 'Helix Project'}</h4>
+    <h4>
+      <input type="checkbox" ${disabled ? '' : 'checked'} title="${i18n(disabled ? 'config_activate' : 'config_deactivate')}">
+      ${project || 'Helix Project'}
+    </h4>
     <p><span class="property">${i18n('config_project_innerhost')}</span>${drawLink(innerHost)}</p>
     ${mountpoints.length
     ? `<p><span class="property">${i18n('config_project_mountpoints')}</span>${mountpoints.map((mp) => drawLink(mp)).join(' ')}</p>`
