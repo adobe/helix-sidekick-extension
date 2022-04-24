@@ -1,3 +1,10 @@
+# [5.6.0](https://github.com/adobe/helix-sidekick-extension/compare/v5.5.2...v5.6.0) (2022-04-24)
+
+
+### Features
+
+* add projects from preview or live, disable projects ([05f57fb](https://github.com/adobe/helix-sidekick-extension/commit/05f57fb46507ca08d00ff8b9ef8350b12a3c2512))
+
 ## [5.5.2](https://github.com/adobe/helix-sidekick-extension/compare/v5.5.1...v5.5.2) (2022-04-14)
 
 
