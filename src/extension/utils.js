@@ -224,7 +224,7 @@ export function getShareSettings(shareurl) {
 }
 
 export function isValidShareURL(shareurl) {
-  return Object.keys(getShareSettings(shareurl)).length === 3;
+  return Object.keys(getShareSettings(shareurl)).length > 1;
 }
 
 async function getProjectConfig(owner, repo, ref) {
