@@ -1,3 +1,10 @@
+## [5.6.1](https://github.com/adobe/helix-sidekick-extension/compare/v5.6.0...v5.6.1) (2022-04-25)
+
+
+### Bug Fixes
+
+* **regression:** add via sharing url broken ([c152792](https://github.com/adobe/helix-sidekick-extension/commit/c1527924a5e56cc2459f4ddfbbbde9b6edf24dac))
+
 # [5.6.0](https://github.com/adobe/helix-sidekick-extension/compare/v5.5.2...v5.6.0) (2022-04-24)
 
 
