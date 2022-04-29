@@ -42,10 +42,10 @@ jobs:
     - run:
         name: Test
         command: npm run test
-    # - store_test_results:
-    #     path: junit
-    # - store_artifacts:
-    #     path: junit
+    - store_test_results:
+        path: junit
+    - store_artifacts:
+        path: junit
   semantic-release:
     executor: node14
     steps:
