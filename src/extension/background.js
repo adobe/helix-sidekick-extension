@@ -104,8 +104,9 @@ function checkTab(id) {
         log.debug('share url detected, inject install helper');
         try {
           // instrument generator page
-          chrome.tabs.executeScript(id, {
-            file: './installhelper.js',
+          chrome.scripting.executeScript({
+            target: { tabId: id },
+            files: ['./installhelper.js'],
           });
         } catch (e) {
           log.error('error instrumenting generator page', id, e);
@@ -117,12 +118,13 @@ function checkTab(id) {
       if (allowed) {
         try {
           // enable extension for this tab
-          if (chrome.pageAction.show) {
-            chrome.pageAction.show(id);
+          if (chrome.action.show) {
+            chrome.action.show(id);
           }
           // execute content script
-          chrome.tabs.executeScript(id, {
-            file: './content.js',
+          chrome.scripting.executeScript({
+            target: { tabId: id },
+            files: ['./content.js'],
           });
         } catch (e) {
           log.error('error enabling extension', id, e);
@@ -130,8 +132,8 @@ function checkTab(id) {
       } else {
         try {
           // disable extension for this tab
-          if (chrome.pageAction.hide) {
-            chrome.pageAction.hide(id);
+          if (chrome.action.hide) {
+            chrome.action.hide(id);
           }
           // check if active tab has share URL and ask to add config
         } catch (e) {
@@ -232,7 +234,7 @@ async function updateHelpContent() {
   }
 
   // toggle the sidekick when the browser action is clicked
-  chrome.pageAction.onClicked.addListener(({ id }) => {
+  chrome.action.onClicked.addListener(({ id }) => {
     toggle(id);
   });
 

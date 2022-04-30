@@ -23,10 +23,10 @@ export const DEV_URL = 'http://localhost:3000';
 export const log = {
   LEVEL: 2,
   /* eslint-disable no-console */
-  debug: (...args) => (window.LOG_LEVEL || log.LEVEL) > 3 && console.log('DEBUG', ...args),
-  info: (...args) => (window.LOG_LEVEL || log.LEVEL) > 2 && console.log('INFO', ...args),
-  warn: (...args) => (window.LOG_LEVEL || log.LEVEL) > 1 && console.log('WARN', ...args),
-  error: (...args) => (window.LOG_LEVEL || log.LEVEL) > 0 && console.log('ERROR', ...args),
+  debug: (...args) => log.LEVEL > 3 && console.log('DEBUG', ...args),
+  info: (...args) => log.LEVEL > 2 && console.log('INFO', ...args),
+  warn: (...args) => log.LEVEL > 1 && console.log('WARN', ...args),
+  error: (...args) => log.LEVEL > 0 && console.log('ERROR', ...args),
   /* eslint-enable no-console */
 };
 
@@ -288,12 +288,12 @@ export async function addConfig(input, cb) {
         .then(() => log.info('added config', config))
         .catch((e) => log.error('error adding config', e));
       if (!mountpoints[0]) {
-        window.alert(i18n('config_add_no_mountpoint'));
+        alert(i18n('config_add_no_mountpoint'));
       } else {
-        window.alert(i18n('config_add_success'));
+        alert(i18n('config_add_success'));
       }
     } else {
-      window.alert(i18n('config_project_exists'));
+      alert(i18n('config_project_exists'));
       if (typeof cb === 'function') cb(false);
     }
     /* eslint-enable no-alert */
@@ -301,8 +301,8 @@ export async function addConfig(input, cb) {
 }
 
 export async function deleteConfig(i, cb) {
-  // eslint-disable-next-line no-alert
-  if (window.confirm(i18n('config_delete_confirm'))) {
+  // eslint-disable-next-line no-alert, no-restricted-globals
+  if (confirm(i18n('config_delete_confirm'))) {
     getConfig('sync', 'hlxSidekickConfigs')
       .then((hlxSidekickConfigs = []) => {
         hlxSidekickConfigs.splice(i, 1);

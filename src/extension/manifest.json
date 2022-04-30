@@ -1,5 +1,5 @@
 {
-  "manifest_version": 2,
+  "manifest_version": 3,
   "name": "__MSG_title__",
   "version": "5.6.1",
   "author": "Adobe",
@@ -9,31 +9,38 @@
   "description": "__MSG_description__",
   "__chrome__permissions": [
     "contextMenus",
+    "declarativeNetRequest",
+    "scripting",
     "storage",
-    "tabs",
-    "webRequest",
-    "https://*/*",
-    "http://localhost:3000/*"
+    "tabs"
   ],
   "__safari__permissions": [
     "contextMenus",
+    "scripting",
     "storage",
-    "tabs",
+    "tabs"
+  ],
+  "host_permissions": [
     "https://*/*",
     "http://localhost:3000/*"
   ],
   "background": {
-    "__safari__persistent": false,
-    "page": "background.html"
+    "service_worker": "background.js",
+    "type": "module"
   },
-  "web_accessible_resources": [
-    "configpicker.js",
-    "lib/polyfills.min.js",
-    "lib/js-yaml.min.js",
-    "sidekick.js",
-    "utils.js"
-  ],
-  "page_action": {
+  "web_accessible_resources": [{
+    "resources": [
+      "configpicker.js",
+      "lib/polyfills.min.js",
+      "lib/js-yaml.min.js",
+      "sidekick.js",
+      "utils.js"
+    ],
+    "matches": [
+      "https://*/*"
+    ]
+  }],
+  "action": {
     "default_title": "__MSG_title__",
     "default_icon": {
       "16": "icons/helix_logo_16.png",
@@ -43,7 +50,7 @@
     }
   },
   "commands": {
-    "_execute_page_action": {
+    "_execute_action": {
       "suggested_key": {
         "default": "Ctrl+Shift+H",
         "mac": "MacCtrl+Shift+H"
