@@ -463,38 +463,10 @@ window.addEventListener('DOMContentLoaded', () => {
   });
 
   // enable developer options
-  getState(({ devMode, branchName, adminVersion = null }) => {
-    const devModeSwitch = document.getElementById('devModeSwitch');
-    const branchNameField = document.getElementById('branchName');
-    const branchNameSave = document.getElementById('branchNameSave');
-    const branchNameReset = document.getElementById('branchNameReset');
+  getState(({ adminVersion = null }) => {
     const adminVersionField = document.getElementById('adminVersion');
     const adminVersionSave = document.getElementById('adminVersionSave');
     const adminVersionReset = document.getElementById('adminVersionReset');
-
-    devModeSwitch.checked = devMode;
-    devModeSwitch.addEventListener('click', () => setConfig('local', {
-      hlxSidekickDevMode: devModeSwitch.checked,
-      hlxSidekickBranchName: null,
-    }, () => {
-      branchNameField.value = '';
-    }));
-
-    branchNameField.value = branchName || '';
-    branchNameSave.addEventListener('click', () => {
-      setConfig('local', {
-        hlxSidekickBranchName: branchNameField.value,
-        hlxSidekickDevMode: false,
-      }, () => {
-        devModeSwitch.checked = false;
-      });
-    });
-    branchNameReset.addEventListener('click', () => {
-      branchNameField.value = '';
-      setConfig('local', {
-        hlxSidekickBranchName: null,
-      });
-    });
 
     adminVersionField.value = adminVersion || '';
     adminVersionSave.addEventListener('click', () => setConfig('local', {

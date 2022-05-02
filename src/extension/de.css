@@ -1,0 +1,207 @@
+/*
+ * Copyright 2020 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+
+.hlx-sk .plugin-container:empty::before {
+  content: "Keine Funktionen für diese Seite gefunden";
+ }
+
+.hlx-sk .plugin-container.loading::before {
+  content: 'Funktionen werden geladen...';
+}
+
+.hlx-sk .share::before {
+  content: "Sidekick teilen";
+}
+
+.hlx-sk .feature-container .close::before,
+.hlx-sk-overlay .help-close button::before {
+  content: "Schließen";
+}
+
+.hlx-sk-overlay div.modal.wait:empty::before {
+  content: "Bitte warten..."
+}
+
+.hlx-sk .edit button::before {
+  content: "Bearbeiten";
+}
+
+.hlx-sk .env button.dropdown-toggle::before {
+  content: "Ansicht";
+}
+
+.hlx-sk .env.dev .dropdown-toggle::before,
+.hlx-sk .env .dev button::before {
+  content: "Entwicklung";
+}
+
+.hlx-sk .env.preview .dropdown-toggle::before,
+.hlx-sk .env .preview button::before,
+.hlx-sk .edit-preview button::before {
+  content: "Vorschau";
+}
+
+.hlx-sk .env.live .dropdown-toggle::before,
+.hlx-sk .env .live button::before {
+  content: "Live";
+}
+
+.hlx-sk .env.prod .dropdown-toggle::before,
+.hlx-sk .env .prod button::before {
+  content: "Produktion";
+}
+
+.hlx-sk .reload button::before {
+  content: "Aktualisieren";
+}
+
+.hlx-sk .delete button::before {
+  content: "Löschen";
+}
+
+.hlx-sk .publish button::before {
+  content: "Publizieren";
+}
+
+.hlx-sk .unpublish button::before {
+  content: "Depublizieren";
+}
+
+.hlx-sk-special-view .description::before {
+  content: "Benutzerfreundliche Datenanzeige."
+}
+
+.hlx-sk-special-view button.close::before {
+  content: "Ausschalten"
+}
+
+.hlx-sk-special-view h2.helix-default::before {
+  content: "Standardtabelle";
+}
+
+.hlx-sk-overlay .modal.help .help-acknowledge::before {
+  content: "Alles klar!";
+}
+
+.hlx-sk-overlay .modal.help .help-close-dismiss::before {
+  content: "Hilfethema später anzeigen";
+}
+
+.hlx-sk-overlay .modal.help .help-close-acknowledge::before {
+  content: "Hilfethema nicht mehr anzeigen";
+}
+
+.hlx-sk-overlay .modal.help .help-close-opt-out::before {
+  content: "Gar keine Hilfethemen anzeigen";
+}
+
+.hlx-sk-overlay .modal.help .help-previous::before {
+  content: "Vorheriger Tipp";
+}
+
+.hlx-sk-overlay .modal.help .help-current::before {
+  content: "Dieser Tipp";
+}
+
+.hlx-sk-overlay .modal.help .help-next::before {
+  content: "Nächster Tipp";
+}
+
+.hlx-sk-overlay .modal.modal-login p:first-of-type::before {
+  content: "Bitte melde dich an um fortzufahren...";
+}
+
+.hlx-sk .feature-container .user-login button::before,
+.hlx-sk-overlay .modal.modal-login button::before {
+  content: "Anmelden";
+}
+
+.hlx-sk .feature-container .user-switch button::before,
+.hlx-sk-overlay .modal.modal-user-switch button::before {
+    content: "Benutzer wechseln";
+}
+
+.hlx-sk .feature-container .user-logout button::before {
+    content: "Abmelden";
+}
+
+.hlx-sk .feature-container .user button.dropdown-toggle::before {
+  content: "Anonymer Benutzer";
+}
+
+.hlx-sk-overlay .modal.modal-wait::before {
+  content: "Bitte warten...";
+}
+
+.hlx-sk-overlay .modal.modal-share-success::before {
+  content: "Teilen-URL in die Benutzerablage kopiert.";
+}
+
+.hlx-sk-overlay .modal.modal-config-success::before {
+  content: "Helix-Konnfiguration erfolgreich aktiviert.";
+}
+
+.hlx-sk-overlay .modal.modal-preview-failure::before {
+  content: "Vorschau-Generierung fehlgeschlagen. Bitte versuche es später noch einmal.";
+}
+
+.hlx-sk-overlay .modal.modal-reload-failure::before {
+  content: "Aktualisierung fehlgeschlagen. Bitte versuche es später noch einmal.";
+}
+
+.hlx-sk-overlay .modal.modal-publish-failure::before {
+  content: "Publizieren fehlgeschlagen. Bitte versuche es später noch einmal.";
+}
+
+.hlx-sk-overlay .modal.modal-delete-failure::before {
+  content: "Löschen fehlgeschlagen. Bitte versuche es später noch einmal.";
+}
+
+.hlx-sk-overlay .modal.modal-unpublish-failure::before {
+  content: "Depublizieren fehlgeschlagen. Bitte versuche es später noch einmal.";
+}
+
+.hlx-sk-overlay .modal.modal-status-404-document::before {
+  content: "404 Nicht gefunden: Prüfe deine Sidekick-Konfiguration und stelle sicher, dass Helix Zugriff auf dieses Dokument hat.";
+}
+
+.hlx-sk-overlay .modal.modal-status-404-content::before {
+  content: "404 Nicht gefunden: Prüfe deine Sidekick-Konfiguration oder URL.";
+}
+
+.hlx-sk-overlay .modal.modal-status-500::before {
+  content: "500 Interner Serverfehler: Statusabfrage fehlgeschlagen. Bitte versuche es später noch einmal.";
+}
+
+.hlx-sk-overlay .modal.modal-status-502::before {
+  content: "502 Fehlerhaftes Gateway: Statusabfrage fehlgeschlagen. Bitte versuche es später noch einmal.";
+}
+
+.hlx-sk-overlay .modal.modal-status-504::before {
+  content: "504 Gateway-Timeout: Statusabfrage fehlgeschlagen. Bitte versuche es später noch einmal.";
+}
+
+.hlx-sk-overlay .modal.modal-status-invalid::before {
+  content: "Ungültige Serverantwort. Prüfe deine Sidekick-Konfiguration oder URL.";
+}
+
+.hlx-sk-overlay .modal.modal-login-timeout::before {
+  content: "Zeitüberschreitung bei der Anmeldung. Bitte versuche es später noch einmal.";
+}
+
+.hlx-sk-overlay .modal.modal-login-aborted::before {
+  content: "Anmeldungsvorgang abgebrochen.";
+}
+
+.hlx-sk-overlay .modal.modal-logout-error::before {
+  content: "Abmeldung fehlgeschlagen. Bitte lade diesen Browser-Tab erneut oder versuche es später noch einmal.";
+}

@@ -7,22 +7,15 @@
   "default_locale": "en",
   "options_page": "options.html",
   "description": "__MSG_description__",
-  "__chrome__permissions": [
-    "contextMenus",
-    "declarativeNetRequest",
-    "scripting",
-    "storage",
-    "tabs"
-  ],
-  "__safari__permissions": [
+  "permissions": [
     "contextMenus",
     "scripting",
     "storage",
-    "tabs"
+    "activeTab"
   ],
   "host_permissions": [
-    "https://*/*",
-    "http://localhost:3000/*"
+    "http://localhost:3000/*",
+    "https://*/*"
   ],
   "background": {
     "service_worker": "background.js",
@@ -30,14 +23,17 @@
   },
   "web_accessible_resources": [{
     "resources": [
+      "app.css",
       "configpicker.js",
       "lib/polyfills.min.js",
       "lib/js-yaml.min.js",
+      "module.js",
       "sidekick.js",
       "utils.js"
     ],
     "matches": [
-      "https://*/*"
+      "https://*/*",
+      "http://localhost:3000/*"
     ]
   }],
   "action": {

@@ -24,7 +24,7 @@
 
   const inject = (selectedConfig = window.hlx.selectedSidekickConfig) => {
     getState(({
-      configs, display, devMode, proxyUrl, branchName, adminVersion, pushDown,
+      configs, display, proxyUrl, adminVersion, pushDown,
     }) => {
       let matches = [];
       let matchingConfig;
@@ -54,7 +54,7 @@
           config.pushDown = true;
         }
         import('./sidekick.js')
-          .then((mod) => mod.default(config, display, devMode, branchName))
+          .then((mod) => mod.default(config, display))
           .catch((e) => log.error('failed to load sidekick', e));
       } else if (matches.length > 0) {
         log.info('content.js: gdrive or multiple matching configs found, inject config picker', matches);

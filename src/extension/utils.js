@@ -107,8 +107,6 @@ export async function clearConfig(type, cb) {
 export async function getState(cb) {
   if (typeof cb === 'function') {
     const display = await getConfig('local', 'hlxSidekickDisplay') || false;
-    const devMode = await getConfig('local', 'hlxSidekickDevMode') || false;
-    const branchName = await getConfig('local', 'hlxSidekickBranchName');
     const adminVersion = await getConfig('local', 'hlxSidekickAdminVersion');
     const proxyUrl = await getConfig('local', 'hlxSidekickProxyUrl');
 
@@ -117,8 +115,6 @@ export async function getState(cb) {
 
     cb({
       display,
-      devMode,
-      branchName,
       adminVersion,
       proxyUrl,
       pushDown,
@@ -165,6 +161,7 @@ export function getConfigMatches(configs, tabUrl, proxyUrl) {
         || checkHost === outerHost) // outer
       || checkHost.endsWith(`--${repo.toLowerCase()}--${owner.toLowerCase()}.hlx3.page`) // hlx3
       || checkHost.endsWith(`--${repo.toLowerCase()}--${owner.toLowerCase()}.hlx.page`) // inner
+      || checkHost === new URL(DEV_URL).host
       || mountpoints // editor
         .filter((mp) => !!mp)
         .map((mp) => {

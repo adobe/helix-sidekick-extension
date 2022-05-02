@@ -18,13 +18,14 @@ import {} from './lib/polyfills.min.js';
 import {
   DEV_URL,
   log,
+  url,
   getConfig,
   setConfig,
   setDisplay,
   i18n,
 } from './utils.js';
 
-export default async function injectSidekick(config, display, skDevMode, skBranchName) {
+export default async function injectSidekick(config, display) {
   if (typeof config !== 'object') {
     log.warn('sidekick.js: invalid config', config);
     return;
@@ -36,7 +37,7 @@ export default async function injectSidekick(config, display, skDevMode, skBranc
     // create sidekick
     log.debug('sidekick.js: no sidekick yet, create it');
     // reduce config to only include properties relevant for sidekick
-    window.hlx.sidekickConfig = Object.fromEntries(Object.entries(config)
+    const curatedConfig = Object.fromEntries(Object.entries(config)
       .filter(([k]) => [
         'owner',
         'repo',
@@ -46,35 +47,41 @@ export default async function injectSidekick(config, display, skDevMode, skBranc
         'pushDown',
         'adminVersion',
       ].includes(k)));
-    log.debug('sidekick.js: curated config', JSON.stringify(window.hlx.sidekickConfig));
-    // define script url
-    let moduleContainer = 'https://www.hlx.live/tools/sidekick';
-    if (skDevMode) {
-      moduleContainer = 'http://localhost:3001/src/sidekick';
-    } else if (skBranchName) {
-      moduleContainer = `https://sidekick-${skBranchName}--helix-website--adobe.hlx.live/tools/sidekick`;
-    }
-    const scriptUrl = `${moduleContainer}/module.js`;
-    window.hlx.sidekickConfig.scriptUrl = scriptUrl;
-    // inject sidekick
-    await import(scriptUrl);
+    curatedConfig.scriptUrl = url('module.js');
+    log.debug('sidekick.js: curated config', curatedConfig);
 
-    // look for extended config in project
+    // inject sidekick
+    await import(curatedConfig.scriptUrl);
+
+    // look for custom config in project
     const {
-      owner, repo, ref, devMode,
+      owner, repo, ref, devMode, adminVersion,
     } = config;
     const configOrigin = devMode
       ? DEV_URL
       : `https://${ref}--${repo}--${owner}.hlx.live`;
     try {
-      await import(`${configOrigin}/tools/sidekick/config.js`);
+      const res = await fetch(`${configOrigin}/tools/sidekick/config.json`);
+      if (res.ok) {
+        log.info('custom sidekick config found');
+        config = {
+          ...config,
+          ...(await res.json()),
+          // no overriding below
+          owner,
+          repo,
+          ref,
+          devMode,
+          adminVersion,
+        };
+      }
     } catch (e) {
       // init sidekick without extended config
-      log.info('no extended sidekick config found');
-      if (!(window.hlx && window.hlx.sidekick)) {
-        window.hlx.initSidekick();
-      }
+      log.info('error retrieving custom sidekick config', e);
     }
+
+    // init sidekick
+    window.hlx.initSidekick(curatedConfig);
 
     // wait for sidekick to instrument
     window.hlx.sidekickWait = window.setInterval(async () => {
