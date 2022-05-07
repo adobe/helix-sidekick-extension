@@ -30,6 +30,18 @@ export const log = {
   /* eslint-enable no-console */
 };
 
+// wraps window.alert, noop if headless
+function alert(msg) {
+  // eslint-disable-next-line no-alert
+  return !/HeadlessChrome/.test(window.navigator.userAgent) ? window.alert(msg) : null;
+}
+
+// wraps window.confirm, returns true if headless
+function confirm(msg) {
+  // eslint-disable-next-line no-alert
+  return !/HeadlessChrome/.test(window.navigator.userAgent) ? window.confirm(msg) : true;
+}
+
 // shorthand for browser.i18n.getMessage()
 export function i18n(msg, subs) {
   return chrome.i18n.getMessage(msg, subs);
@@ -277,7 +289,6 @@ export async function addConfig(input, cb) {
     owner, repo, mountpoints,
   } = config;
   getState(({ configs }) => {
-    /* eslint-disable no-alert */
     if (!configs.find((cfg) => owner === cfg.owner && repo === cfg.repo)) {
       configs.push(config);
       setConfig('sync', { hlxSidekickConfigs: configs })
@@ -293,12 +304,10 @@ export async function addConfig(input, cb) {
       alert(i18n('config_project_exists'));
       if (typeof cb === 'function') cb(false);
     }
-    /* eslint-enable no-alert */
   });
 }
 
 export async function deleteConfig(i, cb) {
-  // eslint-disable-next-line no-alert, no-restricted-globals
   if (confirm(i18n('config_delete_confirm'))) {
     getConfig('sync', 'hlxSidekickConfigs')
       .then((hlxSidekickConfigs = []) => {

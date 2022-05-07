@@ -4,6 +4,8 @@
   "description": "Helix Sidekick Extension",
   "scripts": {
     "lint": "./node_modules/.bin/eslint .",
+    "test": "wtr \"./test/*/*.test.js\" --node-resolve --port=2000 --coverage",
+    "test:watch": "npm run test -- --watch",
     "start": "node ./debug/debug.js",
     "semantic-release": "semantic-release",
     "update-version": "node ./build/updateVersion.js",
@@ -27,9 +29,12 @@
     "@adobe/eslint-config-helix": "1.3.2",
     "@adobe/helix-fetch": "3.0.9",
     "@babel/eslint-parser": "7.17.0",
+    "@esm-bundle/chai": "4.3.4-fix.0",
     "@semantic-release/changelog": "6.0.1",
     "@semantic-release/exec": "6.0.3",
     "@semantic-release/git": "10.0.1",
+    "@web/test-runner": "0.13.27",
+    "@web/test-runner-commands": "0.6.1",
     "ajv": "8.11.0",
     "archiver": "5.3.1",
     "codecov": "3.8.3",
@@ -40,7 +45,8 @@
     "fs-extra": "10.1.0",
     "lint-staged": "12.4.1",
     "semantic-release": "19.0.2",
-    "shelljs": "0.8.5"
+    "shelljs": "0.8.5",
+    "sinon": "13.0.2"
   },
   "lint-staged": {
     "*.js": "eslint"
