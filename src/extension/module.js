@@ -1098,6 +1098,72 @@
   }
 
   /**
+   * Adds custom plugins to the sidekick.
+   * @private
+   * @param {Sidekick} sk The sidekick
+   */
+  function addCustomPlugins(sk) {
+    const { config: { plugins } = {} } = sk;
+    const language = navigator.language.split('-')[0];
+    if (plugins && Array.isArray(plugins)) {
+      plugins.forEach((cfg, i) => {
+        if (typeof (cfg.button && cfg.button.action) === 'function'
+          || typeof cfg.condition === 'function') {
+          // add legacy plugin
+          sk.add(cfg);
+        } else {
+          const {
+            id,
+            title,
+            title_i18n: i18nTitle,
+            url,
+            environments,
+            container,
+            is_container: isDropdown,
+          } = cfg;
+          // check mandatory properties
+          let missingProperty = '';
+          if (!title) {
+            missingProperty = 'title';
+          } else if (!url) {
+            missingProperty = 'url';
+          }
+          if (missingProperty) {
+            console.log(`custom plugin config missing required property "${missingProperty}"`);
+            return;
+          }
+          // assemble plugin config
+          const plugin = {
+            id: id || `custom-plugin-${i}`,
+            condition: (s) => {
+              if (!environments || environments.includes('any')) {
+                return true;
+              }
+              const envChecks = {
+                edit: s.isEditor,
+                preview: s.isInner,
+                live: s.isOuter,
+                prod: s.isProd,
+              };
+              return environments.some((env) => envChecks[env] && envChecks[env].call(s));
+            },
+            button: {
+              text: (i18nTitle && i18nTitle[language]) || title,
+              action: () => {
+                window.open(url, `hlx-sidekick-${id || `custom-plugin-${i}`}`);
+              },
+              isDropdown,
+            },
+            container,
+          };
+          // add plugin
+          sk.add(plugin);
+        }
+      });
+    }
+  }
+
+  /**
    * Logs the user in.
    * @private
    * @param {Sidekick} sk The sidekick
@@ -1524,9 +1590,7 @@
             addPublishPlugin(this);
             addUnpublishPlugin(this);
             // add custom plugins
-            if (this.config.plugins && Array.isArray(this.config.plugins)) {
-              this.config.plugins.forEach((plugin) => this.add(plugin));
-            }
+            addCustomPlugins(this);
           },
           statusfetched: () => {
             checkUserState(this);

@@ -24,7 +24,9 @@
   "web_accessible_resources": [{
     "resources": [
       "app.css",
+      "de.css",
       "configpicker.js",
+      "fr.css",
       "lib/polyfills.min.js",
       "lib/js-yaml.min.js",
       "module.js",

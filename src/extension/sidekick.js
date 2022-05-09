@@ -37,7 +37,7 @@ export default async function injectSidekick(config, display) {
     // create sidekick
     log.debug('sidekick.js: no sidekick yet, create it');
     // reduce config to only include properties relevant for sidekick
-    const curatedConfig = Object.fromEntries(Object.entries(config)
+    let curatedConfig = Object.fromEntries(Object.entries(config)
       .filter(([k]) => [
         'owner',
         'repo',
@@ -64,8 +64,8 @@ export default async function injectSidekick(config, display) {
       const res = await fetch(`${configOrigin}/tools/sidekick/config.json`);
       if (res.ok) {
         log.info('custom sidekick config found');
-        config = {
-          ...config,
+        curatedConfig = {
+          ...curatedConfig,
           ...(await res.json()),
           // no overriding below
           owner,
@@ -75,6 +75,7 @@ export default async function injectSidekick(config, display) {
           adminVersion,
         };
       }
+      log.debug('sidekick.js: extended config', curatedConfig);
     } catch (e) {
       // init sidekick without extended config
       log.info('error retrieving custom sidekick config', e);
