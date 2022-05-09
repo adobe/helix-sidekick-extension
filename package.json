@@ -46,7 +46,7 @@
     "lint-staged": "12.4.1",
     "semantic-release": "19.0.2",
     "shelljs": "0.8.5",
-    "sinon": "13.0.2"
+    "sinon": "14.0.0"
   },
   "lint-staged": {
     "*.js": "eslint"
