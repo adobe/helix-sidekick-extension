@@ -1,3 +1,10 @@
+## [5.6.2](https://github.com/adobe/helix-sidekick-extension/compare/v5.6.1...v5.6.2) (2022-05-17)
+
+
+### Bug Fixes
+
+* add project missing from context menu ([c4fa5e2](https://github.com/adobe/helix-sidekick-extension/commit/c4fa5e217b50459ee8fc7b36431728d437028f81))
+
 ## [5.6.1](https://github.com/adobe/helix-sidekick-extension/compare/v5.6.0...v5.6.1) (2022-04-25)
 
 
