@@ -23,7 +23,7 @@ export const GH_URL = 'https://github.com/';
 export const DEV_URL = 'http://localhost:3000';
 
 export const log = {
-  LEVEL: 2,
+  LEVEL: 4,
   /* eslint-disable no-console */
   debug: (...args) => log.LEVEL > 3 && console.log('DEBUG', ...args),
   info: (...args) => log.LEVEL > 2 && console.log('INFO', ...args),
@@ -32,16 +32,22 @@ export const log = {
   /* eslint-enable no-console */
 };
 
-// wraps window.alert, noop if headless
+// shows a window.alert (noop if headless)
 function alert(msg) {
-  // eslint-disable-next-line no-alert
-  return !/HeadlessChrome/.test(window.navigator.userAgent) ? window.alert(msg) : null;
+  if (typeof window !== 'undefined' && !/HeadlessChrome/.test(window.navigator.userAgent)) {
+    // eslint-disable-next-line no-alert
+    return window.alert(msg);
+  }
+  return null;
 }
 
-// wraps window.confirm, returns true if headless
+// shows a window.confirm (noop if headless)
 function confirm(msg) {
-  // eslint-disable-next-line no-alert
-  return !/HeadlessChrome/.test(window.navigator.userAgent) ? window.confirm(msg) : true;
+  if (typeof window !== 'undefined' && !/HeadlessChrome/.test(window.navigator.userAgent)) {
+    // eslint-disable-next-line no-alert
+    return window.confirm(msg);
+  }
+  return true;
 }
 
 // shorthand for browser.i18n.getMessage()
