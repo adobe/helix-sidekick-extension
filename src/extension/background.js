@@ -100,6 +100,7 @@ function checkTab(id) {
       checkLastError();
       if (!tab.url) return;
       checkContextMenu(tab.url, configs);
+      // check if active tab has share URL and ask to add config
       if (new URL(tab.url).pathname === SHARE_PREFIX) {
         log.debug('share url detected, inject install helper');
         try {
@@ -117,10 +118,6 @@ function checkTab(id) {
       const allowed = matches.length > 0;
       if (allowed) {
         try {
-          // enable extension for this tab
-          if (chrome.action.show) {
-            chrome.action.show(id);
-          }
           // execute content script
           chrome.scripting.executeScript({
             target: { tabId: id },
@@ -128,16 +125,6 @@ function checkTab(id) {
           });
         } catch (e) {
           log.error('error enabling extension', id, e);
-        }
-      } else {
-        try {
-          // disable extension for this tab
-          if (chrome.action.hide) {
-            chrome.action.hide(id);
-          }
-          // check if active tab has share URL and ask to add config
-        } catch (e) {
-          log.error('error disabling extension', id, e);
         }
       }
     });
