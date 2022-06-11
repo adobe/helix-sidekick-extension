@@ -31,7 +31,8 @@
       "lib/js-yaml.min.js",
       "module.js",
       "sidekick.js",
-      "utils.js"
+      "utils.js",
+      "view/json.js"
     ],
     "matches": [
       "https://*/*",
