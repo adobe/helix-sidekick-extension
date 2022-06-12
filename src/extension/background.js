@@ -61,7 +61,7 @@ function getConfigFromTabUrl(tabUrl) {
  * @param {string} tabUrl The URL of the tab
  * @param {Object[]} configs The existing configurations
  */
-async function checkContextMenu(tabUrl, configs) {
+async function checkContextMenu(tabUrl, configs = []) {
   if (chrome.contextMenus) {
     // clear context menu
     chrome.contextMenus.removeAll(() => {

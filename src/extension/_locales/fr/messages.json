@@ -87,10 +87,10 @@
     "message": "Tester configuration locale du projet"
   },
   "config_activate": {
-    "message": "Activer configuration"
+    "message": "Activer la configuration"
   },
   "config_deactivate": {
-    "message": "Désactivater configuration"
+    "message": "Désactivater la configuration"
   },
   "config_add_success": {
     "message": "Le projet a été ajouté au Helix Sidekick"
@@ -172,11 +172,11 @@
   },
   "advanced": {
     "message": "Avancées",
-    "description": "Advanced config mode"
+    "description": "Configurations avancées."
   },
   "standard": {
     "message": "Standard",
-    "description": "Standard config mode"
+    "description": "Configurations standards."
   },
   "config_development": {
     "message": "Développement"
@@ -194,7 +194,7 @@
     "message": "Expérience utilisateur"
   },
   "push_down_content": {
-    "message": "Push down content instead of overlaying"
+    "message": "Pousser le contenu de la page vers le bas plutôt que de passer par dessus"
   },
   "push_down_content_description": {
     "message": "Note: En fonction de la structure du site, cela peut demander une configuration spécifique au projet."
@@ -210,11 +210,11 @@
   },
   "help_user_status_check_all": {
     "message": "Sélectionner tous",
-    "description": "Check all help topics"
+    "description": "Sélectionner tous les sujets d'aide"
   },
   "help_user_status_uncheck_all": {
     "message": "Annuler tous",
-    "description": "Uncheck all help topics"
+    "description": "Désélectionner tous les sujets d'aide"
   },
   "help_user_status_description": {
     "message": "Les sujets sélectionnés ne seront plus affichés. Décochez la case à côté d'un sujet que vous souhaitez revoir."
