@@ -45,8 +45,9 @@
    */
 
   /**
-   * @typedef {Object} plugin
-   * @description The plugin configuration.
+   * @typedef {Object} _plugin
+   * @private
+   * @description The internal plugin configuration.
    * @prop {string}       id        The plugin ID (mandatory)
    * @prop {pluginButton} button    A button configuration object (optional)
    * @prop {string}       container The ID of a dropdown to add this plugin to (optional)
@@ -61,6 +62,18 @@
    */
 
   /**
+   * @typedef {Object} plugin
+   * @description The plugin configuration.
+   * @prop {string} id The plugin ID (mandatory)
+   * @prop {string} title The button text
+   * @prop {Object.<string, string>} i18n_title={} A map of translated button texts
+   * @prop {string} url The URL to open when the button is clicked
+   * @prop {string} container The ID of a dropdown to add this plugin to (optional)
+   * @prop {boolean} is_container Determines whether to turn this plugin into a dropdown
+   * @prop {string[]} environments Specifies when to show this plugin (edit, preview, live, or prod)
+   */
+
+  /**
    * A callback function to render a view.
    * @callback viewCallback
    * @param {HTMLELement} viewContainer The view container
@@ -68,7 +81,7 @@
    */
 
   /**
-   * @typedef {Object} viewConfig
+   * @typedef {Object} ViewConfig
    * @description A custom view configuration.
    * @prop {string|viewCallback} js The URL of a JS module or a function to render this view
    * @prop {string} path The path or globbing pattern where to apply this view
@@ -76,41 +89,41 @@
    */
 
   /**
-   * @typedef {Object} helpStep
-   * @description The definition of a help step inside a {@link helpTopic}.
+   * @typedef {Object} HelpStep
+   * @description The definition of a help step inside a {@link HelpTopic|help topic}.
    * @prop {string} message The help message
    * @prop {string} selector The CSS selector of the target element
    */
 
   /**
-   * @typedef {Object} helpTopic
+   * @typedef {Object} HelpTopic
    * @description The definition of a help topic.
    * @prop {string} id The ID of the help topic
-   * @prop {helpStep[]} steps An array of {@link helpStep}s
+   * @prop {HelpStep[]} steps An array of {@link HelpStep|help steps}
    */
 
   /**
-   * @typedef {Object} sidekickConfig
+   * @typedef {Object} SidekickConfig
    * @description The sidekick configuration.
    * @prop {string} owner The GitHub owner or organization (mandatory)
    * @prop {string} repo The GitHub owner or organization (mandatory)
    * @prop {string} ref=main The Git reference or branch (optional)
    * @prop {string} project The name of the Helix project used in the sharing link (optional)
-   * @prop {plugin[]} plugins An array of plugin configurations (optional)
+   * @prop {Plugin[]} plugins An array of {@link Plugin|plugin configurations} (optional)
    * @prop {string} outerHost The outer CDN's host name (optional)
    * @prop {string} host The production host name to publish content to (optional)
    * @prop {boolean} byocdn=false <pre>true</pre> if the production host is a 3rd party CDN
    * @prop {boolean} devMode=false Loads configuration and plugins from the developmemt environment
    * @prop {boolean} pushDown=false <pre>true</pre> to have the sidekick push down page content
    * @prop {string} pushDownSelector The CSS selector for absolute elements to also push down
-   * @prop {viewConfig[]} specialViews An array of custom view configurations (optional)
+   * @prop {ViewConfig[]} specialViews An array of custom {@link ViewConfig|view configurations}
    * @prop {number} adminVersion The specific version of admin service to use (optional)
    */
 
   /**
    * @external
    * @name "window.hlx.sidekickConfig"
-   * @type {sidekickConfig}
+   * @type {SidekickConfig}
    * @description The global variable holding the initial sidekick configuration.
    */
 
@@ -151,7 +164,7 @@
   /**
    * @event Sidekick#contextloaded
    * @type {Object} The context object
-   * @property {sidekickConfig} config The sidekick configuration
+   * @property {SidekickConfig} config The sidekick configuration
    * @property {Location} location The sidekick location
    * @description This event is fired when the context has been loaded.
    */
@@ -333,7 +346,7 @@
   /**
    * Returns the sidekick configuration.
    * @private
-   * @param {sidekickConfig} cfg The sidekick config (defaults to {@link window.hlx.sidekickConfig})
+   * @param {SidekickConfig} cfg The sidekick config (defaults to {@link window.hlx.sidekickConfig})
    * @param {Location} location The current location
    * @returns {Object} The sidekick configuration
    */
@@ -894,12 +907,22 @@
           // update preview
           const resp = await sk.update();
           if (!resp.ok) {
-            console.error(resp);
-            sk.showModal({
-              css: 'modal-preview-failure',
-              sticky: true,
-              level: 0,
-            });
+            if (status.webPath.startsWith('/.helix/') && resp.error) {
+              // show detail message only in config update mode
+              sk.showModal({
+                css: 'modal-config-failure',
+                message: resp.error,
+                sticky: true,
+                level: 0,
+              });
+            } else {
+              console.error(resp);
+              sk.showModal({
+                css: 'modal-preview-failure',
+                sticky: true,
+                level: 0,
+              });
+            }
             return;
           }
           // handle special case /.helix/*
@@ -1371,7 +1394,7 @@
   /**
    * Pushes down the page content to make room for the sidekick.
    * @private
-   * @see {@link sidekickConfig.noPushDown}
+   * @see {@link SidekickConfig.noPushDown}
    * @param {Sidekick} sk The sidekick
    * @param {number} skHeight The current height of the sidekick (optional)
    */
@@ -1567,7 +1590,7 @@
   class Sidekick extends HTMLElement {
     /**
      * Creates a new sidekick.
-     * @param {sidekickConfig} cfg The sidekick config
+     * @param {SidekickConfig} cfg The sidekick config
      */
     constructor(cfg) {
       super();
@@ -1761,7 +1784,7 @@
 
     /**
      * Loads the sidekick configuration and retrieves the location of the current document.
-     * @param {sidekickConfig} cfg The sidekick config
+     * @param {SidekickConfig} cfg The sidekick config
      * @fires Sidekick#contextloaded
      * @returns {Sidekick} The sidekick
      */
@@ -1839,7 +1862,7 @@
 
     /**
      * Adds a plugin to the sidekick.
-     * @param {plugin} plugin The plugin configuration.
+     * @param {_plugin} plugin The plugin configuration.
      * @returns {HTMLElement} The plugin
      */
     add(plugin) {
@@ -2228,7 +2251,7 @@
 
     /**
      * Displays a balloon with help content.
-     * @param {helpTopic} topic The topic
+     * @param {HelpTopic} topic The topic
      * @param {number} step The step number to display (starting with 0)
      * @returns {Sidekick} The sidekick
      */
@@ -2483,6 +2506,7 @@
       return {
         ok: (resp && resp.ok) || false,
         status: (resp && resp.status) || 0,
+        error: (resp && resp.headers.get('x-error')) || '',
         path,
       };
     }
@@ -2604,7 +2628,7 @@
    * @type {Function}
    * @description Initializes the sidekick and stores a reference to it in
    *              {@link window.hlx.sidekick}.
-   * @param {sidekickConfig} cfg The sidekick configuration
+   * @param {SidekickConfig} cfg The sidekick configuration
    *        (extends {@link window.hlx.sidekickConfig})
    * @returns {Sidekick} The sidekick
    */
