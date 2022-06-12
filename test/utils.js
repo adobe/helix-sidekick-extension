@@ -38,7 +38,7 @@ const SETUPS = {
       repo: 'pages',
       ref: 'main',
     },
-    configJs: 'window.hlx.initSidekick({host:"pages.adobe.com","hlx3":true});',
+    configJson: '{"host":"pages.adobe.com"}',
     api: {
       status: {
         html: {
@@ -73,7 +73,7 @@ const SETUPS = {
       ref: 'main',
       hlx3: true,
     },
-    configJs: 'window.hlx.initSidekick({host:"blog.adobe.com"});',
+    configJson: '{"host":"blog.adobe.com"}',
     api: {
       status: {
         html: {
@@ -185,8 +185,8 @@ class Setup {
    * The project config JS
    * @type {string}
    */
-  get configJs() {
-    return this._setup.configJs;
+  get configJson() {
+    return this._setup.configJson;
   }
 
   /**

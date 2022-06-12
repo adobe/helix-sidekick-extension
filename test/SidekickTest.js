@@ -159,7 +159,7 @@ class SidekickTest {
 
     // options derived from setup - or overrides
     this.url = o.url || this.setup.getUrl(this.env, this.type);
-    this.configJs = o.configJs || this.setup.configJs;
+    this.configJson = o.configJson || this.setup.configJson;
     this.sidekickConfig = o.sidekickConfig || this.setup.sidekickConfig;
     this.apiResponses = o.apiResponses || [this.setup.apiResponse('status', this.type)];
     this.contentResponses = o.contentResponses || [this.setup.contentResponse(this.type)];
@@ -201,7 +201,7 @@ class SidekickTest {
       checkRequest,
       apiResponses,
       contentResponses,
-      configJs,
+      configJson,
     } = this;
     let pageLoaded = false;
     let navigated;
@@ -274,9 +274,9 @@ class SidekickTest {
             if (req.url().startsWith('https://admin.hlx.page/')) {
               req.respond(toResp(apiResponses.length === 1
                 ? apiResponses[0] : apiResponses.shift()));
-            } else if (req.url().endsWith('/tools/sidekick/config.js')) {
+            } else if (req.url().endsWith('/tools/sidekick/config.json')) {
               configLoaded = req.url();
-              req.respond(toResp(configJs));
+              req.respond(toResp(configJson));
             } else if (req.url() === 'https://www.hlx.live/tools/sidekick/module.js') {
               try {
                 // return local module.js
@@ -315,24 +315,35 @@ class SidekickTest {
           const moduleScript = document.createElement('script');
           moduleScript.id = 'hlx-sk-module';
           moduleScript.src = '../../src/extension/module.js';
-          moduleScript.addEventListener('load', () => {
+          moduleScript.addEventListener('load', async () => {
             skCfg.scriptUrl = moduleScript.src;
             window.hlx.sidekickConfig = skCfg;
-            const { owner, repo, ref } = skCfg;
-            const configOrigin = `https://${ref}--${repo}--${owner}.hlx.live`;
-            const configScript = document.createElement('script');
-            configScript.id = 'hlx-sk-config';
-            configScript.src = `${configOrigin}/tools/sidekick/config.js`;
-            configScript.addEventListener('error', () => {
-              // if no project config, init sidekick with base config
-              window.hlx.initSidekick(skCfg);
-            });
-            // init sidekick via project config
-            if (document.getElementById(configScript.id)) {
-              document.getElementById(configScript.id).replaceWith(configScript);
-            } else {
-              document.head.append(configScript);
+            const {
+              owner,
+              repo,
+              ref,
+              devMode,
+            } = skCfg;
+            const configOrigin = devMode
+              ? 'http://localhost:3000'
+              : `https://${ref}--${repo}--${owner}.hlx.live`;
+            try {
+              const res = await fetch(`${configOrigin}/tools/sidekick/config.json`);
+              if (res.ok) {
+                skCfg = {
+                  ...skCfg,
+                  ...(await res.json()),
+                  // no overriding below
+                  owner,
+                  repo,
+                  ref,
+                };
+              }
+            } catch (e) {
+              // init sidekick without extended config
             }
+            // init sidekick
+            window.hlx.initSidekick(skCfg);
           });
           if (document.head.querySelector('script#hlx-sk-module')) {
             document.head.querySelector('script#hlx-sk-module').replaceWith(moduleScript);

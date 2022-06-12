@@ -22,7 +22,7 @@ const {
 } = require('./utils.js');
 const { SidekickTest } = require('./SidekickTest.js');
 
-describe('Test sidekick bookmarklet', () => {
+describe('Test sidekick module', () => {
   beforeEach(startBrowser);
   afterEach(stopBrowser);
 
@@ -90,16 +90,13 @@ describe('Test sidekick bookmarklet', () => {
 
   it('Adds plugin from config', async () => {
     const { configLoaded, plugins } = await new SidekickTest({
-      configJs: `
-        window.hlx.initSidekick({
-          plugins: [{
-            id: 'foo',
-            button: {
-              text: 'Foo',
-              action: () => {},
-            }
-          }],
-        });`,
+      configJson: `{
+        "plugins": [{
+          "id": "foo",
+          "title": "Foo",
+          "url": "https://www.foo.bar"
+        }]
+      }`,
     }).run();
     assert.strictEqual(new URL(configLoaded).host, 'main--blog--adobe.hlx.live', 'Did not load config from outer CDN');
     assert.ok(plugins.find((p) => p.id === 'foo'), 'Did not add plugin from config');
@@ -119,11 +116,9 @@ describe('Test sidekick bookmarklet', () => {
     const testOuterHost = 'test--blog--adobe.hlx.live';
     const { sidekick: { config: { outerHost } } } = await new SidekickTest({
       setup: 'blog',
-      configJs: `
-        window.hlx.initSidekick({
-          outerHost: '${testOuterHost}',
-        });
-      `,
+      configJson: `{
+        "outerHost": "${testOuterHost}"
+      }`,
     }).run();
     assert.strictEqual(
       outerHost,
@@ -157,16 +152,14 @@ describe('Test sidekick bookmarklet', () => {
 
   it('Loads config and plugins from project config', async () => {
     const test = new SidekickTest({
-      configJs: `
-      window.hlx.initSidekick({
-        host: 'blog.adobe.com',
-        plugins: [{
-          id: 'bar',
-          button: {
-            text: 'Bar',
-          },
-        }],
-      });`,
+      configJson: `{
+        "host": "blog.adobe.com",
+        "plugins": [{
+          "id": "bar",
+          "title": "Bar",
+          "url": "https://www.foo.bar"
+        }]
+      }`,
     });
     const { configLoaded, plugins, sidekick: { config: { host } } } = await test.run();
     assert.ok(configLoaded, 'Did not load project config');
@@ -442,7 +435,7 @@ describe('Test sidekick bookmarklet', () => {
   it('Detects production environment correctly', async () => {
     const test = new SidekickTest({
       url: 'https://blog.adobe.com/',
-      configJs: 'window.hlx.initSidekick({host: "blog.adobe.com"});',
+      configJson: '{"host": "blog.adobe.com"}',
       checkPage: async (p) => p.evaluate(() => window.hlx.sidekick.isProd()),
     });
     assert.ok((await test.run()).checkPageResult, 'Did not detect production URL');
@@ -466,7 +459,7 @@ describe('Test sidekick bookmarklet', () => {
 
   it('Pushes down custom elements', async () => {
     const { checkPageResult } = await new SidekickTest({
-      configJs: 'window.hlx.initSidekick({pushDownSelector:"#topnav"})',
+      configJson: '{"pushDownSelector":"#topnav"}',
       pre: (p) => p.evaluate(() => {
         // add topnav element
         const topNav = document.createElement('div');
@@ -481,7 +474,7 @@ describe('Test sidekick bookmarklet', () => {
 
   it('Push down adjusts height of word iframe', async () => {
     const { checkPageResult } = await new SidekickTest({
-      configJs: 'window.hlx.initSidekick({pushDownSelector:"#topnav"})',
+      configJson: '{"pushDownSelector":"#topnav"}',
       pre: (p) => p.evaluate(() => {
         // add fake word iframe
         const frame = document.createElement('iframe');
@@ -508,7 +501,7 @@ describe('Test sidekick bookmarklet', () => {
 
   it('Does not push down if pushDown false', async () => {
     const { checkPageResult } = await new SidekickTest({
-      configJs: 'window.hlx.initSidekick({pushDown:false})',
+      configJson: '{"pushDown":false}',
       checkPage: (p) => p.evaluate(() => document.documentElement.style.marginTop),
     }).run();
     assert.strictEqual(checkPageResult, '', 'Pushed down content');
@@ -516,7 +509,7 @@ describe('Test sidekick bookmarklet', () => {
 
   it('Does not push down if gdrive', async () => {
     const { checkPageResult } = await new SidekickTest({
-      configJs: 'window.hlx.initSidekick({pushDown:false})',
+      configJson: '{"pushDown":false}',
       url: 'https://docs.google.com/document/d/2E1PNphAhTZAZrDjevM0BX7CZr7KjomuBO6xE1TUo9NU/edit',
       checkPage: (p) => p.evaluate(() => document.documentElement.style.marginTop),
     }).run();
@@ -533,10 +526,10 @@ describe('Test sidekick bookmarklet', () => {
     assert.ok(checkPageResult, 'Did not show data view for JSON file');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
-  it('Shows custom view for JSON file', async () => {
+  it.skip('Shows custom view for JSON file', async () => {
     const { checkPageResult: [text, color] } = await new SidekickTest({
       type: 'json',
-      configJs: `window.hlx.initSidekick({
+      configJson: `{
         specialViews: [
           {
             path: '**.json',
@@ -546,7 +539,7 @@ describe('Test sidekick bookmarklet', () => {
             css: '.hlx-sk-special-view { color: orange }',
           },
         ],
-      })`,
+      }`,
       checkPage: (p) => p.evaluate(() => {
         const view = window.hlx.sidekick.shadowRoot.querySelector('.hlx-sk-special-view');
         return view ? [view.textContent, window.getComputedStyle(view).color] : [];
@@ -559,51 +552,36 @@ describe('Test sidekick bookmarklet', () => {
   it('Shows custom view with external CSS', async () => {
     const { checkPageResult: [text, color] } = await new SidekickTest({
       type: 'json',
-      configJs: `window.hlx.initSidekick({
-        specialViews: [
+      configJson: `{
+        "specialViews": [
           {
-            path: '**.json',
-            js: (container) => {
-              container.textContent = 'External CSS';
-            },
-            css: '${__dirname}/fixtures/custom-json-view.css',
-          },
-        ],
-      })`,
+            "path": "**.json",
+            "css": "${__dirname}/fixtures/custom-json-view.css"
+          }
+        ]
+      }`,
       checkPage: (p) => p.evaluate(() => {
         const view = window.hlx.sidekick.shadowRoot.querySelector('.hlx-sk-special-view');
         return view ? [view.textContent, window.getComputedStyle(view).color] : [];
       }),
     }).run();
-    assert.strictEqual(text, 'External CSS', 'Did not show custom view for JSON file');
     assert.strictEqual(color, 'rgb(0, 255, 0)', 'Did not apply custom styling to special view');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Shows help content', async () => {
     const { notification } = await new SidekickTest({
-      plugin: 'help',
-      pluginSleep: 2000,
-      configJs: `window.hlx.initSidekick({
-        plugins: [{
-          id: 'help',
-          button: {
-            text: 'Help',
-            action: (_, sk) => {
-              sk.showHelp({
-                id: 'test',
-                steps: [
-                  {
-                    message: 'Lorem ipsum dolor sit amet',
-                    selector: '.env',
-                    align: 'bottom-right',
-                  },
-                ],
-              });
-              console.log(sk._modal);
+      post: (p) => p.evaluate(() => {
+        window.hlx.sidekick.showHelp({
+          id: 'test',
+          steps: [
+            {
+              message: 'Lorem ipsum dolor sit amet',
+              selector: '.env',
+              align: 'bottom-right',
             },
-          },
-        }],
-      });`,
+          ],
+        });
+      }),
       // eslint-disable-next-line no-underscore-dangle
       checkPage: (p) => p.evaluate(() => window.hlx.sidekick._modal.classList.toString()),
     }).run();
