@@ -9,35 +9,19 @@
 ## Typedefs
 
 <dl>
-<dt><a href="#elemAttr">elemAttr</a> : <code>Object.&lt;string, string&gt;</code></dt>
-<dd><p>The name and value of the attribute to set on an element.</p>
-</dd>
-<dt><a href="#elemLstnr">elemLstnr</a> : <code>Object.&lt;string, function()&gt;</code></dt>
-<dd><p>The event name and listener to register on an element.</p>
-</dd>
-<dt><a href="#elemConfig">elemConfig</a> : <code>Object</code></dt>
-<dd><p>The configuration of an element to add.</p>
-</dd>
-<dt><a href="#pluginButton">pluginButton</a> : <code>Object</code></dt>
-<dd><p>The configuration for a plugin button. This can be used as
-a shorthand for <a href="#elemConfig">elemConfig</a>.</p>
-</dd>
-<dt><a href="#plugin">plugin</a> : <code>Object</code></dt>
+<dt><a href="#Plugin">Plugin</a> : <code>Object</code></dt>
 <dd><p>The plugin configuration.</p>
 </dd>
-<dt><a href="#viewCallback">viewCallback</a> : <code>function</code></dt>
-<dd><p>A callback function to render a view.</p>
-</dd>
-<dt><a href="#viewConfig">viewConfig</a> : <code>Object</code></dt>
+<dt><a href="#ViewConfig">ViewConfig</a> : <code>Object</code></dt>
 <dd><p>A custom view configuration.</p>
 </dd>
-<dt><a href="#helpStep">helpStep</a> : <code>Object</code></dt>
-<dd><p>The definition of a help step inside a <a href="#helpTopic">helpTopic</a>.</p>
+<dt><a href="#HelpStep">HelpStep</a> : <code>Object</code></dt>
+<dd><p>The definition of a help step inside a <a href="#HelpTopic">help topic</a>.</p>
 </dd>
-<dt><a href="#helpTopic">helpTopic</a> : <code>Object</code></dt>
+<dt><a href="#HelpTopic">HelpTopic</a> : <code>Object</code></dt>
 <dd><p>The definition of a help topic.</p>
 </dd>
-<dt><a href="#sidekickConfig">sidekickConfig</a> : <code>Object</code></dt>
+<dt><a href="#SidekickConfig">SidekickConfig</a> : <code>Object</code></dt>
 <dd><p>The sidekick configuration.</p>
 </dd>
 </dl>
@@ -45,7 +29,7 @@ a shorthand for <a href="#elemConfig">elemConfig</a>.</p>
 ## External
 
 <dl>
-<dt><a href="#external_window.hlx.sidekickConfig">window.hlx.sidekickConfig</a> : <code><a href="#sidekickConfig">sidekickConfig</a></code></dt>
+<dt><a href="#external_window.hlx.sidekickConfig">window.hlx.sidekickConfig</a> : <code><a href="#SidekickConfig">SidekickConfig</a></code></dt>
 <dd><p>The global variable holding the initial sidekick configuration.</p>
 </dd>
 <dt><a href="#external_window.hlx.sidekick">window.hlx.sidekick</a> : <code><a href="#Sidekick">Sidekick</a></code></dt>
@@ -126,7 +110,7 @@ Creates a new sidekick.
 
 | Param | Type | Description |
 | --- | --- | --- |
-| cfg | [<code>sidekickConfig</code>](#sidekickConfig) | The sidekick config |
+| cfg | [<code>SidekickConfig</code>](#SidekickConfig) | The sidekick config |
 
 <a name="Sidekick+fetchStatus"></a>
 
@@ -147,7 +131,7 @@ Loads the sidekick configuration and retrieves the location of the current docum
 
 | Param | Type | Description |
 | --- | --- | --- |
-| cfg | [<code>sidekickConfig</code>](#sidekickConfig) | The sidekick config |
+| cfg | [<code>SidekickConfig</code>](#SidekickConfig) | The sidekick config |
 
 <a name="Sidekick+checkPushDownContent"></a>
 
@@ -190,7 +174,7 @@ Adds a plugin to the sidekick.
 
 | Param | Type | Description |
 | --- | --- | --- |
-| plugin | [<code>plugin</code>](#plugin) | The plugin configuration. |
+| plugin | <code>\_plugin</code> | The plugin configuration. |
 
 <a name="Sidekick+get"></a>
 
@@ -345,7 +329,7 @@ Displays a balloon with help content.
 
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
-| topic | [<code>helpTopic</code>](#helpTopic) |  | The topic |
+| topic | [<code>HelpTopic</code>](#HelpTopic) |  | The topic |
 | step | <code>number</code> | <code>0</code> | The step number to display (starting with 0) |
 
 <a name="Sidekick+loadCSS"></a>
@@ -473,7 +457,7 @@ This event is fired when the context has been loaded.
 
 | Name | Type | Description |
 | --- | --- | --- |
-| config | [<code>sidekickConfig</code>](#sidekickConfig) | The sidekick configuration |
+| config | [<code>SidekickConfig</code>](#SidekickConfig) | The sidekick configuration |
 | location | <code>Location</code> | The sidekick location |
 
 <a name="Sidekick+event_statusfetched"></a>
@@ -555,53 +539,9 @@ This event is fired when a help dialog has been acknowledged.
 This event is fired when a user decides to opt out of help content.
 
 **Kind**: event emitted by [<code>Sidekick</code>](#Sidekick)  
-<a name="elemAttr"></a>
+<a name="Plugin"></a>
 
-## elemAttr : <code>Object.&lt;string, string&gt;</code>
-The name and value of the attribute to set on an element.
-
-**Kind**: global typedef  
-<a name="elemLstnr"></a>
-
-## elemLstnr : <code>Object.&lt;string, function()&gt;</code>
-The event name and listener to register on an element.
-
-**Kind**: global typedef  
-<a name="elemConfig"></a>
-
-## elemConfig : <code>Object</code>
-The configuration of an element to add.
-
-**Kind**: global typedef  
-**Properties**
-
-| Name | Type | Description |
-| --- | --- | --- |
-| tag | <code>string</code> | The tag name (mandatory) |
-| text | <code>string</code> | The text content (optional) |
-| attrs | [<code>Array.&lt;elemAttr&gt;</code>](#elemAttr) | The attributes (optional) |
-| lstnrs | [<code>Array.&lt;elemLstnr&gt;</code>](#elemLstnr) | The event listeners (optional) |
-
-<a name="pluginButton"></a>
-
-## pluginButton : <code>Object</code>
-The configuration for a plugin button. This can be used as
-a shorthand for [elemConfig](#elemConfig).
-
-**Kind**: global typedef  
-**Properties**
-
-| Name | Type | Default | Description |
-| --- | --- | --- | --- |
-| text | <code>string</code> |  | The button text |
-| action | <code>function</code> |  | The click listener |
-| isPressed | <code>function</code> | <code>false</code> | Determines whether the button is pressed |
-| isEnabled | <code>function</code> | <code>true</code> | Determines whether to enable the button |
-| isDropdown | <code>boolean</code> | <code>false</code> | Determines whether to turn this button into a dropdown |
-
-<a name="plugin"></a>
-
-## plugin : <code>Object</code>
+## Plugin : <code>Object</code>
 The plugin configuration.
 
 **Kind**: global typedef  
@@ -610,29 +550,16 @@ The plugin configuration.
 | Name | Type | Default | Description |
 | --- | --- | --- | --- |
 | id | <code>string</code> |  | The plugin ID (mandatory) |
-| button | [<code>pluginButton</code>](#pluginButton) |  | A button configuration object (optional) |
+| title | <code>string</code> |  | The button text |
+| i18n_title | <code>Object</code> | <code>{}</code> | A map of translated button texts |
+| url | <code>string</code> |  | The URL to open when the button is clicked |
 | container | <code>string</code> |  | The ID of a dropdown to add this plugin to (optional) |
-| override | <code>boolean</code> | <code>false</code> | Determines whether to replace an existing plugin |
-| elements | [<code>Array.&lt;elemConfig&gt;</code>](#elemConfig) |  | An array of elements to add (optional) |
-| condition | <code>function</code> |  | Determines whether to show this plugin (optional). This function is expected to return a boolean when called with the sidekick as argument. |
-| advanced | <code>function</code> |  | Show this plugin only in advanced mode (optional). This function is expected to return a boolean when called with the sidekick as argument. |
-| callback | <code>function</code> |  | A function called after adding the plugin (optional). This function is called with the sidekick and the newly added plugin as arguments. |
+| is_container | <code>boolean</code> |  | Determines whether to turn this plugin into a dropdown |
+| environments | <code>Array.&lt;string&gt;</code> |  | Specifies when to show this plugin (edit, preview, live, or prod) |
 
-<a name="viewCallback"></a>
+<a name="ViewConfig"></a>
 
-## viewCallback : <code>function</code>
-A callback function to render a view.
-
-**Kind**: global typedef  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| viewContainer | <code>HTMLELement</code> | The view container |
-| data | <code>Object</code> | The data to display |
-
-<a name="viewConfig"></a>
-
-## viewConfig : <code>Object</code>
+## ViewConfig : <code>Object</code>
 A custom view configuration.
 
 **Kind**: global typedef  
@@ -640,14 +567,13 @@ A custom view configuration.
 
 | Name | Type | Description |
 | --- | --- | --- |
-| js | <code>string</code> \| [<code>viewCallback</code>](#viewCallback) | The URL of a JS module or a function to render this view |
 | path | <code>string</code> | The path or globbing pattern where to apply this view |
 | css | <code>string</code> | The URL of a CSS file or inline CSS to render this view (optional) |
 
-<a name="helpStep"></a>
+<a name="HelpStep"></a>
 
-## helpStep : <code>Object</code>
-The definition of a help step inside a [helpTopic](#helpTopic).
+## HelpStep : <code>Object</code>
+The definition of a help step inside a [help topic](#HelpTopic).
 
 **Kind**: global typedef  
 **Properties**
@@ -657,9 +583,9 @@ The definition of a help step inside a [helpTopic](#helpTopic).
 | message | <code>string</code> | The help message |
 | selector | <code>string</code> | The CSS selector of the target element |
 
-<a name="helpTopic"></a>
+<a name="HelpTopic"></a>
 
-## helpTopic : <code>Object</code>
+## HelpTopic : <code>Object</code>
 The definition of a help topic.
 
 **Kind**: global typedef  
@@ -668,11 +594,11 @@ The definition of a help topic.
 | Name | Type | Description |
 | --- | --- | --- |
 | id | <code>string</code> | The ID of the help topic |
-| steps | [<code>Array.&lt;helpStep&gt;</code>](#helpStep) | An array of [helpStep](#helpStep)s |
+| steps | [<code>Array.&lt;HelpStep&gt;</code>](#HelpStep) | An array of [help steps](#HelpStep) |
 
-<a name="sidekickConfig"></a>
+<a name="SidekickConfig"></a>
 
-## sidekickConfig : <code>Object</code>
+## SidekickConfig : <code>Object</code>
 The sidekick configuration.
 
 **Kind**: global typedef  
@@ -684,19 +610,19 @@ The sidekick configuration.
 | repo | <code>string</code> |  | The GitHub owner or organization (mandatory) |
 | ref | <code>string</code> | <code>&quot;main&quot;</code> | The Git reference or branch (optional) |
 | project | <code>string</code> |  | The name of the Helix project used in the sharing link (optional) |
-| plugins | [<code>Array.&lt;plugin&gt;</code>](#plugin) |  | An array of plugin configurations (optional) |
+| plugins | [<code>Array.&lt;Plugin&gt;</code>](#Plugin) |  | An array of [plugin configurations](#Plugin) (optional) |
 | outerHost | <code>string</code> |  | The outer CDN's host name (optional) |
 | host | <code>string</code> |  | The production host name to publish content to (optional) |
 | byocdn | <code>boolean</code> | <code>false</code> | <pre>true</pre> if the production host is a 3rd party CDN |
 | devMode | <code>boolean</code> | <code>false</code> | Loads configuration and plugins from the developmemt environment |
 | pushDown | <code>boolean</code> | <code>false</code> | <pre>true</pre> to have the sidekick push down page content |
 | pushDownSelector | <code>string</code> |  | The CSS selector for absolute elements to also push down |
-| specialViews | [<code>Array.&lt;viewConfig&gt;</code>](#viewConfig) |  | An array of custom view configurations (optional) |
+| specialViews | [<code>Array.&lt;ViewConfig&gt;</code>](#ViewConfig) |  | An array of custom [view configurations](#ViewConfig) |
 | adminVersion | <code>number</code> |  | The specific version of admin service to use (optional) |
 
 <a name="external_window.hlx.sidekickConfig"></a>
 
-## window.hlx.sidekickConfig : [<code>sidekickConfig</code>](#sidekickConfig)
+## window.hlx.sidekickConfig : [<code>SidekickConfig</code>](#SidekickConfig)
 The global variable holding the initial sidekick configuration.
 
 **Kind**: global external  
@@ -723,5 +649,5 @@ Initializes the sidekick and stores a reference to it in
 
 | Param | Type | Description |
 | --- | --- | --- |
-| cfg | [<code>sidekickConfig</code>](#sidekickConfig) | The sidekick configuration        (extends [window.hlx.sidekickConfig](window.hlx.sidekickConfig)) |
+| cfg | [<code>SidekickConfig</code>](#SidekickConfig) | The sidekick configuration        (extends [window.hlx.sidekickConfig](window.hlx.sidekickConfig)) |
 

@@ -15,26 +15,18 @@
 
 (() => {
   /**
-   * @typedef {Object.<string, string>} elemAttr
-   * @description The name and value of the attribute to set on an element.
-   */
-
-  /**
-   * @typedef {Object.<string, Function>} elemLstnr
-   * @description The event name and listener to register on an element.
-   */
-
-  /**
-   * @typedef {Object} elemConfig
+   * @typedef {Object} ElemConfig
+   * @private
    * @description The configuration of an element to add.
    * @prop {string}      tag    The tag name (mandatory)
    * @prop {string}      text   The text content (optional)
-   * @prop {elemAttr[]}  attrs  The attributes (optional)
-   * @prop {elemLstnr[]} lstnrs The event listeners (optional)
+   * @prop {Object[]}  attrs  The attributes (optional)
+   * @prop {Object[]} lstnrs The event listeners (optional)
    */
 
   /**
-   * @typedef {Object} pluginButton
+   * @typedef {Object} PluginButton
+   * @private
    * @description The configuration for a plugin button. This can be used as
    * a shorthand for {@link elemConfig}.
    * @prop {string}   text   The button text
@@ -45,14 +37,14 @@
    */
 
   /**
-   * @typedef {Object} _plugin
+   * @typedef {Object} _Plugin
    * @private
    * @description The internal plugin configuration.
    * @prop {string}       id        The plugin ID (mandatory)
-   * @prop {pluginButton} button    A button configuration object (optional)
+   * @prop {PluginButton} button    A button configuration object (optional)
    * @prop {string}       container The ID of a dropdown to add this plugin to (optional)
    * @prop {boolean}      override=false Determines whether to replace an existing plugin
-   * @prop {elemConfig[]} elements  An array of elements to add (optional)
+   * @prop {ElemConfig[]} elements  An array of elements to add (optional)
    * @prop {Function}     condition Determines whether to show this plugin (optional).
    * This function is expected to return a boolean when called with the sidekick as argument.
    * @prop {Function}     advanced  Show this plugin only in advanced mode (optional).
@@ -62,11 +54,11 @@
    */
 
   /**
-   * @typedef {Object} plugin
+   * @typedef {Object} Plugin
    * @description The plugin configuration.
    * @prop {string} id The plugin ID (mandatory)
    * @prop {string} title The button text
-   * @prop {Object.<string, string>} i18n_title={} A map of translated button texts
+   * @prop {Object} i18n_title={} A map of translated button texts
    * @prop {string} url The URL to open when the button is clicked
    * @prop {string} container The ID of a dropdown to add this plugin to (optional)
    * @prop {boolean} is_container Determines whether to turn this plugin into a dropdown
@@ -74,16 +66,8 @@
    */
 
   /**
-   * A callback function to render a view.
-   * @callback viewCallback
-   * @param {HTMLELement} viewContainer The view container
-   * @param {Object} data The data to display
-   */
-
-  /**
    * @typedef {Object} ViewConfig
    * @description A custom view configuration.
-   * @prop {string|viewCallback} js The URL of a JS module or a function to render this view
    * @prop {string} path The path or globbing pattern where to apply this view
    * @prop {string} css The URL of a CSS file or inline CSS to render this view (optional)
    */
