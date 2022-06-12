@@ -550,7 +550,7 @@ describe('Test sidekick module', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Shows custom view with external CSS', async () => {
-    const { checkPageResult: [text, color] } = await new SidekickTest({
+    const { checkPageResult: color } = await new SidekickTest({
       type: 'json',
       configJson: `{
         "specialViews": [
@@ -562,7 +562,7 @@ describe('Test sidekick module', () => {
       }`,
       checkPage: (p) => p.evaluate(() => {
         const view = window.hlx.sidekick.shadowRoot.querySelector('.hlx-sk-special-view');
-        return view ? [view.textContent, window.getComputedStyle(view).color] : [];
+        return view ? window.getComputedStyle(view).color : '';
       }),
     }).run();
     assert.strictEqual(color, 'rgb(0, 255, 0)', 'Did not apply custom styling to special view');
