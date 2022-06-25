@@ -43,6 +43,7 @@
    * @prop {string}       id        The plugin ID (mandatory)
    * @prop {PluginButton} button    A button configuration object (optional)
    * @prop {string}       container The ID of a dropdown to add this plugin to (optional)
+   * @prop {boolean}      feature=false Determines whether to group this plugin with the features
    * @prop {boolean}      override=false Determines whether to replace an existing plugin
    * @prop {ElemConfig[]} elements  An array of elements to add (optional)
    * @prop {Function}     condition Determines whether to show this plugin (optional).
@@ -795,6 +796,21 @@
    * @param {Sidekick} sk The sidekick
    */
   function addEnvPlugins(sk) {
+    // add env container
+    sk.add({
+      id: 'env',
+      feature: true,
+      button: {
+        isDropdown: true,
+      },
+      callback: (sidekick, $env) => {
+        if (sidekick.isDev()) $env.classList.add('dev');
+        if (sidekick.isInner()) $env.classList.add('preview');
+        if (sidekick.isOuter()) $env.classList.add('live');
+        if (sidekick.isProd()) $env.classList.add('prod');
+      },
+    });
+
     // dev
     sk.add({
       id: 'dev',
@@ -817,6 +833,7 @@
     // preview
     sk.add({
       id: 'preview',
+      container: 'env',
       condition: (sidekick) => sidekick.isEditor() || sidekick.isHelix(),
       button: {
         action: async (evt) => {
@@ -834,6 +851,7 @@
     // live
     sk.add({
       id: 'live',
+      container: 'env',
       condition: (sidekick) => sidekick.config.outerHost
         && (sidekick.isEditor() || sidekick.isHelix()),
       button: {
@@ -853,6 +871,7 @@
     // production
     sk.add({
       id: 'prod',
+      container: 'env',
       condition: (sidekick) => sidekick.config.host
         && sidekick.config.host !== sidekick.config.outerHost
         && (sidekick.isEditor() || sidekick.isHelix()),
@@ -1359,8 +1378,7 @@
   }
 
   /**
-   * Adds the default and custom plugins to the sidekick, or checks existing
-   * plugins based on the status of the current resource.
+   * Checks existing plugins based on the status of the current resource.
    * @private
    * @param {Sidekick} sk The sidekick
    */
@@ -1856,28 +1874,11 @@
           || (typeof plugin.condition === 'function' && plugin.condition(this));
         // find existing plugin
         let $plugin = this.get(plugin.id);
-        let $pluginContainer = (plugin.container
-          && this.root
-            .querySelector(`.dropdown.${plugin.container} .dropdown-container`))
+        const $pluginContainer = (plugin.container && this.root
+          .querySelector(`.dropdown.${plugin.container} .dropdown-container`))
+          || (plugin.feature && this.root
+            .querySelector('.feature-container'))
           || this.pluginContainer;
-        if (ENVS[plugin.id]) {
-          // find or create environment plugin container
-          $pluginContainer = this.root.querySelector(':scope .env .dropdown-container');
-          if (!$pluginContainer) {
-            const $envDropdown = appendTag(
-              this.featureContainer,
-              createDropdown(this, {
-                id: 'env',
-              }),
-              this.featureContainer.firstElementChild,
-            );
-            if (this.isDev()) $envDropdown.classList.add('dev');
-            if (this.isInner()) $envDropdown.classList.add('preview');
-            if (this.isOuter()) $envDropdown.classList.add('live');
-            if (this.isProd()) $envDropdown.classList.add('prod');
-            $pluginContainer = $envDropdown.querySelector(':scope .dropdown-container');
-          }
-        }
         // re-check plugin once status is fetched
         this.addEventListener('statusfetched', () => {
           if (typeof plugin.condition === 'function') {
@@ -1911,12 +1912,13 @@
           },
         };
         if (!$plugin && plugin.isShown) {
+          const $before = !!plugin.feature && this.root.querySelector('.feature-container').firstElementChild;
           // add new plugin
           if (plugin.button && plugin.button.isDropdown) {
             // add dropdown
-            return appendTag($pluginContainer, createDropdown(this, plugin));
+            return appendTag($pluginContainer, createDropdown(this, plugin), $before);
           }
-          $plugin = appendTag($pluginContainer, pluginCfg);
+          $plugin = appendTag($pluginContainer, pluginCfg, $before);
           if ($pluginContainer === this.pluginContainer
               && this.pluginContainer.classList.contains('loading')) {
             // remove loading text
