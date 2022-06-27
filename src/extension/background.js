@@ -15,7 +15,7 @@
 import {
   GH_URL,
   SHARE_PREFIX,
-  // DEV_URL,
+  DEV_URL,
   MANIFEST,
   log,
   i18n,
@@ -26,7 +26,6 @@ import {
   addConfig,
   getShareSettings,
   getGitHubSettings,
-  // setProxyUrl,
   setConfig,
   getConfig,
 } from './utils.js';
@@ -54,6 +53,41 @@ function getConfigFromTabUrl(tabUrl) {
     }
   }
   return cfg;
+}
+
+/**
+ * Retrieves the proxy URL from a local dev tab.
+ * @param {chrome.tabs.Tab} tab The tab
+ * @returns {Promise} The proxy URL
+ */
+async function getProxyUrl({ id, url: tabUrl }) {
+  if (tabUrl.startsWith(DEV_URL)) {
+    return new Promise((resolve) => {
+      // inject proxy url retriever
+      chrome.scripting.executeScript({
+        target: { tabId: id },
+        func: () => {
+          let proxyUrl = null;
+          const meta = document.head.querySelector('meta[property="hlx:proxyUrl"]');
+          if (meta && meta.content) {
+            proxyUrl = meta.content;
+          }
+          chrome.runtime.sendMessage({ proxyUrl });
+        },
+      });
+      // listen for proxy url from tab
+      const listener = ({ proxyUrl: proxyUrlFromTab }, { tab }) => {
+        // check if message is from the right tab
+        if (tab && tab.url === tabUrl && tab.id === id) {
+          chrome.runtime.onMessage.removeListener(listener);
+          resolve(proxyUrlFromTab);
+        }
+      };
+      chrome.runtime.onMessage.addListener(listener);
+    });
+  } else {
+    return tabUrl;
+  }
 }
 
 /**
@@ -95,13 +129,21 @@ async function checkContextMenu(tabUrl, configs = []) {
  * @param {number} id The ID of the tab
  */
 function checkTab(id) {
-  getState(({ configs, proxyUrl }) => {
+  getState(({ configs }) => {
     chrome.tabs.get(id, async (tab = {}) => {
       checkLastError();
       if (!tab.url) return;
-      checkContextMenu(tab.url, configs);
+      let checkUrl = tab.url;
+      // check if active tab has a local dev URL
+      if (checkUrl.startsWith(DEV_URL)) {
+        // retrieve proxy url
+        log.debug('local dev url detected, retrieve proxy url');
+        checkUrl = await getProxyUrl(tab);
+        log.debug('proxy url:', checkUrl);
+      }
+      checkContextMenu(checkUrl, configs);
       // check if active tab has share URL and ask to add config
-      if (new URL(tab.url).pathname === SHARE_PREFIX) {
+      if (new URL(checkUrl).pathname === SHARE_PREFIX) {
         log.debug('share url detected, inject install helper');
         try {
           // instrument generator page
@@ -113,8 +155,8 @@ function checkTab(id) {
           log.error('error instrumenting generator page', id, e);
         }
       }
-      const matches = getConfigMatches(configs, tab.url, proxyUrl);
-      log.debug('checking', id, tab.url, matches);
+      const matches = getConfigMatches(configs, checkUrl);
+      log.debug('checking', id, checkUrl, matches);
       const allowed = matches.length > 0;
       if (allowed) {
         try {
@@ -122,6 +164,11 @@ function checkTab(id) {
           chrome.scripting.executeScript({
             target: { tabId: id },
             files: ['./content.js'],
+          }, () => {
+            // send config matches to tab
+            chrome.tabs.sendMessage(id, {
+              configMatches: matches,
+            });
           });
         } catch (e) {
           log.error('error enabling extension', id, e);
@@ -245,46 +292,6 @@ async function updateHelpContent() {
       log.info(`sidekick now ${display ? 'shown' : 'hidden'}`);
     }
   });
-
-  // todo: find alternative to programmatic request handling using chrome.webRequest
-  // https://stackoverflow.com/questions/70659545/how-to-handle-chrome-webrequest-onheadersreceived-event-using-declarativenetrequ
-  // if (chrome.webRequest) {
-  //   // retrieve proxy url from local development
-  //   chrome.webRequest.onHeadersReceived.addListener(
-  //     (details) => {
-  //       chrome.tabs.query({
-  //         currentWindow: true,
-  //         active: true,
-  //       }, async (tabs) => {
-  //         checkLastError();
-  //         if (Array.isArray(tabs) && tabs.length > 0) {
-  //           const rUrl = new URL(details.url);
-  //           const tabUrl = new URL(tabs[0].url);
-  //           if (tabUrl.pathname === rUrl.pathname) {
-  //             setProxyUrl('', async () => {
-  //               const { responseHeaders } = details;
-  //               // try "via" response header
-  //               const via = responseHeaders.find((h) => h.name.toLowerCase() === 'via')?.value;
-  //               const proxyHost = via?.split(' ')[1];
-  //               if (proxyHost && proxyHost !== 'varnish') {
-  //                 const proxyUrl = new URL(tabs[0].url);
-  //                 proxyUrl.hostname = proxyHost;
-  //                 proxyUrl.protocol = 'https';
-  //                 proxyUrl.port = '';
-  //                 await setProxyUrl(
-  //                   proxyUrl.toString(),
-  //                   (purl) => log.info('new proxy url', purl),
-  //                 );
-  //               }
-  //             });
-  //           }
-  //         }
-  //       });
-  //     },
-  //     { urls: [`${DEV_URL}/*`] },
-  //     ['responseHeaders'],
-  //   );
-  // }
 })();
 
 // announce sidekick display state

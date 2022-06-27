@@ -127,7 +127,6 @@ export async function getState(cb) {
   if (typeof cb === 'function') {
     const display = await getConfig('local', 'hlxSidekickDisplay') || false;
     const adminVersion = await getConfig('local', 'hlxSidekickAdminVersion');
-    const proxyUrl = await getConfig('local', 'hlxSidekickProxyUrl');
 
     const pushDown = await getConfig('sync', 'hlxSidekickPushDown') || false;
     const configs = await getConfig('sync', 'hlxSidekickConfigs') || [];
@@ -135,7 +134,6 @@ export async function getState(cb) {
     cb({
       display,
       adminVersion,
-      proxyUrl,
       pushDown,
       configs,
     });
@@ -156,11 +154,7 @@ function sameSharePointSite(mountpoint, pathname) {
   return false;
 }
 
-export function getConfigMatches(configs, tabUrl, proxyUrl) {
-  if (tabUrl.startsWith(DEV_URL) && proxyUrl) {
-    log.info('matching against proxy url', proxyUrl);
-    tabUrl = proxyUrl;
-  }
+export function getConfigMatches(configs, tabUrl) {
   const matches = [];
   const {
     host: checkHost,
@@ -243,18 +237,23 @@ export function isValidShareURL(shareurl) {
   return Object.keys(getShareSettings(shareurl)).length > 1;
 }
 
-async function getProjectConfig(owner, repo, ref) {
-  const configJS = `https://raw.githubusercontent.com/${owner}/${repo}/${ref}/tools/sidekick/config.js`;
+async function getProjectConfig(owner, repo, ref = 'main') {
   const cfg = {};
-  const res = await fetch(configJS);
+  const res = await fetch(`https://${ref}--${repo}--${owner}.hlx.page/helix-env.json`);
   if (res.ok) {
-    const js = await res.text();
-    ['project', 'host', 'outerHost'].forEach((prop) => {
-      const [, value] = new RegExp(`${prop}: ?["']{1}(.*)['"]{1}`).exec(js) || [];
-      if (value) {
-        cfg[prop] = value;
-      }
-    });
+    const { prod, project, contentSourceUrl } = await res.json();
+    if (prod && prod.host) {
+      cfg.host = prod.host;
+    }
+    if (project) {
+      cfg.project = project;
+    }
+    if (contentSourceUrl) {
+      cfg.mountpoints = [contentSourceUrl];
+    }
+  } else {
+    // exract mountpoints from fstab.yaml
+    cfg.mountpoints = await getMountpoints(owner, repo, ref);
   }
   return cfg;
 }
@@ -274,6 +273,7 @@ export async function assembleConfig({
   project = project || projectConfig.project;
   host = host || projectConfig.host;
   outerHost = outerHost || projectConfig.outerHost;
+  mountpoints = mountpoints || projectConfig.mountpoints;
 
   return {
     id: `${owner}/${repo}/${ref}`,
@@ -286,7 +286,7 @@ export async function assembleConfig({
     owner,
     repo,
     ref,
-    mountpoints: mountpoints || await getMountpoints(owner, repo, ref),
+    mountpoints,
   };
 }
 
@@ -337,16 +337,6 @@ export async function setDisplay(display, cb) {
       if (typeof cb === 'function') cb(display);
     })
     .catch((e) => log.error('error setting display', e));
-}
-
-export async function setProxyUrl(proxyUrl, cb) {
-  setConfig('local', {
-    hlxSidekickProxyUrl: proxyUrl,
-  })
-    .then(() => {
-      if (typeof cb === 'function') cb(proxyUrl);
-    })
-    .catch((e) => log.error('error setting proxyUrl', e));
 }
 
 export function toggleDisplay(cb) {
