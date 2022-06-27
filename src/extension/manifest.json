@@ -26,6 +26,9 @@
     "__safari__persistent": false,
     "page": "background.html"
   },
+  "externally_connectable": {
+    "matches": ["https://admin.hlx.page/*"]
+  },
   "web_accessible_resources": [
     "configpicker.js",
     "lib/polyfills.min.js",
