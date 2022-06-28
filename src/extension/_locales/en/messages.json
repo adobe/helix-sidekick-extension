@@ -1,6 +1,6 @@
 {
   "title": {
-    "message": "Helix Sidekick (Beta)"
+    "message": "Helix Sidekick (Beta, MV3)"
   },
   "description": {
     "message": "Helix Sidekick allows authors in Helix projects to easily preview and publish their content."
@@ -62,7 +62,7 @@
   },
   "config_shareurl_placeholder": {
     "message": "Sharing URL: https://www.hlx.live/sidekick..."
-  }, 
+  },
   "config_shareurl_share_title": {
     "message": "Helix Sidekick configuration for $1"
   },

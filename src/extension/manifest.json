@@ -21,6 +21,9 @@
     "service_worker": "background.js",
     "type": "module"
   },
+  "externally_connectable": {
+    "matches": ["https://admin.hlx.page/*"]
+  },
   "web_accessible_resources": [{
     "resources": [
       "app.css",

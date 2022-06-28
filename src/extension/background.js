@@ -247,6 +247,21 @@ async function updateHelpContent() {
     await updateHelpContent();
   });
 
+  // register message listener
+  chrome.runtime.onMessageExternal.addListener((request, sender, sendResponse) => {
+    log.info('sidekick got external message', request);
+    log.info('sender', sender);
+    // @todo:
+    // const { owner, repo, accessToken } = request;
+    // await updateConfig(owner, repo, {
+    //   accessToken,
+    // });
+
+    // sendResponse('close'); // this will close the login window
+    // sendResponse('redirect'); // this will cause the redirect
+    sendResponse('ok'); // this will do nothing
+  });
+
   // actions for context menu items
   const contextMenuActions = {
     addProject: async ({ id, url }) => {
