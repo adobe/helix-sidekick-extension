@@ -27,7 +27,7 @@
     "page": "background.html"
   },
   "externally_connectable": {
-    "matches": ["https://admin.hlx.page/*"]
+    "matches": ["https://*.hlx.page/*"]
   },
   "web_accessible_resources": [
     "configpicker.js",
