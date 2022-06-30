@@ -103,9 +103,13 @@ export async function getConfig(type, prop) {
 }
 
 export async function setConfig(type, obj, cb) {
-  return chrome.storage[type].set(obj, () => {
-    if (typeof cb === 'function') cb(obj);
+  const p = new Promise((resolve) => {
+    chrome.storage[type].set(obj, resolve);
   });
+  if (typeof cb === 'function') {
+    return cb(await p);
+  }
+  return p;
 }
 
 export async function clearConfig(type, cb) {
@@ -349,4 +353,22 @@ export function toggleDisplay(cb) {
   getState(({ display }) => {
     setDisplay(!display, cb);
   });
+}
+
+export async function storeAuthToken(owner, repo, token) {
+  // find config tab with owner/repo
+  const configs = await getConfig('sync', 'hlxSidekickConfigs') || [];
+  const config = configs.find((cfg) => cfg.owner === owner && cfg.repo === repo);
+  if (config) {
+    if (token) {
+      config.authToken = token;
+    } else {
+      delete config.authToken;
+      delete config.accessToken;
+    }
+    await setConfig('sync', { hlxSidekickConfigs: configs });
+    log.debug(`updated auth token for ${owner}--${repo}`);
+  } else {
+    log.warn(`unable to update auth token for ${owner}--${repo}: no such config`);
+  }
 }

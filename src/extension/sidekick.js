@@ -22,6 +22,7 @@ import {
   setConfig,
   setDisplay,
   i18n,
+  storeAuthToken,
 } from './utils.js';
 
 export default async function injectSidekick(config, display, skDevMode, skBranchName) {
@@ -45,6 +46,7 @@ export default async function injectSidekick(config, display, skDevMode, skBranc
         'devMode',
         'pushDown',
         'adminVersion',
+        'authToken',
       ].includes(k)));
     log.debug('sidekick.js: curated config', JSON.stringify(window.hlx.sidekickConfig));
     // define script url
@@ -76,6 +78,20 @@ export default async function injectSidekick(config, display, skDevMode, skBranc
       }
     }
 
+    // todo: improve config change handling. currently we only update the authToken
+    chrome.storage.sync.onChanged.addListener((changes) => {
+      log.debug('store changed', changes);
+      console.log('this config: ', window.hlx.sidekickConfig);
+      // find changes to this sidekicks config
+      changes.hlxSidekickConfigs?.newValue?.forEach((newConfig) => {
+        if (newConfig.owner === owner && newConfig.repo === repo) {
+          console.log('found', newConfig);
+          window.hlx.sidekickConfig.authToken = newConfig.authToken;
+          window.hlx.sidekick.loadContext();
+        }
+      });
+    });
+
     // wait for sidekick to instrument
     window.hlx.sidekickWait = window.setInterval(async () => {
       const sk = window.hlx.sidekick;
@@ -85,6 +101,10 @@ export default async function injectSidekick(config, display, skDevMode, skBranc
         // set display to false if user clicks close button
         sk.addEventListener('hidden', () => {
           setDisplay(false);
+        });
+        sk.addEventListener('loggedout', async () => {
+          // delete the authToken from the config
+          await storeAuthToken(owner, repo, '');
         });
         const helpOptOut = await getConfig('sync', 'hlxSidekickHelpOptOut');
         if (!helpOptOut) {

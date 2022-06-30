@@ -29,6 +29,7 @@ import {
   setProxyUrl,
   setConfig,
   getConfig,
+  storeAuthToken,
 } from './utils.js';
 
 /**
@@ -212,15 +213,12 @@ async function updateHelpContent() {
   });
 
   // register message listener
-  chrome.runtime.onMessageExternal.addListener((request, sender, sendResponse) => {
-    log.info('sidekick got external message', request);
-    log.info('sender', sender);
-    // @todo:
-    // const { owner, repo, accessToken } = request;
-    // await updateConfig(owner, repo, {
-    //   accessToken,
-    // });
-    sendResponse(true);
+  chrome.runtime.onMessageExternal.addListener(async (message, sender, sendResponse) => {
+    log.info('sidekick got external message', message);
+    const { owner, repo, authToken } = message;
+    await storeAuthToken(owner, repo, authToken);
+    // here we could also send 'close' which causes the login window to close automatically
+    await sendResponse('ok');
   });
 
   // actions for context menu items
