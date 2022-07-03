@@ -1150,6 +1150,7 @@
             event: eventName,
             environments,
             exclude_paths: excludePaths,
+            include_paths: includePaths,
             container,
             is_container: isDropdown,
           } = cfg;
@@ -1171,8 +1172,16 @@
           const plugin = {
             id: id || `custom-plugin-${i}`,
             condition: (s) => {
+              let excluded = false;
               if (excludePaths && Array.isArray(excludePaths)
                 && excludePaths.some((glob) => globToRegExp(glob).test(location.pathname))) {
+                excluded = true;
+              }
+              if (includePaths && Array.isArray(includePaths)
+                && includePaths.some((glob) => globToRegExp(glob).test(location.pathname))) {
+                excluded = false;
+              }
+              if (excluded) {
                 // excluding plugin
                 return false;
               }
