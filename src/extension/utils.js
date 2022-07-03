@@ -23,7 +23,7 @@ export const GH_URL = 'https://github.com/';
 export const DEV_URL = 'http://localhost:3000';
 
 export const log = {
-  LEVEL: 4,
+  LEVEL: 2,
   /* eslint-disable no-console */
   debug: (...args) => log.LEVEL > 3 && console.log('DEBUG', ...args),
   info: (...args) => log.LEVEL > 2 && console.log('INFO', ...args),
