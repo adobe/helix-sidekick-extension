@@ -66,7 +66,7 @@
       });
     };
 
-    log.debug('waiting for config matches...');
+    log.debug('content.js: waiting for config matches...');
     chrome.runtime.onMessage.addListener(({ configMatches }, { tab }) => {
       // make sure message is from extension
       if (!tab) {
@@ -75,7 +75,7 @@
       }
     });
   } else {
-    log.debug('reusing config matches', window.hlx.configMatches);
+    log.debug('content.js: reusing config matches', window.hlx.configMatches);
     inject();
   }
 })();
