@@ -36,6 +36,9 @@ import {
  * @returns {object} The config object
  */
 function getConfigFromTabUrl(tabUrl) {
+  if (!tabUrl) {
+    return {};
+  }
   const cfg = getShareSettings(tabUrl);
   if (!cfg.giturl) {
     if (tabUrl.startsWith(GH_URL)) {
