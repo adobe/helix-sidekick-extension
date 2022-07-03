@@ -1133,7 +1133,7 @@
    * @param {Sidekick} sk The sidekick
    */
   function addCustomPlugins(sk) {
-    const { config: { plugins, innerHost } = {} } = sk;
+    const { location, config: { plugins, innerHost } = {} } = sk;
     const language = navigator.language.split('-')[0];
     if (plugins && Array.isArray(plugins)) {
       plugins.forEach((cfg, i) => {
@@ -1149,24 +1149,33 @@
             url,
             event: eventName,
             environments,
+            exclude_paths: excludePaths,
             container,
             is_container: isDropdown,
           } = cfg;
           // check mandatory properties
           let missingProperty = '';
-          if (!title) {
-            missingProperty = 'title';
-          } else if (!(url || eventName || isDropdown)) {
-            missingProperty = 'url, event, or is_container';
-          }
-          if (missingProperty) {
-            console.log(`plugin config missing required property ${missingProperty}`);
-            return;
+          if (!sk.get(id)) {
+            // plugin config not extending existing plugin
+            if (!title) {
+              missingProperty = 'title';
+            } else if (!(url || eventName || isDropdown)) {
+              missingProperty = 'url, event, or is_container';
+            }
+            if (missingProperty) {
+              console.log(`plugin config missing required property ${missingProperty}`);
+              return;
+            }
           }
           // assemble plugin config
           const plugin = {
             id: id || `custom-plugin-${i}`,
             condition: (s) => {
+              if (excludePaths && Array.isArray(excludePaths)
+                && excludePaths.some((glob) => globToRegExp(glob).test(location.pathname))) {
+                // excluding plugin
+                return false;
+              }
               if (!environments || environments.includes('any')) {
                 return true;
               }
