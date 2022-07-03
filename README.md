@@ -68,13 +68,26 @@ $ npm run lint
 ![Extension box](docs/imgs/install_extension_box.png)<br />
 1. Follow the steps under [Adding projects to the extension](#adding-projects-to-the-extension)
 
+#### Testing a local project config
+If you want to test a config file before deploying it to your project:
+
+1. Run `hlx up` on your local checkout of the project repository
+1. [Add your project](#adding-projects-to-the-chrome-extension) to the sidekick extension
+1. Enable local project configruation:
+   1. Click the extension's Helix icon and select _Options_
+   1. Click _Advanced_ on the left
+   1. Click _Edit_ on the project configuration you want to test locally
+   1. Tick the _Test project configuration locally_ checkbox
+   1. Click _Save_
+1. Navigate to a project URL and activate the sidekick extension
+
 ## Deployment
 
 ### Deploying the Chrome extension
 The Chrome extension is built and uploaded automatically each time a pull request is merged into `main` and, once reviewed by Google, auto-published and pushed to users' browsers.
 
 #### CI setup
-The following environment variables are required to be set in the CircleCI project settings: `GOOGLE_APP_ID`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` and `GOOGLE_REFRESH_TOKEN`. See [here](https://circleci.com/blog/continuously-deploy-a-chrome-extension/) for detailed instructions how to obain and generate them.
+The following environment variables are required to be set in the CircleCI project settings: `GOOGLE_APP_ID`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` and `GOOGLE_REFRESH_TOKEN`. See [here](https://circleci.com/blog/continuously-deploy-a-chrome-extension/) for detailed instructions how to obtain and generate them.
 
 If you have to re-deploy manually or make changes to the store page, you can gain access to the Chrome Developer Dashboard by following [these instructions](https://adobe.sharepoint.com/sites/Adobe-GooglePartnership/SitePages/Publishing-Chrome-Browser-Plugins.aspx):
 1. Go to the [Chrome Developer Dashboard](https://chrome.google.com/webstore/devconsole/3b37cd65-9569-47a0-a13c-da1857a2c9dc)
