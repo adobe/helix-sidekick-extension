@@ -681,13 +681,17 @@
    * @private
    * @param {Sidekick} sk The sidekick
    * @param {string} name The name of the event
-   * @param {Object} data The data to pass to event listeners (defaults to {@link Sidekick})
+   * @param {Object} data The data to pass to event listeners (optional)
    */
   function fireEvent(sk, name, data) {
     try {
       sk.dispatchEvent(new CustomEvent(name, {
         detail: {
-          data: data || sk,
+          data: data || {
+            config: JSON.parse(JSON.stringify(sk.config)),
+            location: sk.location,
+            status: sk.status,
+          },
         },
       }));
     } catch (e) {
