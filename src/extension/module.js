@@ -685,13 +685,13 @@
    */
   function fireEvent(sk, name, data) {
     try {
-      sk.root.dispatchEvent(new CustomEvent(name, {
+      sk.dispatchEvent(new CustomEvent(name, {
         detail: {
           data: data || sk,
         },
       }));
     } catch (e) {
-      console.warn('failed to fire event', name, data);
+      console.warn('failed to fire event', name, e);
     }
   }
 
@@ -1129,7 +1129,7 @@
    * @param {Sidekick} sk The sidekick
    */
   function addCustomPlugins(sk) {
-    const { config: { plugins } = {} } = sk;
+    const { config: { plugins, innerHost } = {} } = sk;
     const language = navigator.language.split('-')[0];
     if (plugins && Array.isArray(plugins)) {
       plugins.forEach((cfg, i) => {
@@ -1143,6 +1143,7 @@
             title,
             title_i18n: i18nTitle,
             url,
+            event: eventName,
             environments,
             container,
             is_container: isDropdown,
@@ -1151,11 +1152,11 @@
           let missingProperty = '';
           if (!title) {
             missingProperty = 'title';
-          } else if (!url) {
-            missingProperty = 'url';
+          } else if (!(url || eventName || isDropdown)) {
+            missingProperty = 'url, event, or is_container';
           }
           if (missingProperty) {
-            console.log(`custom plugin config missing required property "${missingProperty}"`);
+            console.log(`plugin config missing required property ${missingProperty}`);
             return;
           }
           // assemble plugin config
@@ -1166,6 +1167,7 @@
                 return true;
               }
               const envChecks = {
+                dev: s.isDev,
                 edit: s.isEditor,
                 preview: s.isInner,
                 live: s.isOuter,
@@ -1176,7 +1178,16 @@
             button: {
               text: (i18nTitle && i18nTitle[language]) || title,
               action: () => {
-                window.open(url, `hlx-sidekick-${id || `custom-plugin-${i}`}`);
+                if (url) {
+                  const target = url.startsWith('/')
+                    ? new URL(url, `https://${innerHost}/`)
+                    : url;
+                  // open url in new window
+                  window.open(target, `hlx-sk-${id || `custom-plugin-${i}`}`);
+                } else if (eventName) {
+                  // fire custom event
+                  fireEvent(sk, `custom:${eventName}`);
+                }
               },
               isDropdown,
             },
@@ -1606,31 +1617,6 @@
           class: 'hlx-sk hlx-sk-hidden',
         },
         lstnrs: {
-          contextloaded: () => {
-            // add default plugins
-            addEditPlugin(this);
-            addEnvPlugins(this);
-            addPreviewPlugin(this);
-            addReloadPlugin(this);
-            addDeletePlugin(this);
-            addPublishPlugin(this);
-            addUnpublishPlugin(this);
-            // add custom plugins
-            addCustomPlugins(this);
-          },
-          statusfetched: () => {
-            checkUserState(this);
-            checkPlugins(this);
-            checkLastModified(this);
-          },
-          shown: async () => {
-            await showSpecialView(this);
-            pushDownContent(this);
-          },
-          hidden: () => {
-            hideSpecialView(this);
-            revertPushDownContent(this);
-          },
           keydown: ({ altKey }) => {
             if (altKey) {
               // enable advanced mode
@@ -1644,6 +1630,30 @@
             }
           },
         },
+      });
+      this.addEventListener('contextloaded', () => {
+        // add default plugins
+        addEditPlugin(this);
+        addEnvPlugins(this);
+        addPreviewPlugin(this);
+        addReloadPlugin(this);
+        addDeletePlugin(this);
+        addPublishPlugin(this);
+        addUnpublishPlugin(this);
+        addCustomPlugins(this);
+      });
+      this.addEventListener('statusfetched', () => {
+        checkUserState(this);
+        checkPlugins(this);
+        checkLastModified(this);
+      });
+      this.addEventListener('shown', async () => {
+        await showSpecialView(this);
+        pushDownContent(this);
+      });
+      this.addEventListener('hidden', () => {
+        hideSpecialView(this);
+        revertPushDownContent(this);
       });
       this.status = {};
       this.plugins = [];
@@ -2587,25 +2597,6 @@
         console.error('failed to unpublish', path, e);
       }
       return resp;
-    }
-
-    /**
-     * Sets up a function that will be called whenever the specified sidekick
-     * event is fired.
-     * @param {string} type The event type
-     * @param {Function} listener The function to call
-     */
-    addEventListener(type, listener) {
-      this.root.addEventListener(type, listener);
-    }
-
-    /**
-     * Removes an event listener previously registered with {@link addEventListener}.
-     * @param {string} type The event type
-     * @param {Function} listener The function to remove
-     */
-    removeEventListener(name, listener) {
-      this.root.removeEventListener(name, listener);
     }
   }
 
