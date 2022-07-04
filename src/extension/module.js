@@ -1236,7 +1236,10 @@
       sk.isEditor() ? '' : sk.location.pathname,
     );
     loginUrl.searchParams.set('loginRedirect', 'https://www.hlx.live/tools/sidekick/login-success');
-    loginUrl.searchParams.set('extensionId', chrome.runtime.id);
+    const extensionId = chrome && chrome.runtime && chrome.runtime.id;
+    if (extensionId) {
+      loginUrl.searchParams.set('extensionId', extensionId);
+    }
     if (selectAccount) {
       loginUrl.searchParams.set('selectAccount', true);
     }
