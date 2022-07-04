@@ -217,8 +217,8 @@ async function updateHelpContent() {
     log.info('sidekick got external message', message);
     const { owner, repo, authToken } = message;
     await storeAuthToken(owner, repo, authToken);
-    // here we could also send 'close' which causes the login window to close automatically
-    await sendResponse('ok');
+    // inform caller to close the window
+    await sendResponse('close');
   });
 
   // actions for context menu items

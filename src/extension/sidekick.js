@@ -81,11 +81,10 @@ export default async function injectSidekick(config, display, skDevMode, skBranc
     // todo: improve config change handling. currently we only update the authToken
     chrome.storage.sync.onChanged.addListener((changes) => {
       log.debug('store changed', changes);
-      console.log('this config: ', window.hlx.sidekickConfig);
       // find changes to this sidekicks config
       changes.hlxSidekickConfigs?.newValue?.forEach((newConfig) => {
         if (newConfig.owner === owner && newConfig.repo === repo) {
-          console.log('found', newConfig);
+          log.debug(`updating config for ${newConfig.id} and reloading sidekick.`);
           window.hlx.sidekickConfig.authToken = newConfig.authToken;
           window.hlx.sidekick.loadContext();
         }
