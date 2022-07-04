@@ -1742,6 +1742,9 @@
       this.fetchStatus();
       this.loadCSS();
       checkForIssues(this);
+
+      // announce to the document that the sidekick is ready
+      document.dispatchEvent(new CustomEvent('helix-sidekick-ready'));
     }
 
     /**
