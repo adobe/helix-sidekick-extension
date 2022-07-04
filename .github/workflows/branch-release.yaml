@@ -26,9 +26,9 @@ jobs:
           targetbranch=sidekick-${temp[2]}
           # create and/or switch to target branch and apply changes
           git switch ${targetbranch} || git checkout -b ${targetbranch}
-          cp ../src/sidekick/extension/module.js tools/sidekick/
-          cp ../src/sidekick/extension/*.css tools/sidekick/
-          cp -r ../src/sidekick/extension/view tools/sidekick/
+          cp ../src/extension/module.js tools/sidekick/
+          cp ../src/extension/*.css tools/sidekick/
+          cp -r ../src/extension/view tools/sidekick/
           git add tools/sidekick/*
           if [ "`git status -s`" != "" ]; then
             echo Changes: `git status -s`
