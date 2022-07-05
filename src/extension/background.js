@@ -29,6 +29,7 @@ import {
   setProxyUrl,
   setConfig,
   getConfig,
+  storeAuthToken,
 } from './utils.js';
 
 /**
@@ -209,6 +210,15 @@ async function updateHelpContent() {
   chrome.runtime.onInstalled.addListener(async ({ reason }) => {
     log.info(`sidekick extension installed (${reason})`);
     await updateHelpContent();
+  });
+
+  // register message listener
+  chrome.runtime.onMessageExternal.addListener(async (message, sender, sendResponse) => {
+    log.info('sidekick got external message', message);
+    const { owner, repo, authToken } = message;
+    await storeAuthToken(owner, repo, authToken);
+    // inform caller to close the window
+    await sendResponse('close');
   });
 
   // actions for context menu items
