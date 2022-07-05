@@ -21,7 +21,7 @@ export const GH_URL = 'https://github.com/';
 export const DEV_URL = 'http://localhost:3000';
 
 export const log = {
-  LEVEL: 3,
+  LEVEL: 2,
   /* eslint-disable no-console */
   debug: (...args) => (window.LOG_LEVEL || log.LEVEL) > 3 && console.log('DEBUG', ...args),
   info: (...args) => (window.LOG_LEVEL || log.LEVEL) > 2 && console.log('INFO', ...args),
@@ -364,7 +364,6 @@ export async function storeAuthToken(owner, repo, token) {
       config.authToken = token;
     } else {
       delete config.authToken;
-      delete config.accessToken;
     }
     await setConfig('sync', { hlxSidekickConfigs: configs });
     log.debug(`updated auth token for ${owner}--${repo}`);
