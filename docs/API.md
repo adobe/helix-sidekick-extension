@@ -83,8 +83,6 @@ The sidekick provides helper tools for authors.
     * [.delete()](#Sidekick+delete) ⇒ <code>Response</code>
     * [.publish(path)](#Sidekick+publish) ⇒ <code>Response</code>
     * [.unpublish()](#Sidekick+unpublish) ⇒ <code>Response</code>
-    * [.addEventListener(type, listener)](#Sidekick+addEventListener)
-    * [.removeEventListener(type, listener)](#Sidekick+removeEventListener)
     * ["shown"](#Sidekick+event_shown)
     * ["hidden"](#Sidekick+event_hidden)
     * ["pluginused"](#Sidekick+event_pluginused)
@@ -397,31 +395,6 @@ Unpublishes the current page.
 **Kind**: instance method of [<code>Sidekick</code>](#Sidekick)  
 **Returns**: <code>Response</code> - The response object  
 **Emits**: [<code>unpublished</code>](#Sidekick+event_unpublished)  
-<a name="Sidekick+addEventListener"></a>
-
-### sidekick.addEventListener(type, listener)
-Sets up a function that will be called whenever the specified sidekick
-event is fired.
-
-**Kind**: instance method of [<code>Sidekick</code>](#Sidekick)  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| type | <code>string</code> | The event type |
-| listener | <code>function</code> | The function to call |
-
-<a name="Sidekick+removeEventListener"></a>
-
-### sidekick.removeEventListener(type, listener)
-Removes an event listener previously registered with [addEventListener](addEventListener).
-
-**Kind**: instance method of [<code>Sidekick</code>](#Sidekick)  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| type | <code>string</code> | The event type |
-| listener | <code>function</code> | The function to remove |
-
 <a name="Sidekick+event_shown"></a>
 
 ### "shown"
@@ -553,9 +526,12 @@ The plugin configuration.
 | title | <code>string</code> |  | The button text |
 | i18n_title | <code>Object</code> | <code>{}</code> | A map of translated button texts |
 | url | <code>string</code> |  | The URL to open when the button is clicked |
+| event | <code>string</code> |  | The name of a custom event to fire when the button is clicked |
 | container | <code>string</code> |  | The ID of a dropdown to add this plugin to (optional) |
 | is_container | <code>boolean</code> |  | Determines whether to turn this plugin into a dropdown |
 | environments | <code>Array.&lt;string&gt;</code> |  | Specifies when to show this plugin (edit, preview, live, or prod) |
+| exclude_paths | <code>Array.&lt;string&gt;</code> |  | Exclude the plugin from these paths (glob patterns supported) |
+| include_paths | <code>Array.&lt;string&gt;</code> |  | Include the plugin on these paths (glob patterns supported) |
 
 <a name="ViewConfig"></a>
 
