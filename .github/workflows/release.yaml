@@ -20,8 +20,11 @@ jobs:
           path: _target
       - name: Copy files from source to target repo
         run: |
+          cp src/sidekick/bookmarklet/app.js _target/tools/sidekick/
           cp src/sidekick/extension/module.js _target/tools/sidekick/
-          cp src/sidekick/extension/*.css _target/tools/sidekick/
+          cp src/sidekick/extension/app.css _target/tools/sidekick/
+          cp src/sidekick/extension/de.css _target/tools/sidekick/
+          cp src/sidekick/extension/fr.css _target/tools/sidekick/
           cp -r src/sidekick/extension/view _target/tools/sidekick/
       - name: Create branch commit and pull request in target repo
         uses: peter-evans/create-pull-request@v4

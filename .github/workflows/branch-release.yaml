@@ -26,6 +26,7 @@ jobs:
           targetbranch=sidekick-${temp[2]}
           # create and/or switch to target branch and apply changes
           git switch ${targetbranch} || git checkout -b ${targetbranch}
+          cp ../src/bookmarklet/app.js tools/sidekick/
           cp ../src/extension/module.js tools/sidekick/
           cp ../src/extension/app.css tools/sidekick/
           cp ../src/extension/de.css tools/sidekick/
