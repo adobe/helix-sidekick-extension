@@ -12,7 +12,10 @@
 
 ## Installation
 
-Note: The extension loads the same [Sidekick module](https://github.com/adobe/helix-sidekick) as the bookmarklet.
+Note: The Sidekick extension and bookmarklet share the same Sidekick module.
+
+#### Installing the bookmarklet
+Navigate to https://www.hlx.live/tools/sidekick/ and follow the instructions there.
 
 #### Installing the Chrome extension
 1. Go to the [Chrome Web Store](https://chrome.google.com/webstore/detail/helix-sidekick-extension-beta/ccfggkjabjahcjoljmgmklhpaccedipo)
@@ -55,7 +58,21 @@ $ npm test
 $ npm run lint
 ```
 
+### Branch testing a bookmarklet
+
+Every development branch in this repository will be mirrored in https://github.com/adobe/helix-website with a `sidekick-` prefix to enable enable branch testing:
+
+1. Push changes to a branch `issue-77`
+2. Note the `sidekick-issue-77` branch in https://github.com/adobe/helix-website/branches
+3. Go to `https://sidekick-issue-77--helix-website--adobe.hlx.page/tools/sidekick/` to install a development version of the bookmarklet for your project
+
+_Note: Mirrored development branches in https://github.com/adobe/helix-website/branches must be deleted manually when no longer needed._
+
 ### Local testing
+#### Testing a local bookmarklet
+1. Run `npm start` on your local checkout of this repository
+2. Go to `http://localhost:3001/ and follow the instructions.
+
 #### Testing a local Chrome extension
 1. Run `npm run build:chrome`
 1. Open Chrome and navigate to `chrome://extensions`
@@ -68,13 +85,35 @@ $ npm run lint
 ![Extension box](docs/imgs/install_extension_box.png)<br />
 1. Follow the steps under [Adding projects to the extension](#adding-projects-to-the-extension)
 
+#### Testing a local project config
+If you want to test a config file before deploying it to your project:
+
+1. Run `hlx up` on your local checkout of the project repository
+1. [Add your project](#adding-projects-to-the-chrome-extension) to the sidekick extension
+1. Enable local project configruation:
+   1. Click the extension's Helix icon and select _Options_
+   1. Click _Advanced_ on the left
+   1. Click _Edit_ on the project configuration you want to test locally
+   1. Tick the _Test project configuration locally_ checkbox
+   1. Click _Save_
+1. Navigate to a project URL and activate the sidekick extension
+
 ## Deployment
+
+### Deploying the bookmarklet
+The Sidekick bookmarklet gets staged automatically each time a pull request is merged into `main`.
+1. Go to [`helix-website` pull requests](https://github.com/adobe/helix-website/pulls)
+1. Click the _Sidekick Release Candidate_ PR
+1. Add a comment listing the `helix-sidekick` PR(s) included in this release
+1. Get a team member to review the Sidekick RC. The PR is based on a `sidekick-rc-*` branch (`*` being a random ID) so the RC can be tested at:
+   `https://sidekick-rc-*--helix-website--adobe.hlx.page/tools/sidekick/`
+1. Once approved, merge the RC PR to deploy the changes into production
 
 ### Deploying the Chrome extension
 The Chrome extension is built and uploaded automatically each time a pull request is merged into `main` and, once reviewed by Google, auto-published and pushed to users' browsers.
 
 #### CI setup
-The following environment variables are required to be set in the CircleCI project settings: `GOOGLE_APP_ID`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` and `GOOGLE_REFRESH_TOKEN`. See [here](https://circleci.com/blog/continuously-deploy-a-chrome-extension/) for detailed instructions how to obain and generate them.
+The following environment variables are required to be set in the CircleCI project settings: `GOOGLE_APP_ID`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` and `GOOGLE_REFRESH_TOKEN`. See [here](https://circleci.com/blog/continuously-deploy-a-chrome-extension/) for detailed instructions how to obtain and generate them.
 
 If you have to re-deploy manually or make changes to the store page, you can gain access to the Chrome Developer Dashboard by following [these instructions](https://adobe.sharepoint.com/sites/Adobe-GooglePartnership/SitePages/Publishing-Chrome-Browser-Plugins.aspx):
 1. Go to the [Chrome Developer Dashboard](https://chrome.google.com/webstore/devconsole/3b37cd65-9569-47a0-a13c-da1857a2c9dc)

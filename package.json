@@ -10,6 +10,7 @@
     "test": "npm run test:mocha && npm run test:wtr",
     "test:watch": "npm run test -- --watch",
     "docs": "npx jsdoc2md -c .jsdoc.json --files './src/extension/module.js'  > docs/API.md",
+    "start": "node ./debug/debug.js",
     "semantic-release": "semantic-release",
     "update-version": "node ./build/updateVersion.js",
     "build": "npm run build:safari && npm run build:chrome",
