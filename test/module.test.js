@@ -709,8 +709,8 @@ describe('Test sidekick module', () => {
         status: 401,
       }],
       checkPage: (p) => p.evaluate(() => window.hlx.sidekick.shadowRoot
-        .querySelector('.hlx-sk-overlay .modal')
-        .classList.contains('modal-login')),
+        .querySelector('.hlx-sk .feature-container .user .dropdown-container')
+        .classList.contains('highlight')),
     }).run();
     assert.ok(checkPageResult, 'Did not show login dialog on 401');
   });
