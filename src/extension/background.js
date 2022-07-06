@@ -28,6 +28,7 @@ import {
   getGitHubSettings,
   setConfig,
   getConfig,
+  storeAuthToken,
 } from './utils.js';
 
 /**
@@ -75,15 +76,19 @@ async function getProxyUrl({ id, url: tabUrl }) {
           if (meta && meta.content) {
             proxyUrl = meta.content;
           }
+          log.debug('proxy url:', proxyUrl);
           chrome.runtime.sendMessage({ proxyUrl });
         },
       });
       // listen for proxy url from tab
       const listener = ({ proxyUrl: proxyUrlFromTab }, { tab }) => {
-        // check if message is from the right tab
-        if (tab && tab.url === tabUrl && tab.id === id) {
+        // check if message contains proxy url and is sent from right tab
+        if (proxyUrlFromTab && tab && tab.url === tabUrl && tab.id === id) {
           chrome.runtime.onMessage.removeListener(listener);
           resolve(proxyUrlFromTab);
+        } else {
+          // fall back to tab url
+          resolve(tabUrl);
         }
       };
       chrome.runtime.onMessage.addListener(listener);
@@ -142,7 +147,6 @@ function checkTab(id) {
         // retrieve proxy url
         log.debug('local dev url detected, retrieve proxy url');
         checkUrl = await getProxyUrl(tab);
-        log.debug('proxy url:', checkUrl);
       }
       checkContextMenu(checkUrl, configs);
       // check if active tab has share URL and ask to add config
@@ -251,18 +255,12 @@ async function updateHelpContent() {
   });
 
   // register message listener
-  chrome.runtime.onMessageExternal.addListener((request, sender, sendResponse) => {
-    log.info('sidekick got external message', request);
-    log.info('sender', sender);
-    // @todo:
-    // const { owner, repo, accessToken } = request;
-    // await updateConfig(owner, repo, {
-    //   accessToken,
-    // });
-
-    // sendResponse('close'); // this will close the login window
-    // sendResponse('redirect'); // this will cause the redirect
-    sendResponse('ok'); // this will do nothing
+  chrome.runtime.onMessageExternal.addListener(async (message, sender, sendResponse) => {
+    log.info('sidekick got external message', message);
+    const { owner, repo, authToken } = message;
+    await storeAuthToken(owner, repo, authToken);
+    // inform caller to close the window
+    await sendResponse('close');
   });
 
   // actions for context menu items
