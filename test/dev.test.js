@@ -19,15 +19,28 @@ const {
   IT_DEFAULT_TIMEOUT,
   startBrowser,
   stopBrowser,
+  openPage,
+  closeAllPages,
 } = require('./utils.js');
 const { SidekickTest } = require('./SidekickTest.js');
 
 describe('Test dev plugin', () => {
-  beforeEach(startBrowser);
-  afterEach(stopBrowser);
+  before(startBrowser);
+  after(stopBrowser);
+
+  let page;
+  beforeEach(async () => {
+    page = await openPage();
+  });
+
+  afterEach(async () => {
+    await closeAllPages();
+  });
 
   it('Dev plugin hidden by default', async () => {
-    const { plugins } = await new SidekickTest().run();
+    const { plugins } = await new SidekickTest({
+      page,
+    }).run();
     assert.ok(
       plugins.find((p) => p.id === 'dev' && p.classes.includes('hlx-sk-advanced-only')),
       'Dev plugin not hidden by default',
@@ -36,10 +49,11 @@ describe('Test dev plugin', () => {
 
   it('Dev plugin switches to dev from gdrive URL', async () => {
     const { popupOpened } = await new SidekickTest({
+      page,
       setup: 'pages',
       url: 'https://docs.google.com/document/d/2E1PNphAhTZAZrDjevM0BX7CZr7KjomuBO6xE1TUo9NU/edit',
       plugin: 'dev',
-      pluginSleep: 2000,
+      waitPopup: 2000,
     }).run();
     assert.strictEqual(
       popupOpened,
@@ -50,9 +64,10 @@ describe('Test dev plugin', () => {
 
   it('Dev plugin switches to dev from onedrive URL', async () => {
     const { popupOpened } = await new SidekickTest({
+      page,
       url: 'https://adobe.sharepoint.com/:w:/r/sites/TheBlog/_layouts/15/Doc.aspx?sourcedoc=%7BE8EC80CB-24C3-4B95-B082-C51FD8BC8760%7D&file=bla.docx&action=default&mobileredirect=true',
       plugin: 'dev',
-      pluginSleep: 2000,
+      waitPopup: 2000,
     }).run();
     assert.strictEqual(
       popupOpened,
@@ -63,7 +78,9 @@ describe('Test dev plugin', () => {
 
   it('Dev plugin switches to dev from preview URL', async () => {
     const { requestsMade } = await new SidekickTest({
+      page,
       plugin: 'dev',
+      waitNavigation: 'http://localhost:3000/en/topics/bla',
     }).run();
     assert.strictEqual(
       requestsMade.pop().url,
@@ -74,8 +91,10 @@ describe('Test dev plugin', () => {
 
   it('Dev plugin switches to dev from production URL', async () => {
     const { requestsMade } = await new SidekickTest({
+      page,
       url: 'https://blog.adobe.com/en/topics/bla',
       plugin: 'dev',
+      waitNavigation: 'http://localhost:3000/en/topics/bla',
     }).run();
     assert.strictEqual(
       requestsMade.pop().url,

@@ -19,15 +19,26 @@ const {
   IT_DEFAULT_TIMEOUT,
   startBrowser,
   stopBrowser,
+  openPage,
 } = require('./utils.js');
 const { SidekickTest } = require('./SidekickTest.js');
 
 describe('Test sidekick module', () => {
-  beforeEach(startBrowser);
-  afterEach(stopBrowser);
+  before(startBrowser);
+  after(stopBrowser);
+
+  let page;
+  beforeEach(async () => {
+    page = await openPage();
+  });
+
+  afterEach(async () => {
+    page?.close();
+  });
 
   it('Does not render without config', async () => {
     const { sidekick } = await new SidekickTest({
+      page,
       setup: 'none',
       url: 'https://foo.bar/',
     });
@@ -36,6 +47,8 @@ describe('Test sidekick module', () => {
 
   it('Renders with config', async () => {
     const result = await new SidekickTest({
+      page,
+      loadModule: true,
       setup: 'blog',
     }).run();
     const { plugins, sidekick: { config: { innerHost, outerHost } } } = result;
@@ -53,6 +66,8 @@ describe('Test sidekick module', () => {
       { status: 504, body: 'Gateway timeout' },
     ];
     const test = new SidekickTest({
+      page,
+      loadModule: true,
       allowNavigation: true,
       apiResponses: [...errors],
       checkPage: (p) => p.evaluate(() => {
@@ -78,6 +93,8 @@ describe('Test sidekick module', () => {
 
   it('Uses main branch by default', async () => {
     const result = await new SidekickTest({
+      page,
+      loadModule: true,
       setup: 'blog',
       sidekickConfig: {
         owner: 'adobe',
@@ -90,6 +107,8 @@ describe('Test sidekick module', () => {
 
   it('Adds plugin from config', async () => {
     const { configLoaded, plugins } = await new SidekickTest({
+      page,
+      loadModule: true,
       configJson: `{
         "plugins": [{
           "id": "foo",
@@ -104,6 +123,8 @@ describe('Test sidekick module', () => {
 
   it('Detects innerHost and outerHost from config', async () => {
     const result = await new SidekickTest({
+      page,
+      loadModule: true,
       setup: 'blog',
     }).run();
     // check sidekick config
@@ -115,6 +136,8 @@ describe('Test sidekick module', () => {
   it('Uses outerHost from config', async () => {
     const testOuterHost = 'test--blog--adobe.hlx.live';
     const { sidekick: { config: { outerHost } } } = await new SidekickTest({
+      page,
+      loadModule: true,
       setup: 'blog',
       configJson: `{
         "outerHost": "${testOuterHost}"
@@ -128,6 +151,8 @@ describe('Test sidekick module', () => {
 
   it('Adds plugin via API', async () => {
     const { plugins } = await new SidekickTest({
+      page,
+      loadModule: true,
       post: (p) => p.evaluate(() => {
         window.hlx.sidekick.add({
           id: 'ding',
@@ -152,6 +177,8 @@ describe('Test sidekick module', () => {
 
   it('Loads config and plugins from project config', async () => {
     const test = new SidekickTest({
+      page,
+      loadModule: true,
       configJson: `{
         "host": "blog.adobe.com",
         "plugins": [{
@@ -169,6 +196,8 @@ describe('Test sidekick module', () => {
 
   it('Loads config and plugins from development environment', async () => {
     const { configLoaded } = await new SidekickTest({
+      page,
+      loadModule: true,
       sidekickConfig: {
         owner: 'adobe',
         repo: 'blog',
@@ -182,6 +211,8 @@ describe('Test sidekick module', () => {
 
   it('Replaces plugin', async () => {
     const { plugins } = await new SidekickTest({
+      page,
+      loadModule: true,
       post: (p) => p.evaluate(() => {
         window.hlx.sidekick.add({
           id: 'edit',
@@ -201,6 +232,8 @@ describe('Test sidekick module', () => {
 
   it('Extends plugin', async () => {
     const { plugins } = await new SidekickTest({
+      page,
+      loadModule: true,
       post: (p) => p.evaluate(() => {
         window.hlx.sidekick.add({
           id: 'edit',
@@ -218,6 +251,8 @@ describe('Test sidekick module', () => {
 
   it('Removes plugin', async () => {
     const { plugins } = await new SidekickTest({
+      page,
+      loadModule: true,
       post: (p) => p.evaluate(() => window.hlx.sidekick.remove('edit')),
     }).run();
     assert.ok(!plugins.find((p) => p.id === 'edit'), 'Did not remove plugin');
@@ -225,6 +260,8 @@ describe('Test sidekick module', () => {
 
   it('Adds HTML element in plugin', async () => {
     const { plugins } = await new SidekickTest({
+      page,
+      loadModule: true,
       post: (p) => p.evaluate(() => {
         window.hlx.sidekick.add({
           id: 'foo',
@@ -242,6 +279,8 @@ describe('Test sidekick module', () => {
 
   it('Enables plugin button', async () => {
     const { plugins } = await new SidekickTest({
+      page,
+      loadModule: true,
       post: (p) => p.evaluate(() => {
         window.hlx.sidekick.add({
           id: 'foo',
@@ -257,6 +296,8 @@ describe('Test sidekick module', () => {
 
   it('Adds dropdown as plugin container', async () => {
     const { plugins } = await new SidekickTest({
+      page,
+      loadModule: true,
       post: (p) => p.evaluate(() => {
         window.hlx.sidekick.add({
           id: 'foo',
@@ -280,6 +321,8 @@ describe('Test sidekick module', () => {
 
   it('Loads custom CSS', async () => {
     const { checkPageResult } = await new SidekickTest({
+      page,
+      loadModule: true,
       post: (p) => p.evaluate(() => window.hlx.sidekick.loadCSS('custom.css')),
       checkPage: (p) => p.evaluate(() => {
         const root = window.hlx.sidekick.shadowRoot.querySelector('.hlx-sk');
@@ -292,6 +335,8 @@ describe('Test sidekick module', () => {
   it('Shows notifications', async () => {
     // shows modal
     let result = await new SidekickTest({
+      page,
+      loadModule: true,
       allowNavigation: true,
       post: (p) => p.evaluate(() => window.hlx.sidekick.showModal({
         message: 'Lorem ipsum',
@@ -301,6 +346,8 @@ describe('Test sidekick module', () => {
 
     // shows sticky modal
     result = await new SidekickTest({
+      page,
+      loadModule: true,
       allowNavigation: true,
       post: (p) => p.evaluate(() => window.hlx.sidekick.showModal({
         message: 'Sticky',
@@ -311,6 +358,8 @@ describe('Test sidekick module', () => {
 
     // adds css class
     result = await new SidekickTest({
+      page,
+      loadModule: true,
       allowNavigation: true,
       post: (p) => p.evaluate(() => window.hlx.sidekick.showModal({
         css: 'test',
@@ -320,6 +369,8 @@ describe('Test sidekick module', () => {
 
     // shows legacy notification
     result = await new SidekickTest({
+      page,
+      loadModule: true,
       allowNavigation: true,
       post: (p) => p.evaluate(() => window.hlx.sidekick.notify('Lorem ipsum')),
     }).run();
@@ -327,6 +378,8 @@ describe('Test sidekick module', () => {
 
     // shows legacy modal
     result = await new SidekickTest({
+      page,
+      loadModule: true,
       allowNavigation: true,
       post: (p) => p.evaluate(() => window.hlx.sidekick.showModal('Sticky', true)),
     }).run();
@@ -334,6 +387,8 @@ describe('Test sidekick module', () => {
 
     // shows multi-line modal
     result = await new SidekickTest({
+      page,
+      loadModule: true,
       allowNavigation: true,
       post: (p) => p.evaluate(() => window.hlx.sidekick.showModal({
         message: ['Lorem ipsum', 'sit amet'],
@@ -345,6 +400,8 @@ describe('Test sidekick module', () => {
   it('Hides notifications', async () => {
     // hides sticky modal
     const { notification } = await new SidekickTest({
+      page,
+      loadModule: true,
       allowNavigation: true,
       post: (p) => p.evaluate(() => {
         window.hlx.sidekick.showModal({ message: 'Sticky', sticky: true });
@@ -355,6 +412,8 @@ describe('Test sidekick module', () => {
 
     // hides sticky modal on overlay click
     const { checkPageResult } = await new SidekickTest({
+      page,
+      loadModule: true,
       checkPage: (p) => p.evaluate(() => {
         window.hlx.sidekick.showModal({ message: 'Sticky', sticky: true });
         const overlay = window.hlx.sidekick.shadowRoot.querySelector('.hlx-sk-overlay');
@@ -368,6 +427,8 @@ describe('Test sidekick module', () => {
 
   it('Hides sidekick on close button click', async () => {
     const { checkPageResult, eventsFired } = await new SidekickTest({
+      page,
+      loadModule: true,
       post: (p) => p.evaluate(() => window.hlx.sidekick
         .shadowRoot
         .querySelector('.hlx-sk button.close')
@@ -384,6 +445,8 @@ describe('Test sidekick module', () => {
 
   it('Copies sharing URL to clipboard on share button click', async () => {
     const { notification } = await new SidekickTest({
+      page,
+      loadModule: true,
       post: (p) => p.evaluate(() => window.hlx.sidekick
         .shadowRoot
         .querySelector('.hlx-sk button.share')
@@ -394,6 +457,8 @@ describe('Test sidekick module', () => {
 
   it('Detects development environment correctly', async () => {
     const { checkPageResult } = await new SidekickTest({
+      page,
+      loadModule: true,
       url: 'http://localhost:3000/',
       checkPage: async (p) => p.evaluate(() => window.hlx.sidekick.isDev()),
     }).run();
@@ -402,6 +467,8 @@ describe('Test sidekick module', () => {
 
   it('Detects preview environment correctly', async () => {
     const test = new SidekickTest({
+      page,
+      loadModule: true,
       allowNavigation: true,
       checkPage: async (p) => p.evaluate(() => window.hlx.sidekick.isInner()),
     });
@@ -420,6 +487,8 @@ describe('Test sidekick module', () => {
 
   it('Detects live environment correctly', async () => {
     const test = new SidekickTest({
+      page,
+      loadModule: true,
       allowNavigation: true,
       url: 'https://main--blog--adobe.hlx.live/',
       checkPage: async (p) => p.evaluate(() => window.hlx.sidekick.isOuter()),
@@ -434,6 +503,8 @@ describe('Test sidekick module', () => {
 
   it('Detects production environment correctly', async () => {
     const test = new SidekickTest({
+      page,
+      loadModule: true,
       url: 'https://blog.adobe.com/',
       configJson: '{"host": "blog.adobe.com"}',
       checkPage: async (p) => p.evaluate(() => window.hlx.sidekick.isProd()),
@@ -443,6 +514,8 @@ describe('Test sidekick module', () => {
 
   it('Does not push down page content by default', async () => {
     const { checkPageResult } = await new SidekickTest({
+      page,
+      loadModule: true,
       checkPage: (p) => p.evaluate(() => document.documentElement.style.marginTop),
     }).run();
     assert.strictEqual(checkPageResult, '', 'Did push down content');
@@ -450,6 +523,9 @@ describe('Test sidekick module', () => {
 
   it('Pushes down page content if configured', async () => {
     const test = new SidekickTest({
+      page,
+      loadModule: true,
+      sleep: 500,
       checkPage: (p) => p.evaluate(() => document.documentElement.style.marginTop),
     });
     test.sidekickConfig.pushDown = true;
@@ -459,6 +535,9 @@ describe('Test sidekick module', () => {
 
   it('Pushes down custom elements', async () => {
     const { checkPageResult } = await new SidekickTest({
+      page,
+      loadModule: true,
+      sleep: 500,
       configJson: '{"pushDownSelector":"#topnav"}',
       pre: (p) => p.evaluate(() => {
         // add topnav element
@@ -474,6 +553,9 @@ describe('Test sidekick module', () => {
 
   it('Push down adjusts height of word iframe', async () => {
     const { checkPageResult } = await new SidekickTest({
+      page,
+      loadModule: true,
+      sleep: 500,
       configJson: '{"pushDownSelector":"#topnav"}',
       pre: (p) => p.evaluate(() => {
         // add fake word iframe
@@ -493,6 +575,9 @@ describe('Test sidekick module', () => {
 
   it('Reverts push down when hidden', async () => {
     const { checkPageResult } = await new SidekickTest({
+      page,
+      loadModule: true,
+      sleep: 500,
       post: (p) => p.evaluate(() => window.hlx.sidekick.hide()),
       checkPage: (p) => p.evaluate(() => document.documentElement.style.marginTop),
     }).run();
@@ -501,6 +586,8 @@ describe('Test sidekick module', () => {
 
   it('Does not push down if pushDown false', async () => {
     const { checkPageResult } = await new SidekickTest({
+      page,
+      loadModule: true,
       configJson: '{"pushDown":false}',
       checkPage: (p) => p.evaluate(() => document.documentElement.style.marginTop),
     }).run();
@@ -509,6 +596,8 @@ describe('Test sidekick module', () => {
 
   it('Does not push down if gdrive', async () => {
     const { checkPageResult } = await new SidekickTest({
+      page,
+      loadModule: true,
       configJson: '{"pushDown":false}',
       url: 'https://docs.google.com/document/d/2E1PNphAhTZAZrDjevM0BX7CZr7KjomuBO6xE1TUo9NU/edit',
       checkPage: (p) => p.evaluate(() => document.documentElement.style.marginTop),
@@ -518,6 +607,8 @@ describe('Test sidekick module', () => {
 
   it('Shows special view for JSON file', async () => {
     const { checkPageResult } = await new SidekickTest({
+      page,
+      loadModule: true,
       type: 'json',
       checkPage: (p) => p.evaluate(() => window.hlx.sidekick
         .shadowRoot
@@ -528,6 +619,8 @@ describe('Test sidekick module', () => {
 
   it.skip('Shows custom view for JSON file', async () => {
     const { checkPageResult: [text, color] } = await new SidekickTest({
+      page,
+      loadModule: true,
       type: 'json',
       configJson: `{
         specialViews: [
@@ -551,6 +644,8 @@ describe('Test sidekick module', () => {
 
   it('Shows custom view with external CSS', async () => {
     const { checkPageResult: color } = await new SidekickTest({
+      page,
+      loadModule: true,
       type: 'json',
       configJson: `{
         "specialViews": [
@@ -570,6 +665,8 @@ describe('Test sidekick module', () => {
 
   it('Shows help content', async () => {
     const { notification } = await new SidekickTest({
+      page,
+      loadModule: true,
       post: (p) => p.evaluate(() => {
         window.hlx.sidekick.showHelp({
           id: 'test',
@@ -590,7 +687,10 @@ describe('Test sidekick module', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Calls admin API with a specific version', async () => {
-    const test = new SidekickTest();
+    const test = new SidekickTest({
+      page,
+      loadModule: true,
+    });
     test.sidekickConfig.adminVersion = '0.7.7';
     const { requestsMade } = await test.run();
     const adminRequest = requestsMade.find((r) => r.url.startsWith('https://admin.hlx.page/'));
@@ -603,6 +703,8 @@ describe('Test sidekick module', () => {
 
   it('Handles 401 response from admin API', async () => {
     const { checkPageResult } = await new SidekickTest({
+      page,
+      loadModule: true,
       apiResponses: [{
         status: 401,
       }],

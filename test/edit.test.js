@@ -19,17 +19,29 @@ const {
   IT_DEFAULT_TIMEOUT,
   startBrowser,
   stopBrowser,
+  openPage,
+  closeAllPages,
 } = require('./utils.js');
 const { SidekickTest } = require('./SidekickTest.js');
 
 describe('Test edit plugin', () => {
-  beforeEach(startBrowser);
-  afterEach(stopBrowser);
+  before(startBrowser);
+  after(stopBrowser);
+
+  let page;
+  beforeEach(async () => {
+    page = await openPage();
+  });
+
+  afterEach(async () => {
+    await closeAllPages();
+  });
 
   it('Edit plugin opens editor from preview URL', async () => {
     const { popupOpened } = await new SidekickTest({
+      page,
       plugin: 'edit',
-      pluginSleep: 3000,
+      waitPopup: 3000,
     }).run();
     assert.ok(
       popupOpened && popupOpened.startsWith('https://login.microsoftonline.com/'),
@@ -39,9 +51,10 @@ describe('Test edit plugin', () => {
 
   it('Edit plugin opens editor from production URL', async () => {
     const { popupOpened } = await new SidekickTest({
+      page,
       url: 'https://blog.adobe.com/en/topics/bla',
       plugin: 'edit',
-      pluginSleep: 2000,
+      waitPopup: 2000,
     }).run();
     assert.ok(
       popupOpened && popupOpened.startsWith('https://login.microsoftonline.com/'),
@@ -50,7 +63,9 @@ describe('Test edit plugin', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Edit plugin button disabled without source document', async () => {
-    const test = new SidekickTest();
+    const test = new SidekickTest({
+      page,
+    });
     delete test.apiResponses[0].edit;
     const { plugins } = await test.run();
     assert.ok(plugins.find((p) => p.id === 'edit' && !p.buttonEnabled), 'Edit plugin button not disabled');

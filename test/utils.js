@@ -15,6 +15,7 @@
 
 const assert = require('assert');
 const puppeteer = require('puppeteer');
+const pti = require('puppeteer-to-istanbul');
 
 // set debug to true to see browser window and debug output
 const DEBUG = false;
@@ -38,6 +39,7 @@ const SETUPS = {
       repo: 'pages',
       ref: 'main',
     },
+    configJs: 'window.hlx.initSidekick({host:"pages.adobe.com","hlx3":true});',
     configJson: '{"host":"pages.adobe.com"}',
     api: {
       status: {
@@ -73,6 +75,7 @@ const SETUPS = {
       ref: 'main',
       hlx3: true,
     },
+    configJs: 'window.hlx.initSidekick({host:"blog.adobe.com"});',
     configJson: '{"host":"blog.adobe.com"}',
     api: {
       status: {
@@ -182,11 +185,19 @@ class Setup {
   }
 
   /**
-   * The project config JS
+   * The project config JSON
    * @type {string}
    */
   get configJson() {
     return this._setup.configJson;
+  }
+
+  /**
+   * The project config JS
+   * @type {string}
+   */
+  get configJs() {
+    return this._setup.configJs;
   }
 
   /**
@@ -227,11 +238,11 @@ class Setup {
   }
 }
 
-// eslint-disable-next-line no-unused-vars
+/**
+ * The global browser instance
+ * @type Browser
+ */
 let globalBrowser;
-let globalPage;
-
-const getPage = () => globalPage;
 
 const toResp = (resp) => {
   if (typeof resp === 'object' && resp.body) {
@@ -245,7 +256,12 @@ const toResp = (resp) => {
   }
 };
 
-const getPlugins = async (p = getPage()) => p.evaluate(
+/**
+ * Returns a map of plugins
+ * @param {Page} page
+ * @returns {Promise<object>}
+ */
+const getPlugins = async (page) => page.evaluate(
   () => window.hlx.sidekick.plugins
     .map(({ id }) => window.hlx.sidekick.get(id))
     .filter((plugin) => !!plugin)
@@ -261,18 +277,37 @@ const getPlugins = async (p = getPage()) => p.evaluate(
     })),
 );
 
-const getPlugin = async (p, id) => getPlugins(p)
+/**
+ * Returns the plugin with the given id
+ * @param {Page} page
+ * @param {string} id
+ * @returns {Promise<*>}
+ */
+const getPlugin = async (page, id) => getPlugins(page)
   .then((plugins) => plugins.find((plugin) => plugin.id === id));
 
-const checkPlugin = async (p, pluginId) => {
+/**
+ * Asserts that the plugin is installed
+ * @param {Page} page
+ * @param {string} pluginId
+ * @returns {Promise<void>}
+ */
+const assertPlugin = async (page, pluginId) => {
   if (!pluginId) return;
   const pluginIds = typeof pluginId === 'string' ? [pluginId] : pluginId;
-  const plugins = await getPlugins(p);
+  const plugins = await getPlugins(page);
   pluginIds.forEach((id) => assert.ok(plugins.find((plugin) => plugin.id === id)));
 };
 
-const waitForEvent = async (p, type) => p.waitForFunction('window.hlx.sidekick')
-  .then(() => p.evaluate((evtType) => {
+/**
+ * Waits for the sidekick event
+ * @param {Page} page
+ * @param {string} type
+ * @param {number} [timeout=5000]
+ * @returns {Promise<*>}
+ */
+const waitForEvent = async (page, type) => page.waitForFunction('window.hlx.sidekick')
+  .then(() => page.evaluate((evtType) => {
     window.hlx.sidekickEvents = {};
     const eventTypes = Array.isArray(evtType) ? evtType : [evtType];
     eventTypes.forEach((eventType) => {
@@ -283,11 +318,51 @@ const waitForEvent = async (p, type) => p.waitForFunction('window.hlx.sidekick')
     });
   }, type));
 
-const getFiredEvents = async (p = getPage()) => p.evaluate(() => window.hlx.sidekickEvents);
+/**
+ * Waits until the test returns truthy or the timeout is reached.
+ * Returns the value of the function or undefined if timed out. If timeout is 0, the test is
+ * evaluated once.
+ * @param {function} test
+ * @param {number} timeout
+ * @returns {Promise<*>}
+ */
+async function waitFor(test, timeout) {
+  const direct = await test();
+  if (direct || !timeout) {
+    return direct;
+  }
+  const exp = Date.now() + timeout;
+  return new Promise((res) => {
+    const waitTimer = setInterval(async () => {
+      const v = await test();
+      if (v) {
+        clearInterval(waitTimer);
+        res(v);
+      }
+      if (Date.now() >= exp) {
+        clearInterval(waitTimer);
+        res();
+      }
+    }, 10);
+  });
+}
 
-const checkEventFired = async (p, type) => {
+/**
+ * Returns the fired sidekick events
+ * @param {Page} page
+ * @returns {Promise<*>}
+ */
+const getFiredEvents = async (page) => page.evaluate(() => window.hlx.sidekickEvents);
+
+/**
+ * Checks if a sidekick event was fired
+ * @param {Page} page
+ * @param {string} type
+ * @returns {Promise<boolean>}
+ */
+const checkEventFired = async (page, type) => {
   if (!type) return true;
-  const firedEvents = await getFiredEvents(p);
+  const firedEvents = await getFiredEvents(page);
   const eventTypes = Array.isArray(type) ? type : [type];
   assert.ok(
     eventTypes.every((et) => firedEvents[et] !== undefined),
@@ -296,20 +371,39 @@ const checkEventFired = async (p, type) => {
   return true;
 };
 
-const execPlugin = async (p, id) => {
-  if (!id) return;
-  await waitForEvent(p, 'pluginused');
-  await p.evaluate((pluginId) => {
+/**
+ * Executes a sidekick plugin
+ * @param {Page} page
+ * @param {string} id
+ * @returns {Promise<void>}
+ */
+const execPlugin = async (page, id) => {
+  if (!id) {
+    return;
+  }
+  await waitForEvent(page, 'pluginused');
+  await page.evaluate(async (pluginId) => {
     if (pluginId) {
       window.hlx.sidekick.shadowRoot.querySelector(`.hlx-sk .${pluginId} button`).click();
     }
   }, id);
 };
 
-const clickButton = async (p, id) => p.evaluate((buttonId) => window.hlx.sidekick
+/**
+ * Simulates button click
+ * @param {Page} page
+ * @param {string} id
+ * @returns {Promise<*>}
+ */
+const clickButton = async (page, id) => page.evaluate((buttonId) => window.hlx.sidekick
   .shadowRoot.querySelector(`.hlx-sk button.${buttonId}`).click(), id);
 
-const getNotification = async (p = getPage()) => p.evaluate(() => {
+/**
+ * Gets the notifications
+ * @param {Page} page
+ * @returns {Promise<*>}
+ */
+const getNotification = async (page) => page.evaluate(() => {
   const modal = window.hlx.sidekick.shadowRoot.querySelector('.hlx-sk-overlay .modal');
   const message = modal ? modal.textContent : null;
   const className = modal ? modal.className : null;
@@ -323,27 +417,63 @@ const sleep = async (delay = 1000) => new Promise((resolve) => {
   setTimeout(resolve, delay);
 });
 
+/**
+ * Starts the browser (should be passed in mocha.before)
+ * @returns {Promise<Browser>}
+ */
 async function startBrowser() {
-  this.timeout(10000);
-  globalBrowser = await puppeteer.launch({
-    devtools: DEBUG || process.env.HLX_SK_TEST_DEBUG,
-    args: [
-      '--disable-popup-blocking',
-      '--disable-web-security',
-      '-no-sandbox',
-      '-disable-setuid-sandbox',
-    ],
-  });
-  globalPage = await globalBrowser.newPage();
+  if (!globalBrowser) {
+    this.timeout(10000);
+    globalBrowser = await puppeteer.launch({
+      devtools: DEBUG || process.env.HLX_SK_TEST_DEBUG,
+      args: [
+        '--disable-popup-blocking',
+        '--disable-web-security',
+        '-no-sandbox',
+        '-disable-setuid-sandbox',
+      ],
+    });
+  }
+  return globalBrowser;
+}
+
+/**
+ * Opens a new browser page
+ * @returns {Promise<Page>}
+ */
+async function openPage() {
+  const page = await globalBrowser.newPage();
+  await page.coverage.startJSCoverage();
+  await page.coverage.startCSSCoverage();
+  return page;
 }
 
 const stopBrowser = async () => {
   if (!DEBUG) {
     await globalBrowser.close();
     globalBrowser = null;
-    globalPage = null;
   }
 };
+
+async function closeAllPages() {
+  if (globalBrowser) {
+    await Promise.all((await globalBrowser.pages()).map(async (page) => {
+      const url = page.url();
+      if (url.startsWith('file:///')) {
+        // only get coverage from file urls
+        const [jsCoverage, cssCoverage] = await Promise.all([
+          page.coverage.stopJSCoverage(),
+          page.coverage.stopCSSCoverage(),
+        ]);
+        pti.write([...jsCoverage, ...cssCoverage], {
+          includeHostname: true,
+          storagePath: './.nyc_output',
+        });
+      }
+      await page.close();
+    }));
+  }
+}
 
 module.exports = {
   IT_DEFAULT_TIMEOUT,
@@ -351,14 +481,16 @@ module.exports = {
   toResp,
   getPlugins,
   getPlugin,
-  checkPlugin,
+  assertPlugin,
   waitForEvent,
+  waitFor,
   checkEventFired,
   execPlugin,
   clickButton,
   getNotification,
   sleep,
-  getPage,
   startBrowser,
   stopBrowser,
+  closeAllPages,
+  openPage,
 };

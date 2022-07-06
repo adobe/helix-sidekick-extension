@@ -19,16 +19,29 @@ const {
   IT_DEFAULT_TIMEOUT,
   startBrowser,
   stopBrowser,
+  openPage,
+  closeAllPages,
 } = require('./utils.js');
 const { SidekickTest } = require('./SidekickTest.js');
 
 describe('Test reload plugin', () => {
-  beforeEach(startBrowser);
-  afterEach(stopBrowser);
+  before(startBrowser);
+  after(stopBrowser);
+
+  let page;
+  beforeEach(async () => {
+    page = await openPage();
+  });
+
+  afterEach(async () => {
+    await closeAllPages();
+  });
 
   it('Reload plugin uses preview API', async () => {
     const { requestsMade, navigated } = await new SidekickTest({
+      page,
       plugin: 'reload',
+      waitNavigation: 'https://main--blog--adobe.hlx.page/en/topics/bla',
     }).run();
     const reloadReq = requestsMade.find((r) => r.method === 'POST');
     assert.ok(
@@ -43,8 +56,10 @@ describe('Test reload plugin', () => {
 
   it('Reload plugin uses code API', async () => {
     const { requestsMade, navigated } = await new SidekickTest({
+      page,
       type: 'xml',
       plugin: 'reload',
+      waitNavigation: 'https://main--blog--adobe.hlx.page/en/bla.xml',
     }).run();
     const reloadReq = requestsMade.find((r) => r.method === 'POST');
     assert.ok(
@@ -56,7 +71,9 @@ describe('Test reload plugin', () => {
 
   it('Reload plugin busts client cache', async () => {
     const { requestsMade } = await new SidekickTest({
+      page,
       plugin: 'reload',
+      waitNavigation: 'https://main--blog--adobe.hlx.page/en/topics/bla',
     }).run();
     const afterReload = requestsMade.slice(requestsMade.findIndex((r) => r.method === 'POST') + 1);
     assert.ok(
@@ -66,14 +83,18 @@ describe('Test reload plugin', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Reload plugin button disabled without source document', async () => {
-    const test = new SidekickTest();
+    const test = new SidekickTest({
+      page,
+    });
     test.apiResponses[0].edit = {}; // no source doc
     const { plugins } = await test.run();
     assert.ok(plugins.find((p) => p.id === 'reload' && !p.buttonEnabled), 'Reload plugin button not disabled');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Reload plugin shows update indicator if edit is newer than preview', async () => {
-    const test = new SidekickTest();
+    const test = new SidekickTest({
+      page,
+    });
     const previewLastMod = test.apiResponses[0].preview.lastModified;
     test.apiResponses[0].preview.lastModified = new Date(new Date(previewLastMod)
       .setFullYear(2020)).toUTCString();

@@ -19,16 +19,29 @@ const {
   IT_DEFAULT_TIMEOUT,
   startBrowser,
   stopBrowser,
+  openPage,
+  closeAllPages,
 } = require('./utils.js');
 const { SidekickTest } = require('./SidekickTest.js');
 
 describe('Test publish plugin', () => {
-  beforeEach(startBrowser);
-  afterEach(stopBrowser);
+  before(startBrowser);
+  after(stopBrowser);
+
+  let page;
+  beforeEach(async () => {
+    page = await openPage();
+  });
+
+  afterEach(async () => {
+    await closeAllPages();
+  });
 
   it('Publish plugin uses live API', async () => {
     const { requestsMade, navigated } = await new SidekickTest({
+      page,
       plugin: 'publish',
+      waitNavigation: 'https://blog.adobe.com/en/topics/bla',
     }).run();
     const publishReq = requestsMade.find((r) => r.method === 'POST');
     assert.ok(
@@ -40,6 +53,7 @@ describe('Test publish plugin', () => {
 
   it('Publish plugin also publishes dependencies', async () => {
     const { requestsMade } = await new SidekickTest({
+      page,
       plugin: 'publish',
       post: (p) => p.evaluate(() => {
         window.hlx.dependencies = [
@@ -47,6 +61,7 @@ describe('Test publish plugin', () => {
           'bar',
         ];
       }),
+      waitNavigation: 'https://blog.adobe.com/en/topics/bla',
     }).run();
     const publishPaths = requestsMade.filter((r) => r.method === 'POST').map((r) => new URL(r.url).pathname);
     assert.strictEqual(publishPaths.length, 3, 'Unexpected number of publish requests');
@@ -58,7 +73,9 @@ describe('Test publish plugin', () => {
 
   it('Publish plugin busts client cache', async () => {
     const { requestsMade } = await new SidekickTest({
+      page,
       plugin: 'publish',
+      waitNavigation: 'https://blog.adobe.com/en/topics/bla',
     }).run();
     const afterPublish = requestsMade.slice(requestsMade.findIndex((r) => r.method === 'POST') + 1);
     assert.ok(
@@ -73,6 +90,7 @@ describe('Test publish plugin', () => {
 
   it('Publish plugin button disabled without source document', async () => {
     const test = new SidekickTest({
+      page,
       url: 'https://blog.adobe.com/en/topics/bla',
     });
     test.apiResponses[0].edit = {}; // no source doc
@@ -81,7 +99,9 @@ describe('Test publish plugin', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Publish plugin shows update indicator if preview is newer than live', async () => {
-    const test = new SidekickTest();
+    const test = new SidekickTest({
+      page,
+    });
     const liveLastMod = test.apiResponses[0].live.lastModified;
     test.apiResponses[0].live.lastModified = new Date(new Date(liveLastMod)
       .setFullYear(2019)).toUTCString();

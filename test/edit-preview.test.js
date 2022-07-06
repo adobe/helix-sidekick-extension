@@ -19,17 +19,30 @@ const {
   IT_DEFAULT_TIMEOUT,
   startBrowser,
   stopBrowser,
+  openPage,
+  closeAllPages,
 } = require('./utils.js');
 const { SidekickTest } = require('./SidekickTest.js');
 
-describe('Test editor preview preview plugin', () => {
-  beforeEach(startBrowser);
-  afterEach(stopBrowser);
+describe('Test editor preview plugin', () => {
+  before(startBrowser);
+  after(stopBrowser);
+
+  let page;
+  beforeEach(async () => {
+    page = await openPage();
+  });
+
+  afterEach(async () => {
+    await closeAllPages();
+  });
 
   it('Editor preview preview plugin updates preview when switching from editor', async () => {
     const { requestsMade } = await new SidekickTest({
+      page,
       url: 'https://adobe.sharepoint.com/:x:/r/sites/TheBlog/_layouts/15/Doc.aspx?sourcedoc=%7BE8EC80CB-24C3-4B95-B082-C51FD8BC8760%7D&file=bla.docx&action=default&mobileredirect=true',
       plugin: 'edit-preview',
+      waitNavigation: 'https://admin.hlx.page/preview/',
     }).run();
     const updateReq = requestsMade
       .filter((r) => r.method === 'POST')
@@ -47,9 +60,11 @@ describe('Test editor preview preview plugin', () => {
 
   it('Editor preview preview plugin handles /.helix/config.json special case', async () => {
     const test = new SidekickTest({
+      page,
       url: 'https://adobe.sharepoint.com/:w:/r/sites/TheBlog/_layouts/15/Doc.aspx?sourcedoc=%7BE8EC80CB-24C3-4B95-B082-C51FD8BC8760%7D&file=config.xlsx&action=default&mobileredirect=true',
       type: 'json',
       plugin: 'edit-preview',
+      waitPopup: 2000,
     });
     test.apiResponses[0].webPath = '/.helix/config.json';
     const { popupOpened, notification } = await test.run();
@@ -59,9 +74,11 @@ describe('Test editor preview preview plugin', () => {
 
   it('Editor preview preview plugin shows /.helix/* error message from server', async () => {
     const test = new SidekickTest({
+      page,
       url: 'https://adobe.sharepoint.com/:x:/r/sites/TheBlog/_layouts/15/Doc.aspx?sourcedoc=%7BE8EC80CB-24C3-4B95-B082-C51FD8BC8760%7D&file=test.xlsx&action=default&mobileredirect=true',
       type: 'json',
       plugin: 'edit-preview',
+      waitPopup: 2000,
     });
     test.apiResponses[0].webPath = '/.helix/test.json';
     test.apiResponses[1] = {
@@ -78,6 +95,7 @@ describe('Test editor preview preview plugin', () => {
 
   it('Editor preview preview plugin shows update indicator if edit is newer than preview', async () => {
     const test = new SidekickTest({
+      page,
       url: 'https://adobe.sharepoint.com/:w:/r/sites/TheBlog/_layouts/15/Doc.aspx?sourcedoc=%7BE8EC80CB-24C3-4B95-B082-C51FD8BC8760%7D&file=bla.docx&action=default&mobileredirect=true',
     });
     const previewLastMod = test.apiResponses[0].preview.lastModified;

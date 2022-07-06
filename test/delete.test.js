@@ -19,15 +19,27 @@ const {
   IT_DEFAULT_TIMEOUT,
   startBrowser,
   stopBrowser,
+  openPage,
+  closeAllPages,
 } = require('./utils.js');
 const { SidekickTest } = require('./SidekickTest.js');
 
 describe('Test delete plugin', () => {
-  beforeEach(startBrowser);
-  afterEach(stopBrowser);
+  before(startBrowser);
+  after(stopBrowser);
+
+  let page;
+  beforeEach(async () => {
+    page = await openPage();
+  });
+
+  afterEach(async () => {
+    await closeAllPages();
+  });
 
   it('Delete plugin uses preview API if page not published', async () => {
     const test = new SidekickTest({
+      page,
       acceptDialogs: true,
       plugin: 'delete',
     });
@@ -52,6 +64,7 @@ describe('Test delete plugin', () => {
 
   it('Delete plugin uses preview and live API if page published', async () => {
     const test = new SidekickTest({
+      page,
       acceptDialogs: true,
       plugin: 'delete',
     });
@@ -74,6 +87,7 @@ describe('Test delete plugin', () => {
 
   it('Delete plugin uses code API', async () => {
     const test = new SidekickTest({
+      page,
       type: 'xml',
       acceptDialogs: true,
       plugin: 'delete',
@@ -92,12 +106,16 @@ describe('Test delete plugin', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('No delete plugin if source document exists', async () => {
-    const { plugins } = await new SidekickTest().run();
+    const { plugins } = await new SidekickTest({
+      page,
+    }).run();
     assert.ok(!plugins.find((p) => p.id === 'delete'), 'Unexpected delete plugin found');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('No delete plugin if preview does not exist', async () => {
-    const test = new SidekickTest();
+    const test = new SidekickTest({
+      page,
+    });
     test.apiResponses[0].preview = {}; // no preview
     const { plugins } = await test.run();
     assert.ok(!plugins.find((p) => p.id === 'delete'), 'Unexpected delete plugin found');

@@ -19,17 +19,30 @@ const {
   IT_DEFAULT_TIMEOUT,
   startBrowser,
   stopBrowser,
+  openPage,
+  closeAllPages,
 } = require('./utils.js');
 const { SidekickTest } = require('./SidekickTest.js');
 
 describe('Test unpublish plugin', () => {
-  beforeEach(startBrowser);
-  afterEach(stopBrowser);
+  before(startBrowser);
+  after(stopBrowser);
+
+  let page;
+  beforeEach(async () => {
+    page = await openPage();
+  });
+
+  afterEach(async () => {
+    await closeAllPages();
+  });
 
   it('Unpublish plugin uses live API', async () => {
     const test = new SidekickTest({
+      page,
       acceptDialogs: true,
       plugin: 'unpublish',
+      waitNavigation: 'https://admin.hlx.page/live/adobe/blog/main/en/topics/bla',
     });
     test.apiResponses[0].edit = {}; // no source doc
     const { requestsMade } = await test.run();
@@ -41,12 +54,16 @@ describe('Test unpublish plugin', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('No unpublish plugin if source document still exists', async () => {
-    const { plugins } = await new SidekickTest().run();
+    const { plugins } = await new SidekickTest({
+      page,
+    }).run();
     assert.ok(!plugins.find((p) => p.id === 'unpublish'), 'Unexpected unpublish plugin found');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('No unpublish plugin if page not published', async () => {
-    const test = new SidekickTest();
+    const test = new SidekickTest({
+      page,
+    });
     test.apiResponses[0].edit = {}; // no source doc
     test.apiResponses[0].live = {}; // page not published
     const { plugins } = await test.run();

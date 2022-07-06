@@ -18,16 +18,26 @@ const assert = require('assert');
 const {
   IT_DEFAULT_TIMEOUT,
   startBrowser,
-  stopBrowser,
+  stopBrowser, openPage, closeAllPages,
 } = require('./utils.js');
 const { SidekickTest } = require('./SidekickTest.js');
 
 describe('Test user auth handling', () => {
-  beforeEach(startBrowser);
-  afterEach(stopBrowser);
+  before(startBrowser);
+  after(stopBrowser);
+
+  let page;
+  beforeEach(async () => {
+    page = await openPage();
+  });
+
+  afterEach(async () => {
+    await closeAllPages();
+  });
 
   it('Handles 401 status from admin API', async () => {
     const { checkPageResult } = await new SidekickTest({
+      page,
       apiResponses: [{
         status: 401,
       }],
@@ -40,6 +50,7 @@ describe('Test user auth handling', () => {
 
   it('Shows user info from profile', async () => {
     const { checkPageResult } = await new SidekickTest({
+      page,
       checkPage: (p) => p.evaluate(() => [...window.hlx.sidekick.get('user')
         .querySelectorAll(':scope .dropdown-container > div > div')]
         .map((div) => div.textContent)
@@ -50,6 +61,7 @@ describe('Test user auth handling', () => {
 
   it('Shows login option in user menu if user not logged in', async () => {
     const { plugins } = await new SidekickTest({
+      page,
       apiResponses: [{
         status: 401,
       }],
@@ -58,13 +70,17 @@ describe('Test user auth handling', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Shows switch user and logout option in user menu if user logged in', async () => {
-    const { plugins } = await new SidekickTest().run();
+    const { plugins } = await new SidekickTest({
+      page,
+    }).run();
     assert.ok(plugins.find((p) => p.id === 'user-switch'), 'Did not show switch user option');
     assert.ok(plugins.find((p) => p.id === 'user-logout'), 'Did not show logout option');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Keeps plugin buttons disabled based on permissions', async () => {
-    const test = new SidekickTest();
+    const test = new SidekickTest({
+      page,
+    });
     // change live permissions to readonly
     test.apiResponses[0].live.permissions = ['read'];
     const { plugins } = await test.run();

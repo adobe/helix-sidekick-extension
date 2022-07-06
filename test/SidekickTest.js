@@ -13,19 +13,22 @@
 
 'use strict';
 
-const fs = require('fs-extra');
+const fs = require('fs').promises;
+const { fileURLToPath } = require('url');
 
 const {
   Setup,
-  getPage,
-  checkPlugin,
+  assertPlugin,
   execPlugin,
   checkEventFired,
   sleep,
   toResp,
   getPlugins,
   getNotification,
+  waitFor,
 } = require('./utils.js');
+
+const DEBUG_LOGS = false;
 
 /**
  * @typedef {Object} Page
@@ -146,19 +149,24 @@ class SidekickTest {
    */
   constructor(o = {}) {
     // main options
-    this.page = o.page || getPage();
+    this.page = o.page;
     this.setup = o.setup instanceof Setup ? o.setup : new Setup(o.setup || 'blog');
     this.env = o.env || 'preview';
     this.type = o.type || 'html';
     this.fixture = o.fixture || 'generic.html';
-    this.sleep = o.sleep || 1000;
+    this.sleep = o.sleep ?? 0;
     this.plugin = o.plugin;
-    this.pluginSleep = o.pluginSleep || 2000;
+    this.pluginSleep = o.pluginSleep ?? 0;
     this.acceptDialogs = o.acceptDialogs || false;
     this.allowNavigation = o.allowNavigation || false;
+    this.waitPopup = o.waitPopup ?? 0;
+    this.waitNavigation = o.waitNavigation ? new Set([o.waitNavigation]) : new Set();
+    this.waitNavigationTime = 2000;
+    this.loadModule = o.loadModule || false;
 
     // options derived from setup - or overrides
     this.url = o.url || this.setup.getUrl(this.env, this.type);
+    this.configJs = o.configJs || this.setup.configJs;
     this.configJson = o.configJson || this.setup.configJson;
     this.sidekickConfig = o.sidekickConfig || this.setup.sidekickConfig;
     this.apiResponses = o.apiResponses || [this.setup.apiResponse('status', this.type)];
@@ -190,10 +198,10 @@ class SidekickTest {
 
   /**
    * Runs the sidekick test.
-   * @param {string} url A URL to use as test location (optional setup override)
+   * @param {string} pageUrl A URL to use as test location (optional setup override)
    * @returns {SidekickTest~Result} The result object
    */
-  async run(url) {
+  async run(pageUrl) {
     const requestsMade = [];
     const {
       acceptDialogs,
@@ -201,6 +209,7 @@ class SidekickTest {
       checkRequest,
       apiResponses,
       contentResponses,
+      configJs,
       configJson,
     } = this;
     let pageLoaded = false;
@@ -228,9 +237,14 @@ class SidekickTest {
           }, +(this.timeoutFailure || this.timeoutSuccess));
         }
         // instrument popups
-        this.page.browser().on('targetcreated', (req) => {
-          if (!req.url().startsWith('devtools://')) {
-            popupOpened = req.url();
+        this.page.browser().on('targetcreated', (target) => {
+          const targetUrl = target.url();
+          if (targetUrl !== 'about:blank' && !targetUrl.startsWith('devtools://')) {
+            popupOpened = targetUrl;
+            if (DEBUG_LOGS) {
+              // eslint-disable-next-line no-console
+              console.log('created new page', targetUrl);
+            }
           }
         });
         // instrument dialogs
@@ -245,24 +259,36 @@ class SidekickTest {
             await d.dismiss();
           }
         });
+        this.page.on('console', (msg) => {
+          // eslint-disable-next-line no-console
+          if (DEBUG_LOGS) {
+            // eslint-disable-next-line no-console
+            console.log(`> [${msg.type()}] ${msg.text()}`);
+          }
+        });
         // instrument requests
         this.page.setRequestInterception(true);
         this.page.on('request', async (req) => {
-          // console.log(req.url());
+          const url = req.url();
+          if (DEBUG_LOGS) {
+            // eslint-disable-next-line no-console
+            console.log('[pup] request', url);
+          }
           if (req.isNavigationRequest()) {
             if (!pageLoaded) {
               pageLoaded = true;
             } else {
-              navigated = req.url();
+              navigated = url;
               if (!allowNavigation) {
                 req.abort('aborted');
               }
             }
           }
-          if (req.url().startsWith('http')) {
+          if (url.startsWith('http')) {
+            this.waitNavigation.delete(url);
             requestsMade.push({
               method: req.method(),
-              url: req.url(),
+              url,
             });
             if (typeof checkRequest === 'function') {
               checkRequestResult = checkRequest(req);
@@ -271,16 +297,19 @@ class SidekickTest {
                 return;
               }
             }
-            if (req.url().startsWith('https://admin.hlx.page/')) {
+            if (url.startsWith('https://admin.hlx.page/')) {
               req.respond(toResp(apiResponses.length === 1
                 ? apiResponses[0] : apiResponses.shift()));
-            } else if (req.url().endsWith('/tools/sidekick/config.json')) {
-              configLoaded = req.url();
+            } else if (url.endsWith('/tools/sidekick/config.json')) {
+              configLoaded = url;
               req.respond(toResp(configJson));
-            } else if (req.url() === 'https://www.hlx.live/tools/sidekick/module.js') {
+            } else if (url.endsWith('/tools/sidekick/config.js')) {
+              configLoaded = url;
+              req.respond(toResp(configJs));
+            } else if (url === 'https://www.hlx.live/tools/sidekick/module.js') {
               try {
                 // return local module.js
-                const module = await fs.readFile(`${__dirname}/../src/sidekick/module.js`, 'utf-8');
+                const module = await fs.readFile(`${__dirname}/../src/extension/module.js`, 'utf-8');
                 req.respond(toResp(module));
               } catch (e) {
                 reject(new Error('failed to load local module.js'));
@@ -289,8 +318,23 @@ class SidekickTest {
               req.respond(toResp(contentResponses.length === 1
                 ? contentResponses[0] : contentResponses.shift()));
             }
-          } else if (req.url().startsWith('file://')) {
+          } else if (url.startsWith('file://')) {
             // let file requests through
+            if (DEBUG_LOGS) {
+              // eslint-disable-next-line no-console
+              console.log('[pup] loading', url);
+            }
+            // rewrite all `/bookmarklet/` requests (except app.js)
+            if (url.indexOf('/bookmarklet/') > 0 && !url.endsWith('/app.js')) {
+              const path = fileURLToPath(url).replace('/bookmarklet/', '/extension/');
+              try {
+                req.respond(toResp(await fs.readFile(path, 'utf-8')));
+                return;
+              } catch (e) {
+                reject(new Error(`failed to load: ${path}`));
+                return;
+              }
+            }
             req.continue();
           }
         });
@@ -300,7 +344,7 @@ class SidekickTest {
       this.page
         .goto(`file://${__dirname}/fixtures/${this.fixture}`, { waitUntil: 'load' })
         .then(() => this.pre(this.page))
-        .then(() => this.page.evaluate((testLocation, skCfg) => {
+        .then(() => this.page.evaluate(async (testLocation, skCfg, isBookmarklet) => {
           // set test location
           if (testLocation) {
             let input = document.getElementById('sidekick_test_location');
@@ -312,78 +356,108 @@ class SidekickTest {
             input.value = testLocation;
           }
           // inject sidekick
-          const moduleScript = document.createElement('script');
-          moduleScript.id = 'hlx-sk-module';
-          moduleScript.src = '../../src/extension/module.js';
-          moduleScript.addEventListener('load', async () => {
-            skCfg.scriptUrl = moduleScript.src;
-            window.hlx.sidekickConfig = skCfg;
-            const {
-              owner,
-              repo,
-              ref,
-              devMode,
-            } = skCfg;
-            const configOrigin = devMode
-              ? 'http://localhost:3000'
-              : `https://${ref}--${repo}--${owner}.hlx.live`;
-            try {
-              const res = await fetch(`${configOrigin}/tools/sidekick/config.json`);
-              if (res.ok) {
-                skCfg = {
-                  ...skCfg,
-                  ...(await res.json()),
-                  // no overriding below
-                  owner,
-                  repo,
-                  ref,
-                };
-              }
-            } catch (e) {
-              // init sidekick without extended config
+          if (isBookmarklet) {
+            const s = document.createElement('script');
+            s.id = 'hlx-sk-app';
+            s.src = '../../src/bookmarklet/app.js';
+            skCfg.scriptUrl = s.src;
+            s.dataset.config = JSON.stringify(skCfg);
+            if (document.head.querySelector('script#hlx-sk-app')) {
+              document.head.querySelector('script#hlx-sk-app').replaceWith(s);
+            } else {
+              document.head.append(s);
             }
-            // init sidekick
-            window.hlx.initSidekick(skCfg);
-          });
-          if (document.head.querySelector('script#hlx-sk-module')) {
-            document.head.querySelector('script#hlx-sk-module').replaceWith(moduleScript);
           } else {
-            document.head.append(moduleScript);
-          }
-          // wait for sidekick object to instrument
-          window.hlx = window.hlx || {};
-          window.hlx.sidekickWait = window.setInterval(() => {
-            if (window.hlx.sidekick) {
-              window.clearInterval(window.hlx.sidekickWait);
-              delete window.hlx.sidekickWait;
-              // listen for all sidekick events
-              window.hlx.sidekickEvents = {};
-              [
-                'shown',
-                'hidden',
-                'contextloaded',
-                'statusfetched',
-                'pluginused',
-                'envswitched',
-                'updated',
-                'published',
-                'unpublished',
-                'deleted',
-              ].forEach((eventType) => {
-                window.hlx.sidekick.addEventListener(eventType, (evt) => {
-                  window.hlx.sidekickEvents[eventType] = evt.detail;
-                });
-              });
+            const moduleScript = document.createElement('script');
+            moduleScript.id = 'hlx-sk-module';
+            moduleScript.src = '../../src/extension/module.js';
+            moduleScript.addEventListener('load', async () => {
+              skCfg.scriptUrl = moduleScript.src;
+              window.hlx.sidekickConfig = skCfg;
+              const {
+                owner,
+                repo,
+                ref,
+                devMode,
+              } = skCfg;
+              const configOrigin = devMode
+                ? 'http://localhost:3000'
+                : `https://${ref}--${repo}--${owner}.hlx.live`;
+              try {
+                const res = await fetch(`${configOrigin}/tools/sidekick/config.json`);
+                if (res.ok) {
+                  skCfg = {
+                    ...skCfg,
+                    ...(await res.json()),
+                    // no overriding below
+                    owner,
+                    repo,
+                    ref,
+                  };
+                }
+              } catch (e) {
+                // init sidekick without extended config
+              }
+              // init sidekick
+              window.hlx.initSidekick(skCfg);
+            });
+            if (document.head.querySelector('script#hlx-sk-module')) {
+              document.head.querySelector('script#hlx-sk-module').replaceWith(moduleScript);
+            } else {
+              document.head.append(moduleScript);
             }
-          }, 10);
-        }, url || this.url, this.sidekickConfig))
+          }
+
+          // wait for sidekick to initialize
+          await new Promise((res) => {
+            document.addEventListener('helix-sidekick-ready', res);
+          });
+
+          // listen for all sidekick events
+          window.hlx.sidekickEvents = {};
+          [
+            'shown',
+            'hidden',
+            'contextloaded',
+            'statusfetched',
+            'pluginused',
+            'envswitched',
+            'updated',
+            'published',
+            'unpublished',
+            'deleted',
+            'cssloaded',
+            'langloaded',
+            'pluginsloaded',
+          ].forEach((eventType) => {
+            window.hlx.sidekick.addEventListener(eventType, (evt) => {
+              window.hlx.sidekickEvents[eventType] = evt.detail;
+              // eslint-disable-next-line no-console
+              console.log(`event fired: ${eventType}`, JSON.stringify(evt));
+            });
+          });
+          // wait for some events
+          await new Promise((res) => {
+            const events = new Set(['cssloaded']);
+            events.forEach((evt) => {
+              window.hlx.sidekick.addEventListener(evt, () => {
+                events.delete(evt);
+                if (events.size === 0) {
+                  res();
+                }
+              });
+            });
+          });
+        }, pageUrl || this.url, this.sidekickConfig, !this.loadModule))
         // wait until sidekick is fully loaded
         .then(() => sleep(+this.sleep))
         .then(() => this.post(this.page))
         // perform checks
-        .then(() => checkPlugin(this.page, this.checkPlugins))
+        .then(() => assertPlugin(this.page, this.checkPlugins))
         .then(() => execPlugin(this.page, this.plugin))
-        .then(() => sleep(this.plugin ? +this.pluginSleep : 0))
+        .then(() => sleep(this.pluginSleep))
+        .then(() => waitFor(() => popupOpened, this.waitPopup))
+        .then(() => waitFor(() => this.waitNavigation.size === 0, this.waitNavigationTime))
         .then(() => checkEventFired(this.page, this.checkEvents))
         .then(async () => {
           sidekick = await this.page.evaluate(() => window.hlx.sidekick);
