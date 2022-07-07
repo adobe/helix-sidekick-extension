@@ -17,6 +17,7 @@ const fs = require('fs').promises;
 const { fileURLToPath } = require('url');
 
 const {
+  DEBUG_LOGS,
   Setup,
   assertPlugin,
   execPlugin,
@@ -27,8 +28,6 @@ const {
   getNotification,
   waitFor,
 } = require('./utils.js');
-
-const DEBUG_LOGS = false;
 
 /**
  * @typedef {Object} Page
@@ -160,7 +159,9 @@ class SidekickTest {
     this.acceptDialogs = o.acceptDialogs || false;
     this.allowNavigation = o.allowNavigation || false;
     this.waitPopup = o.waitPopup ?? 0;
-    this.waitNavigation = o.waitNavigation ? new Set([o.waitNavigation]) : new Set();
+    this.waitNavigation = o.waitNavigation
+      ? new Set(Array.isArray(o.waitNavigation) ? o.waitNavigation : [o.waitNavigation])
+      : new Set();
     this.waitNavigationTime = 2000;
     this.loadModule = o.loadModule || false;
 
@@ -168,7 +169,7 @@ class SidekickTest {
     this.url = o.url || this.setup.getUrl(this.env, this.type);
     this.configJs = o.configJs || this.setup.configJs;
     this.configJson = o.configJson || this.setup.configJson;
-    this.sidekickConfig = o.sidekickConfig || this.setup.sidekickConfig;
+    this.sidekickConfig = o.sidekickConfig || JSON.parse(JSON.stringify(this.setup.sidekickConfig));
     this.apiResponses = o.apiResponses || [this.setup.apiResponse('status', this.type)];
     this.contentResponses = o.contentResponses || [this.setup.contentResponse(this.type)];
 
@@ -237,9 +238,15 @@ class SidekickTest {
           }, +(this.timeoutFailure || this.timeoutSuccess));
         }
         // instrument popups
-        this.page.browser().on('targetcreated', (target) => {
+        this.page.browser().on('targetcreated', async (target) => {
           const targetUrl = target.url();
           if (targetUrl !== 'about:blank' && !targetUrl.startsWith('devtools://')) {
+            const page = await target.page();
+            page.setRequestInterception(true);
+            page.on('request', (req) => {
+              console.log('target req', req.url());
+              req.continue();
+            });
             popupOpened = targetUrl;
             if (DEBUG_LOGS) {
               // eslint-disable-next-line no-console

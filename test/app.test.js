@@ -20,6 +20,7 @@ const {
   startBrowser,
   stopBrowser,
   openPage,
+  closeAllPages,
 } = require('./utils.js');
 const { SidekickTest } = require('./SidekickTest.js');
 
@@ -33,7 +34,7 @@ describe('Test sidekick bookmarklet', () => {
   });
 
   afterEach(async () => {
-    page?.close();
+    await closeAllPages();
   });
 
   it('Does not render without config', async () => {
@@ -513,7 +514,7 @@ describe('Test sidekick bookmarklet', () => {
     const { checkPageResult } = await new SidekickTest({
       page,
       sleep: 500,
-      configJs: 'window.hlx.initSidekick({pushDownSelector:"#topnav"})',
+      configJs: 'window.hlx.initSidekick({pushDown:true, pushDownSelector:"#topnav"})',
       pre: (p) => p.evaluate(() => {
         // add topnav element
         const topNav = document.createElement('div');
@@ -530,7 +531,7 @@ describe('Test sidekick bookmarklet', () => {
     const { checkPageResult } = await new SidekickTest({
       page,
       sleep: 500,
-      configJs: 'window.hlx.initSidekick({pushDownSelector:"#topnav"})',
+      configJs: 'window.hlx.initSidekick({pushDown:true, pushDownSelector:"#topnav"})',
       pre: (p) => p.evaluate(() => {
         // add fake word iframe
         const frame = document.createElement('iframe');
@@ -551,6 +552,7 @@ describe('Test sidekick bookmarklet', () => {
     const { checkPageResult } = await new SidekickTest({
       page,
       sleep: 500,
+      configJs: 'window.hlx.initSidekick({pushDown:true, pushDownSelector:"#topnav"})',
       post: (p) => p.evaluate(() => window.hlx.sidekick.hide()),
       checkPage: (p) => p.evaluate(() => document.documentElement.style.marginTop),
     }).run();

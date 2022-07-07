@@ -21,6 +21,7 @@ const {
   stopBrowser,
   openPage,
   closeAllPages,
+  Nock,
 } = require('./utils.js');
 const { SidekickTest } = require('./SidekickTest.js');
 
@@ -29,15 +30,22 @@ describe('Test production plugin', () => {
   after(stopBrowser);
 
   let page;
+  let nock;
+
   beforeEach(async () => {
     page = await openPage();
+    nock = new Nock();
   });
 
   afterEach(async () => {
     await closeAllPages();
+    nock.done();
   });
 
   it('Production plugin switches to production from gdrive URL', async () => {
+    nock('https://pages.adobe.com')
+      .get('/creativecloud/en/test')
+      .reply(200, 'some content...');
     const { popupOpened } = await new SidekickTest({
       page,
       setup: 'pages',
@@ -53,6 +61,9 @@ describe('Test production plugin', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Production plugin switches to production from onedrive URL', async () => {
+    nock('https://blog.adobe.com')
+      .get('/en/topics/bla')
+      .reply(200, 'some content...');
     const { popupOpened } = await new SidekickTest({
       page,
       url: 'https://adobe.sharepoint.com/:w:/r/sites/TheBlog/_layouts/15/Doc.aspx?sourcedoc=%7BE8EC80CB-24C3-4B95-B082-C51FD8BC8760%7D&file=bla.docx&action=default&mobileredirect=true',

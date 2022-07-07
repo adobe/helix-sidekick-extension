@@ -21,6 +21,7 @@ const {
   stopBrowser,
   openPage,
   closeAllPages,
+  Nock,
 } = require('./utils.js');
 const { SidekickTest } = require('./SidekickTest.js');
 
@@ -29,27 +30,33 @@ describe('Test edit plugin', () => {
   after(stopBrowser);
 
   let page;
+  let nock;
+
   beforeEach(async () => {
     page = await openPage();
+    nock = new Nock();
   });
 
   afterEach(async () => {
     await closeAllPages();
+    nock.done();
   });
 
   it('Edit plugin opens editor from preview URL', async () => {
+    nock.edit();
     const { popupOpened } = await new SidekickTest({
       page,
       plugin: 'edit',
       waitPopup: 3000,
     }).run();
     assert.ok(
-      popupOpened && popupOpened.startsWith('https://login.microsoftonline.com/'),
-      'Microsoft login page not shown',
+      popupOpened?.startsWith('https://adobe.sharepoint.com/'),
+      'Onedrive document not opened',
     );
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Edit plugin opens editor from production URL', async () => {
+    nock.edit();
     const { popupOpened } = await new SidekickTest({
       page,
       url: 'https://blog.adobe.com/en/topics/bla',
@@ -57,8 +64,8 @@ describe('Test edit plugin', () => {
       waitPopup: 2000,
     }).run();
     assert.ok(
-      popupOpened && popupOpened.startsWith('https://login.microsoftonline.com/'),
-      'Microsoft login page not shown',
+      popupOpened?.startsWith('https://adobe.sharepoint.com/'),
+      'Onedrive document not opened',
     );
   }).timeout(IT_DEFAULT_TIMEOUT);
 
