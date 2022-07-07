@@ -21,6 +21,7 @@ const {
   stopBrowser,
   openPage,
   closeAllPages,
+  Nock,
 } = require('./utils.js');
 const { SidekickTest } = require('./SidekickTest.js');
 
@@ -29,20 +30,31 @@ describe('Test editor preview plugin', () => {
   after(stopBrowser);
 
   let page;
+  let nock;
+
   beforeEach(async () => {
     page = await openPage();
+    nock = new Nock();
   });
 
   afterEach(async () => {
     await closeAllPages();
+    nock.done();
   });
 
   it('Editor preview preview plugin updates preview when switching from editor', async () => {
+    nock('https://main--blog--adobe.hlx.page')
+      .get('/en/topics/bla')
+      .reply(200, 'blog adobe...');
     const { requestsMade } = await new SidekickTest({
       page,
       url: 'https://adobe.sharepoint.com/:x:/r/sites/TheBlog/_layouts/15/Doc.aspx?sourcedoc=%7BE8EC80CB-24C3-4B95-B082-C51FD8BC8760%7D&file=bla.docx&action=default&mobileredirect=true',
       plugin: 'edit-preview',
-      waitNavigation: 'https://admin.hlx.page/preview/',
+      waitPopup: 2000,
+      waitNavigation: [
+        'https://admin.hlx.page/preview/adobe/blog/main/en/topics/bla',
+        'https://main--blog--adobe.hlx.page/en/topics/bla',
+      ],
     }).run();
     const updateReq = requestsMade
       .filter((r) => r.method === 'POST')
@@ -64,7 +76,10 @@ describe('Test editor preview plugin', () => {
       url: 'https://adobe.sharepoint.com/:w:/r/sites/TheBlog/_layouts/15/Doc.aspx?sourcedoc=%7BE8EC80CB-24C3-4B95-B082-C51FD8BC8760%7D&file=config.xlsx&action=default&mobileredirect=true',
       type: 'json',
       plugin: 'edit-preview',
-      waitPopup: 2000,
+      waitNavigation: [
+        'https://admin.hlx.page/preview/adobe/blog/main/.helix/config.json',
+        'https://main--blog--adobe.hlx.page/.helix/config.json',
+      ],
     });
     test.apiResponses[0].webPath = '/.helix/config.json';
     const { popupOpened, notification } = await test.run();
@@ -78,7 +93,10 @@ describe('Test editor preview plugin', () => {
       url: 'https://adobe.sharepoint.com/:x:/r/sites/TheBlog/_layouts/15/Doc.aspx?sourcedoc=%7BE8EC80CB-24C3-4B95-B082-C51FD8BC8760%7D&file=test.xlsx&action=default&mobileredirect=true',
       type: 'json',
       plugin: 'edit-preview',
-      waitPopup: 2000,
+      waitNavigation: [
+        'https://admin.hlx.page/preview/adobe/blog/main/.helix/test.json',
+        'https://main--blog--adobe.hlx.page/.helix/test.json',
+      ],
     });
     test.apiResponses[0].webPath = '/.helix/test.json';
     test.apiResponses[1] = {

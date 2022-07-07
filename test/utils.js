@@ -14,11 +14,15 @@
 'use strict';
 
 const assert = require('assert');
+const { fetch } = require('@adobe/helix-fetch').h1();
+const nock = require('nock');
 const puppeteer = require('puppeteer');
 const pti = require('puppeteer-to-istanbul');
 
 // set debug to true to see browser window and debug output
 const DEBUG = false;
+const DEBUG_LOGS = false;
+
 const IT_DEFAULT_TIMEOUT = 60000;
 
 const SETUPS = {
@@ -418,6 +422,73 @@ const sleep = async (delay = 1000) => new Promise((resolve) => {
 });
 
 /**
+ * Registers a fetch interceptor for newly created targets and proxies the requests via
+ * helix-fetch. This allows to use 'nock' for the network responses.
+ * @param {Browser} browser
+ * @returns {Promise<void>}
+ */
+async function interceptPopups(browser) {
+  // eslint-disable-next-line no-underscore-dangle
+  await browser._connection.send('Target.setAutoAttach', {
+    autoAttach: true,
+    waitForDebuggerOnStart: true,
+    flatten: true,
+  });
+  // eslint-disable-next-line no-underscore-dangle
+  browser._connection.on('Target.attachedToTarget', async (event) => {
+    // eslint-disable-next-line no-underscore-dangle
+    const session = browser._connection._sessions.get(event.sessionId);
+
+    if (!event.waitingForDebugger || !session) {
+      return;
+    }
+
+    const handleRequestPaused = async (evt) => {
+      const { request } = evt;
+      // eslint-disable-next-line no-console
+      if (DEBUG_LOGS) {
+        console.log('[pup] handling request to', request.url);
+      }
+      if (request.url.endsWith('/favicon.ico')) {
+        await session.send('Fetch.fulfillRequest', {
+          requestId: evt.requestId,
+          responseCode: 404,
+        });
+        return;
+      }
+      const res = await fetch(request.url, {
+        method: request.method,
+        headers: request.headers,
+      });
+
+      const responseHeaders = Object.entries(res.headers.plain())
+        .map(([name, value]) => ({ name, value }));
+      const body = (await res.buffer()).toString('base64');
+      try {
+        await session.send('Fetch.fulfillRequest', {
+          requestId: evt.requestId,
+          responseCode: res.status,
+          responseHeaders,
+          body,
+        });
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.error('[pup] error handling request', e);
+      }
+    };
+    await session.on('Fetch.requestPaused', handleRequestPaused);
+    await session.send('Fetch.enable', {
+      handleAuthRequests: true,
+      patterns: [
+        { urlPattern: 'https://*' },
+        { urlPattern: 'http://*' },
+      ],
+    });
+    await session.send('Runtime.runIfWaitingForDebugger');
+  });
+}
+
+/**
  * Starts the browser (should be passed in mocha.before)
  * @returns {Promise<Browser>}
  */
@@ -426,13 +497,16 @@ async function startBrowser() {
     this.timeout(10000);
     globalBrowser = await puppeteer.launch({
       devtools: DEBUG || process.env.HLX_SK_TEST_DEBUG,
+      // headless: false,
       args: [
         '--disable-popup-blocking',
         '--disable-web-security',
         '-no-sandbox',
         '-disable-setuid-sandbox',
       ],
+      // slowMo: true,
     });
+    await interceptPopups(globalBrowser);
   }
   return globalBrowser;
 }
@@ -456,7 +530,7 @@ const stopBrowser = async () => {
 };
 
 async function closeAllPages() {
-  if (globalBrowser) {
+  if (globalBrowser && !DEBUG) {
     await Promise.all((await globalBrowser.pages()).map(async (page) => {
       const url = page.url();
       if (url.startsWith('file:///')) {
@@ -470,13 +544,59 @@ async function closeAllPages() {
           storagePath: './.nyc_output',
         });
       }
-      await page.close();
+      if (url !== 'about:blank') {
+        await page.close();
+      }
     }));
   }
 }
 
+function Nock() {
+  const scopes = {};
+
+  let unmatched;
+
+  function noMatchHandler(req) {
+    unmatched.push(req);
+  }
+
+  function nocker(url) {
+    let scope = scopes[url];
+    if (!scope) {
+      scope = nock(url);
+      scopes[url] = scope;
+    }
+    if (!unmatched) {
+      unmatched = [];
+      nock.emitter.on('no match', noMatchHandler);
+    }
+    return scope;
+  }
+
+  nocker.done = () => {
+    try {
+      Object.values(scopes).forEach((s) => s.done());
+    } finally {
+      nock.cleanAll();
+    }
+    if (unmatched) {
+      assert.deepStrictEqual(unmatched.map((req) => req.options || req), []);
+      nock.emitter.off('no match', noMatchHandler);
+    }
+  };
+
+  nocker.edit = () => nocker('https://adobe.sharepoint.com')
+    .get('/:w:/r/sites/TheBlog/_layouts/15/Doc.aspx?sourcedoc=%7BE8EC80CB-24C3-4B95-B082-C51FD8BC8760%7D&file=bla.docx&action=default&mobileredirect=true')
+    .reply(200, 'this would be a docx...', {
+      'content-type': 'text/plain',
+    });
+
+  return nocker;
+}
+
 module.exports = {
   IT_DEFAULT_TIMEOUT,
+  DEBUG_LOGS,
   Setup,
   toResp,
   getPlugins,
@@ -493,4 +613,5 @@ module.exports = {
   stopBrowser,
   closeAllPages,
   openPage,
+  Nock,
 };

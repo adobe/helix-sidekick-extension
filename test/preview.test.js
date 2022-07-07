@@ -21,6 +21,7 @@ const {
   stopBrowser,
   openPage,
   closeAllPages,
+  Nock,
 } = require('./utils.js');
 const { SidekickTest } = require('./SidekickTest.js');
 
@@ -29,15 +30,22 @@ describe('Test preview plugin', () => {
   after(stopBrowser);
 
   let page;
+  let nock;
+
   beforeEach(async () => {
     page = await openPage();
+    nock = new Nock();
   });
 
   afterEach(async () => {
     await closeAllPages();
+    nock.done();
   });
 
   it('Preview plugin switches to preview from gdrive URL', async () => {
+    nock('https://main--pages--adobe.hlx.page')
+      .get('/creativecloud/en/test')
+      .reply(200, 'some content...');
     const { popupOpened } = await new SidekickTest({
       page,
       setup: 'pages',
@@ -53,6 +61,9 @@ describe('Test preview plugin', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Preview plugin switches to preview from onedrive URL', async () => {
+    nock('https://main--blog--adobe.hlx.page')
+      .get('/en/topics/bla')
+      .reply(200, 'some content...');
     const { popupOpened } = await new SidekickTest({
       page,
       url: 'https://adobe.sharepoint.com/:w:/r/sites/TheBlog/_layouts/15/Doc.aspx?sourcedoc=%7BE8EC80CB-24C3-4B95-B082-C51FD8BC8760%7D&file=bla.docx&action=default&mobileredirect=true',
@@ -109,6 +120,9 @@ describe('Test preview plugin', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Preview plugin does not forward onedrive query parameters when switching to preview', async () => {
+    nock('https://main--blog--adobe.hlx.page')
+      .get('/en/topics/bla')
+      .reply(200, 'some content...');
     const { popupOpened } = await new SidekickTest({
       page,
       url: 'https://adobe.sharepoint.com/:w:/r/sites/TheBlog/_layouts/15/Doc.aspx?sourcedoc=%7BE8EC80CB-24C3-4B95-B082-C51FD8BC8760%7D&file=bla.docx&action=default&mobileredirect=true',
@@ -123,6 +137,9 @@ describe('Test preview plugin', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Edit-specific preview plugin updates preview when switching from editor', async () => {
+    nock('https://main--blog--adobe.hlx.page')
+      .get('/en/topics/bla')
+      .reply(200, 'some content...');
     const { requestsMade } = await new SidekickTest({
       page,
       url: 'https://adobe.sharepoint.com/:x:/r/sites/TheBlog/_layouts/15/Doc.aspx?sourcedoc=%7BE8EC80CB-24C3-4B95-B082-C51FD8BC8760%7D&file=bla.docx&action=default&mobileredirect=true',

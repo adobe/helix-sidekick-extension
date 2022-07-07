@@ -538,7 +538,7 @@ describe('Test sidekick module', () => {
       page,
       loadModule: true,
       sleep: 500,
-      configJson: '{"pushDownSelector":"#topnav"}',
+      configJson: '{"pushDown": true, "pushDownSelector":"#topnav"}',
       pre: (p) => p.evaluate(() => {
         // add topnav element
         const topNav = document.createElement('div');
@@ -556,7 +556,7 @@ describe('Test sidekick module', () => {
       page,
       loadModule: true,
       sleep: 500,
-      configJson: '{"pushDownSelector":"#topnav"}',
+      configJson: '{"pushDown": true, "pushDownSelector":"#topnav"}',
       pre: (p) => p.evaluate(() => {
         // add fake word iframe
         const frame = document.createElement('iframe');
@@ -578,6 +578,7 @@ describe('Test sidekick module', () => {
       page,
       loadModule: true,
       sleep: 500,
+      configJson: '{"pushDown": true, "pushDownSelector":"#topnav"}',
       post: (p) => p.evaluate(() => window.hlx.sidekick.hide()),
       checkPage: (p) => p.evaluate(() => document.documentElement.style.marginTop),
     }).run();
