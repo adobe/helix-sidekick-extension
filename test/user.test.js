@@ -35,19 +35,6 @@ describe('Test user auth handling', () => {
     await closeAllPages();
   });
 
-  it('Handles 401 status from admin API', async () => {
-    const { checkPageResult } = await new SidekickTest({
-      page,
-      apiResponses: [{
-        status: 401,
-      }],
-      checkPage: (p) => p.evaluate(() => window.hlx.sidekick.shadowRoot
-        .querySelector('.hlx-sk-overlay .modal')
-        .classList.contains('modal-login')),
-    }).run();
-    assert.ok(checkPageResult, 'Did not show login dialog on 401');
-  }).timeout(IT_DEFAULT_TIMEOUT);
-
   it('Shows user info from profile', async () => {
     const { checkPageResult } = await new SidekickTest({
       page,
