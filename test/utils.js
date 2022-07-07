@@ -249,7 +249,7 @@ class Setup {
 let globalBrowser;
 
 const toResp = (resp) => {
-  if (typeof resp === 'object' && resp.body) {
+  if (typeof resp === 'object' && resp.status) {
     return resp;
   } else {
     return {
@@ -439,7 +439,7 @@ async function interceptPopups(browser) {
     // eslint-disable-next-line no-underscore-dangle
     const session = browser._connection._sessions.get(event.sessionId);
 
-    if (!event.waitingForDebugger || !session) {
+    if (!event.waitingForDebugger || !session || event.targetInfo.type !== 'page') {
       return;
     }
 
@@ -504,7 +504,7 @@ async function startBrowser() {
         '-no-sandbox',
         '-disable-setuid-sandbox',
       ],
-      // slowMo: true,
+      slowMo: false,
     });
     await interceptPopups(globalBrowser);
   }
@@ -597,6 +597,7 @@ function Nock() {
 module.exports = {
   IT_DEFAULT_TIMEOUT,
   DEBUG_LOGS,
+  DEBUG,
   Setup,
   toResp,
   getPlugins,

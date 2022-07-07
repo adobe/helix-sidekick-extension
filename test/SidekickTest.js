@@ -13,6 +13,7 @@
 
 'use strict';
 
+const { EventEmitter } = require('events');
 const fs = require('fs').promises;
 const { fileURLToPath } = require('url');
 
@@ -141,12 +142,13 @@ const {
 /**
  * The sidekick test runner.
  */
-class SidekickTest {
+class SidekickTest extends EventEmitter {
   /**
    * Creates a new {@code SidekickTest} instance.
    * @param {SidekickTest~Options} o The options
    */
   constructor(o = {}) {
+    super();
     // main options
     this.page = o.page;
     this.setup = o.setup instanceof Setup ? o.setup : new Setup(o.setup || 'blog');
@@ -224,6 +226,19 @@ class SidekickTest {
     let dialog;
     let checkRequestResult;
     let checkPageResult;
+    let popupTarget;
+
+    async function recordTargetCreated(target) {
+      const targetUrl = target.url();
+      if (targetUrl !== 'about:blank' && !targetUrl.startsWith('devtools://')) {
+        popupOpened = targetUrl;
+        popupTarget = target;
+        if (DEBUG_LOGS) {
+          // eslint-disable-next-line no-console
+          console.log('created new page', targetUrl);
+        }
+      }
+    }
 
     const result = await new Promise((resolve, reject) => {
       if (!this.hasRun) {
@@ -238,22 +253,7 @@ class SidekickTest {
           }, +(this.timeoutFailure || this.timeoutSuccess));
         }
         // instrument popups
-        this.page.browser().on('targetcreated', async (target) => {
-          const targetUrl = target.url();
-          if (targetUrl !== 'about:blank' && !targetUrl.startsWith('devtools://')) {
-            const page = await target.page();
-            page.setRequestInterception(true);
-            page.on('request', (req) => {
-              console.log('target req', req.url());
-              req.continue();
-            });
-            popupOpened = targetUrl;
-            if (DEBUG_LOGS) {
-              // eslint-disable-next-line no-console
-              console.log('created new page', targetUrl);
-            }
-          }
-        });
+        this.page.browser().on('targetcreated', recordTargetCreated);
         // instrument dialogs
         this.page.on('dialog', async (d) => {
           dialog = {
@@ -293,10 +293,12 @@ class SidekickTest {
           }
           if (url.startsWith('http')) {
             this.waitNavigation.delete(url);
-            requestsMade.push({
+            const reqObj = {
               method: req.method(),
+              headers: req.headers(),
               url,
-            });
+            };
+            requestsMade.push(reqObj);
             if (typeof checkRequest === 'function') {
               checkRequestResult = checkRequest(req);
               if (checkRequestResult) {
@@ -305,8 +307,12 @@ class SidekickTest {
               }
             }
             if (url.startsWith('https://admin.hlx.page/')) {
-              req.respond(toResp(apiResponses.length === 1
-                ? apiResponses[0] : apiResponses.shift()));
+              if (typeof apiResponses === 'function') {
+                req.respond(await apiResponses(reqObj));
+              } else {
+                req.respond(toResp(apiResponses.length === 1
+                  ? apiResponses[0] : apiResponses.shift()));
+              }
             } else if (url.endsWith('/tools/sidekick/config.json')) {
               configLoaded = url;
               req.respond(toResp(configJson));
@@ -482,7 +488,10 @@ class SidekickTest {
             resolve(SidekickTest.TEST_COMPLETE);
           }
         })
-        .catch((e) => reject(e));
+        .catch((e) => reject(e))
+        .finally(() => {
+          this.page.browser().off('targetcreated', recordTargetCreated);
+        });
     });
     // run test
     return {
@@ -490,6 +499,7 @@ class SidekickTest {
       configLoaded,
       requestsMade,
       popupOpened,
+      popupTarget,
       navigated,
       eventsFired,
       sidekick,
