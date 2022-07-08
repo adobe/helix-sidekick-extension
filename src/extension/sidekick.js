@@ -49,7 +49,7 @@ export default async function injectSidekick(config, display, skDevMode, skBranc
         'authToken',
       ].includes(k)));
     // add 1st mountpoint to sidekick config
-    window.hlx.sidekickConfig.mountpoint = config.mountpoints[0];
+    [window.hlx.sidekickConfig.mountpoint] = config.mountpoints;
     log.debug('sidekick.js: curated config', JSON.stringify(window.hlx.sidekickConfig));
     // define script url
     let moduleContainer = 'https://www.hlx.live/tools/sidekick';
