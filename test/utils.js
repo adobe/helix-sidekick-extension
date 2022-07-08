@@ -266,9 +266,7 @@ const toResp = (resp) => {
  * @returns {Promise<object>}
  */
 const getPlugins = async (page) => page.evaluate(
-  () => window.hlx.sidekick.plugins
-    .map(({ id }) => window.hlx.sidekick.get(id))
-    .filter((plugin) => !!plugin)
+  () => [...window.hlx.sidekick.shadowRoot.querySelectorAll('div.plugin')]
     .map((plugin) => ({
       id: plugin.classList.item(0),
       classes: [...plugin.classList],
