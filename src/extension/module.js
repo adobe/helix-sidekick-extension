@@ -828,10 +828,10 @@
         isDropdown: true,
       },
       callback: (sidekick, $env) => {
-        if (sidekick.isDev()) $env.classList.add('dev');
-        if (sidekick.isInner()) $env.classList.add('preview');
-        if (sidekick.isOuter()) $env.classList.add('live');
-        if (sidekick.isProd()) $env.classList.add('prod');
+        if (sidekick.isDev()) $env.classList.add('is-dev');
+        if (sidekick.isInner()) $env.classList.add('is-preview');
+        if (sidekick.isOuter()) $env.classList.add('is-live');
+        if (sidekick.isProd()) $env.classList.add('is-prod');
       },
     });
 
@@ -1937,135 +1937,137 @@
      * @returns {HTMLElement} The plugin
      */
     add(plugin) {
-      if (typeof plugin === 'object') {
-        plugin.isShown = typeof plugin.condition === 'undefined'
+      if (typeof plugin !== 'object') {
+        return null;
+      }
+      // determine if plugin can be shown
+      plugin.isShown = typeof plugin.condition === 'undefined'
           || (typeof plugin.condition === 'function' && plugin.condition(this));
-        // find existing plugin
-        let $plugin = this.get(plugin.id);
-        if (!$plugin) {
-          this.plugins.push(plugin);
-        }
-        const $pluginContainer = (plugin.container && this.root
-          .querySelector(`.dropdown.${plugin.container} .dropdown-container`))
-          || (plugin.feature && this.root
-            .querySelector('.feature-container'))
-          || this.pluginContainer;
-        // re-check plugin once status is fetched
-        this.addEventListener('statusfetched', () => {
-          if (typeof plugin.condition === 'function') {
-            if ($plugin && !plugin.condition(this)) {
-              // plugin exists but condition now false
-              this.remove(plugin.id);
-            } else if (!$plugin && plugin.condition(this)) {
-              // plugin doesn't exist but condition now true
-              this.add(plugin);
-            }
-          }
-          const isEnabled = plugin.button && plugin.button.isEnabled;
-          if (typeof isEnabled === 'function' || typeof isEnabled === 'boolean') {
-            const $button = $plugin && $plugin.querySelector(':scope button');
-            if ($button) {
-              if (typeof isEnabled === 'function' && isEnabled(this)) {
-                // button enabled
-                $plugin.querySelector(':scope button').removeAttribute('disabled');
-              } else {
-                // button disabled
-                $plugin.querySelector(':scope button').setAttribute('disabled', '');
-              }
-            }
-          }
-        });
+      if (!plugin.isShown) {
+        return null;
+      }
 
-        const pluginCfg = {
-          tag: 'div',
-          attrs: {
-            class: plugin.id,
+      // find existing plugin
+      let $plugin = this.get(plugin.id, plugin.button && plugin.button.isDropdown);
+      // determine container
+      const $pluginContainer = (plugin.container && this.root
+        .querySelector(`.dropdown.${plugin.container} .dropdown-container`))
+        || (plugin.feature && this.root.querySelector('.feature-container'))
+        || this.pluginContainer;
+
+      const getPluginCfg = (p) => ({
+        tag: 'div',
+        attrs: {
+          class: p.id,
+        },
+      });
+
+      if (!$plugin) {
+        // add feature plugins in reverse order
+        const $before = !!plugin.feature && this.root.querySelector('.feature-container').firstElementChild;
+        if (plugin.button && plugin.button.isDropdown) {
+          // add plugin as dropdown
+          $plugin = appendTag($pluginContainer, createDropdown(this, plugin), $before);
+          if (typeof plugin.callback === 'function') {
+            plugin.callback(this, $plugin);
+          }
+          return $plugin;
+        }
+        // add plugin
+        $plugin = appendTag($pluginContainer, getPluginCfg(plugin), $before);
+        if ($pluginContainer === this.pluginContainer
+            && this.pluginContainer.classList.contains('loading')) {
+          // remove loading text
+          this.pluginContainer.classList.remove('loading');
+        }
+      } else if (!plugin.isShown) {
+        // remove existing plugin
+        $plugin.remove();
+        return null;
+      } else if (plugin.override) {
+        // replace existing plugin
+        const $existingPlugin = $plugin;
+        $plugin = appendTag($existingPlugin.parentElement, getPluginCfg(plugin), $existingPlugin);
+        $existingPlugin.remove();
+      }
+      // add elements
+      if (plugin.elements && Array.isArray(plugin.elements)) {
+        plugin.elements.forEach((elem) => appendTag($plugin, elem));
+      }
+      // add or update button
+      if (plugin.button) {
+        plugin.button.action = plugin.button.action || (() => {});
+        const buttonCfg = {
+          tag: 'button',
+          text: plugin.button.text,
+          lstnrs: {
+            click: (e) => plugin.button.action(e, this),
+            auxclick: (e) => plugin.button.action(e, this),
           },
         };
-        if (!$plugin && plugin.isShown) {
-          const $before = !!plugin.feature && this.root.querySelector('.feature-container').firstElementChild;
-          // add new plugin
-          if (plugin.button && plugin.button.isDropdown) {
-            // add dropdown
-            return appendTag($pluginContainer, createDropdown(this, plugin), $before);
-          }
-          $plugin = appendTag($pluginContainer, pluginCfg, $before);
-          if ($pluginContainer === this.pluginContainer
-              && this.pluginContainer.classList.contains('loading')) {
-            // remove loading text
-            this.pluginContainer.classList.remove('loading');
-          }
-        } else if ($plugin) {
-          if (!plugin.isShown) {
-            // remove existing plugin
-            $plugin.remove();
-          } else if (plugin.override) {
-            // replace existing plugin
-            const $existingPlugin = $plugin;
-            $plugin = appendTag($existingPlugin.parentElement, pluginCfg, $existingPlugin);
-            $existingPlugin.remove();
-          }
+        let $button = $plugin ? $plugin.querySelector(':scope button') : null;
+        if ($button) {
+          // extend existing button
+          extendTag($button, buttonCfg);
+        } else {
+          // add button
+          $button = appendTag($plugin, buttonCfg);
         }
-        if (!plugin.isShown) {
-          return null;
+        // check if button is enabled
+        if (typeof plugin.button.isEnabled === 'function' && !plugin.button.isEnabled(this)) {
+          $button.setAttribute('disabled', '');
         }
-        // add elements
-        if (Array.isArray(plugin.elements)) {
-          plugin.elements.forEach((elem) => appendTag($plugin, elem));
+        // check if button is pressed
+        if (typeof plugin.button.isPressed === 'function' && plugin.button.isPressed(this)) {
+          $button.classList.add('pressed');
+          $button.removeAttribute('tabindex');
         }
-        // add or update button
-        if (plugin.button) {
-          plugin.button.action = plugin.button.action || (() => {});
-          const buttonCfg = {
-            tag: 'button',
-            text: plugin.button.text,
-            lstnrs: {
-              click: (e) => plugin.button.action(e, this),
-              auxclick: (e) => plugin.button.action(e, this),
-            },
-          };
-          let $button = $plugin ? $plugin.querySelector(':scope button') : null;
-          if ($button) {
-            // extend existing button
-            extendTag($button, buttonCfg);
-          } else {
-            // add button
-            $button = appendTag($plugin, buttonCfg);
-          }
-          // check if button is enabled
-          if (typeof plugin.button.isEnabled === 'function' && !plugin.button.isEnabled(this)) {
-            $button.setAttribute('disabled', '');
-          }
-          // check if button is pressed
-          if (typeof plugin.button.isPressed === 'function' && plugin.button.isPressed(this)) {
-            $button.classList.add('pressed');
-            $button.removeAttribute('tabindex');
-          }
-          // fire event when plugin button is clicked
-          $button.addEventListener('click', () => fireEvent(this, 'pluginused', {
-            id: plugin.id,
-            button: $button,
-          }));
-        }
-        // check advanced mode
-        if (plugin.advanced && typeof plugin.advanced === 'function' && plugin.advanced(this)) {
-          $plugin.classList.add('hlx-sk-advanced-only');
-        }
-        if (typeof plugin.callback === 'function') {
-          plugin.callback(this, $plugin);
-        }
-        return $plugin;
+        // fire event when plugin button is clicked
+        $button.addEventListener('click', () => fireEvent(this, 'pluginused', {
+          id: plugin.id,
+          button: $button,
+        }));
       }
-      return null;
+      // check advanced mode
+      if (plugin.advanced && typeof plugin.advanced === 'function' && plugin.advanced(this)) {
+        $plugin.classList.add('hlx-sk-advanced-only');
+      }
+      // re-check plugin once status is fetched
+      this.addEventListener('statusfetched', () => {
+        if (typeof plugin.condition === 'function') {
+          if ($plugin && !plugin.condition(this)) {
+            // plugin exists but condition now false
+            this.remove(plugin.id);
+          } else if (!$plugin && plugin.condition(this)) {
+            // plugin doesn't exist but condition now true
+            this.add(plugin);
+          }
+        }
+        const isEnabled = plugin.button && plugin.button.isEnabled;
+        if (typeof isEnabled === 'function' || typeof isEnabled === 'boolean') {
+          const $button = $plugin && $plugin.querySelector(':scope button');
+          if ($button) {
+            if (typeof isEnabled === 'function' && isEnabled(this)) {
+              // button enabled
+              $plugin.querySelector(':scope button').removeAttribute('disabled');
+            } else {
+              // button disabled
+              $plugin.querySelector(':scope button').setAttribute('disabled', '');
+            }
+          }
+        }
+      });
+      return $plugin || null;
     }
 
     /**
      * Returns the sidekick plugin with the specified ID.
      * @param {string} id The plugin ID
+     * @param {boolean} isDropdown Look for a dropdown
      * @returns {HTMLElement} The plugin
      */
-    get(id) {
-      return this.root.querySelector(`:scope div.${id}`);
+    get(id, isDropdown) {
+      return this.root.querySelector(`:scope div.${isDropdown ? 'dropdown.' : ''}${id}`);
     }
 
     /**
