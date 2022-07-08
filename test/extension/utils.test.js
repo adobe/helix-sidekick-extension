@@ -46,6 +46,13 @@ const CONFIGS = [
     host: '4.foo.bar',
     mountpoints: ['https://drive.google.com/drive/folders/1234567890'],
   },
+  {
+    owner: 'foo',
+    repo: 'bar5',
+    ref: 'main',
+    host: '5.foo.bar',
+    mountpoints: ['https://foo.custom/sites/foo/Shared%20Documents/root1'],
+  },
 ];
 
 window.chrome = chromeMock;
@@ -193,6 +200,8 @@ describe('Test extension utils', () => {
   it('getConfigMatches', async () => {
     // match sharepoint URL
     expect(utils.getConfigMatches(CONFIGS, 'https://foo.sharepoint.com/:w:/r/sites/foo/_layouts/15/Doc.aspx?sourcedoc=%7BBFD9A19C-4A68-4DBF-8641-DA2F1283C895%7D&file=index.docx&action=default&mobileredirect=true').length).to.equal(1);
+    // match custom sharepoint URL
+    expect(utils.getConfigMatches(CONFIGS, 'https://foo.custom/:w:/r/sites/foo/_layouts/15/Doc.aspx?sourcedoc=%7BBFD9A19C-4A68-4DBF-8641-DA2F1283C895%7D&file=index.docx&action=default&mobileredirect=true').length).to.equal(1);
     // match gdrive URL
     expect(utils.getConfigMatches(CONFIGS, 'https://docs.google.com/document/d/1234567890/edit').length).to.equal(1);
     // match preview URL

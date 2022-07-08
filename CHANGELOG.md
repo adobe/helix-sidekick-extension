@@ -1,3 +1,10 @@
+## [5.7.1](https://github.com/adobe/helix-sidekick-extension/compare/v5.7.0...v5.7.1) (2022-07-08)
+
+
+### Bug Fixes
+
+* support custom sharepoint domains ([c2fc845](https://github.com/adobe/helix-sidekick-extension/commit/c2fc845283125cf4615cfe41ec234ffffa037c78))
+
 # [5.7.0](https://github.com/adobe/helix-sidekick-extension/compare/v5.6.2...v5.7.0) (2022-07-05)
 
 
