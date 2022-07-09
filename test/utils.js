@@ -443,8 +443,8 @@ async function interceptPopups(browser) {
 
     const handleRequestPaused = async (evt) => {
       const { request } = evt;
-      // eslint-disable-next-line no-console
       if (DEBUG_LOGS) {
+        // eslint-disable-next-line no-console
         console.log('[pup] handling request to', request.url);
       }
       if (request.url.endsWith('/favicon.ico')) {
