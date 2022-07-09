@@ -187,7 +187,11 @@ export function getConfigMatches(configs, tabUrl) {
         })
         .some(([mpHost, mpPath]) => {
           if (checkHost === mpHost) {
-            if (mpHost.endsWith('sharepoint.com')) {
+            if (checkHost === 'drive.google.com') {
+              // gdrive browser
+              return false;
+            } else {
+              // assume sharepoint
               const res = /^\/:(.):\//.exec(pathname);
               if (res && !'wx'.includes(res[1])) {
                 // editor url, but neither word nor excel
@@ -198,9 +202,6 @@ export function getConfigMatches(configs, tabUrl) {
               }
               // editor url, check for site name in path
               return sameSharePointSite(mpPath, pathname);
-            } else if (checkHost === 'drive.google.com') {
-              // gdrive browser
-              return false;
             }
           } else if (checkHost === 'docs.google.com' && mpHost === 'drive.google.com') {
             // gdrive file
