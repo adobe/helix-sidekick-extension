@@ -266,9 +266,7 @@ const toResp = (resp) => {
  * @returns {Promise<object>}
  */
 const getPlugins = async (page) => page.evaluate(
-  () => window.hlx.sidekick.plugins
-    .map(({ id }) => window.hlx.sidekick.get(id))
-    .filter((plugin) => !!plugin)
+  () => [...window.hlx.sidekick.shadowRoot.querySelectorAll('div.plugin')]
     .map((plugin) => ({
       id: plugin.classList.item(0),
       classes: [...plugin.classList],
@@ -445,8 +443,8 @@ async function interceptPopups(browser) {
 
     const handleRequestPaused = async (evt) => {
       const { request } = evt;
-      // eslint-disable-next-line no-console
       if (DEBUG_LOGS) {
+        // eslint-disable-next-line no-console
         console.log('[pup] handling request to', request.url);
       }
       if (request.url.endsWith('/favicon.ico')) {
