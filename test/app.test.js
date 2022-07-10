@@ -438,6 +438,24 @@ describe('Test sidekick bookmarklet', () => {
     assert.ok(notification.className.includes('modal-share-success'), 'Did not copy sharing URL to clipboard');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
+  it('Detects edit environment correctly', async () => {
+    const test = new SidekickTest({
+      page,
+      allowNavigation: true,
+      checkPage: async (p) => p.evaluate(() => window.hlx.sidekick.isEditor()),
+    });
+    // check with google docs url
+    const { checkPageResult: gdocsUrl } = await test.run('https://docs.google.com/document/d/1234567890/edit');
+    assert.ok(gdocsUrl, 'Did not detect google docs URL');
+    // check with sharepoint url
+    const { checkPageResult: standardSharepointUrl } = await test.run('https://adobe.sharepoint.com/:w:/r/sites/TheBlog/_layouts/15/Doc.aspx?sourcedoc=%7BE8EC80CB-24C3-4B95-B082-C51FD8BC8760%7D&file=bla.docx&action=default&mobileredirect=true');
+    assert.ok(standardSharepointUrl, 'Did not detect standard sharepoint URL');
+    // check again with custom sharepoint url as mountpoint
+    test.sidekickConfig.mountpoint = 'https://foo.custom/sites/foo/Shared%20Documents/root1';
+    const { checkPageResult: customSharepointUrl } = await test.run('https://foo.custom/:w:/r/sites/foo/_layouts/15/Doc.aspx?sourcedoc=%7BBFD9A19C-4A68-4DBF-8641-DA2F1283C895%7D&file=index.docx&action=default&mobileredirect=true');
+    assert.ok(customSharepointUrl, 'Did not detect custom sharepoint URL');
+  }).timeout(IT_DEFAULT_TIMEOUT);
+
   it('Detects development environment correctly', async () => {
     const { checkPageResult } = await new SidekickTest({
       page,
