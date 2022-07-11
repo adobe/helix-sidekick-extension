@@ -76,7 +76,6 @@ async function getProxyUrl({ id, url: tabUrl }) {
           if (meta && meta.content) {
             proxyUrl = meta.content;
           }
-          log.debug('proxy url:', proxyUrl);
           chrome.runtime.sendMessage({ proxyUrl });
         },
       });
