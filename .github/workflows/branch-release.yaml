@@ -32,6 +32,7 @@ jobs:
           cp ../src/extension/de.css tools/sidekick/
           cp ../src/extension/fr.css tools/sidekick/
           cp -r ../src/extension/view tools/sidekick/
+          cp ../docs/config.schema.json tools/sidekick/
           git add tools/sidekick/*
           if [ "`git status -s`" != "" ]; then
             echo Changes: `git status -s`
