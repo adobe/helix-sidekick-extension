@@ -524,14 +524,14 @@ The plugin configuration.
 | --- | --- | --- | --- |
 | id | <code>string</code> |  | The plugin ID (mandatory) |
 | title | <code>string</code> |  | The button text |
-| i18n_title | <code>Object</code> | <code>{}</code> | A map of translated button texts |
+| titleI18n | <code>Object</code> | <code>{}</code> | A map of translated button texts |
 | url | <code>string</code> |  | The URL to open when the button is clicked |
 | event | <code>string</code> |  | The name of a custom event to fire when the button is clicked |
-| container | <code>string</code> |  | The ID of a dropdown to add this plugin to (optional) |
-| is_container | <code>boolean</code> |  | Determines whether to turn this plugin into a dropdown |
+| containerId | <code>string</code> |  | The ID of a dropdown to add this plugin to (optional) |
+| isContainer | <code>boolean</code> |  | Determines whether to turn this plugin into a dropdown |
 | environments | <code>Array.&lt;string&gt;</code> |  | Specifies when to show this plugin (edit, preview, live, or prod) |
-| exclude_paths | <code>Array.&lt;string&gt;</code> |  | Exclude the plugin from these paths (glob patterns supported) |
-| include_paths | <code>Array.&lt;string&gt;</code> |  | Include the plugin on these paths (glob patterns supported) |
+| excludePaths | <code>Array.&lt;string&gt;</code> |  | Exclude the plugin from these paths (glob patterns supported) |
+| includePaths | <code>Array.&lt;string&gt;</code> |  | Include the plugin on these paths (glob patterns supported) |
 
 <a name="ViewConfig"></a>
 
@@ -585,6 +585,7 @@ The sidekick configuration.
 | owner | <code>string</code> |  | The GitHub owner or organization (mandatory) |
 | repo | <code>string</code> |  | The GitHub owner or organization (mandatory) |
 | ref | <code>string</code> | <code>&quot;main&quot;</code> | The Git reference or branch (optional) |
+| mountpoint | <code>string</code> |  | The content source URL (optional) |
 | project | <code>string</code> |  | The name of the Helix project used in the sharing link (optional) |
 | plugins | [<code>Array.&lt;Plugin&gt;</code>](#Plugin) |  | An array of [plugin configurations](#Plugin) (optional) |
 | outerHost | <code>string</code> |  | The outer CDN's host name (optional) |
