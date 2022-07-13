@@ -198,8 +198,10 @@ describe('Test extension utils', () => {
   });
 
   it('getConfigMatches', async () => {
-    // match sharepoint URL
+    // match sharepoint URL (docx)
     expect(utils.getConfigMatches(CONFIGS, 'https://foo.sharepoint.com/:w:/r/sites/foo/_layouts/15/Doc.aspx?sourcedoc=%7BBFD9A19C-4A68-4DBF-8641-DA2F1283C895%7D&file=index.docx&action=default&mobileredirect=true').length).to.equal(1);
+    // match sharepoint URL (pdf)
+    expect(utils.getConfigMatches(CONFIGS, 'https://foo.sharepoint.com/sites/HelixProjects/Shared%20Documents/sites/foo/drafts/example.pdf?CT=0657697518721&OR=ItemsView').length).to.equal(1);
     // match custom sharepoint URL
     expect(utils.getConfigMatches(CONFIGS, 'https://foo.custom/:w:/r/sites/foo/_layouts/15/Doc.aspx?sourcedoc=%7BBFD9A19C-4A68-4DBF-8641-DA2F1283C895%7D&file=index.docx&action=default&mobileredirect=true').length).to.equal(1);
     // match gdrive URL

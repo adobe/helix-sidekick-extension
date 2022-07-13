@@ -198,7 +198,9 @@ export function getConfigMatches(configs, tabUrl, proxyUrl) {
               if (res && !'wx'.includes(res[1])) {
                 // editor url, but neither word nor excel
                 return false;
-              } else if (!/\/doc\d?\.aspx$/i.test(pathname) || !searchParams.has('sourcedoc')) {
+              } else if (!pathname.endsWith('.pdf')
+                && (!/\/doc\d?\.aspx$/i.test(pathname)
+                || !searchParams.has('sourcedoc'))) {
                 // not an editor url
                 return false;
               }
