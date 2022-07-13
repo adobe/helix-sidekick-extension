@@ -257,7 +257,7 @@ async function getProjectConfig(owner, repo, ref = 'main') {
       cfg.mountpoints = [contentSourceUrl];
     }
   } else {
-    // exract mountpoints from fstab.yaml
+    // extract mountpoints from fstab.yaml
     cfg.mountpoints = await getMountpoints(owner, repo, ref);
   }
   return cfg;
