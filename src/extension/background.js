@@ -26,7 +26,6 @@ import {
   addConfig,
   getShareSettings,
   getGitHubSettings,
-  setProxyUrl,
   setConfig,
   getConfig,
   storeAuthToken,
@@ -38,6 +37,9 @@ import {
  * @returns {object} The config object
  */
 function getConfigFromTabUrl(tabUrl) {
+  if (!tabUrl) {
+    return {};
+  }
   const cfg = getShareSettings(tabUrl);
   if (!cfg.giturl) {
     if (tabUrl.startsWith(GH_URL)) {
@@ -58,6 +60,44 @@ function getConfigFromTabUrl(tabUrl) {
 }
 
 /**
+ * Retrieves the proxy URL from a local dev tab.
+ * @param {chrome.tabs.Tab} tab The tab
+ * @returns {Promise} The proxy URL
+ */
+async function getProxyUrl({ id, url: tabUrl }) {
+  if (tabUrl.startsWith(DEV_URL)) {
+    return new Promise((resolve) => {
+      // inject proxy url retriever
+      chrome.scripting.executeScript({
+        target: { tabId: id },
+        func: () => {
+          let proxyUrl = null;
+          const meta = document.head.querySelector('meta[property="hlx:proxyUrl"]');
+          if (meta && meta.content) {
+            proxyUrl = meta.content;
+          }
+          chrome.runtime.sendMessage({ proxyUrl });
+        },
+      });
+      // listen for proxy url from tab
+      const listener = ({ proxyUrl: proxyUrlFromTab }, { tab }) => {
+        // check if message contains proxy url and is sent from right tab
+        if (proxyUrlFromTab && tab && tab.url === tabUrl && tab.id === id) {
+          chrome.runtime.onMessage.removeListener(listener);
+          resolve(proxyUrlFromTab);
+        } else {
+          // fall back to tab url
+          resolve(tabUrl);
+        }
+      };
+      chrome.runtime.onMessage.addListener(listener);
+    });
+  } else {
+    return tabUrl;
+  }
+}
+
+/**
  * Enables or disables context menu items for a tab.
  * @param {string} tabUrl The URL of the tab
  * @param {Object[]} configs The existing configurations
@@ -67,7 +107,7 @@ async function checkContextMenu(tabUrl, configs = []) {
     // clear context menu
     chrome.contextMenus.removeAll(() => {
       // check if add project is applicable
-      if (!checkLastError()) {
+      if (configs && configs.length > 0 && !checkLastError()) {
         const { giturl } = getConfigFromTabUrl(tabUrl);
         if (giturl) {
           const { owner, repo } = getGitHubSettings(giturl);
@@ -79,7 +119,7 @@ async function checkContextMenu(tabUrl, configs = []) {
             id: 'addProject',
             title: i18n('config_project_add'),
             contexts: [
-              'page_action',
+              'action',
             ],
             type: 'checkbox',
             enabled,
@@ -96,47 +136,48 @@ async function checkContextMenu(tabUrl, configs = []) {
  * @param {number} id The ID of the tab
  */
 function checkTab(id) {
-  getState(({ configs, proxyUrl }) => {
+  getState(({ configs }) => {
     chrome.tabs.get(id, async (tab = {}) => {
       checkLastError();
       if (!tab.url) return;
-      checkContextMenu(tab.url, configs);
-      if (new URL(tab.url).pathname === SHARE_PREFIX) {
+      let checkUrl = tab.url;
+      // check if active tab has a local dev URL
+      if (checkUrl.startsWith(DEV_URL)) {
+        // retrieve proxy url
+        log.debug('local dev url detected, retrieve proxy url');
+        checkUrl = await getProxyUrl(tab);
+      }
+      checkContextMenu(checkUrl, configs);
+      // check if active tab has share URL and ask to add config
+      if (new URL(checkUrl).pathname === SHARE_PREFIX) {
         log.debug('share url detected, inject install helper');
         try {
           // instrument generator page
-          chrome.tabs.executeScript(id, {
-            file: './installhelper.js',
+          chrome.scripting.executeScript({
+            target: { tabId: id },
+            files: ['./installhelper.js'],
           });
         } catch (e) {
           log.error('error instrumenting generator page', id, e);
         }
       }
-      const matches = getConfigMatches(configs, tab.url, proxyUrl);
-      log.debug('checking', id, tab.url, matches);
+      const matches = getConfigMatches(configs, checkUrl);
+      log.debug('checking', id, checkUrl, matches);
       const allowed = matches.length > 0;
       if (allowed) {
         try {
-          // enable extension for this tab
-          if (chrome.pageAction.show) {
-            chrome.pageAction.show(id);
-          }
           // execute content script
-          chrome.tabs.executeScript(id, {
-            file: './content.js',
+          chrome.scripting.executeScript({
+            target: { tabId: id },
+            files: ['./content.js'],
+          }, () => {
+            // send config matches to tab
+            chrome.tabs.sendMessage(id, {
+              configMatches: matches,
+            });
           });
         } catch (e) {
           log.error('error enabling extension', id, e);
-        }
-      } else {
-        try {
-          // disable extension for this tab
-          if (chrome.pageAction.hide) {
-            chrome.pageAction.hide(id);
-          }
-          // check if active tab has share URL and ask to add config
-        } catch (e) {
-          log.error('error disabling extension', id, e);
         }
       }
     });
@@ -242,7 +283,7 @@ async function updateHelpContent() {
   }
 
   // toggle the sidekick when the browser action is clicked
-  chrome.pageAction.onClicked.addListener(({ id }) => {
+  chrome.action.onClicked.addListener(({ id }) => {
     toggle(id);
   });
 
@@ -264,57 +305,8 @@ async function updateHelpContent() {
     if (area === 'local' && hlxSidekickDisplay) {
       const display = hlxSidekickDisplay.newValue;
       log.info(`sidekick now ${display ? 'shown' : 'hidden'}`);
-      chrome.tabs.query({
-        currentWindow: true,
-      }, (tabs) => {
-        checkLastError();
-        tabs.forEach(({ id, _, active = false }) => {
-          if (!active) {
-            // skip current tab
-            checkTab(id);
-          }
-        });
-      });
     }
   });
-
-  if (chrome.webRequest) {
-    // retrieve proxy url from local development
-    chrome.webRequest.onHeadersReceived.addListener(
-      (details) => {
-        chrome.tabs.query({
-          currentWindow: true,
-          active: true,
-        }, async (tabs) => {
-          checkLastError();
-          if (Array.isArray(tabs) && tabs.length > 0) {
-            const rUrl = new URL(details.url);
-            const tabUrl = new URL(tabs[0].url);
-            if (tabUrl.pathname === rUrl.pathname) {
-              setProxyUrl('', async () => {
-                const { responseHeaders } = details;
-                // try "via" response header
-                const via = responseHeaders.find((h) => h.name.toLowerCase() === 'via')?.value;
-                const proxyHost = via?.split(' ')[1];
-                if (proxyHost && proxyHost !== 'varnish') {
-                  const proxyUrl = new URL(tabs[0].url);
-                  proxyUrl.hostname = proxyHost;
-                  proxyUrl.protocol = 'https';
-                  proxyUrl.port = '';
-                  await setProxyUrl(
-                    proxyUrl.toString(),
-                    (purl) => log.info('new proxy url', purl),
-                  );
-                }
-              });
-            }
-          }
-        });
-      },
-      { urls: [`${DEV_URL}/*`] },
-      ['responseHeaders'],
-    );
-  }
 })();
 
 // announce sidekick display state

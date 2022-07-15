@@ -1,6 +1,6 @@
 {
   "title": {
-    "message": "Helix Sidekick (Beta)"
+    "message": "Helix Sidekick (Beta, MV3)"
   },
   "description": {
     "message": "Helix Sidekick allows authors in Helix projects to easily preview and publish their content."
@@ -62,7 +62,7 @@
   },
   "config_shareurl_placeholder": {
     "message": "Sharing URL: https://www.hlx.live/sidekick..."
-  }, 
+  },
   "config_shareurl_share_title": {
     "message": "Helix Sidekick configuration for $1"
   },
@@ -184,18 +184,6 @@
   },
   "caution_side_effects": {
     "message": "Caution: unexpected side effects!"
-  },
-  "developer_mode": {
-    "message": "Test Sidekick locally"
-  },
-  "developer_mode_description": {
-    "message": "Invoke a local development version of the Sidekick"
-  },
-  "branch_name": {
-    "message": "Test a branch version of the Sidekick"
-  },
-  "branch_name_placeholder": {
-    "message": "Branch Name: test"
   },
   "admin_version": {
     "message": "Use a specific Helix Admin API version"

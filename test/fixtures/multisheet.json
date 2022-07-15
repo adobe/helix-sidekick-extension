@@ -1,0 +1,31 @@
+{
+  "sheet1": {
+    "total": 1,
+    "offset": 0,
+    "limit": 1,
+    "data": [
+      {
+        "header": "Some more config here"
+      }
+    ]
+  },
+  "sheet2": {
+    "total": 1,
+    "offset": 0,
+    "limit": 1,
+    "data": [
+      {
+        "foo": "https://www.adobe.com/",
+        "bar": "/helix/mysite",
+        "id": "09af1d19-63eb-48c1-9434-b591f0b3cfb4",
+        "baz": "Lorem ipsum dolor sit amet."
+      }
+    ]
+  },
+  ":version": 3,
+  ":names": [
+    "sheet1",
+    "sheet2"
+  ],
+  ":type": "multi-sheet"
+}
