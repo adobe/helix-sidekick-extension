@@ -184,7 +184,8 @@ describe('Test preview plugin', () => {
       waitNavigation: 'https://main--blog--adobe.hlx.page/.helix/test.json',
     });
     test.apiResponses[0].webPath = '/.helix/test.json';
-    test.apiResponses[1] = {
+    [test.apiResponses[1]] = test.apiResponses;
+    test.apiResponses[2] = {
       status: 502,
       body: 'Bad Gateway',
       headers: {
