@@ -30,7 +30,6 @@ import {
   setConfig,
   getConfig,
   storeAuthToken,
-  deleteConfig,
 } from './utils.js';
 
 /**
