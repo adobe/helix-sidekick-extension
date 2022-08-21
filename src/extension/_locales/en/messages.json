@@ -52,7 +52,16 @@
     "description": "More configurations"
   },
   "config_project_add": {
-    "message": "Add project"
+    "message": "Add this project"
+  },
+  "config_project_remove": {
+    "message": "Remove this project"
+  },
+  "config_project_enable": {
+    "message": "Enable this project"
+  },
+  "config_project_disable": {
+    "message": "Disable this project"
   },
   "config_shareurl_title": {
     "message": "Add via sharing URL"
@@ -86,12 +95,6 @@
   },
   "config_manual_devMode": {
     "message": "Test project configuration locally"
-  },
-  "config_activate": {
-    "message": "Activate configuration"
-  },
-  "config_deactivate": {
-    "message": "Deactivate configuration"
   },
   "config_add_success": {
     "message": "Project added to Helix Sidekick"
