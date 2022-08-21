@@ -919,12 +919,16 @@
       button: {
         action: async (evt) => {
           const { status } = sk;
-          sk.showWait();
-          sk.addEventListener('statusfetched', async () => {
-            // update preview
+          const updatePreview = async (ranBefore) => {
             const resp = await sk.update();
             if (!resp.ok) {
-              if (status.webPath.startsWith('/.helix/') && resp.error) {
+              if (!ranBefore) {
+                // assume document has been renamed, re-fetch status and try again
+                sk.addEventListener('statusfetched', async () => {
+                  updatePreview(true);
+                }, { once: true });
+                sk.fetchStatus();
+              } else if (status.webPath.startsWith('/.helix/') && resp.error) {
                 // show detail message only in config update mode
                 sk.showModal({
                   css: 'modal-config-failure',
@@ -950,9 +954,9 @@
               return;
             }
             sk.switchEnv('preview', newTab(evt));
-          }, { once: true });
-          // fetch latest status
-          sk.fetchStatus();
+          };
+          sk.showWait();
+          updatePreview();
         },
         isEnabled: (sidekick) => sidekick.isAuthorized('preview', 'write')
           && sidekick.status.webPath,
