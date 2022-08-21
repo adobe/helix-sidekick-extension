@@ -30,6 +30,7 @@ import {
   setConfig,
   getConfig,
   storeAuthToken,
+  deleteConfig,
 } from './utils.js';
 
 /**
@@ -71,20 +72,26 @@ async function checkContextMenu(tabUrl, configs = []) {
         const { giturl } = getConfigFromTabUrl(tabUrl);
         if (giturl) {
           const { owner, repo } = getGitHubSettings(giturl);
-          const configExists = !!configs.find((c) => c.owner === owner && c.repo === repo);
-          const enabled = !configExists;
-          const checked = configExists;
-          // add context menu item for adding project config
+          const config = configs.find((c) => c.owner === owner && c.repo === repo);
+          // add context menu item for adding/removing project config
           chrome.contextMenus.create({
-            id: 'addProject',
-            title: i18n('config_project_add'),
+            id: 'addRemoveProject',
+            title: config ? i18n('config_project_remove') : i18n('config_project_add'),
             contexts: [
               'page_action',
             ],
-            type: 'checkbox',
-            enabled,
-            checked,
           });
+          if (config) {
+            // add context menu item for enabling/disabling project config
+            const { disabled } = config;
+            chrome.contextMenus.create({
+              id: 'enableDisableProject',
+              title: disabled ? i18n('config_project_enable') : i18n('config_project_disable'),
+              contexts: [
+                'page_action',
+              ],
+            });
+          }
         }
       }
     });
@@ -100,7 +107,9 @@ function checkTab(id) {
     chrome.tabs.get(id, async (tab = {}) => {
       checkLastError();
       if (!tab.url) return;
-      checkContextMenu(tab.url, configs);
+      if (tab.active) {
+        checkContextMenu(tab.url, configs);
+      }
       if (new URL(tab.url).pathname === SHARE_PREFIX) {
         log.debug('share url detected, inject install helper');
         try {
@@ -223,10 +232,32 @@ async function updateHelpContent() {
 
   // actions for context menu items
   const contextMenuActions = {
-    addProject: async ({ id, url }) => {
+    addRemoveProject: async ({ id, url }) => {
       const cfg = getConfigFromTabUrl(url);
       if (cfg.giturl) {
-        await addConfig(cfg, () => {
+        getState(async ({ configs }) => {
+          const { owner, repo } = getGitHubSettings(cfg.giturl);
+          const configIndex = configs.findIndex((c) => c.owner === owner && c.repo === repo);
+          if (configIndex < 0) {
+            await addConfig(cfg);
+          } else {
+            await deleteConfig(configIndex);
+          }
+          chrome.tabs.reload(id, { bypassCache: true });
+        });
+      }
+    },
+    enableDisableProject: async ({ id, url }) => {
+      const cfg = getConfigFromTabUrl(url);
+      if (cfg.giturl) {
+        getState(async ({ configs }) => {
+          const { owner, repo } = getGitHubSettings(cfg.giturl);
+          const configIndex = configs.findIndex((c) => c.owner === owner && c.repo === repo);
+          if (configIndex < 0) {
+            return;
+          }
+          configs[configIndex].disabled = !configs[configIndex].disabled;
+          await setConfig('sync', { hlxSidekickConfigs: configs });
           chrome.tabs.reload(id, { bypassCache: true });
         });
       }
