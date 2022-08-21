@@ -30,6 +30,7 @@ import {
   setConfig,
   getConfig,
   storeAuthToken,
+  deleteConfig,
 } from './utils.js';
 
 /**
@@ -155,9 +156,8 @@ function checkTab(id) {
         checkUrl = await getProxyUrl(tab);
       }
       if (tab.active) {
-        checkContextMenu(checkUrl, configs);
+        checkContextMenu(tab.url, configs);
       }
-      // check if active tab has share URL and ask to add config
       if (new URL(checkUrl).pathname === SHARE_PREFIX) {
         log.debug('share url detected, inject install helper');
         try {

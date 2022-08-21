@@ -1,3 +1,10 @@
+# [5.8.0](https://github.com/adobe/helix-sidekick-extension/compare/v5.7.1...v5.8.0) (2022-08-21)
+
+
+### Features
+
+* enable/disable project via contxt menu ([38dd70a](https://github.com/adobe/helix-sidekick-extension/commit/38dd70a50215c6c901a6d19c9ef180a145bb5d1f))
+
 ## [5.7.1](https://github.com/adobe/helix-sidekick-extension/compare/v5.7.0...v5.7.1) (2022-07-08)
 
 
