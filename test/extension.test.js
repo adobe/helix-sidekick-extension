@@ -10,6 +10,7 @@
  * governing permissions and limitations under the License.
  */
 /* eslint-env mocha */
+/* eslint-disable no-console */
 
 const assert = require('assert');
 const puppeteer = require('puppeteer');
@@ -21,7 +22,7 @@ describe.skip('Test sidekick extension', () => {
   let browser;
   let extPage;
   let extensionId;
-  beforeEach(async function () {
+  beforeEach(async function beforeEach() {
     this.timeout(IT_DEFAULT_TIMEOUT);
     browser = await puppeteer.launch({
       headless: false,
