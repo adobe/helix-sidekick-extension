@@ -23,16 +23,21 @@ const {
 const { SidekickTest } = require('./SidekickTest.js');
 
 describe('Test user auth handling', () => {
-  before(startBrowser);
-  after(stopBrowser);
+  let browser;
+
+  before(async function before() {
+    this.timeout(10000);
+    browser = await startBrowser();
+  });
+  after(async () => stopBrowser(browser));
 
   let page;
   beforeEach(async () => {
-    page = await openPage();
+    page = await openPage(browser);
   });
 
   afterEach(async () => {
-    await closeAllPages();
+    await closeAllPages(browser);
   });
 
   it('Shows user info from profile', async () => {

@@ -26,19 +26,24 @@ const {
 const { SidekickTest } = require('./SidekickTest.js');
 
 describe('Test editor preview plugin', () => {
-  before(startBrowser);
-  after(stopBrowser);
+  let browser;
+
+  before(async function before() {
+    this.timeout(10000);
+    browser = await startBrowser();
+  });
+  after(async () => stopBrowser(browser));
 
   let page;
   let nock;
 
   beforeEach(async () => {
-    page = await openPage();
+    page = await openPage(browser);
     nock = new Nock();
   });
 
   afterEach(async () => {
-    await closeAllPages();
+    await closeAllPages(browser);
     nock.done();
   });
 

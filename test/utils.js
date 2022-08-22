@@ -242,12 +242,6 @@ class Setup {
   }
 }
 
-/**
- * The global browser instance
- * @type Browser
- */
-let globalBrowser;
-
 const toResp = (resp) => {
   if (typeof resp === 'object' && resp.status) {
     return resp;
@@ -487,49 +481,45 @@ async function interceptPopups(browser) {
 }
 
 /**
- * Starts the browser (should be passed in mocha.before)
+ * Starts the browser
  * @returns {Promise<Browser>}
  */
 async function startBrowser() {
-  if (!globalBrowser) {
-    this.timeout(10000);
-    globalBrowser = await puppeteer.launch({
-      devtools: DEBUG || process.env.HLX_SK_TEST_DEBUG,
-      // headless: false,
-      args: [
-        '--disable-popup-blocking',
-        '--disable-web-security',
-        '-no-sandbox',
-        '-disable-setuid-sandbox',
-      ],
-      slowMo: false,
-    });
-    await interceptPopups(globalBrowser);
-  }
-  return globalBrowser;
+  const browser = await puppeteer.launch({
+    devtools: DEBUG || process.env.HLX_SK_TEST_DEBUG,
+    // headless: false,
+    args: [
+      '--disable-popup-blocking',
+      '--disable-web-security',
+      '-no-sandbox',
+      '-disable-setuid-sandbox',
+    ],
+    slowMo: false,
+  });
+  await interceptPopups(browser);
+  return browser;
 }
 
 /**
  * Opens a new browser page
  * @returns {Promise<Page>}
  */
-async function openPage() {
-  const page = await globalBrowser.newPage();
+async function openPage(browser) {
+  const page = await browser.newPage();
   await page.coverage.startJSCoverage();
   await page.coverage.startCSSCoverage();
   return page;
 }
 
-const stopBrowser = async () => {
+async function stopBrowser(browser) {
   if (!DEBUG) {
-    await globalBrowser.close();
-    globalBrowser = null;
+    await browser.close();
   }
-};
+}
 
-async function closeAllPages() {
-  if (globalBrowser && !DEBUG) {
-    await Promise.all((await globalBrowser.pages()).map(async (page) => {
+async function closeAllPages(browser) {
+  if (!DEBUG) {
+    await Promise.all((await browser.pages()).map(async (page) => {
       const url = page.url();
       if (url.startsWith('file:///')) {
         // only get coverage from file urls
