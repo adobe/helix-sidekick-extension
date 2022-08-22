@@ -2576,9 +2576,11 @@
             ...getAdminFetchOptions(this.config),
           },
         );
-        if (resp.ok && (this.isEditor() || this.isInner() || this.isDev())) {
-          // bust client cache
-          await fetch(`https://${config.innerHost}${path}`, { cache: 'reload', mode: 'no-cors' });
+        if (resp.ok) {
+          if (this.isEditor() || this.isInner() || this.isDev()) {
+            // bust client cache
+            await fetch(`https://${config.innerHost}${path}`, { cache: 'reload', mode: 'no-cors' });
+          }
           fireEvent(this, 'updated', path);
         }
       } catch (e) {
