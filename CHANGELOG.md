@@ -1,3 +1,10 @@
+# [5.9.0](https://github.com/adobe/helix-sidekick-extension/compare/v5.8.0...v5.9.0) (2022-08-22)
+
+
+### Features
+
+* pdf support ([f057a8f](https://github.com/adobe/helix-sidekick-extension/commit/f057a8fb49c1eaa29256365616155474ca44e47b))
+
 # [5.8.0](https://github.com/adobe/helix-sidekick-extension/compare/v5.7.1...v5.8.0) (2022-08-21)
 
 
