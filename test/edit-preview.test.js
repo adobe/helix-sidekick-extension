@@ -76,6 +76,9 @@ describe('Test editor preview plugin', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Editor preview plugin refetches status and retries on error', async () => {
+    nock('https://main--blog--adobe.hlx.page')
+      .get('/en/topics/bla')
+      .reply(200, 'blog adobe...');
     const test = new SidekickTest({
       page,
       url: 'https://adobe.sharepoint.com/:x:/r/sites/TheBlog/_layouts/15/Doc.aspx?sourcedoc=%7BE8EC80CB-24C3-4B95-B082-C51FD8BC8760%7D&file=bla.docx&action=default&mobileredirect=true',
@@ -89,7 +92,11 @@ describe('Test editor preview plugin', () => {
       status: 404,
       body: 'not found',
     });
-    test.apiResponses.push({ ...test.apiResponses[0] }); // resend status
+    // resend status
+    test.apiResponses.push({ ...test.apiResponses[0] }, {
+      status: 200,
+      body: '{}',
+    });
     const { requestsMade } = await test.run();
     const statusReqs = requestsMade
       .filter((r) => r.method === 'GET' && r.url.startsWith('https://admin.hlx.page/status/'));

@@ -428,8 +428,11 @@ async function interceptPopups(browser) {
   });
   // eslint-disable-next-line no-underscore-dangle
   browser._connection.on('Target.attachedToTarget', async (event) => {
+    const { sessionId } = event;
+
     // eslint-disable-next-line no-underscore-dangle
-    const session = browser._connection._sessions.get(event.sessionId);
+    const getSession = () => browser._connection._sessions.get(sessionId);
+    const session = getSession();
 
     if (!event.waitingForDebugger || !session || event.targetInfo.type !== 'page') {
       return;
@@ -441,23 +444,38 @@ async function interceptPopups(browser) {
         // eslint-disable-next-line no-console
         console.log('[pup] handling request to', request.url);
       }
+
+      let innerSession = getSession();
+      if (!innerSession) {
+        // eslint-disable-next-line no-console
+        console.log(`[pup] session ${sessionId} no longer valid. maybe pending request?`);
+        return;
+      }
+
       if (request.url.endsWith('/favicon.ico')) {
-        await session.send('Fetch.fulfillRequest', {
+        await innerSession.send('Fetch.fulfillRequest', {
           requestId: evt.requestId,
           responseCode: 404,
         });
-        return;
       }
       const res = await fetch(request.url, {
         method: request.method,
         headers: request.headers,
       });
 
+      // refetch session, in case no longer valid
+      innerSession = getSession();
+      if (!innerSession) {
+        // eslint-disable-next-line no-console
+        console.log(`[pup] session ${sessionId} no longer valid after received response to ${request.url}.`);
+        return;
+      }
+
       const responseHeaders = Object.entries(res.headers.plain())
         .map(([name, value]) => ({ name, value }));
       const body = (await res.buffer()).toString('base64');
       try {
-        await session.send('Fetch.fulfillRequest', {
+        await innerSession.send('Fetch.fulfillRequest', {
           requestId: evt.requestId,
           responseCode: res.status,
           responseHeaders,

@@ -2576,11 +2576,11 @@
             ...getAdminFetchOptions(this.config),
           },
         );
-        if (this.isEditor() || this.isInner() || this.isDev()) {
+        if (resp.ok && (this.isEditor() || this.isInner() || this.isDev())) {
           // bust client cache
           await fetch(`https://${config.innerHost}${path}`, { cache: 'reload', mode: 'no-cors' });
+          fireEvent(this, 'updated', path);
         }
-        fireEvent(this, 'updated', path);
       } catch (e) {
         console.error('failed to update', path, e);
       }
