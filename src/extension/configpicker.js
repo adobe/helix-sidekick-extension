@@ -14,6 +14,7 @@ import {} from './lib/polyfills.min.js';
 
 import {
   i18n,
+  url,
   setDisplay,
 } from './utils.js';
 
@@ -69,7 +70,7 @@ class ConfigPicker extends HTMLElement {
     // todo: proper UI
     const css = shadow.appendChild(document.createElement('link'));
     css.rel = 'stylesheet';
-    css.href = 'https://www.hlx.live/tools/sidekick/app.css';
+    css.href = url('app.css');
 
     const root = shadow.appendChild(document.createElement('div'));
     root.className = 'hlx-sk';
