@@ -63,7 +63,7 @@ export function url(path) {
 export function checkLastError() {
   if (chrome.runtime.lastError) {
     log.debug('chrome.runtime.lastError', chrome.runtime.lastError.message);
-    return chrome.runtime.lastError;
+    return chrome.runtime.lastError.message;
   }
   return null;
 }
@@ -111,7 +111,13 @@ export async function getConfig(type, prop) {
 
 export async function setConfig(type, obj, cb) {
   const p = new Promise((resolve) => {
-    chrome.storage[type].set(obj, resolve);
+    chrome.storage[type].set(obj, () => {
+      const error = checkLastError();
+      if (error) {
+        log.error('setConfig failed', error);
+      }
+      resolve();
+    });
   });
   if (typeof cb === 'function') {
     return cb(await p);
