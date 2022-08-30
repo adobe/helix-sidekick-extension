@@ -151,11 +151,11 @@
 }
 
 .hlx-sk-overlay .modal.modal-reload-onedrive::before {
-  content: "Expertenhinweis: Drücke vor dem Aktualisieren einer Seite im Editor Control + S...";
+  content: "Expertenhinweis: Drücke vor dem Aktualisieren einer Seite im Editor Ctrl + S...";
 }
 
 .hlx-sk-overlay .modal.modal-reload-onedrive-mac::before {
-  content: "Expertenhinweis: Drücke vor dem Aktualisieren einer Seite im Editor Command + S...";
+  content: "Expertenhinweis: Drücke vor dem Aktualisieren einer Seite im Editor ⌘ + S...";
 }
 
 .hlx-sk-overlay .modal.modal-share-success::before {

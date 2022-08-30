@@ -143,19 +143,19 @@
 }
 
 .hlx-sk-overlay .modal.modal-preview-onedrive::before {
-  content: "Astuce: Pour voir les derniers changements immédiatement, appuyez sur Control + S avant de générer l'aperçu...";
+  content: "Astuce: Pour voir les derniers changements immédiatement, appuyez sur Ctrl + S avant de générer l'aperçu...";
 }
 
 .hlx-sk-overlay .modal.modal-preview-onedrive-mac::before {
-  content: "Astuce: Pour voir les derniers changements immédiatement, appuyez sur &#8984; + S avant de générer l'aperçu...";
+  content: "Astuce: Pour voir les derniers changements immédiatement, appuyez sur ⌘; + S avant de générer l'aperçu...";
 }
 
 .hlx-sk-overlay .modal.modal-reload-onedrive::before {
-  content: "Astuce: Appuyez sur Control + S dans l'éditeur avant de recharger la page...";
+  content: "Astuce: Appuyez sur Ctrl + S dans l'éditeur avant de recharger la page...";
 }
 
 .hlx-sk-overlay .modal.modal-reload-onedrive-mac::before {
-  content: "Astuce: Appuyez sur &#8984; + S dans l'éditeur avant de recharger la page...";
+  content: "Astuce: Appuyez sur ⌘ + S dans l'éditeur avant de recharger la page...";
 }
 
 .hlx-sk-overlay .modal.modal-share-success::before {

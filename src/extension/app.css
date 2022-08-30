@@ -900,19 +900,19 @@
 }
 
 .hlx-sk-overlay .modal.modal-preview-onedrive::before {
-  content: "Pro tip: Press Control + S before previewing to see the latest changes immediately...";
+  content: "Pro tip: Press Ctrl + S before previewing to see the latest changes immediately...";
 }
 
 .hlx-sk-overlay .modal.modal-preview-onedrive-mac::before {
-  content: "Pro tip: Press Command + S before previewing to see the latest changes immediately...";
+  content: "Pro tip: Press ⌘ + S before previewing to see the latest changes immediately...";
 }
 
 .hlx-sk-overlay .modal.modal-reload-onedrive::before {
-  content: "Pro tip: Press Control + S in the editor before reloading a page...";
+  content: "Pro tip: Press Ctrl + S in the editor before reloading a page...";
 }
 
 .hlx-sk-overlay .modal.modal-reload-onedrive-mac::before {
-  content: "Pro tip: Press Command + S in the editor before reloading a page...";
+  content: "Pro tip: Press ⌘ + S in the editor before reloading a page...";
 }
 
 .hlx-sk-overlay .modal.modal-share-success::before {
