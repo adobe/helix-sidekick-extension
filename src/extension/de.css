@@ -142,6 +142,22 @@
   content: "Bitte warten...";
 }
 
+.hlx-sk-overlay .modal.modal-preview-onedrive::before {
+  content: "Expertenhinweis: Drücke vor der Vorschau Control + S, um immer die neusten Änderungen zu sehen...";
+}
+
+.hlx-sk-overlay .modal.modal-preview-onedrive-mac::before {
+  content: "Expertenhinweis: Drücke vor der Vorschau Command + S, um immer die neusten Änderungen zu sehen...";
+}
+
+.hlx-sk-overlay .modal.modal-reload-onedrive::before {
+  content: "Expertenhinweis: Drücke vor dem Aktualisieren einer Seite im Editor Ctrl + S...";
+}
+
+.hlx-sk-overlay .modal.modal-reload-onedrive-mac::before {
+  content: "Expertenhinweis: Drücke vor dem Aktualisieren einer Seite im Editor ⌘ + S...";
+}
+
 .hlx-sk-overlay .modal.modal-share-success::before {
   content: "Teilen-URL in die Benutzerablage kopiert.";
 }

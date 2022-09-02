@@ -955,7 +955,16 @@
             }
             sk.switchEnv('preview', newTab(evt));
           };
-          sk.showWait();
+          if (status.edit && status.edit.sourceLocation
+            && status.edit.sourceLocation.startsWith('onedrive:')) {
+            // show ctrl/cmd + s hint on onedrive docs
+            const mac = navigator.platform.toLowerCase().includes('mac') ? '-mac' : '';
+            sk.showModal({
+              css: `modal-preview-onedrive${mac}`,
+            });
+          } else {
+            sk.showWait();
+          }
           updatePreview();
         },
         isEnabled: (sidekick) => sidekick.isAuthorized('preview', 'write')
@@ -975,8 +984,17 @@
       condition: (s) => s.config.innerHost && (s.isInner() || s.isDev()),
       button: {
         action: async (evt) => {
-          const { location } = sk;
-          sk.showWait();
+          const { status, location } = sk;
+          if (status.edit && status.edit.sourceLocation
+            && status.edit.sourceLocation.startsWith('onedrive:')) {
+            // show ctrl/cmd + s hint on onedrive docs
+            const mac = navigator.platform.toLowerCase().includes('mac') ? '-mac' : '';
+            sk.showModal({
+              css: `modal-reload-onedrive${mac}`,
+            });
+          } else {
+            sk.showWait();
+          }
           try {
             const resp = await sk.update();
             if (!resp.ok && resp.status >= 400) {
