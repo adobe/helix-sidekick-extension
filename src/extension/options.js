@@ -299,16 +299,23 @@ window.addEventListener('DOMContentLoaded', () => {
       if (window.confirm(i18n('config_import_confirm'))) {
         const reader = new FileReader();
         reader.addEventListener('load', async () => {
-          const { projects: importedProjects } = JSON.parse(reader.result);
-          clearConfig('sync', () => {
-            importedProjects.forEach(async (project) => {
-              await setProject(project, () => {
-                // eslint-disable-next-line no-alert
-                window.alert(i18n('config_import_success'));
-                drawProjects();
-              });
+          const json = JSON.parse(reader.result);
+          let { projects } = json;
+          if (!projects) {
+            // support legacy config exports
+            projects = json.configs;
+          }
+          if (projects && Array.isArray(projects) && projects.length > 0) {
+            clearConfig('sync', async () => {
+              for (let i = 0; i < projects.length; i += 1) {
+                // eslint-disable-next-line no-await-in-loop
+                await setProject(projects[i]);
+              }
+              // eslint-disable-next-line no-alert
+              window.alert(i18n('config_import_success'));
+              drawProjects();
             });
-          });
+          }
         });
         try {
           reader.readAsText(files[0]);
