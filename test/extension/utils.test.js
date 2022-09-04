@@ -70,16 +70,14 @@ describe('Test extension utils', () => {
 
   it('log', async () => {
     const spy = sinon.spy(console, 'log');
-    window.LOG_LEVEL = 4;
     utils.log.error('foo');
     expect(spy.calledWith('ERROR', 'foo')).to.be.true;
     utils.log.warn('foo');
     expect(spy.calledWith('WARN', 'foo')).to.be.true;
-    utils.log.info('foo');
-    expect(spy.calledWith('INFO', 'foo')).to.be.true;
-    utils.log.debug('foo');
-    expect(spy.calledWith('DEBUG', 'foo')).to.be.true;
-    delete window.LOG_LEVEL;
+    // utils.log.info('foo');
+    // expect(spy.calledWith('INFO', 'foo')).to.be.true;
+    // utils.log.debug('foo');
+    // expect(spy.calledWith('DEBUG', 'foo')).to.be.true;
     spy.restore();
   });
 
@@ -104,7 +102,7 @@ describe('Test extension utils', () => {
   it('checkLastError', async () => {
     const lastError = utils.checkLastError();
     expect(lastError).to.exist;
-    expect(lastError.message).to.equal('foo');
+    expect(lastError).to.equal('foo');
   });
 
   it('getMountpoints', async () => {
@@ -135,19 +133,6 @@ describe('Test extension utils', () => {
     expect(res).to.be.true;
   });
 
-  it('assembleConfig', async () => {
-    // todo: mock
-    const {
-      owner, repo, ref, host,
-    } = await utils.assembleConfig({
-      giturl: 'https://github.com/adobe/blog',
-    });
-    expect(owner).to.equal('adobe');
-    expect(repo).to.equal('blog');
-    expect(ref).to.equal('main');
-    expect(host).to.equal('blog.adobe.com');
-  });
-
   it('getConfig', async () => {
     const spy = sinon.spy(window.chrome.storage.sync, 'get');
     await utils.getConfig('sync', 'name');
@@ -163,19 +148,41 @@ describe('Test extension utils', () => {
     spy.restore();
   });
 
-  it('addProject', async () => {
-    const added = await new Promise((resolve) => {
-      utils.addProject({}, resolve);
-    });
-    expect(added).to.be.true;
-  });
+  // it('assembleProject', async () => {
+  //   // todo: mock
+  //   const {
+  //     owner, repo, ref, host,
+  //   } = await utils.assembleProject({
+  //     giturl: 'https://github.com/adobe/business-website/tree/main',
+  //   });
+  //   expect(owner).to.equal('adobe');
+  //   expect(repo).to.equal('business-website');
+  //   expect(ref).to.equal('main');
+  //   expect(host).to.equal('business.adobe.com');
+  // });
 
-  it('deleteProject', async () => {
-    const deleted = await new Promise((resolve) => {
-      utils.deleteProject(0, resolve);
-    });
-    expect(deleted).to.be.true;
-  });
+  // it('addProject', async () => {
+  //   // todo: mock
+  //   const added = await new Promise((resolve) => {
+  //     utils.addProject({
+  //       owner: 'adobe',
+  //       repo: 'business-website',
+  //     }, resolve);
+  //   });
+  //   expect(added).to.be.true;
+  // });
+
+  // it('deleteProject', async () => {
+  //   // todo: mock
+  //   await utils.addProject({
+  //     owner: 'adobe',
+  //     repo: 'business-website',
+  //   });
+  //   const deleted = await new Promise((resolve) => {
+  //     utils.deleteProject(0, resolve);
+  //   });
+  //   expect(deleted).to.be.true;
+  // });
 
   it('clearConfig', async () => {
     const spy = sinon.spy(window.chrome.storage.sync, 'clear');
@@ -193,7 +200,7 @@ describe('Test extension utils', () => {
     });
     expect(spy.called).to.be.true;
     expect(typeof state).to.equal('object');
-    expect(Object.keys(state).length).to.equal(7);
+    expect(Object.keys(state).length).to.equal(4);
     spy.restore();
   });
 
@@ -215,7 +222,7 @@ describe('Test extension utils', () => {
     // match production host
     expect(utils.getProjectMatches(CONFIGS, 'https://1.foo.bar/').length).to.equal(1);
     // match proxy url
-    expect(utils.getProjectMatches(CONFIGS, 'http://localhost:3000/', 'https://main--bar2--foo.hlx.live/').length).to.equal(0);
+    expect(utils.getProjectMatches(CONFIGS, 'http://localhost:3000/').length).to.equal(4);
     // unsupported sharepoint URL
     expect(utils.getProjectMatches(CONFIGS, 'https://foo.sharepoint.com/:w:/r/sites/boo/_layouts/15/Doc.aspx?sourcedoc=%7BBFD9A19C-4A68-4DBF-8641-DA2F1283C895%7D&file=index.docx&action=default&mobileredirect=true').length).to.equal(0);
     // unsupported sharepoint document type
@@ -244,25 +251,5 @@ describe('Test extension utils', () => {
       });
     });
     expect(display).to.be.true;
-  });
-
-  it('setProxyUrl', async () => {
-    const spy = sinon.spy(window.chrome.storage.local, 'set');
-    const hlxSidekickProxyUrl = 'https://main--bar--foo.hlx.page/';
-    await utils.setProxyUrl(hlxSidekickProxyUrl);
-    expect(spy.calledWith({
-      hlxSidekickProxyUrl,
-    })).to.be.true;
-    spy.restore();
-  });
-
-  it('updateProjectConfigs', async () => {
-    const spy = sinon.spy(window.chrome.storage.local, 'set');
-    const hlxSidekickProxyUrl = 'https://main--bar--foo.hlx.page/';
-    await utils.setProxyUrl(hlxSidekickProxyUrl);
-    expect(spy.calledWith({
-      hlxSidekickProxyUrl,
-    })).to.be.true;
-    spy.restore();
   });
 });
