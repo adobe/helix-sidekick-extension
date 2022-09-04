@@ -280,7 +280,7 @@ async function getProjectConfig(owner, repo, ref = 'main') {
   return cfg;
 }
 
-export async function assembleConfig({
+export async function assembleProject({
   giturl,
   mountpoints,
   project,
@@ -338,7 +338,7 @@ export async function setProject(project, cb) {
 }
 
 export async function addProject(input, cb) {
-  const config = await assembleConfig(input);
+  const config = await assembleProject(input);
   const project = await getProject(config);
   if (!project) {
     await setProject(config);

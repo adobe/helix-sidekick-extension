@@ -23,7 +23,7 @@ import {
   addProject,
   setProject,
   deleteProject,
-  assembleConfig,
+  assembleProject,
   setConfig,
   getConfig,
   clearConfig,
@@ -164,7 +164,7 @@ function editProject(i) {
       };
       projects[i] = {
         ...project,
-        ...await assembleConfig(input),
+        ...await assembleProject(input),
       };
       // unregister esc handler
       window.removeEventListener('keyup', keyHandler);
