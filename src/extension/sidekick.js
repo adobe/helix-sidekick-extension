@@ -24,6 +24,7 @@ import {
   setDisplay,
   i18n,
   storeAuthToken,
+  getProjectHandle,
 } from './utils.js';
 
 export default async function injectSidekick(config, display) {
@@ -91,10 +92,10 @@ export default async function injectSidekick(config, display) {
     chrome.storage.sync.onChanged.addListener((changes) => {
       log.debug('store changed', changes);
       // find changes to this sidekicks config
-      changes.hlxSidekickConfigs?.newValue?.forEach((newConfig) => {
-        if (newConfig.owner === owner && newConfig.repo === repo) {
-          log.debug(`updating config for ${newConfig.id} and reloading sidekick.`);
-          window.hlx.sidekickConfig.authToken = newConfig.authToken;
+      changes.hlxSidekickProjects?.newValue?.forEach((newHandle) => {
+        if (newHandle === getProjectHandle(owner, repo)) {
+          log.debug(`updating config for ${newHandle} and reloading sidekick.`);
+          window.hlx.sidekickConfig.authToken = newHandle.authToken;
           window.hlx.sidekick.loadContext();
         }
       });

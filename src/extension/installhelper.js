@@ -25,7 +25,7 @@
   } = await import('./utils.js');
   const run = () => {
     getState(({
-      configs,
+      projects = [],
     }) => {
       const usp = new URLSearchParams(window.location.search);
       const project = usp.get('project');
@@ -46,7 +46,7 @@
       }
 
       const { owner, repo } = getGitHubSettings(giturl);
-      const configIndex = configs.findIndex((cfg) => cfg.owner === owner && cfg.repo === repo);
+      const configIndex = projects.findIndex((cfg) => cfg.owner === owner && cfg.repo === repo);
       if (configIndex < 0 && owner && repo) {
         log.info('installhelper.js: project not added yet');
         if (addProjectContainer) {

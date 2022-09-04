@@ -20,8 +20,9 @@ import {
   isValidShareURL,
   getShareSettings,
   i18n,
-  addConfig,
-  deleteConfig,
+  addProject,
+  setProject,
+  deleteProject,
   assembleConfig,
   setConfig,
   getConfig,
@@ -47,11 +48,11 @@ function drawLink(url) {
   return `<a href="${href}/" title="${href}" target="_blank">${text}</a>`;
 }
 
-function drawConfigs() {
-  getState(({ configs = [] }) => {
+function drawProjects() {
+  getState(({ projects = [] }) => {
     const container = document.getElementById('configs');
     container.innerHTML = '';
-    configs.forEach(({
+    projects.forEach(({
       owner, repo, ref, mountpoints, project, host, disabled,
     }, i) => {
       const innerHost = getInnerHost(owner, repo, ref);
@@ -82,31 +83,31 @@ function drawConfigs() {
   </div>`;
       section.querySelector('input[type="checkbox').addEventListener('click', ({ target }) => {
         const { checked } = target;
-        configs[i].disabled = !checked;
-        setConfig('sync', { hlxSidekickConfigs: configs }, () => {
-          drawConfigs();
+        projects[i].disabled = !checked;
+        setProject(projects[i], () => {
+          drawProjects();
         });
       });
       container.appendChild(section);
     });
     // wire share buttons
     document.querySelectorAll('button.shareConfig').forEach((button, i) => {
-      button.addEventListener('click', (evt) => shareConfig(i, evt));
+      button.addEventListener('click', (evt) => shareProject(i, evt));
     });
     // wire edit buttons
     document.querySelectorAll('button.editConfig').forEach((button, i) => {
-      button.addEventListener('click', () => editConfig(i));
+      button.addEventListener('click', () => editProject(i));
     });
     // wire delete buttons
     document.querySelectorAll('button.deleteConfig').forEach((button, i) => {
-      button.addEventListener('click', () => deleteConfig(i, drawConfigs));
+      button.addEventListener('click', () => deleteProject(i, drawProjects));
     });
   });
 }
 
-function shareConfig(i, evt) {
-  getState(({ configs = [] }) => {
-    const config = configs[i];
+function shareProject(i, evt) {
+  getState(({ projects = [] }) => {
+    const config = projects[i];
     const shareUrl = new URL('https://www.hlx.live/tools/sidekick/');
     shareUrl.search = new URLSearchParams([
       ['project', config.project || ''],
@@ -130,16 +131,16 @@ function shareConfig(i, evt) {
   });
 }
 
-function editConfig(i) {
-  getState(({ configs = [] }) => {
-    const config = configs[i];
+function editProject(i) {
+  getState(({ projects = [] }) => {
+    const project = projects[i];
     const editorFragment = document.getElementById('configEditorTemplate').content.cloneNode(true);
     const editor = editorFragment.querySelector('#configEditor');
     const close = () => {
       // unregister esc handler
       window.removeEventListener('keyup', keyHandler);
       // redraw configs
-      drawConfigs();
+      drawProjects();
     };
     const keyHandler = (evt) => {
       if (evt.key === 'Escape') {
@@ -160,15 +161,15 @@ function editConfig(i) {
         host: document.querySelector('#edit-host').value,
         devMode: document.querySelector('#edit-devMode').checked,
       };
-      configs[i] = {
-        ...config,
+      projects[i] = {
+        ...project,
         ...await assembleConfig(input),
       };
       // unregister esc handler
       window.removeEventListener('keyup', keyHandler);
       // save configs
-      setConfig('sync', { hlxSidekickConfigs: configs }, () => {
-        drawConfigs();
+      setProject(projects[i], () => {
+        drawProjects();
         close();
       });
     };
@@ -185,13 +186,13 @@ function editConfig(i) {
     // pre-fill form
     document.querySelectorAll('#configEditor input').forEach((field) => {
       const key = field.id.split('-')[1];
-      const value = config[key];
+      const value = project[key];
       if (typeof value === 'object') {
         field.value = value[0] || '';
       } else if (typeof value === 'boolean' && value) {
         field.setAttribute('checked', value);
       } else {
-        field.value = config[key] || '';
+        field.value = project[key] || '';
       }
       field.setAttribute('placeholder', i18n(`config_manual_${key}_placeholder`));
       const label = document.querySelector(`#configEditor label[for="${field.id}"]`);
@@ -242,14 +243,14 @@ window.addEventListener('DOMContentLoaded', () => {
   // i18n
   document.body.innerHTML = document.body.innerHTML
     .replaceAll(/__MSG_([0-9a-zA-Z_]+)__/g, (match, msg) => i18n(msg));
-  drawConfigs();
+  drawProjects();
 
   document.getElementById('resetButton').addEventListener('click', () => {
     // eslint-disable-next-line no-alert
     if (window.confirm(i18n('config_delete_all_confirm'))) {
       clearConfig('sync', () => {
         clearConfig('local', () => {
-          drawConfigs();
+          drawProjects();
         });
       });
     }
@@ -259,9 +260,9 @@ window.addEventListener('DOMContentLoaded', () => {
     const shareurl = document.getElementById('shareurl').value;
     // check share url
     if (isValidShareURL(shareurl)) {
-      await addConfig(getShareSettings(shareurl), (added) => {
+      await addProject(getShareSettings(shareurl), (added) => {
         if (added) {
-          drawConfigs();
+          drawProjects();
           clearForms();
         }
       });
@@ -274,12 +275,12 @@ window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('addManualConfigButton').addEventListener('click', async () => {
     const giturl = document.getElementById('giturl').value;
     if (isValidGitHubURL(giturl)) {
-      await addConfig({
+      await addProject({
         giturl,
         project: document.getElementById('project').value,
       }, (added) => {
         if (added) {
-          drawConfigs();
+          drawProjects();
           clearForms();
         }
       });
@@ -296,14 +297,16 @@ window.addEventListener('DOMContentLoaded', () => {
       // eslint-disable-next-line no-alert
       if (window.confirm(i18n('config_import_confirm'))) {
         const reader = new FileReader();
-        reader.addEventListener('load', () => {
-          const { configs: importedConfigs } = JSON.parse(reader.result);
-          setConfig('sync', {
-            hlxSidekickConfigs: importedConfigs,
-          }, () => {
-            // eslint-disable-next-line no-alert
-            window.alert(i18n('config_import_success'));
-            drawConfigs();
+        reader.addEventListener('load', async () => {
+          const { projects: importedProjects } = JSON.parse(reader.result);
+          clearConfig('sync', () => {
+            importedProjects.forEach(async (project) => {
+              await setProject(project, () => {
+                // eslint-disable-next-line no-alert
+                window.alert(i18n('config_import_success'));
+                drawProjects();
+              });
+            });
           });
         });
         try {
@@ -323,15 +326,15 @@ window.addEventListener('DOMContentLoaded', () => {
 
   // config export
   document.getElementById('exportButton').addEventListener('click', () => {
-    getState(({ configs }) => {
-      if (configs.length > 0) {
+    getState(({ projects = [] }) => {
+      if (projects.length > 0) {
         // prepare export data
         const info = {
           name: MANIFEST.name,
           version: MANIFEST.version,
           date: new Date().toUTCString(),
         };
-        const data = JSON.stringify({ info, configs }, null, '  ');
+        const data = JSON.stringify({ info, projects }, null, '  ');
         // create file link on the fly
         const exportLink = document.createElement('a');
         exportLink.download = `helix-sidekick-backup-${Date.now()}.json`;

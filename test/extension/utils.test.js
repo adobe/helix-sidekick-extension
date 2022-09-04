@@ -163,16 +163,16 @@ describe('Test extension utils', () => {
     spy.restore();
   });
 
-  it('addConfig', async () => {
+  it('addProject', async () => {
     const added = await new Promise((resolve) => {
-      utils.addConfig(0, resolve);
+      utils.addProject({}, resolve);
     });
     expect(added).to.be.true;
   });
 
-  it('deleteConfig', async () => {
+  it('deleteProject', async () => {
     const deleted = await new Promise((resolve) => {
-      utils.deleteConfig(0, resolve);
+      utils.deleteProject(0, resolve);
     });
     expect(deleted).to.be.true;
   });
@@ -197,35 +197,35 @@ describe('Test extension utils', () => {
     spy.restore();
   });
 
-  it('getConfigMatches', async () => {
+  it('getProjectMatches', async () => {
     // match sharepoint URL (docx)
-    expect(utils.getConfigMatches(CONFIGS, 'https://foo.sharepoint.com/:w:/r/sites/foo/_layouts/15/Doc.aspx?sourcedoc=%7BBFD9A19C-4A68-4DBF-8641-DA2F1283C895%7D&file=index.docx&action=default&mobileredirect=true').length).to.equal(1);
+    expect(utils.getProjectMatches(CONFIGS, 'https://foo.sharepoint.com/:w:/r/sites/foo/_layouts/15/Doc.aspx?sourcedoc=%7BBFD9A19C-4A68-4DBF-8641-DA2F1283C895%7D&file=index.docx&action=default&mobileredirect=true').length).to.equal(1);
     // match sharepoint URL (pdf)
-    expect(utils.getConfigMatches(CONFIGS, 'https://foo.sharepoint.com/sites/HelixProjects/Shared%20Documents/sites/foo/drafts/example.pdf?CT=0657697518721&OR=ItemsView').length).to.equal(1);
+    expect(utils.getProjectMatches(CONFIGS, 'https://foo.sharepoint.com/sites/HelixProjects/Shared%20Documents/sites/foo/drafts/example.pdf?CT=0657697518721&OR=ItemsView').length).to.equal(1);
     // match custom sharepoint URL
-    expect(utils.getConfigMatches(CONFIGS, 'https://foo.custom/:w:/r/sites/foo/_layouts/15/Doc.aspx?sourcedoc=%7BBFD9A19C-4A68-4DBF-8641-DA2F1283C895%7D&file=index.docx&action=default&mobileredirect=true').length).to.equal(1);
+    expect(utils.getProjectMatches(CONFIGS, 'https://foo.custom/:w:/r/sites/foo/_layouts/15/Doc.aspx?sourcedoc=%7BBFD9A19C-4A68-4DBF-8641-DA2F1283C895%7D&file=index.docx&action=default&mobileredirect=true').length).to.equal(1);
     // match gdrive URL
-    expect(utils.getConfigMatches(CONFIGS, 'https://docs.google.com/document/d/1234567890/edit').length).to.equal(1);
+    expect(utils.getProjectMatches(CONFIGS, 'https://docs.google.com/document/d/1234567890/edit').length).to.equal(1);
     // match preview URL
-    expect(utils.getConfigMatches(CONFIGS, 'https://main--bar1--foo.hlx.page/').length).to.equal(1);
+    expect(utils.getProjectMatches(CONFIGS, 'https://main--bar1--foo.hlx.page/').length).to.equal(1);
     // match preview URL with any ref
-    expect(utils.getConfigMatches(CONFIGS, 'https://baz--bar1--foo.hlx.page/').length).to.equal(1);
+    expect(utils.getProjectMatches(CONFIGS, 'https://baz--bar1--foo.hlx.page/').length).to.equal(1);
     // match live URL
-    expect(utils.getConfigMatches(CONFIGS, 'https://main--bar1--foo.hlx.live/').length).to.equal(1);
+    expect(utils.getProjectMatches(CONFIGS, 'https://main--bar1--foo.hlx.live/').length).to.equal(1);
     // match production host
-    expect(utils.getConfigMatches(CONFIGS, 'https://1.foo.bar/').length).to.equal(1);
+    expect(utils.getProjectMatches(CONFIGS, 'https://1.foo.bar/').length).to.equal(1);
     // match proxy url
-    expect(utils.getConfigMatches(CONFIGS, 'http://localhost:3000/', 'https://main--bar2--foo.hlx.live/').length).to.equal(0);
+    expect(utils.getProjectMatches(CONFIGS, 'http://localhost:3000/', 'https://main--bar2--foo.hlx.live/').length).to.equal(0);
     // unsupported sharepoint URL
-    expect(utils.getConfigMatches(CONFIGS, 'https://foo.sharepoint.com/:w:/r/sites/boo/_layouts/15/Doc.aspx?sourcedoc=%7BBFD9A19C-4A68-4DBF-8641-DA2F1283C895%7D&file=index.docx&action=default&mobileredirect=true').length).to.equal(0);
+    expect(utils.getProjectMatches(CONFIGS, 'https://foo.sharepoint.com/:w:/r/sites/boo/_layouts/15/Doc.aspx?sourcedoc=%7BBFD9A19C-4A68-4DBF-8641-DA2F1283C895%7D&file=index.docx&action=default&mobileredirect=true').length).to.equal(0);
     // unsupported sharepoint document type
-    expect(utils.getConfigMatches(CONFIGS, 'https://foo.sharepoint.com/:p:/r/sites/foo/_layouts/15/Doc.aspx?sourcedoc=%7BBFD9A19C-4A68-4DBF-8641-DA2F1283C895%7D&file=index.pptx&action=default&mobileredirect=true').length).to.equal(0);
+    expect(utils.getProjectMatches(CONFIGS, 'https://foo.sharepoint.com/:p:/r/sites/foo/_layouts/15/Doc.aspx?sourcedoc=%7BBFD9A19C-4A68-4DBF-8641-DA2F1283C895%7D&file=index.pptx&action=default&mobileredirect=true').length).to.equal(0);
     // invalid sharepoint URL
-    expect(utils.getConfigMatches(CONFIGS, 'https://foo.sharepoint.com/:w:/r/sites/foo/_layouts/15/Doc.aspx').length).to.equal(0);
+    expect(utils.getProjectMatches(CONFIGS, 'https://foo.sharepoint.com/:w:/r/sites/foo/_layouts/15/Doc.aspx').length).to.equal(0);
     // invalid gdrive URL
-    expect(utils.getConfigMatches(CONFIGS, 'https://drive.google.com/drive/folders/1234567890').length).to.equal(0);
+    expect(utils.getProjectMatches(CONFIGS, 'https://drive.google.com/drive/folders/1234567890').length).to.equal(0);
     // ignore disabled config
-    expect(utils.getConfigMatches(CONFIGS, 'https://main--bar2--foo.hlx.live/').length).to.equal(0);
+    expect(utils.getProjectMatches(CONFIGS, 'https://main--bar2--foo.hlx.live/').length).to.equal(0);
   });
 
   it('setDisplay', async () => {
@@ -247,6 +247,16 @@ describe('Test extension utils', () => {
   });
 
   it('setProxyUrl', async () => {
+    const spy = sinon.spy(window.chrome.storage.local, 'set');
+    const hlxSidekickProxyUrl = 'https://main--bar--foo.hlx.page/';
+    await utils.setProxyUrl(hlxSidekickProxyUrl);
+    expect(spy.calledWith({
+      hlxSidekickProxyUrl,
+    })).to.be.true;
+    spy.restore();
+  });
+
+  it('updateProjectConfigs', async () => {
     const spy = sinon.spy(window.chrome.storage.local, 'set');
     const hlxSidekickProxyUrl = 'https://main--bar--foo.hlx.page/';
     await utils.setProxyUrl(hlxSidekickProxyUrl);
