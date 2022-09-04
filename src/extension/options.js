@@ -50,6 +50,7 @@ function drawLink(url) {
 
 function drawProjects() {
   getState(({ projects = [] }) => {
+    document.getElementById('projects_num').textContent = `(${projects.length})`;
     const container = document.getElementById('configs');
     container.innerHTML = '';
     projects.forEach(({

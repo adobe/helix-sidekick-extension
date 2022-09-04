@@ -24,7 +24,6 @@ import {
   setDisplay,
   i18n,
   storeAuthToken,
-  getProjectHandle,
 } from './utils.js';
 
 export default async function injectSidekick(config, display) {
@@ -93,7 +92,7 @@ export default async function injectSidekick(config, display) {
       log.debug('store changed', changes);
       // find changes to this sidekicks config
       changes.hlxSidekickProjects?.newValue?.forEach((newHandle) => {
-        if (newHandle === getProjectHandle(owner, repo)) {
+        if (newHandle === `${owner}_${repo}`) {
           log.debug(`updating config for ${newHandle} and reloading sidekick.`);
           window.hlx.sidekickConfig.authToken = newHandle.authToken;
           window.hlx.sidekick.loadContext();

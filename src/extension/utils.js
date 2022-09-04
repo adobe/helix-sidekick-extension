@@ -102,11 +102,14 @@ export function getGitHubSettings(giturl) {
   return {};
 }
 
-export async function getConfig(type, prop) {
+export async function getConfig(type, prop, cb) {
   const cfg = await new Promise((resolve) => {
     chrome.storage[type].get(prop, resolve);
   });
-  return cfg[prop];
+  if (typeof cb === 'function') {
+    return cb(cfg);
+  }
+  return prop ? cfg[prop] : cfg;
 }
 
 export async function setConfig(type, obj, cb) {
@@ -145,12 +148,8 @@ export async function getState(cb) {
     const adminVersion = await getConfig('local', 'hlxSidekickAdminVersion');
 
     const pushDown = await getConfig('sync', 'hlxSidekickPushDown') || false;
-    const projects = (await getConfig('sync', 'hlxSidekickProjects') || [])
-      .map(async (handle) => {
-        const config = await getConfig('sync', handle);
-        return config;
-      });
-
+    const projects = await Promise.all((await getConfig('sync', 'hlxSidekickProjects') || [])
+      .map((handle) => getConfig('sync', handle)));
     cb({
       display,
       adminVersion,
@@ -313,31 +312,26 @@ export async function assembleConfig({
   };
 }
 
-export function getProjectHandle(owner, repo) {
-  return `hlxSidekickProject_${owner}_${repo}`;
-}
-
 export async function getProject(project) {
   const { owner, repo } = project;
-  return getConfig('sync', getProjectHandle(owner, repo));
+  return getConfig('sync', `${owner}_${repo}`);
 }
 
 export async function setProject(project, cb) {
   const { owner, repo } = project;
-  const handle = getProjectHandle(owner, repo);
+  const handle = `${owner}_${repo}`;
   const obj = {};
   obj[handle] = project;
-  await setConfig('sync', obj);
-
-  // add to project index
-  const projects = await getConfig('sync', 'hlxSidekickProjects') || [];
-  if (!projects.includes(handle)) {
-    projects.push(handle);
-    await setConfig('sync', { hlxSidekickProjects: projects });
-  }
-
+  await setConfig('sync', obj, async () => {
+    // update project index
+    let projects = await getConfig('sync', 'hlxSidekickProjects');
+    if (!projects) projects = [];
+    if (!projects.includes(handle)) {
+      projects.push(handle);
+      await setConfig('sync', { hlxSidekickProjects: projects });
+    }
+  });
   log.info('updated project', project);
-
   if (typeof cb === 'function') {
     cb(project);
   }
@@ -360,23 +354,20 @@ export async function addProject(input, cb) {
 
 export async function deleteProject(i, cb) {
   if (confirm(i18n('config_delete_confirm'))) {
-    getConfig('sync', 'hlxSidekickProjects')
+    const projects = await getConfig('sync', 'hlxSidekickProjects') || [];
+    const handle = projects[i];
+    if (handle) {
       // delete the project entry
-      .then(async (hlxSidekickProjects = []) => {
-        const handle = hlxSidekickProjects[i];
-        await removeConfig('sync', handle);
-        return hlxSidekickProjects;
-      })
+      await removeConfig('sync', handle);
       // remove project entry from index
-      .then((hlxSidekickProjects = []) => {
-        hlxSidekickProjects.splice(i, 1);
-        return hlxSidekickProjects;
-      })
-      .then((hlxSidekickProjects) => setConfig('sync', { hlxSidekickProjects }))
-      .then(() => {
-        if (typeof cb === 'function') cb(true);
-      })
-      .catch((e) => log.error('error deleting config', e));
+      projects.splice(i, 1);
+      await setConfig('sync', { hlxSidekickProjects: projects });
+      log.info('project deleted', i);
+      if (typeof cb === 'function') cb(true);
+    } else {
+      log.warn('project not found', i);
+      if (typeof cb === 'function') cb(false);
+    }
   }
 }
 
@@ -417,10 +408,12 @@ export async function updateProjectConfigs() {
   const projects = await getConfig('sync', 'hlxSidekickProjects');
   if (configs && !projects) {
     // migrate old to new project configs
-    configs.forEach(async (project) => {
-      await setProject(project);
-    });
+    for (let i = 0; i < configs.length; i += 1) {
+      // eslint-disable-next-line no-await-in-loop
+      await setProject(configs[i]);
+    }
     // remove old project configs
     await removeConfig('sync', 'hlxSidekickConfigs');
+    log.info('project config updated');
   }
 }
