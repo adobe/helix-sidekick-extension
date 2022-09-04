@@ -92,7 +92,7 @@ export default async function injectSidekick(config, display) {
       log.debug('store changed', changes);
       // find changes to this sidekicks config
       changes.hlxSidekickProjects?.newValue?.forEach((newHandle) => {
-        if (newHandle === `${owner}_${repo}`) {
+        if (newHandle === `${owner}/${repo}`) {
           log.debug(`updating config for ${newHandle} and reloading sidekick.`);
           window.hlx.sidekickConfig.authToken = newHandle.authToken;
           window.hlx.sidekick.loadContext();

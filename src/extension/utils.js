@@ -314,12 +314,12 @@ export async function assembleConfig({
 
 export async function getProject(project) {
   const { owner, repo } = project;
-  return getConfig('sync', `${owner}_${repo}`);
+  return getConfig('sync', `${owner}/${repo}`);
 }
 
 export async function setProject(project, cb) {
   const { owner, repo } = project;
-  const handle = `${owner}_${repo}`;
+  const handle = `${owner}/${repo}`;
   const obj = {};
   obj[handle] = project;
   await setConfig('sync', obj, async () => {
