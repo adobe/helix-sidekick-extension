@@ -10,8 +10,16 @@
  * governing permissions and limitations under the License.
  */
 import { readFile } from '@web/test-runner-commands';
+import e from 'express';
 
 const ID = 'dummy';
+
+const PROJECTS = [
+  {
+    owner: 'adobe',
+    repo: 'business-website',
+  },
+];
 
 export default {
   i18n: {
@@ -25,8 +33,15 @@ export default {
   },
   storage: {
     sync: {
-      get: (name, callback) => callback({ name }),
+      get: (name, callback) => {
+        if (name === 'hlxSidekickProjects') {
+          callback({ name: PROJECTS });
+        } else {
+          callback({ name });
+        }
+      },
       set: (_, callback) => callback(),
+      remove: (_, callback) => callback(),
       clear: (callback) => callback(),
     },
     local: {

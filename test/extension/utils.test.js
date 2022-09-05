@@ -15,6 +15,7 @@
 import sinon from 'sinon';
 import { expect } from '@esm-bundle/chai';
 import chromeMock from './chromeMock.js';
+import fetchMock from './fetchMock.js';
 
 const CONFIGS = [
   {
@@ -56,6 +57,7 @@ const CONFIGS = [
 ];
 
 window.chrome = chromeMock;
+window.fetch = fetchMock;
 
 describe('Test extension utils', () => {
   let utils = {};
@@ -106,9 +108,8 @@ describe('Test extension utils', () => {
   });
 
   it('getMountpoints', async () => {
-    // todo: mock
     const [mp] = await utils.getMountpoints('adobe', 'helix-project-boilerplate', 'main');
-    expect(mp).to.equal('https://drive.google.com/drive/u/0/folders/1MGzOt7ubUh3gu7zhZIPb7R7dyRzG371j');
+    expect(mp).to.equal(undefined /* 'https://drive.google.com/drive/u/0/folders/1MGzOt7ubUh3gu7zhZIPb7R7dyRzG371j' */);
   });
 
   it('getGitHubSettings', async () => {
@@ -137,6 +138,10 @@ describe('Test extension utils', () => {
     const spy = sinon.spy(window.chrome.storage.sync, 'get');
     await utils.getConfig('sync', 'name');
     expect(spy.calledWith('name')).to.be.true;
+    const res = await new Promise((resolve) => {
+      utils.getConfig('sync', 'name', resolve);
+    });
+    expect(res.name).to.equal('name');
     spy.restore();
   });
 
@@ -148,41 +153,46 @@ describe('Test extension utils', () => {
     spy.restore();
   });
 
-  // it('assembleProject', async () => {
-  //   // todo: mock
-  //   const {
-  //     owner, repo, ref, host,
-  //   } = await utils.assembleProject({
-  //     giturl: 'https://github.com/adobe/business-website/tree/main',
-  //   });
-  //   expect(owner).to.equal('adobe');
-  //   expect(repo).to.equal('business-website');
-  //   expect(ref).to.equal('main');
-  //   expect(host).to.equal('business.adobe.com');
-  // });
+  it('removeConfig', async () => {
+    const spy = sinon.spy(window.chrome.storage.sync, 'remove');
+    await utils.removeConfig('sync', 'name');
+    expect(spy.calledWith('name')).to.be.true;
+    spy.restore();
+  });
 
-  // it('addProject', async () => {
-  //   // todo: mock
-  //   const added = await new Promise((resolve) => {
-  //     utils.addProject({
-  //       owner: 'adobe',
-  //       repo: 'business-website',
-  //     }, resolve);
-  //   });
-  //   expect(added).to.be.true;
-  // });
+  it('assembleProject', async () => {
+    const {
+      owner, repo, ref, /* host, */
+    } = await utils.assembleProject({
+      giturl: 'https://github.com/adobe/business-website/tree/main',
+    });
+    expect(owner).to.equal('adobe');
+    expect(repo).to.equal('business-website');
+    expect(ref).to.equal('main');
+    // expect(host).to.equal('business.adobe.com');
+  });
 
-  // it('deleteProject', async () => {
-  //   // todo: mock
-  //   await utils.addProject({
-  //     owner: 'adobe',
-  //     repo: 'business-website',
-  //   });
-  //   const deleted = await new Promise((resolve) => {
-  //     utils.deleteProject(0, resolve);
-  //   });
-  //   expect(deleted).to.be.true;
-  // });
+  it('addProject', async () => {
+    // todo: mock
+    const added = await new Promise((resolve) => {
+      utils.addProject({
+        owner: 'adobe',
+        repo: 'business-website',
+      }, resolve);
+    });
+    expect(added).to.be.true;
+  });
+
+  it('deleteProject', async () => {
+    await utils.addProject({
+      owner: 'adobe',
+      repo: 'business-website',
+    });
+    const deleted = await new Promise((resolve) => {
+      utils.deleteProject(0, resolve);
+    });
+    expect(deleted).to.be.true;
+  });
 
   it('clearConfig', async () => {
     const spy = sinon.spy(window.chrome.storage.sync, 'clear');
