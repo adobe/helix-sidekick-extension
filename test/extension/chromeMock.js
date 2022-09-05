@@ -10,7 +10,6 @@
  * governing permissions and limitations under the License.
  */
 import { readFile } from '@web/test-runner-commands';
-import e from 'express';
 
 const ID = 'dummy';
 
