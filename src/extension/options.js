@@ -101,7 +101,8 @@ function drawProjects() {
     });
     // wire delete buttons
     document.querySelectorAll('button.deleteConfig').forEach((button, i) => {
-      button.addEventListener('click', () => deleteProject(i, drawProjects));
+      const { owner, repo } = projects[i];
+      button.addEventListener('click', () => deleteProject(`${owner}/${repo}`, drawProjects));
     });
   });
 }
@@ -246,14 +247,12 @@ window.addEventListener('DOMContentLoaded', () => {
     .replaceAll(/__MSG_([0-9a-zA-Z_]+)__/g, (match, msg) => i18n(msg));
   drawProjects();
 
-  document.getElementById('resetButton').addEventListener('click', () => {
+  document.getElementById('resetButton').addEventListener('click', async () => {
     // eslint-disable-next-line no-alert
     if (window.confirm(i18n('config_delete_all_confirm'))) {
-      clearConfig('sync', () => {
-        clearConfig('local', () => {
-          drawProjects();
-        });
-      });
+      await clearConfig('sync');
+      await clearConfig('local');
+      drawProjects();
     }
   });
 
@@ -306,15 +305,14 @@ window.addEventListener('DOMContentLoaded', () => {
             projects = json.configs;
           }
           if (projects && Array.isArray(projects) && projects.length > 0) {
-            clearConfig('sync', async () => {
-              for (let i = 0; i < projects.length; i += 1) {
-                // eslint-disable-next-line no-await-in-loop
-                await setProject(projects[i]);
-              }
-              // eslint-disable-next-line no-alert
-              window.alert(i18n('config_import_success'));
-              drawProjects();
-            });
+            await clearConfig('sync');
+            for (let i = 0; i < projects.length; i += 1) {
+              // eslint-disable-next-line no-await-in-loop
+              await setProject(projects[i]);
+            }
+            // eslint-disable-next-line no-alert
+            window.alert(i18n('config_import_success'));
+            drawProjects();
           }
         });
         try {
@@ -467,9 +465,7 @@ window.addEventListener('DOMContentLoaded', () => {
       $parent.classList.toggle('expanded');
       const config = {};
       config[configId] = $parent.classList.contains('expanded') ? 'expanded' : 'collapsed';
-      setConfig('local', config, () => {
-        $parent.scrollIntoView();
-      });
+      setConfig('local', config).then(() => $parent.scrollIntoView());
     });
   });
 

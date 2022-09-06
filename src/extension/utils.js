@@ -102,17 +102,14 @@ export function getGitHubSettings(giturl) {
   return {};
 }
 
-export async function getConfig(type, prop, cb) {
+export async function getConfig(type, prop) {
   const cfg = await new Promise((resolve) => {
     chrome.storage[type].get(prop, resolve);
   });
-  if (typeof cb === 'function') {
-    return cb(cfg);
-  }
   return prop ? cfg[prop] : cfg;
 }
 
-export async function setConfig(type, obj, cb) {
+export async function setConfig(type, obj) {
   const p = new Promise((resolve) => {
     chrome.storage[type].set(obj, () => {
       const error = checkLastError();
@@ -122,9 +119,6 @@ export async function setConfig(type, obj, cb) {
       resolve(!error);
     });
   });
-  if (typeof cb === 'function') {
-    return cb(await p);
-  }
   return p;
 }
 
@@ -134,11 +128,9 @@ export async function removeConfig(type, prop) {
   });
 }
 
-export async function clearConfig(type, cb) {
-  chrome.storage[type].clear(() => {
-    if (typeof cb === 'function') {
-      cb(true);
-    }
+export async function clearConfig(type) {
+  return new Promise((resolve) => {
+    chrome.storage[type].clear(resolve);
   });
 }
 
@@ -261,8 +253,13 @@ export function isValidShareURL(shareurl) {
 
 async function getProjectConfig(owner, repo, ref = 'main') {
   const cfg = {};
-  const res = await fetch(`https://${ref}--${repo}--${owner}.hlx.page/helix-env.json`);
-  if (res.ok) {
+  let res;
+  try {
+    res = await fetch(`https://${ref}--${repo}--${owner}.hlx.page/helix-env.json`);
+  } catch (e) {
+    log.warn(`unable to retrieve project config: ${e}`);
+  }
+  if (res && res.ok) {
     const { prod, project, contentSourceUrl } = await res.json();
     if (prod && prod.host) {
       cfg.host = prod.host;
@@ -298,7 +295,6 @@ export async function assembleProject({
   mountpoints = mountpoints || projectConfig.mountpoints;
 
   return {
-    id: `${owner}/${repo}/${ref}`,
     project,
     host,
     outerHost,
@@ -322,15 +318,13 @@ export async function setProject(project, cb) {
   const handle = `${owner}/${repo}`;
   const obj = {};
   obj[handle] = project;
-  await setConfig('sync', obj, async () => {
-    // update project index
-    let projects = await getConfig('sync', 'hlxSidekickProjects');
-    if (!projects) projects = [];
-    if (!projects.includes(handle)) {
-      projects.push(handle);
-      await setConfig('sync', { hlxSidekickProjects: projects });
-    }
-  });
+  await setConfig('sync', obj);
+  // update project index
+  const projects = await getConfig('sync', 'hlxSidekickProjects') || [];
+  if (!projects.includes(handle)) {
+    projects.push(handle);
+    await setConfig('sync', { hlxSidekickProjects: projects });
+  }
   log.info('updated project', project);
   if (typeof cb === 'function') {
     cb(project);
@@ -352,20 +346,25 @@ export async function addProject(input, cb) {
   }
 }
 
-export async function deleteProject(i, cb) {
-  if (confirm(i18n('config_delete_confirm'))) {
+export async function deleteProject(handle, cb) {
+  if (handle) {
     const projects = await getConfig('sync', 'hlxSidekickProjects') || [];
-    const handle = projects[i];
-    if (handle) {
-      // delete the project entry
-      await removeConfig('sync', handle);
-      // remove project entry from index
-      projects.splice(i, 1);
-      await setConfig('sync', { hlxSidekickProjects: projects });
-      log.info('project deleted', i);
-      if (typeof cb === 'function') cb(true);
+    const i = projects.indexOf(handle);
+    if (i >= 0) {
+      if (confirm(i18n('config_delete_confirm'))) {
+        // delete the project entry
+        await removeConfig('sync', handle);
+        // remove project entry from index
+        projects.splice(i, 1);
+        await setConfig('sync', { hlxSidekickProjects: projects });
+        log.info('project deleted', handle);
+        if (typeof cb === 'function') cb(true);
+      } else {
+        log.info('project deletion aborted', handle);
+        if (typeof cb === 'function') cb(false);
+      }
     } else {
-      log.warn('project not found', i);
+      log.warn('project to delete not found', handle);
       if (typeof cb === 'function') cb(false);
     }
   }

@@ -129,7 +129,7 @@ export default async function injectSidekick(config, display) {
           sk.addEventListener('helpoptedout', async () => {
             setConfig('sync', {
               hlxSidekickHelpOptOut: true,
-            }, () => sk.notify(i18n('help_opt_out_alert')));
+            }).then(() => sk.notify(i18n('help_opt_out_alert')));
           });
           sk.addEventListener('helpacknowledged', async ({ detail = {} }) => {
             const { data: id } = detail;

@@ -285,7 +285,7 @@ async function updateHelpContent() {
           if (configIndex < 0) {
             await addProject(cfg);
           } else {
-            await deleteProject(configIndex);
+            await deleteProject(`${owner}/${repo}`);
           }
           chrome.tabs.reload(id, { bypassCache: true });
         });

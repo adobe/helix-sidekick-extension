@@ -20,8 +20,8 @@
     log,
     getState,
     getGitHubSettings,
-    addConfig,
-    deleteConfig,
+    addProject,
+    deleteProject,
   } = await import('./utils.js');
   const run = () => {
     getState(({
@@ -54,7 +54,7 @@
           const button = addProjectContainer.querySelector('a');
           if (button.dataset.sidekickExtension !== giturl) {
             button.onclick = () => {
-              addConfig({ giturl, project }, () => window.location.reload());
+              addProject({ giturl, project }, () => window.location.reload());
             };
             button.dataset.sidekickExtension = giturl;
             // show add project container, hide others
@@ -70,7 +70,7 @@
           const button = deleteProjectContainer.querySelector('a');
           if (button.dataset.sidekickExtension !== giturl) {
             button.onclick = () => {
-              deleteConfig(configIndex, () => window.location.reload());
+              deleteProject(`${owner}/${repo}`, () => window.location.reload());
             };
             button.dataset.sidekickExtension = giturl;
             // show delete project container, hide bookmarklet container
