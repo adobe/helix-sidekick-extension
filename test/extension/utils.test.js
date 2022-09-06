@@ -61,7 +61,7 @@ window.fetch = fetchMock;
 
 describe('Test extension utils', () => {
   let utils = {};
-  let spy;
+  const sandbox = sinon.createSandbox();
 
   before(async () => {
     // eslint-disable-next-line no-var
@@ -72,13 +72,11 @@ describe('Test extension utils', () => {
   });
 
   afterEach(() => {
-    if (spy) {
-      spy.restore();
-    }
+    sandbox.restore();
   });
 
   it('log', async () => {
-    spy = sinon.spy(console, 'log');
+    const spy = sandbox.spy(console, 'log');
     utils.log.error('foo');
     expect(spy.calledWith('ERROR', 'foo')).to.be.true;
     utils.log.warn('foo');
@@ -86,7 +84,7 @@ describe('Test extension utils', () => {
   });
 
   it('i18n', async () => {
-    spy = sinon.spy(window.chrome.i18n, 'getMessage');
+    const spy = sandbox.spy(window.chrome.i18n, 'getMessage');
     // simple call
     utils.i18n('hello');
     expect(spy.calledWith('hello')).to.be.true;
@@ -96,7 +94,7 @@ describe('Test extension utils', () => {
   });
 
   it('url', async () => {
-    spy = sinon.spy(window.chrome.runtime, 'getURL');
+    const spy = sandbox.spy(window.chrome.runtime, 'getURL');
     utils.url('/foo');
     expect(spy.calledWith('/foo')).to.be.true;
   });
@@ -137,32 +135,32 @@ describe('Test extension utils', () => {
   });
 
   it('getConfig', async () => {
-    spy = sinon.spy(window.chrome.storage.sync, 'get');
-    await utils.getConfig('sync', 'name');
-    expect(spy.calledWith('name')).to.be.true;
+    const spy = sandbox.spy(window.chrome.storage.local, 'get');
+    await utils.getConfig('local', 'test');
+    expect(spy.calledWith('test')).to.be.true;
   });
 
   it('setConfig', async () => {
-    spy = sinon.spy(window.chrome.storage.sync, 'set');
+    const spy = sandbox.spy(window.chrome.storage.local, 'set');
     const obj = { foo: 'bar' };
-    await utils.setConfig('sync', obj);
+    await utils.setConfig('local', obj);
     expect(spy.calledWith(obj)).to.be.true;
   });
 
   it('removeConfig', async () => {
-    spy = sinon.spy(window.chrome.storage.sync, 'remove');
-    await utils.removeConfig('sync', 'name');
-    expect(spy.calledWith('name')).to.be.true;
+    const spy = sandbox.spy(window.chrome.storage.local, 'remove');
+    await utils.removeConfig('local', 'foo');
+    expect(spy.calledWith('foo')).to.be.true;
   });
 
   it('clearConfig', async () => {
-    spy = sinon.spy(window.chrome.storage.sync, 'clear');
-    await utils.clearConfig('sync');
+    const spy = sandbox.spy(window.chrome.storage.local, 'clear');
+    await utils.clearConfig('local');
     expect(spy.called).to.be.true;
   });
 
   it('getState', async () => {
-    spy = sinon.spy(window.chrome.storage.sync, 'get');
+    const spy = sandbox.spy(window.chrome.storage.sync, 'get');
     const state = await new Promise((resolve) => {
       utils.getState((s) => {
         resolve(s);
@@ -217,7 +215,7 @@ describe('Test extension utils', () => {
   });
 
   it('addProject', async () => {
-    spy = sinon.spy(window.chrome.storage.sync, 'set');
+    const spy = sandbox.spy(window.chrome.storage.sync, 'set');
     const added = await new Promise((resolve) => {
       utils.addProject({
         giturl: 'https://github.com/test/add-project',
@@ -230,7 +228,7 @@ describe('Test extension utils', () => {
   });
 
   it('deleteProject', async () => {
-    spy = sinon.spy(window.chrome.storage.sync, 'set');
+    const spy = sandbox.spy(window.chrome.storage.sync, 'set');
     const deleted = await new Promise((resolve) => {
       utils.deleteProject('test/add-project', resolve);
     });
@@ -240,8 +238,19 @@ describe('Test extension utils', () => {
     })).to.be.true;
   });
 
+  it('updateProjectConfigs', async () => {
+    sandbox.spy(window.chrome.storage.sync, 'set');
+    sandbox.spy(window.chrome.storage.sync, 'remove');
+    await utils.removeConfig('sync', 'hlxSidekickProjects');
+    await utils.updateProjectConfigs();
+    expect(chrome.storage.sync.remove.calledWith('hlxSidekickConfigs')).to.be.true;
+    expect(chrome.storage.sync.set.calledWith({
+      hlxSidekickProjects: ['test/legacy-project'],
+    })).to.be.true;
+  });
+
   it('setDisplay', async () => {
-    spy = sinon.spy(window.chrome.storage.local, 'set');
+    const spy = sandbox.spy(window.chrome.storage.local, 'set');
     await utils.setDisplay(true);
     expect(spy.calledWith({
       hlxSidekickDisplay: true,
@@ -249,11 +258,15 @@ describe('Test extension utils', () => {
   });
 
   it('toggleDisplay', async () => {
+    const spy = sandbox.spy(window.chrome.storage.local, 'set');
     const display = await new Promise((resolve) => {
       utils.toggleDisplay((s) => {
         resolve(s);
       });
     });
-    expect(display).to.be.true;
+    expect(spy.calledWith({
+      hlxSidekickDisplay: false,
+    })).to.be.true;
+    expect(display).to.be.false;
   });
 });

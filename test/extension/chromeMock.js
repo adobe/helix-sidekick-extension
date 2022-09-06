@@ -13,7 +13,34 @@ import { readFile } from '@web/test-runner-commands';
 
 const ID = 'dummy';
 
-const PROJECTS = ['adobe/blog'];
+class StorageMock {
+  constructor(state = {}) {
+    this.state = state;
+  }
+
+  get(name, callback) {
+    const ret = {};
+    ret[name] = this.state[name];
+    callback(ret);
+  }
+
+  set(obj, callback) {
+    Object.keys(obj).forEach((key) => {
+      this.state[key] = obj[key];
+    });
+    callback();
+  }
+
+  remove(name, callback) {
+    delete this.state[name];
+    callback();
+  }
+
+  clear(callback) {
+    this.state = {};
+    callback();
+  }
+}
 
 export default {
   i18n: {
@@ -26,27 +53,24 @@ export default {
     lastError: null,
   },
   storage: {
-    sync: {
-      get: (name, callback) => {
-        const ret = {};
-        if (name === 'hlxSidekickProjects') {
-          ret[name] = PROJECTS;
-          callback(ret);
-        } else if (name !== 'test/add-project') {
-          ret[name] = name;
-        }
-        callback(ret);
+    sync: new StorageMock({
+      hlxSidekickConfigs: [{
+        giturl: 'https://github.com/test/legacy-project',
+        owner: 'test',
+        repo: 'legacy-project',
+        ref: 'main',
+      }],
+      hlxSidekickProjects: ['adobe/blog'],
+      'adobe/blog': {
+        giturl: 'https://github.com/adobe/blog',
+        owner: 'adobe',
+        repo: 'blog',
+        ref: 'main',
       },
-      set: (_, callback) => {
-        callback();
-      },
-      remove: (_, callback) => callback(),
-      clear: (callback) => callback(),
-    },
-    local: {
-      get: (name, callback) => callback({ name }),
-      set: (_, callback) => callback(),
-      clear: (callback) => callback(),
-    },
+    }),
+    local: new StorageMock({
+      hlxSidekickDisplay: true,
+      test: 'test',
+    }),
   },
 };
