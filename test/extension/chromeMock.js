@@ -10,16 +10,10 @@
  * governing permissions and limitations under the License.
  */
 import { readFile } from '@web/test-runner-commands';
-import e from 'express';
 
 const ID = 'dummy';
 
-const PROJECTS = [
-  {
-    owner: 'adobe',
-    repo: 'business-website',
-  },
-];
+const PROJECTS = ['adobe/blog'];
 
 export default {
   i18n: {
@@ -29,18 +23,23 @@ export default {
     id: ID,
     getManifest: async () => readFile({ path: '../../src/extension/manifest.json' }).then((mf) => JSON.parse(mf)),
     getURL: (path) => `chrome-extension://${ID}${path}`,
-    lastError: new Error('foo'),
+    lastError: null,
   },
   storage: {
     sync: {
       get: (name, callback) => {
+        const ret = {};
         if (name === 'hlxSidekickProjects') {
-          callback({ name: PROJECTS });
-        } else {
-          callback({ name });
+          ret[name] = PROJECTS;
+          callback(ret);
+        } else if (name !== 'test/add-project') {
+          ret[name] = name;
         }
+        callback(ret);
       },
-      set: (_, callback) => callback(),
+      set: (_, callback) => {
+        callback();
+      },
       remove: (_, callback) => callback(),
       clear: (callback) => callback(),
     },

@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 /* eslint-disable no-unused-expressions */
-/* global describe before it */
+/* global describe before afterEach it */
 
 import sinon from 'sinon';
 import { expect } from '@esm-bundle/chai';
@@ -61,6 +61,7 @@ window.fetch = fetchMock;
 
 describe('Test extension utils', () => {
   let utils = {};
+  let spy;
 
   before(async () => {
     // eslint-disable-next-line no-var
@@ -70,46 +71,47 @@ describe('Test extension utils', () => {
     };
   });
 
+  afterEach(() => {
+    if (spy) {
+      spy.restore();
+    }
+  });
+
   it('log', async () => {
-    const spy = sinon.spy(console, 'log');
+    spy = sinon.spy(console, 'log');
     utils.log.error('foo');
     expect(spy.calledWith('ERROR', 'foo')).to.be.true;
     utils.log.warn('foo');
     expect(spy.calledWith('WARN', 'foo')).to.be.true;
-    // utils.log.info('foo');
-    // expect(spy.calledWith('INFO', 'foo')).to.be.true;
-    // utils.log.debug('foo');
-    // expect(spy.calledWith('DEBUG', 'foo')).to.be.true;
-    spy.restore();
   });
 
   it('i18n', async () => {
-    const spy = sinon.spy(window.chrome.i18n, 'getMessage');
+    spy = sinon.spy(window.chrome.i18n, 'getMessage');
     // simple call
     utils.i18n('hello');
     expect(spy.calledWith('hello')).to.be.true;
     // call with subs
     utils.i18n('hello $1', ['world']);
     expect(spy.calledWith('hello $1', ['world'])).to.be.true;
-    spy.restore();
   });
 
   it('url', async () => {
-    const spy = sinon.spy(window.chrome.runtime, 'getURL');
+    spy = sinon.spy(window.chrome.runtime, 'getURL');
     utils.url('/foo');
     expect(spy.calledWith('/foo')).to.be.true;
-    spy.restore();
   });
 
   it('checkLastError', async () => {
+    chrome.runtime.lastError = new Error('foo');
     const lastError = utils.checkLastError();
     expect(lastError).to.exist;
     expect(lastError).to.equal('foo');
+    chrome.runtime.lastError = null;
   });
 
   it('getMountpoints', async () => {
     const [mp] = await utils.getMountpoints('adobe', 'helix-project-boilerplate', 'main');
-    expect(mp).to.equal(undefined /* 'https://drive.google.com/drive/u/0/folders/1MGzOt7ubUh3gu7zhZIPb7R7dyRzG371j' */);
+    expect(mp).to.equal('https://drive.google.com/drive/u/0/folders/1MGzOt7ubUh3gu7zhZIPb7R7dyRzG371j');
   });
 
   it('getGitHubSettings', async () => {
@@ -135,74 +137,32 @@ describe('Test extension utils', () => {
   });
 
   it('getConfig', async () => {
-    const spy = sinon.spy(window.chrome.storage.sync, 'get');
+    spy = sinon.spy(window.chrome.storage.sync, 'get');
     await utils.getConfig('sync', 'name');
     expect(spy.calledWith('name')).to.be.true;
-    const res = await new Promise((resolve) => {
-      utils.getConfig('sync', 'name', resolve);
-    });
-    expect(res.name).to.equal('name');
-    spy.restore();
   });
 
   it('setConfig', async () => {
-    const spy = sinon.spy(window.chrome.storage.sync, 'set');
+    spy = sinon.spy(window.chrome.storage.sync, 'set');
     const obj = { foo: 'bar' };
     await utils.setConfig('sync', obj);
     expect(spy.calledWith(obj)).to.be.true;
-    spy.restore();
   });
 
   it('removeConfig', async () => {
-    const spy = sinon.spy(window.chrome.storage.sync, 'remove');
+    spy = sinon.spy(window.chrome.storage.sync, 'remove');
     await utils.removeConfig('sync', 'name');
     expect(spy.calledWith('name')).to.be.true;
-    spy.restore();
-  });
-
-  it('assembleProject', async () => {
-    const {
-      owner, repo, ref, /* host, */
-    } = await utils.assembleProject({
-      giturl: 'https://github.com/adobe/business-website/tree/main',
-    });
-    expect(owner).to.equal('adobe');
-    expect(repo).to.equal('business-website');
-    expect(ref).to.equal('main');
-    // expect(host).to.equal('business.adobe.com');
-  });
-
-  it('addProject', async () => {
-    // todo: mock
-    const added = await new Promise((resolve) => {
-      utils.addProject({
-        owner: 'adobe',
-        repo: 'business-website',
-      }, resolve);
-    });
-    expect(added).to.be.true;
-  });
-
-  it('deleteProject', async () => {
-    await utils.addProject({
-      owner: 'adobe',
-      repo: 'business-website',
-    });
-    const deleted = await new Promise((resolve) => {
-      utils.deleteProject(0, resolve);
-    });
-    expect(deleted).to.be.true;
   });
 
   it('clearConfig', async () => {
-    const spy = sinon.spy(window.chrome.storage.sync, 'clear');
-    await utils.clearConfig('sync', () => {});
+    spy = sinon.spy(window.chrome.storage.sync, 'clear');
+    await utils.clearConfig('sync');
     expect(spy.called).to.be.true;
-    spy.restore();
   });
 
   it('getState', async () => {
-    const spy = sinon.spy(window.chrome.storage.sync, 'get');
+    spy = sinon.spy(window.chrome.storage.sync, 'get');
     const state = await new Promise((resolve) => {
       utils.getState((s) => {
         resolve(s);
@@ -211,7 +171,6 @@ describe('Test extension utils', () => {
     expect(spy.called).to.be.true;
     expect(typeof state).to.equal('object');
     expect(Object.keys(state).length).to.equal(4);
-    spy.restore();
   });
 
   it('getProjectMatches', async () => {
@@ -245,13 +204,48 @@ describe('Test extension utils', () => {
     expect(utils.getProjectMatches(CONFIGS, 'https://main--bar2--foo.hlx.live/').length).to.equal(0);
   });
 
+  it('assembleProject', async () => {
+    const {
+      owner, repo, ref, host,
+    } = await utils.assembleProject({
+      giturl: 'https://github.com/adobe/business-website/tree/main',
+    });
+    expect(owner).to.equal('adobe');
+    expect(repo).to.equal('business-website');
+    expect(ref).to.equal('main');
+    expect(host).to.equal('business.adobe.com');
+  });
+
+  it('addProject', async () => {
+    spy = sinon.spy(window.chrome.storage.sync, 'set');
+    const added = await new Promise((resolve) => {
+      utils.addProject({
+        giturl: 'https://github.com/test/add-project',
+      }, resolve);
+    });
+    expect(added).to.be.true;
+    expect(spy.calledWith({
+      hlxSidekickProjects: ['adobe/blog', 'test/add-project'],
+    })).to.be.true;
+  });
+
+  it('deleteProject', async () => {
+    spy = sinon.spy(window.chrome.storage.sync, 'set');
+    const deleted = await new Promise((resolve) => {
+      utils.deleteProject('test/add-project', resolve);
+    });
+    expect(deleted).to.be.true;
+    expect(spy.calledWith({
+      hlxSidekickProjects: ['adobe/blog'],
+    })).to.be.true;
+  });
+
   it('setDisplay', async () => {
-    const spy = sinon.spy(window.chrome.storage.local, 'set');
+    spy = sinon.spy(window.chrome.storage.local, 'set');
     await utils.setDisplay(true);
     expect(spy.calledWith({
       hlxSidekickDisplay: true,
     })).to.be.true;
-    spy.restore();
   });
 
   it('toggleDisplay', async () => {

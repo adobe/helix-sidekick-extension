@@ -15,6 +15,7 @@ const HELIX_ENV_JSON = {
     host: 'business.adobe.com',
     routes: [],
   },
+  project: 'Adobe Business Wesbite',
   contentSourceUrl: 'https://adobe.sharepoint.com/:f:/s/Dummy/Alk9MSH25LpBuUWA_N6DOL8BuI6Vrdyrr87gne56dz3QeQ',
   contentSourceType: 'onedrive',
 };
@@ -25,39 +26,26 @@ const FSTAB_YAML = `mountpoints:
 
 class ResponseMock {
   constructor(body) {
+    this.ok = true;
+    this.status = 200;
     this.body = body;
   }
 
   async json() {
-    return new Promise((resolve) => {
-      resolve(JSON.parse(this.body));
-    });
+    return JSON.parse(this.body);
   }
 
   async text() {
-    return new Promise((resolve) => {
-      resolve(this.body);
-    });
+    return this.body;
   }
 }
 
-ResponseMock.ok = true;
-ResponseMock.status = 200;
-
 export default async function fetchMock(url) {
-  return new Promise((resolve) => {
-    const path = new URL(url).pathname;
-    switch (path) {
-      case '/fstab.yaml': {
-        resolve(new ResponseMock(FSTAB_YAML));
-        break;
-      }
-      case '/helix-env.json': {
-        resolve(new ResponseMock(JSON.stringify(HELIX_ENV_JSON)));
-        break;
-      }
-      default:
-        resolve(new ResponseMock(''));
-    }
-  });
+  const path = new URL(url).pathname;
+  if (path.endsWith('/fstab.yaml')) {
+    return new ResponseMock(FSTAB_YAML);
+  } else if (path === '/helix-env.json') {
+    return new ResponseMock(JSON.stringify(HELIX_ENV_JSON));
+  }
+  return new ResponseMock('');
 }
