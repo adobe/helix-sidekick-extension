@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 /* eslint-disable no-unused-expressions */
-/* global describe before afterEach it */
+/* eslint-env mocha */
 
 import sinon from 'sinon';
 import { expect } from '@esm-bundle/chai';

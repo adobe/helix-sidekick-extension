@@ -82,12 +82,11 @@ function drawProjects() {
     <button class="editConfig" title="${i18n('config_edit')}">${i18n('config_edit')}</button>
     <button class="deleteConfig" title="${i18n('config_delete')}">${i18n('config_delete')}</button>
   </div>`;
-      section.querySelector('input[type="checkbox').addEventListener('click', ({ target }) => {
+      section.querySelector('input[type="checkbox').addEventListener('click', async ({ target }) => {
         const { checked } = target;
         projects[i].disabled = !checked;
-        setProject(projects[i], () => {
-          drawProjects();
-        });
+        await setProject(projects[i]);
+        drawProjects();
       });
       container.appendChild(section);
     });
@@ -170,10 +169,9 @@ function editProject(i) {
       // unregister esc handler
       window.removeEventListener('keyup', keyHandler);
       // save configs
-      setProject(projects[i], () => {
-        drawProjects();
-        close();
-      });
+      await setProject(projects[i]);
+      drawProjects();
+      close();
     };
     const buttons = editor.querySelectorAll('button');
     buttons[0].textContent = i18n('save');

@@ -318,9 +318,9 @@ export async function getProject(project) {
 export async function setProject(project, cb) {
   const { owner, repo } = project;
   const handle = `${owner}/${repo}`;
-  const obj = {};
-  obj[handle] = project;
-  await setConfig('sync', obj);
+  await setConfig('sync', {
+    [handle]: project,
+  });
   // update project index
   const projects = await getConfig('sync', 'hlxSidekickProjects') || [];
   if (!projects.includes(handle)) {

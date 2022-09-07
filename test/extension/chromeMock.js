@@ -19,9 +19,9 @@ class StorageMock {
   }
 
   get(name, callback) {
-    const ret = {};
-    ret[name] = this.state[name];
-    callback(ret);
+    callback({
+      [name]: this.state[name],
+    });
   }
 
   set(obj, callback) {
