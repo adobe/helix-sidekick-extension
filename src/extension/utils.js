@@ -288,6 +288,7 @@ export async function assembleProject({
 }) {
   const { owner, repo, ref } = getGitHubSettings(giturl);
   const projectConfig = await getProjectConfig(owner, repo, ref);
+  const id = `${owner}/${repo}/${ref}`;
   // allow local project config overrides
   project = project || projectConfig.project;
   host = host || projectConfig.host;
@@ -295,6 +296,7 @@ export async function assembleProject({
   mountpoints = mountpoints || projectConfig.mountpoints;
 
   return {
+    id,
     project,
     host,
     outerHost,
