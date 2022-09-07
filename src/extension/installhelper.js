@@ -20,12 +20,12 @@
     log,
     getState,
     getGitHubSettings,
-    addConfig,
-    deleteConfig,
+    addProject,
+    deleteProject,
   } = await import('./utils.js');
   const run = () => {
     getState(({
-      configs,
+      projects = [],
     }) => {
       const usp = new URLSearchParams(window.location.search);
       const project = usp.get('project');
@@ -46,7 +46,7 @@
       }
 
       const { owner, repo } = getGitHubSettings(giturl);
-      const configIndex = configs.findIndex((cfg) => cfg.owner === owner && cfg.repo === repo);
+      const configIndex = projects.findIndex((cfg) => cfg.owner === owner && cfg.repo === repo);
       if (configIndex < 0 && owner && repo) {
         log.info('installhelper.js: project not added yet');
         if (addProjectContainer) {
@@ -54,7 +54,7 @@
           const button = addProjectContainer.querySelector('a');
           if (button.dataset.sidekickExtension !== giturl) {
             button.onclick = () => {
-              addConfig({ giturl, project }, () => window.location.reload());
+              addProject({ giturl, project }, () => window.location.reload());
             };
             button.dataset.sidekickExtension = giturl;
             // show add project container, hide others
@@ -70,7 +70,7 @@
           const button = deleteProjectContainer.querySelector('a');
           if (button.dataset.sidekickExtension !== giturl) {
             button.onclick = () => {
-              deleteConfig(configIndex, () => window.location.reload());
+              deleteProject(`${owner}/${repo}`, () => window.location.reload());
             };
             button.dataset.sidekickExtension = giturl;
             // show delete project container, hide bookmarklet container

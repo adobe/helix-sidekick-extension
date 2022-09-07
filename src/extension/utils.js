@@ -106,30 +106,31 @@ export async function getConfig(type, prop) {
   const cfg = await new Promise((resolve) => {
     chrome.storage[type].get(prop, resolve);
   });
-  return cfg[prop];
+  return prop ? cfg[prop] : cfg;
 }
 
-export async function setConfig(type, obj, cb) {
+export async function setConfig(type, obj) {
   const p = new Promise((resolve) => {
     chrome.storage[type].set(obj, () => {
       const error = checkLastError();
       if (error) {
         log.error('setConfig failed', error);
       }
-      resolve();
+      resolve(!error);
     });
   });
-  if (typeof cb === 'function') {
-    return cb(await p);
-  }
   return p;
 }
 
-export async function clearConfig(type, cb) {
-  chrome.storage[type].clear(() => {
-    if (typeof cb === 'function') {
-      cb(true);
-    }
+export async function removeConfig(type, prop) {
+  return new Promise((resolve) => {
+    chrome.storage[type].remove(prop, resolve);
+  });
+}
+
+export async function clearConfig(type) {
+  return new Promise((resolve) => {
+    chrome.storage[type].clear(resolve);
   });
 }
 
@@ -139,13 +140,13 @@ export async function getState(cb) {
     const adminVersion = await getConfig('local', 'hlxSidekickAdminVersion');
 
     const pushDown = await getConfig('sync', 'hlxSidekickPushDown') || false;
-    const configs = await getConfig('sync', 'hlxSidekickConfigs') || [];
-
+    const projects = await Promise.all((await getConfig('sync', 'hlxSidekickProjects') || [])
+      .map((handle) => getConfig('sync', handle)));
     cb({
       display,
       adminVersion,
       pushDown,
-      configs,
+      projects,
     });
   }
 }
@@ -164,7 +165,7 @@ function sameSharePointSite(mountpoint, pathname) {
   return false;
 }
 
-export function getConfigMatches(configs, tabUrl) {
+export function getProjectMatches(configs, tabUrl) {
   const matches = [];
   const {
     host: checkHost,
@@ -252,8 +253,13 @@ export function isValidShareURL(shareurl) {
 
 async function getProjectConfig(owner, repo, ref = 'main') {
   const cfg = {};
-  const res = await fetch(`https://${ref}--${repo}--${owner}.hlx.page/helix-env.json`);
-  if (res.ok) {
+  let res;
+  try {
+    res = await fetch(`https://${ref}--${repo}--${owner}.hlx.page/helix-env.json`);
+  } catch (e) {
+    log.warn(`unable to retrieve project config: ${e}`);
+  }
+  if (res && res.ok) {
     const { prod, project, contentSourceUrl } = await res.json();
     if (prod && prod.host) {
       cfg.host = prod.host;
@@ -271,7 +277,7 @@ async function getProjectConfig(owner, repo, ref = 'main') {
   return cfg;
 }
 
-export async function assembleConfig({
+export async function assembleProject({
   giturl,
   mountpoints,
   project,
@@ -282,6 +288,7 @@ export async function assembleConfig({
 }) {
   const { owner, repo, ref } = getGitHubSettings(giturl);
   const projectConfig = await getProjectConfig(owner, repo, ref);
+  const id = `${owner}/${repo}/${ref}`;
   // allow local project config overrides
   project = project || projectConfig.project;
   host = host || projectConfig.host;
@@ -289,7 +296,7 @@ export async function assembleConfig({
   mountpoints = mountpoints || projectConfig.mountpoints;
 
   return {
-    id: `${owner}/${repo}/${ref}`,
+    id,
     project,
     host,
     outerHost,
@@ -303,42 +310,65 @@ export async function assembleConfig({
   };
 }
 
-export async function addConfig(input, cb) {
-  const config = await assembleConfig(input);
-  const {
-    owner, repo, mountpoints,
-  } = config;
-  getState(({ configs }) => {
-    if (!configs.find((cfg) => owner === cfg.owner && repo === cfg.repo)) {
-      configs.push(config);
-      setConfig('sync', { hlxSidekickConfigs: configs })
-        .then(() => (typeof cb === 'function' ? cb(true) : null))
-        .then(() => log.info('added config', config))
-        .catch((e) => log.error('error adding config', e));
-      if (!mountpoints[0]) {
-        alert(i18n('config_add_no_mountpoint'));
-      } else {
-        alert(i18n('config_add_success'));
-      }
-    } else {
-      alert(i18n('config_project_exists'));
-      if (typeof cb === 'function') cb(false);
-    }
-  });
+export async function getProject(project) {
+  const { owner, repo } = project;
+  return getConfig('sync', `${owner}/${repo}`);
 }
 
-export async function deleteConfig(i, cb) {
-  if (confirm(i18n('config_delete_confirm'))) {
-    getConfig('sync', 'hlxSidekickConfigs')
-      .then((hlxSidekickConfigs = []) => {
-        hlxSidekickConfigs.splice(i, 1);
-        return hlxSidekickConfigs;
-      })
-      .then((hlxSidekickConfigs) => setConfig('sync', { hlxSidekickConfigs }))
-      .then(() => {
+export async function setProject(project, cb) {
+  const { owner, repo } = project;
+  const handle = `${owner}/${repo}`;
+  await setConfig('sync', {
+    [handle]: project,
+  });
+  // update project index
+  const projects = await getConfig('sync', 'hlxSidekickProjects') || [];
+  if (!projects.includes(handle)) {
+    projects.push(handle);
+    await setConfig('sync', { hlxSidekickProjects: projects });
+  }
+  log.info('updated project', project);
+  if (typeof cb === 'function') {
+    cb(project);
+  }
+}
+
+export async function addProject(input, cb) {
+  const config = await assembleProject(input);
+  const project = await getProject(config);
+  if (!project) {
+    await setProject(config);
+    log.info('added project', config);
+    alert(i18n('config_add_success'));
+    if (typeof cb === 'function') cb(true);
+  } else {
+    log.info('project already exists', project);
+    alert(i18n('config_project_exists'));
+    if (typeof cb === 'function') cb(false);
+  }
+}
+
+export async function deleteProject(handle, cb) {
+  if (handle) {
+    const projects = await getConfig('sync', 'hlxSidekickProjects') || [];
+    const i = projects.indexOf(handle);
+    if (i >= 0) {
+      if (confirm(i18n('config_delete_confirm'))) {
+        // delete the project entry
+        await removeConfig('sync', handle);
+        // remove project entry from index
+        projects.splice(i, 1);
+        await setConfig('sync', { hlxSidekickProjects: projects });
+        log.info('project deleted', handle);
         if (typeof cb === 'function') cb(true);
-      })
-      .catch((e) => log.error('error deleting config', e));
+      } else {
+        log.info('project deletion aborted', handle);
+        if (typeof cb === 'function') cb(false);
+      }
+    } else {
+      log.warn('project to delete not found', handle);
+      if (typeof cb === 'function') cb(false);
+    }
   }
 }
 
@@ -360,17 +390,31 @@ export function toggleDisplay(cb) {
 
 export async function storeAuthToken(owner, repo, token) {
   // find config tab with owner/repo
-  const configs = await getConfig('sync', 'hlxSidekickConfigs') || [];
-  const config = configs.find((cfg) => cfg.owner === owner && cfg.repo === repo);
-  if (config) {
+  const project = await getProject({ owner, repo });
+  if (project) {
     if (token) {
-      config.authToken = token;
+      project.authToken = token;
     } else {
-      delete config.authToken;
+      delete project.authToken;
     }
-    await setConfig('sync', { hlxSidekickConfigs: configs });
+    await setProject(project);
     log.debug(`updated auth token for ${owner}--${repo}`);
   } else {
     log.warn(`unable to update auth token for ${owner}--${repo}: no such config`);
+  }
+}
+
+export async function updateProjectConfigs() {
+  const configs = await getConfig('sync', 'hlxSidekickConfigs');
+  const projects = await getConfig('sync', 'hlxSidekickProjects');
+  if (configs && !projects) {
+    // migrate old to new project configs
+    for (let i = 0; i < configs.length; i += 1) {
+      // eslint-disable-next-line no-await-in-loop
+      await setProject(configs[i]);
+    }
+    // remove old project configs
+    await removeConfig('sync', 'hlxSidekickConfigs');
+    log.info('project config updated');
   }
 }

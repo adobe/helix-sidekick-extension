@@ -21,15 +21,18 @@ import {
   i18n,
   checkLastError,
   getState,
-  getConfigMatches,
+  getProjectMatches,
   toggleDisplay,
-  addConfig,
-  deleteConfig,
+  getProject,
+  addProject,
+  setProject,
+  deleteProject,
   getShareSettings,
   getGitHubSettings,
   setConfig,
   getConfig,
   storeAuthToken,
+  updateProjectConfigs,
 } from './utils.js';
 
 /**
@@ -143,7 +146,7 @@ async function checkContextMenu(tabUrl, configs = []) {
  * @param {number} id The ID of the tab
  */
 function checkTab(id) {
-  getState(({ configs }) => {
+  getState(({ projects = [] }) => {
     chrome.tabs.get(id, async (tab = {}) => {
       checkLastError();
       if (!tab.url) return;
@@ -155,7 +158,7 @@ function checkTab(id) {
         checkUrl = await getProxyUrl(tab);
       }
       if (tab.active) {
-        checkContextMenu(tab.url, configs);
+        checkContextMenu(tab.url, projects);
       }
       if (new URL(checkUrl).pathname === SHARE_PREFIX) {
         log.debug('share url detected, inject install helper');
@@ -169,7 +172,7 @@ function checkTab(id) {
           log.error('error instrumenting generator page', id, e);
         }
       }
-      const matches = getConfigMatches(configs, checkUrl);
+      const matches = getProjectMatches(projects, checkUrl);
       log.debug('checking', id, checkUrl, matches);
       const allowed = matches.length > 0;
       if (allowed) {
@@ -181,7 +184,7 @@ function checkTab(id) {
           }, () => {
             // send config matches to tab
             chrome.tabs.sendMessage(id, {
-              configMatches: matches,
+              projectMatches: matches,
             });
           });
         } catch (e) {
@@ -259,6 +262,7 @@ async function updateHelpContent() {
   chrome.runtime.onInstalled.addListener(async ({ reason }) => {
     log.info(`sidekick extension installed (${reason})`);
     await updateHelpContent();
+    await updateProjectConfigs();
   });
 
   // register message listener
@@ -275,13 +279,13 @@ async function updateHelpContent() {
     addRemoveProject: async ({ id, url }) => {
       const cfg = getConfigFromTabUrl(url);
       if (cfg.giturl) {
-        getState(async ({ configs }) => {
+        getState(async ({ projects = [] }) => {
           const { owner, repo } = getGitHubSettings(cfg.giturl);
-          const configIndex = configs.findIndex((c) => c.owner === owner && c.repo === repo);
-          if (configIndex < 0) {
-            await addConfig(cfg);
+          const project = projects.find((p) => p.owner === owner && p.repo === repo);
+          if (project) {
+            await addProject(cfg);
           } else {
-            await deleteConfig(configIndex);
+            await deleteProject(`${owner}/${repo}`);
           }
           chrome.tabs.reload(id, { bypassCache: true });
         });
@@ -290,16 +294,12 @@ async function updateHelpContent() {
     enableDisableProject: async ({ id, url }) => {
       const cfg = getConfigFromTabUrl(url);
       if (cfg.giturl) {
-        getState(async ({ configs }) => {
-          const { owner, repo } = getGitHubSettings(cfg.giturl);
-          const configIndex = configs.findIndex((c) => c.owner === owner && c.repo === repo);
-          if (configIndex < 0) {
-            return;
-          }
-          configs[configIndex].disabled = !configs[configIndex].disabled;
-          await setConfig('sync', { hlxSidekickConfigs: configs });
+        const project = await getProject(getGitHubSettings(cfg.giturl));
+        if (project) {
+          project.disabled = !project.disabled;
+          await setProject(project);
           chrome.tabs.reload(id, { bypassCache: true });
-        });
+        }
       }
     },
   };

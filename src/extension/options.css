@@ -268,7 +268,7 @@ section > div:first-of-type {
   padding-top: 0;
 }
 
-#configs:empty {
+.area.expanded #configs:empty {
   border-radius: 5px;
   border: solid 1px rgb(var(--border-color));
   max-width: 558px;

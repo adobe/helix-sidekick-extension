@@ -10,11 +10,12 @@
  * governing permissions and limitations under the License.
  */
 /* eslint-disable no-unused-expressions */
-/* global describe before it */
+/* eslint-env mocha */
 
 import sinon from 'sinon';
 import { expect } from '@esm-bundle/chai';
 import chromeMock from './chromeMock.js';
+import fetchMock from './fetchMock.js';
 
 const CONFIGS = [
   {
@@ -56,9 +57,11 @@ const CONFIGS = [
 ];
 
 window.chrome = chromeMock;
+window.fetch = fetchMock;
 
 describe('Test extension utils', () => {
   let utils = {};
+  const sandbox = sinon.createSandbox();
 
   before(async () => {
     // eslint-disable-next-line no-var
@@ -68,47 +71,43 @@ describe('Test extension utils', () => {
     };
   });
 
+  afterEach(() => {
+    sandbox.restore();
+  });
+
   it('log', async () => {
-    const spy = sinon.spy(console, 'log');
-    window.LOG_LEVEL = 4;
+    const spy = sandbox.spy(console, 'log');
     utils.log.error('foo');
     expect(spy.calledWith('ERROR', 'foo')).to.be.true;
     utils.log.warn('foo');
     expect(spy.calledWith('WARN', 'foo')).to.be.true;
-    utils.log.info('foo');
-    expect(spy.calledWith('INFO', 'foo')).to.be.true;
-    utils.log.debug('foo');
-    expect(spy.calledWith('DEBUG', 'foo')).to.be.true;
-    delete window.LOG_LEVEL;
-    spy.restore();
   });
 
   it('i18n', async () => {
-    const spy = sinon.spy(window.chrome.i18n, 'getMessage');
+    const spy = sandbox.spy(window.chrome.i18n, 'getMessage');
     // simple call
     utils.i18n('hello');
     expect(spy.calledWith('hello')).to.be.true;
     // call with subs
     utils.i18n('hello $1', ['world']);
     expect(spy.calledWith('hello $1', ['world'])).to.be.true;
-    spy.restore();
   });
 
   it('url', async () => {
-    const spy = sinon.spy(window.chrome.runtime, 'getURL');
+    const spy = sandbox.spy(window.chrome.runtime, 'getURL');
     utils.url('/foo');
     expect(spy.calledWith('/foo')).to.be.true;
-    spy.restore();
   });
 
   it('checkLastError', async () => {
+    chrome.runtime.lastError = new Error('foo');
     const lastError = utils.checkLastError();
     expect(lastError).to.exist;
-    expect(lastError.message).to.equal('foo');
+    expect(lastError).to.equal('foo');
+    chrome.runtime.lastError = null;
   });
 
   it('getMountpoints', async () => {
-    // todo: mock
     const [mp] = await utils.getMountpoints('adobe', 'helix-project-boilerplate', 'main');
     expect(mp).to.equal('https://drive.google.com/drive/u/0/folders/1MGzOt7ubUh3gu7zhZIPb7R7dyRzG371j');
   });
@@ -135,57 +134,33 @@ describe('Test extension utils', () => {
     expect(res).to.be.true;
   });
 
-  it('assembleConfig', async () => {
-    // todo: mock
-    const {
-      owner, repo, ref, host,
-    } = await utils.assembleConfig({
-      giturl: 'https://github.com/adobe/blog',
-    });
-    expect(owner).to.equal('adobe');
-    expect(repo).to.equal('blog');
-    expect(ref).to.equal('main');
-    expect(host).to.equal('blog.adobe.com');
-  });
-
   it('getConfig', async () => {
-    const spy = sinon.spy(window.chrome.storage.sync, 'get');
-    await utils.getConfig('sync', 'name');
-    expect(spy.calledWith('name')).to.be.true;
-    spy.restore();
+    const spy = sandbox.spy(window.chrome.storage.local, 'get');
+    await utils.getConfig('local', 'test');
+    expect(spy.calledWith('test')).to.be.true;
   });
 
   it('setConfig', async () => {
-    const spy = sinon.spy(window.chrome.storage.sync, 'set');
+    const spy = sandbox.spy(window.chrome.storage.local, 'set');
     const obj = { foo: 'bar' };
-    await utils.setConfig('sync', obj);
+    await utils.setConfig('local', obj);
     expect(spy.calledWith(obj)).to.be.true;
-    spy.restore();
   });
 
-  it('addConfig', async () => {
-    const added = await new Promise((resolve) => {
-      utils.addConfig(0, resolve);
-    });
-    expect(added).to.be.true;
-  });
-
-  it('deleteConfig', async () => {
-    const deleted = await new Promise((resolve) => {
-      utils.deleteConfig(0, resolve);
-    });
-    expect(deleted).to.be.true;
+  it('removeConfig', async () => {
+    const spy = sandbox.spy(window.chrome.storage.local, 'remove');
+    await utils.removeConfig('local', 'foo');
+    expect(spy.calledWith('foo')).to.be.true;
   });
 
   it('clearConfig', async () => {
-    const spy = sinon.spy(window.chrome.storage.sync, 'clear');
-    await utils.clearConfig('sync', () => {});
+    const spy = sandbox.spy(window.chrome.storage.local, 'clear');
+    await utils.clearConfig('local');
     expect(spy.called).to.be.true;
-    spy.restore();
   });
 
   it('getState', async () => {
-    const spy = sinon.spy(window.chrome.storage.sync, 'get');
+    const spy = sandbox.spy(window.chrome.storage.sync, 'get');
     const state = await new Promise((resolve) => {
       utils.getState((s) => {
         resolve(s);
@@ -193,66 +168,105 @@ describe('Test extension utils', () => {
     });
     expect(spy.called).to.be.true;
     expect(typeof state).to.equal('object');
-    expect(Object.keys(state).length).to.equal(7);
-    spy.restore();
+    expect(Object.keys(state).length).to.equal(4);
   });
 
-  it('getConfigMatches', async () => {
+  it('getProjectMatches', async () => {
     // match sharepoint URL (docx)
-    expect(utils.getConfigMatches(CONFIGS, 'https://foo.sharepoint.com/:w:/r/sites/foo/_layouts/15/Doc.aspx?sourcedoc=%7BBFD9A19C-4A68-4DBF-8641-DA2F1283C895%7D&file=index.docx&action=default&mobileredirect=true').length).to.equal(1);
+    expect(utils.getProjectMatches(CONFIGS, 'https://foo.sharepoint.com/:w:/r/sites/foo/_layouts/15/Doc.aspx?sourcedoc=%7BBFD9A19C-4A68-4DBF-8641-DA2F1283C895%7D&file=index.docx&action=default&mobileredirect=true').length).to.equal(1);
     // match sharepoint URL (pdf)
-    expect(utils.getConfigMatches(CONFIGS, 'https://foo.sharepoint.com/sites/HelixProjects/Shared%20Documents/sites/foo/drafts/example.pdf?CT=0657697518721&OR=ItemsView').length).to.equal(1);
+    expect(utils.getProjectMatches(CONFIGS, 'https://foo.sharepoint.com/sites/HelixProjects/Shared%20Documents/sites/foo/drafts/example.pdf?CT=0657697518721&OR=ItemsView').length).to.equal(1);
     // match custom sharepoint URL
-    expect(utils.getConfigMatches(CONFIGS, 'https://foo.custom/:w:/r/sites/foo/_layouts/15/Doc.aspx?sourcedoc=%7BBFD9A19C-4A68-4DBF-8641-DA2F1283C895%7D&file=index.docx&action=default&mobileredirect=true').length).to.equal(1);
+    expect(utils.getProjectMatches(CONFIGS, 'https://foo.custom/:w:/r/sites/foo/_layouts/15/Doc.aspx?sourcedoc=%7BBFD9A19C-4A68-4DBF-8641-DA2F1283C895%7D&file=index.docx&action=default&mobileredirect=true').length).to.equal(1);
     // match gdrive URL
-    expect(utils.getConfigMatches(CONFIGS, 'https://docs.google.com/document/d/1234567890/edit').length).to.equal(1);
+    expect(utils.getProjectMatches(CONFIGS, 'https://docs.google.com/document/d/1234567890/edit').length).to.equal(1);
     // match preview URL
-    expect(utils.getConfigMatches(CONFIGS, 'https://main--bar1--foo.hlx.page/').length).to.equal(1);
+    expect(utils.getProjectMatches(CONFIGS, 'https://main--bar1--foo.hlx.page/').length).to.equal(1);
     // match preview URL with any ref
-    expect(utils.getConfigMatches(CONFIGS, 'https://baz--bar1--foo.hlx.page/').length).to.equal(1);
+    expect(utils.getProjectMatches(CONFIGS, 'https://baz--bar1--foo.hlx.page/').length).to.equal(1);
     // match live URL
-    expect(utils.getConfigMatches(CONFIGS, 'https://main--bar1--foo.hlx.live/').length).to.equal(1);
+    expect(utils.getProjectMatches(CONFIGS, 'https://main--bar1--foo.hlx.live/').length).to.equal(1);
     // match production host
-    expect(utils.getConfigMatches(CONFIGS, 'https://1.foo.bar/').length).to.equal(1);
+    expect(utils.getProjectMatches(CONFIGS, 'https://1.foo.bar/').length).to.equal(1);
     // match proxy url
-    expect(utils.getConfigMatches(CONFIGS, 'http://localhost:3000/', 'https://main--bar2--foo.hlx.live/').length).to.equal(0);
+    expect(utils.getProjectMatches(CONFIGS, 'http://localhost:3000/').length).to.equal(4);
     // unsupported sharepoint URL
-    expect(utils.getConfigMatches(CONFIGS, 'https://foo.sharepoint.com/:w:/r/sites/boo/_layouts/15/Doc.aspx?sourcedoc=%7BBFD9A19C-4A68-4DBF-8641-DA2F1283C895%7D&file=index.docx&action=default&mobileredirect=true').length).to.equal(0);
+    expect(utils.getProjectMatches(CONFIGS, 'https://foo.sharepoint.com/:w:/r/sites/boo/_layouts/15/Doc.aspx?sourcedoc=%7BBFD9A19C-4A68-4DBF-8641-DA2F1283C895%7D&file=index.docx&action=default&mobileredirect=true').length).to.equal(0);
     // unsupported sharepoint document type
-    expect(utils.getConfigMatches(CONFIGS, 'https://foo.sharepoint.com/:p:/r/sites/foo/_layouts/15/Doc.aspx?sourcedoc=%7BBFD9A19C-4A68-4DBF-8641-DA2F1283C895%7D&file=index.pptx&action=default&mobileredirect=true').length).to.equal(0);
+    expect(utils.getProjectMatches(CONFIGS, 'https://foo.sharepoint.com/:p:/r/sites/foo/_layouts/15/Doc.aspx?sourcedoc=%7BBFD9A19C-4A68-4DBF-8641-DA2F1283C895%7D&file=index.pptx&action=default&mobileredirect=true').length).to.equal(0);
     // invalid sharepoint URL
-    expect(utils.getConfigMatches(CONFIGS, 'https://foo.sharepoint.com/:w:/r/sites/foo/_layouts/15/Doc.aspx').length).to.equal(0);
+    expect(utils.getProjectMatches(CONFIGS, 'https://foo.sharepoint.com/:w:/r/sites/foo/_layouts/15/Doc.aspx').length).to.equal(0);
     // invalid gdrive URL
-    expect(utils.getConfigMatches(CONFIGS, 'https://drive.google.com/drive/folders/1234567890').length).to.equal(0);
+    expect(utils.getProjectMatches(CONFIGS, 'https://drive.google.com/drive/folders/1234567890').length).to.equal(0);
     // ignore disabled config
-    expect(utils.getConfigMatches(CONFIGS, 'https://main--bar2--foo.hlx.live/').length).to.equal(0);
+    expect(utils.getProjectMatches(CONFIGS, 'https://main--bar2--foo.hlx.live/').length).to.equal(0);
+  });
+
+  it('assembleProject', async () => {
+    const {
+      owner, repo, ref, host,
+    } = await utils.assembleProject({
+      giturl: 'https://github.com/adobe/business-website/tree/main',
+    });
+    expect(owner).to.equal('adobe');
+    expect(repo).to.equal('business-website');
+    expect(ref).to.equal('main');
+    expect(host).to.equal('business.adobe.com');
+  });
+
+  it('addProject', async () => {
+    const spy = sandbox.spy(window.chrome.storage.sync, 'set');
+    const added = await new Promise((resolve) => {
+      utils.addProject({
+        giturl: 'https://github.com/test/add-project',
+      }, resolve);
+    });
+    expect(added).to.be.true;
+    expect(spy.calledWith({
+      hlxSidekickProjects: ['adobe/blog', 'test/add-project'],
+    })).to.be.true;
+  });
+
+  it('deleteProject', async () => {
+    const spy = sandbox.spy(window.chrome.storage.sync, 'set');
+    const deleted = await new Promise((resolve) => {
+      utils.deleteProject('test/add-project', resolve);
+    });
+    expect(deleted).to.be.true;
+    expect(spy.calledWith({
+      hlxSidekickProjects: ['adobe/blog'],
+    })).to.be.true;
+  });
+
+  it('updateProjectConfigs', async () => {
+    sandbox.spy(window.chrome.storage.sync, 'set');
+    sandbox.spy(window.chrome.storage.sync, 'remove');
+    await utils.removeConfig('sync', 'hlxSidekickProjects');
+    await utils.updateProjectConfigs();
+    expect(chrome.storage.sync.remove.calledWith('hlxSidekickConfigs')).to.be.true;
+    expect(chrome.storage.sync.set.calledWith({
+      hlxSidekickProjects: ['test/legacy-project'],
+    })).to.be.true;
   });
 
   it('setDisplay', async () => {
-    const spy = sinon.spy(window.chrome.storage.local, 'set');
+    const spy = sandbox.spy(window.chrome.storage.local, 'set');
     await utils.setDisplay(true);
     expect(spy.calledWith({
       hlxSidekickDisplay: true,
     })).to.be.true;
-    spy.restore();
   });
 
   it('toggleDisplay', async () => {
+    const spy = sandbox.spy(window.chrome.storage.local, 'set');
     const display = await new Promise((resolve) => {
       utils.toggleDisplay((s) => {
         resolve(s);
       });
     });
-    expect(display).to.be.true;
-  });
-
-  it('setProxyUrl', async () => {
-    const spy = sinon.spy(window.chrome.storage.local, 'set');
-    const hlxSidekickProxyUrl = 'https://main--bar--foo.hlx.page/';
-    await utils.setProxyUrl(hlxSidekickProxyUrl);
     expect(spy.calledWith({
-      hlxSidekickProxyUrl,
+      hlxSidekickDisplay: false,
     })).to.be.true;
-    spy.restore();
+    expect(display).to.be.false;
   });
 });

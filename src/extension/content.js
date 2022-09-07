@@ -22,14 +22,14 @@
   } = await import('./utils.js');
 
   let inject = () => {};
-  if (!window.hlx.configMatches) {
-    inject = (selectedConfig = window.hlx.selectedSidekickConfig) => {
+  if (!window.hlx.projectMatches) {
+    inject = (selectedProject = window.hlx.selectedSidekickProject) => {
       getState(({
         display, adminVersion, pushDown,
       }) => {
-        const matches = window.hlx.configMatches || [];
-        let matchingConfig;
-        if (!selectedConfig) {
+        const matches = window.hlx.projectMatches || [];
+        let matchingProject;
+        if (!selectedProject) {
           // find config matches
           log.debug('content.js: found matches', matches.length);
           if (matches.length === 0) {
@@ -38,15 +38,15 @@
           }
           if (matches.length === 1) {
             // single config match
-            [matchingConfig] = matches;
+            [matchingProject] = matches;
           }
         }
-        if (selectedConfig
-          || (matchingConfig && window.location.origin !== 'https://docs.google.com')) {
+        if (selectedProject
+          || (matchingProject && window.location.origin !== 'https://docs.google.com')) {
           log.info('content.js: selected or single matching config found, inject sidekick');
           // user selected config or single match, remember and show sidekick
-          window.hlx.selectedSidekickConfig = selectedConfig;
-          const config = selectedConfig || matchingConfig;
+          window.hlx.selectedSidekickProject = selectedProject;
+          const config = selectedProject || matchingProject;
           if (adminVersion) {
             config.adminVersion = adminVersion;
           }
@@ -67,15 +67,15 @@
     };
 
     log.debug('content.js: waiting for config matches...');
-    chrome.runtime.onMessage.addListener(({ configMatches }, { tab }) => {
+    chrome.runtime.onMessage.addListener(({ projectMatches }, { tab }) => {
       // make sure message is from extension
       if (!tab) {
-        window.hlx.configMatches = configMatches;
+        window.hlx.projectMatches = projectMatches;
         inject();
       }
     });
   } else {
-    log.debug('content.js: reusing config matches', window.hlx.configMatches);
+    log.debug('content.js: reusing project matches', window.hlx.projectMatches);
     inject();
   }
 })();
