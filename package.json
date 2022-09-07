@@ -1,6 +1,6 @@
 {
   "name": "@adobe/helix-sidekick-extension",
-  "version": "5.8.0",
+  "version": "5.9.0",
   "description": "Helix Sidekick Extension",
   "scripts": {
     "lint": "./node_modules/.bin/eslint .",
@@ -43,7 +43,7 @@
     "ajv": "8.11.0",
     "archiver": "5.3.1",
     "codecov": "3.8.3",
-    "eslint": "8.22.0",
+    "eslint": "8.23.0",
     "eslint-plugin-header": "3.1.1",
     "eslint-plugin-import": "2.26.0",
     "express": "4.18.1",
@@ -55,7 +55,7 @@
     "nyc": "15.1.0",
     "puppeteer": "14.2.1",
     "puppeteer-to-istanbul": "1.4.0",
-    "semantic-release": "19.0.3",
+    "semantic-release": "19.0.5",
     "shelljs": "0.8.5",
     "sinon": "14.0.0"
   },
