@@ -282,7 +282,7 @@ async function updateHelpContent() {
         getState(async ({ projects = [] }) => {
           const { owner, repo } = getGitHubSettings(cfg.giturl);
           const project = projects.find((p) => p.owner === owner && p.repo === repo);
-          if (project) {
+          if (!project) {
             await addProject(cfg);
           } else {
             await deleteProject(`${owner}/${repo}`);
