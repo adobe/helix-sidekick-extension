@@ -54,7 +54,7 @@
           const button = addProjectContainer.querySelector('a');
           if (button.dataset.sidekickExtension !== giturl) {
             button.onclick = () => {
-              addProject({ giturl, project }, () => window.location.reload());
+              chrome.runtime.sendMessage({ action: 'addRemoveProject' });
             };
             button.dataset.sidekickExtension = giturl;
             // show add project container, hide others
@@ -70,7 +70,7 @@
           const button = deleteProjectContainer.querySelector('a');
           if (button.dataset.sidekickExtension !== giturl) {
             button.onclick = () => {
-              deleteProject(`${owner}/${repo}`, () => window.location.reload());
+              chrome.runtime.sendMessage({ action: 'addRemoveProject' });
             };
             button.dataset.sidekickExtension = giturl;
             // show delete project container, hide bookmarklet container
