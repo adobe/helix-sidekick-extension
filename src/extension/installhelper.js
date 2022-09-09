@@ -43,8 +43,8 @@
       }
 
       const { owner, repo } = getGitHubSettings(giturl);
-      const configIndex = projects.findIndex((cfg) => cfg.owner === owner && cfg.repo === repo);
-      if (configIndex < 0 && owner && repo) {
+      const project = projects.find((cfg) => cfg.owner === owner && cfg.repo === repo);
+      if (project) {
         log.info('installhelper.js: project not added yet');
         if (addProjectContainer) {
           // instrument add project button
