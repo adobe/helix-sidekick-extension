@@ -20,15 +20,12 @@
     log,
     getState,
     getGitHubSettings,
-    addProject,
-    deleteProject,
   } = await import('./utils.js');
   const run = () => {
     getState(({
       projects = [],
     }) => {
       const usp = new URLSearchParams(window.location.search);
-      const project = usp.get('project');
       const giturl = usp.get('giturl');
       if (!giturl) {
         log.debug('installhelper.js: no project configured yet, ignoring');
