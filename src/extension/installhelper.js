@@ -20,15 +20,12 @@
     log,
     getState,
     getGitHubSettings,
-    addProject,
-    deleteProject,
   } = await import('./utils.js');
   const run = () => {
     getState(({
       projects = [],
     }) => {
       const usp = new URLSearchParams(window.location.search);
-      const project = usp.get('project');
       const giturl = usp.get('giturl');
       if (!giturl) {
         log.debug('installhelper.js: no project configured yet, ignoring');
@@ -46,15 +43,15 @@
       }
 
       const { owner, repo } = getGitHubSettings(giturl);
-      const configIndex = projects.findIndex((cfg) => cfg.owner === owner && cfg.repo === repo);
-      if (configIndex < 0 && owner && repo) {
+      const project = projects.find((cfg) => cfg.owner === owner && cfg.repo === repo);
+      if (project) {
         log.info('installhelper.js: project not added yet');
         if (addProjectContainer) {
           // instrument add project button
           const button = addProjectContainer.querySelector('a');
           if (button.dataset.sidekickExtension !== giturl) {
             button.onclick = () => {
-              addProject({ giturl, project }, () => window.location.reload());
+              chrome.runtime.sendMessage({ action: 'addRemoveProject' });
             };
             button.dataset.sidekickExtension = giturl;
             // show add project container, hide others
@@ -70,7 +67,7 @@
           const button = deleteProjectContainer.querySelector('a');
           if (button.dataset.sidekickExtension !== giturl) {
             button.onclick = () => {
-              deleteProject(`${owner}/${repo}`, () => window.location.reload());
+              chrome.runtime.sendMessage({ action: 'addRemoveProject' });
             };
             button.dataset.sidekickExtension = giturl;
             // show delete project container, hide bookmarklet container

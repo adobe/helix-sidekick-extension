@@ -274,8 +274,8 @@ async function updateHelpContent() {
     await sendResponse('close');
   });
 
-  // actions for context menu items
-  const contextMenuActions = {
+  // actions for context menu items and install helper
+  const actions = {
     addRemoveProject: async ({ id, url }) => {
       const cfg = getConfigFromTabUrl(url);
       if (cfg.giturl) {
@@ -308,7 +308,7 @@ async function updateHelpContent() {
     // add listener for clicks on context menu item
     chrome.contextMenus.onClicked.addListener(async ({ menuItemId }, tab) => {
       if (!tab.url) return;
-      contextMenuActions[menuItemId](tab);
+      actions[menuItemId](tab);
     });
   }
 
@@ -335,6 +335,15 @@ async function updateHelpContent() {
     if (area === 'local' && hlxSidekickDisplay) {
       const display = hlxSidekickDisplay.newValue;
       log.info(`sidekick now ${display ? 'shown' : 'hidden'}`);
+    }
+  });
+
+  // listen for add/remove project calls from the install helper
+  chrome.runtime.onMessage.addListener(({ action: actionFromTab }, { tab }) => {
+    // check if message contains action and is sent from right tab
+    if (tab && tab.url && new URL(tab.url).pathname.startsWith(SHARE_PREFIX)
+      && actionFromTab && typeof actions[actionFromTab] === 'function') {
+      actions[actionFromTab](tab);
     }
   });
 })();
