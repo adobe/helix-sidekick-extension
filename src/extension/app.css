@@ -874,7 +874,7 @@
 }
 
 .hlx-sk-overlay .modal.modal-login p:first-of-type::before {
-  content: "Please sign in to Franklin Sidekick to continue...";
+  content: "Please sign in to Sidekick to continue...";
 }
 
 .hlx-sk .feature-container .user-login button::before,
@@ -920,11 +920,11 @@
 }
 
 .hlx-sk-overlay .modal.modal-config-success::before {
-  content: "Franklin configuration successfully activated.";
+  content: "Configuration successfully activated.";
 }
 
 .hlx-sk-overlay .modal.modal-config-failure::before {
-  content: "Failed to activate Franklin configuration: ";
+  content: "Failed to activate configuration: ";
 }
 
 .hlx-sk-overlay .modal.modal-preview-failure::before {

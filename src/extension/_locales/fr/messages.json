@@ -72,7 +72,7 @@
     "message": "URL de partage: https://www.hlx.live/sidekick..."
   }, 
   "config_shareurl_share_title": {
-    "message": "Configuration du Franklin Sidekick pour $1"
+    "message": "Configuration du Sidekick pour $1"
   },
   "config_shareurl_copied": {
     "message": "L'URL de partage pour $1 a été copiée dans le presse-papiers"
@@ -96,7 +96,7 @@
     "message": "Tester configuration locale du projet"
   },
   "config_add_success": {
-    "message": "Le projet a été ajouté au Franklin Sidekick"
+    "message": "Le projet a été ajouté au Sidekick"
   },
   "config_add_no_mountpoint": {
     "message": "Le projet a été ajouté au Sidekick, mais ...\n\nLe contenu n'a pas pu être récupéré, vous ne pourrez pas utilisé le Sidekick en mode édition pour le moment. Pour l'ajouter manuellement, cliquez sur le bouton Editer dans la configuration du projet."
