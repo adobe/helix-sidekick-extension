@@ -1,12 +1,12 @@
 {
   "title": {
-    "message": "Helix Sidekick (Beta)"
+    "message": "Franklin Sidekick (Beta)"
   },
   "description": {
-    "message": "Helix Sidekick erlaubt es Autoren in Helix-Projekten, Inhalte zu publizieren."
+    "message": "Franklin Sidekick erlaubt es Autoren in Franklin-Projekten, Inhalte zu publizieren."
   },
   "description_shortcut": {
-    "message": "Helix Sidekick ein-/ausschalten"
+    "message": "Sidekick ein-/ausschalten"
   },
   "homepage": {
     "message": "https://www.hlx.live/tools/sidekick/"
@@ -72,7 +72,7 @@
     "message": "Teilen-URL: https://www.hlx.page/tools/sidekick/..."
   }, 
   "config_shareurl_share_title": {
-    "message": "Helix Sidekick-Konfiguration für $1"
+    "message": "Sidekick-Konfiguration für $1"
   },
   "config_shareurl_copied": {
     "message": "Teilen-URL für $1 in die Zwischenablage kopiert"
@@ -96,10 +96,10 @@
     "message": "Projektkonfiguration lokal testen"
   },
   "config_add_success": {
-    "message": "Projekt zu Helix Sidekick hinzugefügt"
+    "message": "Projekt zu Sidekick hinzugefügt"
   },
   "config_add_no_mountpoint": {
-    "message": "Projekt zu Helix Sidekick hinzugefügt, aber ...\n\nDie Inhalts-URL konnte nicht geholt werden, du wirst also Helix Sidekick noch nicht im Bearbeitungsmodus verwenden können. Um sie manuell hinzuzufügen, klicke den Bearbeiten-Knopf neben der Projektkonfiguration."
+    "message": "Projekt zu Sidekick hinzugefügt, aber ...\n\nDie Inhalts-URL konnte nicht geholt werden, du wirst also Sidekick noch nicht im Bearbeitungsmodus verwenden können. Um sie manuell hinzuzufügen, klicke den Bearbeiten-Knopf neben der Projektkonfiguration."
   },
   "config_share": {
     "message": "Teilen"
@@ -188,7 +188,7 @@
     "message": "Achtung: unerwartete Nebeneffekte!"
   },
   "admin_version": {
-    "message": "Eine spezifische Version des Helix Admin API verwenden"
+    "message": "Eine spezifische Version des Franklin Admin API verwenden"
   },
   "admin_version_placeholder": {
     "message": "Admin-Version: x.y.z"

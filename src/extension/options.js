@@ -67,7 +67,7 @@ function drawProjects() {
   <div>
     <h4>
       <input type="checkbox" ${disabled ? '' : 'checked'} title="${i18n(disabled ? 'config_project_enable' : 'config_project_disable')}">
-      ${project || 'Helix Project'}
+      ${project || 'Project'}
     </h4>
     <p><span class="property">${i18n('config_project_innerhost')}</span>${drawLink(innerHost)}</p>
     ${mountpoints.length

@@ -1,7 +1,7 @@
 {
   "name": "@adobe/helix-sidekick-extension",
   "version": "5.9.0",
-  "description": "Helix Sidekick Extension",
+  "description": "Franklin Sidekick Extension",
   "scripts": {
     "lint": "./node_modules/.bin/eslint .",
     "test:mocha": "nyc mocha",

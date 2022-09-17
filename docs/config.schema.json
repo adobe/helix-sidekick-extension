@@ -81,12 +81,12 @@
       "additionalProperties": false
     }
   },
-  "description": "Helix Sidekick configuration",
+  "description": "Franklin Sidekick configuration",
   "type": "object",
   "properties": {
     "project": {
       "type": "string",
-      "description": "The name of the project to display in the Helix Sidekick"
+      "description": "The name of the project to display in the Franklin Sidekick"
     },
     "host": {
       "type": "string",
@@ -99,7 +99,7 @@
     },
     "pushDown": {
       "type": "boolean",
-      "description": "Have Helix Sidekick push down page content instead of overlaying it"
+      "description": "Have Franklin Sidekick push down page content instead of overlaying it"
     },
     "pushDownSelector": {
       "type": "string",
