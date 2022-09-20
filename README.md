@@ -1,6 +1,6 @@
-# Helix Sidekick Extension
+# Franklin Sidekick Extension
 
-> Browser extension for authoring Helix projects
+> Browser extension for authoring Franklin projects
 
 ## Status
 [![codecov](https://img.shields.io/codecov/c/github/adobe/helix-sidekick-extension.svg)](https://codecov.io/gh/adobe/helix-sidekick-extension)
@@ -21,16 +21,16 @@ Navigate to https://www.hlx.live/tools/sidekick/ and follow the instructions the
 1. Go to the [Chrome Web Store](https://chrome.google.com/webstore/detail/helix-sidekick-extension-beta/ccfggkjabjahcjoljmgmklhpaccedipo)
 1. Click _Add to Chrome_
 1. Confirm by clicking _Add extension_
-1. Click the extensions ("puzzle piece") icon next to Chrome's address bar to see a list of all extensions. Verify that there's a grayed out Helix icon like this:<br />
+1. Click the extensions ("puzzle piece") icon next to Chrome's address bar to see a list of all extensions. Verify that there's a grayed out Franklin icon like this:<br />
 ![Extension icon disabled](docs/imgs/install_toolbar_icon.png)<br />
 1. Click the pin button next to it to make sure it is always visible.
 
 ##### Adding projects to the Chrome extension
-1. Click the extension's Helix icon and select _Options_:<br />
+1. Click the extension's Franklin icon and select _Options_:<br />
 ![Extension box](docs/imgs/install_contextmenu_options.png)<br />
-On this page, you can add Helix projects by either pasting a share URL* or a GitHub URL in the respective fields and clicking _Add_. This page will also allow you to view, edit and delete existing projects.
-   1. Alternatively, you can also navigate to a share URL* or a GitHub project, click the extension's Helix icon and select _Add project_.
-1. Navigate to your project's homepage and click on the (now colored) Helix icon to toggle the Sidekick.
+On this page, you can add Franklin projects by either pasting a share URL* or a GitHub URL in the respective fields and clicking _Add_. This page will also allow you to view, edit and delete existing projects.
+   1. Alternatively, you can also navigate to a share URL* or a GitHub project, click the extension's Franklin icon and select _Add project_.
+1. Navigate to your project's homepage and click on the (now colored) Franklin icon to toggle the Sidekick.
 
 \* Share URLs start with `https://www.hlx.live/tools/sidekick/...`
 
@@ -91,7 +91,7 @@ If you want to test a config file before deploying it to your project:
 1. Run `hlx up` on your local checkout of the project repository
 1. [Add your project](#adding-projects-to-the-chrome-extension) to the sidekick extension
 1. Enable local project configruation:
-   1. Click the extension's Helix icon and select _Options_
+   1. Click the extension's Franklin icon and select _Options_
    1. Click _Advanced_ on the left
    1. Click _Edit_ on the project configuration you want to test locally
    1. Tick the _Test project configuration locally_ checkbox
@@ -118,7 +118,7 @@ The following environment variables are required to be set in the CircleCI proje
 If you have to re-deploy manually or make changes to the store page, you can gain access to the Chrome Developer Dashboard by following [these instructions](https://adobe.sharepoint.com/sites/Adobe-GooglePartnership/SitePages/Publishing-Chrome-Browser-Plugins.aspx):
 1. Go to the [Chrome Developer Dashboard](https://chrome.google.com/webstore/devconsole/3b37cd65-9569-47a0-a13c-da1857a2c9dc)
 1. Switch to the _Adobe Inc._ publisher at the top right
-1. Click the _Helix Sidekick_ item in the extension list
+1. Click the _Franklin Sidekick_ item in the extension list
 1. Switch to _Package_
 1. Click _Upload new package_
 1. Upload `dist > chrome.zip`

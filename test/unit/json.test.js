@@ -52,7 +52,7 @@ describe('Test special view for JSON', () => {
     const dataContainer = container.querySelector('tbody > tr > td:nth-of-type(2) > div');
     expect(dataContainer.className).to.equal('image');
     expect(dataContainer.querySelector('img').getAttribute('src'))
-      .to.equal('/test/fixtures/media_helix.png?width=1200&format=pjpg&optimize=medium');
+      .to.equal('/test/fixtures/media_0000.png?width=1200&format=pjpg&optimize=medium');
   });
 
   it('Detects link and shows as anchor', async () => {

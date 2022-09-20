@@ -97,7 +97,7 @@
    * @prop {string} repo The GitHub owner or organization (mandatory)
    * @prop {string} ref=main The Git reference or branch (optional)
    * @prop {string} mountpoint The content source URL (optional)
-   * @prop {string} project The name of the Helix project used in the sharing link (optional)
+   * @prop {string} project The name of the project used in the sharing link (optional)
    * @prop {Plugin[]} plugins An array of {@link Plugin|plugin configurations} (optional)
    * @prop {string} outerHost The outer CDN's host name (optional)
    * @prop {string} host The production host name to publish content to (optional)
@@ -247,23 +247,23 @@
 
   /**
    * The URL of the development environment.
-   * @see {@link https://github.com/adobe/helix-cli|Helix CLI}).
+   * @see {@link https://github.com/adobe/helix-cli|Franklin CLI}).
    * @private
    * @type {URL}
    */
   const DEV_URL = new URL('http://localhost:3000');
 
   /**
-   * Retrieves Helix project details from a host name.
+   * Retrieves project details from a host name.
    * @private
    * @param {string} host The host name
    * @returns {string[]} The project details
-   * @throws {Error} if host is not a Helix host
+   * @throws {Error} if host is not a project host
    */
-  function getHelixProjectDetails(host) {
+  function getProjectDetails(host) {
     const details = host.split('.')[0].split('--');
     if (details.length < 2) {
-      throw new Error('not a helix host');
+      throw new Error('not a project host');
     }
     if (details.length === 3) {
       // lose ref
@@ -273,13 +273,13 @@
   }
 
   /**
-   * Checks if a Helix host name matches another, regardless of ref.
+   * Checks if a project host name matches another, regardless of ref.
    * @private
    * @param {string} baseHost The base host
    * @param {string} host The host to match against the base host
    * @returns {boolean} <code>true</code> if the hosts match, else <code>false</code>
    */
-  function matchHelixHost(baseHost, host) {
+  function matchProjectHost(baseHost, host) {
     if (!baseHost || !host) {
       return false;
     }
@@ -287,19 +287,19 @@
     if (baseHost === host) {
       return true;
     }
-    // matching helix domains
-    const helixDomains = ['page', 'hlx.live'];
-    if (!helixDomains.find((domain) => baseHost.endsWith(domain)
+    // matching project domains
+    const projectDomains = ['page', 'hlx.live'];
+    if (!projectDomains.find((domain) => baseHost.endsWith(domain)
       && host.endsWith(domain))) {
       return false;
     }
     // project details
     try {
-      const [baseHostRepo, baseHostOwner] = getHelixProjectDetails(baseHost);
-      const [hostRepo, hostOwner] = getHelixProjectDetails(host);
+      const [baseHostRepo, baseHostOwner] = getProjectDetails(baseHost);
+      const [hostRepo, hostOwner] = getProjectDetails(host);
       return baseHostOwner === hostOwner && baseHostRepo === hostRepo;
     } catch (e) {
-      // ignore if no helix host
+      // ignore if no project host
     }
     return false;
   }
@@ -787,7 +787,7 @@
   function addEditPlugin(sk) {
     sk.add({
       id: 'edit',
-      condition: (sidekick) => !sidekick.isEditor() && sidekick.isHelix(),
+      condition: (sidekick) => !sidekick.isEditor() && sidekick.isProject(),
       button: {
         action: async () => {
           const { config, status } = sk;
@@ -828,7 +828,7 @@
     sk.add({
       id: 'dev',
       container: 'env',
-      condition: (sidekick) => sidekick.isEditor() || sidekick.isHelix(),
+      condition: (sidekick) => sidekick.isEditor() || sidekick.isProject(),
       button: {
         action: async (evt) => {
           if (evt.target.classList.contains('pressed')) {
@@ -847,7 +847,7 @@
     sk.add({
       id: 'preview',
       container: 'env',
-      condition: (sidekick) => sidekick.isEditor() || sidekick.isHelix(),
+      condition: (sidekick) => sidekick.isEditor() || sidekick.isProject(),
       button: {
         action: async (evt) => {
           if (evt.target.classList.contains('pressed')) {
@@ -866,7 +866,7 @@
       id: 'live',
       container: 'env',
       condition: (sidekick) => sidekick.config.outerHost
-        && (sidekick.isEditor() || sidekick.isHelix()),
+        && (sidekick.isEditor() || sidekick.isProject()),
       button: {
         action: async (evt) => {
           if (evt.target.classList.contains('pressed')) {
@@ -887,7 +887,7 @@
       container: 'env',
       condition: (sidekick) => sidekick.config.host
         && sidekick.config.host !== sidekick.config.outerHost
-        && (sidekick.isEditor() || sidekick.isHelix()),
+        && (sidekick.isEditor() || sidekick.isProject()),
       button: {
         action: async (evt) => {
           if (evt.target.classList.contains('pressed')) {
@@ -1030,7 +1030,7 @@
   function addDeletePlugin(sk) {
     sk.add({
       id: 'delete',
-      condition: (sidekick) => sidekick.isAuthorized('preview', 'delete') && sidekick.isHelix()
+      condition: (sidekick) => sidekick.isAuthorized('preview', 'delete') && sidekick.isProject()
         && (!sidekick.status.edit || !sidekick.status.edit.url) // show only if no edit url and
         && (sidekick.status.preview && sidekick.status.preview.status !== 404), // preview exists
       button: {
@@ -1076,7 +1076,7 @@
   function addPublishPlugin(sk) {
     sk.add({
       id: 'publish',
-      condition: (sidekick) => sidekick.isHelix() && sk.isContent(),
+      condition: (sidekick) => sidekick.isProject() && sk.isContent(),
       button: {
         action: async (evt) => {
           const { config, location } = sk;
@@ -1123,7 +1123,7 @@
   function addUnpublishPlugin(sk) {
     sk.add({
       id: 'unpublish',
-      condition: (sidekick) => sidekick.isAuthorized('live', 'delete') && sidekick.isHelix()
+      condition: (sidekick) => sidekick.isAuthorized('live', 'delete') && sidekick.isProject()
         && (!sidekick.status.edit || !sidekick.status.edit.url) // show only if no edit url and
         && sidekick.status.live && sidekick.status.live.lastModified // published
         && sk.isContent(),
@@ -1823,7 +1823,8 @@
       // collapse dropdowns when document is clicked
       document.addEventListener('click', () => collapseDropdowns(this));
       // announce to the document that the sidekick is ready
-      document.dispatchEvent(new CustomEvent('helix-sidekick-ready'));
+      document.dispatchEvent(new CustomEvent('sidekick-ready'));
+      document.dispatchEvent(new CustomEvent('helix-sidekick-ready')); // legacy
     }
 
     /**
@@ -2141,7 +2142,7 @@
      */
     isInner() {
       const { config, location } = this;
-      return matchHelixHost(config.innerHost, location.host);
+      return matchProjectHost(config.innerHost, location.host);
     }
 
     /**
@@ -2150,7 +2151,7 @@
      */
     isOuter() {
       const { config, location } = this;
-      return matchHelixHost(config.outerHost, location.host);
+      return matchProjectHost(config.outerHost, location.host);
     }
 
     /**
@@ -2163,12 +2164,21 @@
     }
 
     /**
-     * Checks if the current location is a configured Helix URL.
-     * @returns {boolean} <code>true</code> if Helix URL, else <code>false</code>
+     * Checks if the current location is a configured project URL.
+     * @returns {boolean} <code>true</code> if project URL, else <code>false</code>
      */
-    isHelix() {
+    isProject() {
       return this.config.owner && this.config.repo
         && (this.isDev() || this.isInner() || this.isOuter() || this.isProd());
+    }
+
+    /**
+     * @deprecated Use {@link isProject} instead
+     * Checks if the current location is a configured project URL.
+     * @returns {boolean} <code>true</code> if project URL, else <code>false</code>
+     */
+    isHelix() {
+      return this.isProject();
     }
 
     /**

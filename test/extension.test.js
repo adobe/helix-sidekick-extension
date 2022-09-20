@@ -106,7 +106,7 @@ describe.skip('Test sidekick extension', () => {
 
     // check dlg message
     assert.deepStrictEqual(dialog, {
-      message: 'Project added to Helix Sidekick',
+      message: 'Project added to Sidekick',
       type: 'alert',
     });
 

@@ -68,7 +68,8 @@ The sidekick provides helper tools for authors.
     * [.isInner()](#Sidekick+isInner) ⇒ <code>boolean</code>
     * [.isOuter()](#Sidekick+isOuter) ⇒ <code>boolean</code>
     * [.isProd()](#Sidekick+isProd) ⇒ <code>boolean</code>
-    * [.isHelix()](#Sidekick+isHelix) ⇒ <code>boolean</code>
+    * [.isProject()](#Sidekick+isProject) ⇒ <code>boolean</code>
+    * ~~[.isHelix()](#Sidekick+isHelix) ⇒ <code>boolean</code>~~
     * [.isContent()](#Sidekick+isContent) ⇒ <code>boolean</code>
     * [.isAuthenticated()](#Sidekick+isAuthenticated) ⇒ <code>boolean</code>
     * [.isAuthorized(feature, permission)](#Sidekick+isAuthorized) ⇒ <code>boolean</code>
@@ -233,13 +234,20 @@ Checks if the current location is a production URL.
 
 **Kind**: instance method of [<code>Sidekick</code>](#Sidekick)  
 **Returns**: <code>boolean</code> - <code>true</code> if production URL, else <code>false</code>  
-<a name="Sidekick+isHelix"></a>
+<a name="Sidekick+isProject"></a>
 
-### sidekick.isHelix() ⇒ <code>boolean</code>
-Checks if the current location is a configured Helix URL.
+### sidekick.isProject() ⇒ <code>boolean</code>
+Checks if the current location is a configured project URL.
 
 **Kind**: instance method of [<code>Sidekick</code>](#Sidekick)  
-**Returns**: <code>boolean</code> - <code>true</code> if Helix URL, else <code>false</code>  
+**Returns**: <code>boolean</code> - <code>true</code> if project URL, else <code>false</code>  
+<a name="Sidekick+isHelix"></a>
+
+### ~~sidekick.isHelix() ⇒ <code>boolean</code>~~
+***Deprecated***
+
+**Kind**: instance method of [<code>Sidekick</code>](#Sidekick)  
+**Returns**: <code>boolean</code> - <code>true</code> if project URL, else <code>false</code>  
 <a name="Sidekick+isContent"></a>
 
 ### sidekick.isContent() ⇒ <code>boolean</code>
@@ -586,7 +594,7 @@ The sidekick configuration.
 | repo | <code>string</code> |  | The GitHub owner or organization (mandatory) |
 | ref | <code>string</code> | <code>&quot;main&quot;</code> | The Git reference or branch (optional) |
 | mountpoint | <code>string</code> |  | The content source URL (optional) |
-| project | <code>string</code> |  | The name of the Helix project used in the sharing link (optional) |
+| project | <code>string</code> |  | The name of the project used in the sharing link (optional) |
 | plugins | [<code>Array.&lt;Plugin&gt;</code>](#Plugin) |  | An array of [plugin configurations](#Plugin) (optional) |
 | outerHost | <code>string</code> |  | The outer CDN's host name (optional) |
 | host | <code>string</code> |  | The production host name to publish content to (optional) |
