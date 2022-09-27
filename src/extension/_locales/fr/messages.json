@@ -1,12 +1,12 @@
 {
   "title": {
-    "message": "Helix Sidekick (Beta)"
+    "message": "Franklin Sidekick (Beta)"
   },
   "description": {
-    "message": "Le Helix Sidekick permet aux auteurs de simplement visualiser et publier leur contenu."
+    "message": "Le Franklin Sidekick permet aux auteurs de simplement visualiser et publier leur contenu."
   },
   "description_shortcut": {
-    "message": "Afficher / cacher le Helix Sidekick"
+    "message": "Afficher / cacher le Sidekick"
   },
   "homepage": {
     "message": "https://www.hlx.live/tools/sidekick/"
@@ -66,13 +66,13 @@
     "message": "Ajouter via une URL de partage"
   },
   "config_shareurl_description": {
-    "message": "Demander à quelqu'un de partager une configuration de son Helix Sidekick : il lui suffit de cliquer sur le bouton partage du côté droit du Helix Sidekick."
+    "message": "Demander à quelqu'un de partager une configuration de son Sidekick : il lui suffit de cliquer sur le bouton partage du côté droit du Sidekick."
   },
   "config_shareurl_placeholder": {
     "message": "URL de partage: https://www.hlx.live/sidekick..."
   }, 
   "config_shareurl_share_title": {
-    "message": "Configuration du Helix Sidekick pour $1"
+    "message": "Configuration du Sidekick pour $1"
   },
   "config_shareurl_copied": {
     "message": "L'URL de partage pour $1 a été copiée dans le presse-papiers"
@@ -96,10 +96,10 @@
     "message": "Tester configuration locale du projet"
   },
   "config_add_success": {
-    "message": "Le projet a été ajouté au Helix Sidekick"
+    "message": "Le projet a été ajouté au Sidekick"
   },
   "config_add_no_mountpoint": {
-    "message": "Le projet a été ajouté au Helix Sidekick, mais ...\n\nLe contenu n'a pas pu être récupéré, vous ne pourrez pas utilisé le Helix Sidekick en mode édition pour le moment. Pour l'ajouter manuellement, cliquez sur le bouton Editer dans la configuration du projet."
+    "message": "Le projet a été ajouté au Sidekick, mais ...\n\nLe contenu n'a pas pu être récupéré, vous ne pourrez pas utilisé le Sidekick en mode édition pour le moment. Pour l'ajouter manuellement, cliquez sur le bouton Editer dans la configuration du projet."
   },
   "config_share": {
     "message": "Partager"
@@ -188,10 +188,10 @@
     "message": "Attention: effets indésirables!"
   },
   "developer_mode": {
-    "message": "Tester le Helix Sidekick localement"
+    "message": "Tester le Sidekick localement"
   },
   "developer_mode_description": {
-    "message": "Invoquer une version locale du Helix Sidekick"
+    "message": "Invoquer une version locale du Sidekick"
   },
   "branch_name": {
     "message": "Tester une version de branche du Sidekick"
@@ -200,7 +200,7 @@
     "message": "Nom de la branche: test"
   },
   "admin_version": {
-    "message": "Utiliser une version spécifique de l'API Helix Admin"
+    "message": "Utiliser une version spécifique de l'API Franklin Admin"
   },
   "admin_version_placeholder": {
     "message": "Version de l'Admin: x.y.z"
