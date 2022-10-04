@@ -962,6 +962,15 @@
             sk.showModal({
               css: `modal-preview-onedrive${mac}`,
             });
+          } else if (status.edit.sourceLocation?.startsWith('gdrive:')
+            && status.edit.contentType !== 'application/vnd.google-apps.document'
+            && status.edit.contentType !== 'application/vnd.google-apps.spreadsheet') {
+            sk.showModal({
+              css: 'modal-preview-not-gdoc',
+              sticky: true,
+              level: 0,
+            });
+            return;
           } else {
             sk.showWait();
           }
