@@ -47,7 +47,7 @@ describe('Test editor preview plugin', () => {
     nock.done();
   });
 
-  it('Editor preview preview plugin updates preview when switching from editor', async () => {
+  it('Editor preview plugin updates preview when switching from editor', async () => {
     nock('https://main--blog--adobe.hlx.page')
       .get('/en/topics/bla')
       .reply(200, 'blog adobe...');
@@ -103,7 +103,7 @@ describe('Test editor preview plugin', () => {
     assert.strictEqual(statusReqs.length, 2, 'Did not refetch status before updating preview URL');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
-  it('Editor preview preview plugin handles /.helix/config.json special case', async () => {
+  it('Editor preview plugin handles /.helix/config.json special case', async () => {
     const test = new SidekickTest({
       page,
       url: 'https://adobe.sharepoint.com/:w:/r/sites/TheBlog/_layouts/15/Doc.aspx?sourcedoc=%7BE8EC80CB-24C3-4B95-B082-C51FD8BC8760%7D&file=config.xlsx&action=default&mobileredirect=true',
@@ -147,7 +147,7 @@ describe('Test editor preview plugin', () => {
     assert.strictEqual(notification.message, 'foo', `Unexpected notification message: ${notification.message}`);
   }).timeout(IT_DEFAULT_TIMEOUT);
 
-  it('Editor preview preview plugin shows update indicator if edit is newer than preview', async () => {
+  it('Editor preview plugin shows update indicator if edit is newer than preview', async () => {
     const test = new SidekickTest({
       page,
       url: 'https://adobe.sharepoint.com/:w:/r/sites/TheBlog/_layouts/15/Doc.aspx?sourcedoc=%7BE8EC80CB-24C3-4B95-B082-C51FD8BC8760%7D&file=bla.docx&action=default&mobileredirect=true',
@@ -160,5 +160,20 @@ describe('Test editor preview plugin', () => {
       plugins.find((p) => p.id === 'edit-preview')?.classes.includes('update'),
       'Preview plugin without update class',
     );
+  }).timeout(IT_DEFAULT_TIMEOUT);
+
+  it('Editor preview plugin fails for office document from gdrive URL', async () => {
+    const test = new SidekickTest({
+      page,
+      setup: 'pages',
+      url: 'https://docs.google.com/document/d/2E1PNphAhTZAZrDjevM0BX7CZr7KjomuBO6xE1TUo9NU/edit',
+      plugin: 'edit-preview',
+      waitPopup: 2000,
+    });
+    test.apiResponses[0].edit.sourceLocation = 'gdrive:1mfBb_tpzM4yYGdxMhRgrKEnBqboxsr';
+    test.apiResponses[0].edit.contentType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+    const { popupOpened, notification } = await test.run();
+    assert.ok(!popupOpened, 'Unexpected popup opened');
+    assert.ok(notification.className.includes('modal-preview-not-gdoc'), `Unexpected notification classes: ${notification.className}`);
   }).timeout(IT_DEFAULT_TIMEOUT);
 });
