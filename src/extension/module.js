@@ -64,6 +64,8 @@
    * @prop {string} event The name of a custom event to fire when the button is clicked
    * @prop {string} containerId The ID of a dropdown to add this plugin to (optional)
    * @prop {boolean} isContainer Determines whether to turn this plugin into a dropdown
+   * @prop {boolean} isPalette Determines whether a URL is opened in a palette instead of a new tab
+   * @prop {string} paletteRect The dimensions and position of a palette (optional)
    * @prop {string[]} environments Specifies when to show this plugin (edit, preview, live, or prod)
    * @prop {string[]} excludePaths Exclude the plugin from these paths (glob patterns supported)
    * @prop {string[]} includePaths Include the plugin on these paths (glob patterns supported)
@@ -1191,6 +1193,8 @@
             title,
             titleI18n,
             url,
+            isPalette,
+            paletteRect,
             event: eventName,
             environments,
             excludePaths,
@@ -1205,7 +1209,7 @@
             if (!title) {
               missingProperty = 'title';
             } else if (!(url || eventName || isContainer)) {
-              missingProperty = 'url, event, or is_container';
+              missingProperty = 'url, modalUrl, event, or isContainer';
             }
             if (missingProperty) {
               console.log(`plugin config missing required property: ${missingProperty}`, cfg);
@@ -1249,8 +1253,62 @@
                   const target = url.startsWith('/')
                     ? new URL(url, `https://${innerHost}/`)
                     : url;
-                  // open url in new window
-                  window.open(target, `hlx-sk-${id || `custom-plugin-${i}`}`);
+                  if (isPalette) {
+                    let palette = sk.shadowRoot.getElementById(`hlx-sk-palette-${id}`);
+                    const togglePalette = () => {
+                      const button = sk.get(id).querySelector('button');
+                      if (!palette.classList.contains('hlx-sk-hidden')) {
+                        palette.classList.add('hlx-sk-hidden');
+                        button.classList.remove('pressed');
+                      } else {
+                        palette.classList.remove('hlx-sk-hidden');
+                        button.classList.add('pressed');
+                      }
+                    };
+                    if (!palette) {
+                      // draw palette
+                      palette = appendTag(sk.root, {
+                        tag: 'div',
+                        attrs: {
+                          id: `hlx-sk-palette-${id}`,
+                          class: 'hlx-sk-palette hlx-sk-hidden',
+                          style: paletteRect || '',
+                        },
+                      });
+                      const titleBar = appendTag(palette, {
+                        tag: 'div',
+                        text: title,
+                        attrs: {
+                          class: 'palette-title',
+                        },
+                      });
+                      appendTag(titleBar, {
+                        tag: 'button',
+                        attrs: {
+                          class: 'close',
+                        },
+                        lstnrs: {
+                          click: togglePalette,
+                        },
+                      });
+                      const container = appendTag(palette, {
+                        tag: 'div',
+                        attrs: {
+                          class: 'palette-content',
+                        },
+                      });
+                      appendTag(container, {
+                        tag: 'iframe',
+                        attrs: {
+                          src: target,
+                        },
+                      });
+                    }
+                    togglePalette();
+                  } else {
+                    // open url in new window
+                    window.open(target, `hlx-sk-${id || `custom-plugin-${i}`}`);
+                  }
                 } else if (eventName) {
                   // fire custom event
                   fireEvent(sk, `custom:${eventName}`);
