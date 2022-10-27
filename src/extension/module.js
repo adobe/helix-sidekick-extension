@@ -61,7 +61,8 @@
    * @prop {string} title The button text
    * @prop {Object} titleI18n={} A map of translated button texts
    * @prop {string} url The URL to open when the button is clicked
-   * @prop {string} event The name of a custom event to fire when the button is clicked
+   * @prop {string} event The name of a custom event to fire when the button is clicked.
+   *                      Note: Plugin events get a custom: prefix, e.g. "foo" becomes "custom:foo".
    * @prop {string} containerId The ID of a dropdown to add this plugin to (optional)
    * @prop {boolean} isContainer Determines whether to turn this plugin into a dropdown
    * @prop {boolean} isPalette Determines whether a URL is opened in a palette instead of a new tab
