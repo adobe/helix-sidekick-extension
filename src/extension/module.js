@@ -1278,7 +1278,7 @@
                       });
                       const titleBar = appendTag(palette, {
                         tag: 'div',
-                        text: title,
+                        text: (titleI18n && titleI18n[language]) || title,
                         attrs: {
                           class: 'palette-title',
                         },
