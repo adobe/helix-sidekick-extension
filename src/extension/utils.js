@@ -413,8 +413,8 @@ export async function updateProjectConfigs() {
       // eslint-disable-next-line no-await-in-loop
       await setProject(configs[i]);
     }
-    // remove old project configs
-    await removeConfig('sync', 'hlxSidekickConfigs');
+    // TODO: remove old project configs
+    // await removeConfig('sync', 'hlxSidekickConfigs');
     log.info('project config updated');
   }
 }
