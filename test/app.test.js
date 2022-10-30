@@ -111,16 +111,13 @@ describe('Test sidekick bookmarklet', () => {
   it('Adds plugin from config', async () => {
     const { configLoaded, plugins } = await new SidekickTest({
       page,
-      configJs: `
-        window.hlx.initSidekick({
-          plugins: [{
-            id: 'foo',
-            button: {
-              text: 'Foo',
-              action: () => {},
-            }
-          }],
-        });`,
+      configJson: `{
+        "plugins": [{
+          "id": "foo",
+          "title": "Foo",
+          "url": "https://www.foo.bar"
+        }]
+      }`,
     }).run();
     assert.strictEqual(new URL(configLoaded).host, 'main--blog--adobe.hlx.live', 'Did not load config from outer CDN');
     assert.ok(plugins.find((p) => p.id === 'foo'), 'Did not add plugin from config');
@@ -142,11 +139,9 @@ describe('Test sidekick bookmarklet', () => {
     const { sidekick: { config: { outerHost } } } = await new SidekickTest({
       page,
       setup: 'blog',
-      configJs: `
-        window.hlx.initSidekick({
-          outerHost: '${testOuterHost}',
-        });
-      `,
+      configJson: `{
+        "outerHost": "${testOuterHost}"
+      }`,
     }).run();
     assert.strictEqual(
       outerHost,
@@ -508,7 +503,6 @@ describe('Test sidekick bookmarklet', () => {
     const test = new SidekickTest({
       page,
       url: 'https://blog.adobe.com/',
-      configJs: 'window.hlx.initSidekick({host: "blog.adobe.com"});',
       checkPage: async (p) => p.evaluate(() => window.hlx.sidekick.isProd()),
     });
     assert.ok((await test.run()).checkPageResult, 'Did not detect production URL');
@@ -527,8 +521,11 @@ describe('Test sidekick bookmarklet', () => {
       page,
       sleep: 500,
       checkPage: (p) => p.evaluate(() => document.documentElement.style.marginTop),
+      configJson: `{
+        "pushDown":true,
+        "pushDownSelector": "#topnav"
+      }`,
     });
-    test.sidekickConfig.pushDown = true;
     const { checkPageResult } = await test.run();
     assert.strictEqual(checkPageResult, '49px', 'Did not push down content');
   }).timeout(IT_DEFAULT_TIMEOUT);
@@ -537,7 +534,10 @@ describe('Test sidekick bookmarklet', () => {
     const { checkPageResult } = await new SidekickTest({
       page,
       sleep: 500,
-      configJs: 'window.hlx.initSidekick({pushDown:true, pushDownSelector:"#topnav"})',
+      configJson: `{
+        "pushDown":true,
+        "pushDownSelector": "#topnav"
+      }`,
       pre: (p) => p.evaluate(() => {
         // add topnav element
         const topNav = document.createElement('div');
@@ -554,7 +554,10 @@ describe('Test sidekick bookmarklet', () => {
     const { checkPageResult } = await new SidekickTest({
       page,
       sleep: 500,
-      configJs: 'window.hlx.initSidekick({pushDown:true, pushDownSelector:"#topnav"})',
+      configJson: `{
+        "pushDown":true,
+        "pushDownSelector": "#topnav"
+      }`,
       pre: (p) => p.evaluate(() => {
         // add fake word iframe
         const frame = document.createElement('iframe');
@@ -575,7 +578,10 @@ describe('Test sidekick bookmarklet', () => {
     const { checkPageResult } = await new SidekickTest({
       page,
       sleep: 500,
-      configJs: 'window.hlx.initSidekick({pushDown:true, pushDownSelector:"#topnav"})',
+      configJson: `{
+        "pushDown":true,
+        "pushDownSelector": "#topnav"
+      }`,
       post: (p) => p.evaluate(() => window.hlx.sidekick.hide()),
       checkPage: (p) => p.evaluate(() => document.documentElement.style.marginTop),
     }).run();
@@ -614,80 +620,21 @@ describe('Test sidekick bookmarklet', () => {
     assert.ok(checkPageResult, 'Did not show data view for JSON file');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
-  it('Shows custom view for JSON file', async () => {
-    const { checkPageResult: [text, color] } = await new SidekickTest({
-      page,
-      type: 'json',
-      configJs: `window.hlx.initSidekick({
-        specialViews: [
-          {
-            path: '**.json',
-            js: (container) => {
-              container.textContent = 'Custom JSON view';
-            },
-            css: '.hlx-sk-special-view { color: orange }',
-          },
-        ],
-      })`,
-      checkPage: (p) => p.evaluate(() => {
-        const view = window.hlx.sidekick.shadowRoot.querySelector('.hlx-sk-special-view');
-        return view ? [view.textContent, window.getComputedStyle(view).color] : [];
-      }),
-    }).run();
-    assert.strictEqual(text, 'Custom JSON view', 'Did not show custom view for JSON file');
-    assert.strictEqual(color, 'rgb(255, 165, 0)', 'Did not apply custom styling to special view');
-  }).timeout(IT_DEFAULT_TIMEOUT);
-
-  it('Shows custom view with external CSS', async () => {
-    const { checkPageResult: [text, color] } = await new SidekickTest({
-      page,
-      type: 'json',
-      configJs: `window.hlx.initSidekick({
-        specialViews: [
-          {
-            path: '**.json',
-            js: (container) => {
-              container.textContent = 'External CSS';
-            },
-            css: '${__dirname}/fixtures/custom-json-view.css',
-          },
-        ],
-      })`,
-      checkPage: (p) => p.evaluate(() => {
-        const view = window.hlx.sidekick.shadowRoot.querySelector('.hlx-sk-special-view');
-        return view ? [view.textContent, window.getComputedStyle(view).color] : [];
-      }),
-    }).run();
-    assert.strictEqual(text, 'External CSS', 'Did not show custom view for JSON file');
-    assert.strictEqual(color, 'rgb(0, 255, 0)', 'Did not apply custom styling to special view');
-  }).timeout(IT_DEFAULT_TIMEOUT);
-
   it('Shows help content', async () => {
     const { notification } = await new SidekickTest({
       page,
-      plugin: 'help',
-      pluginSleep: 2000,
-      configJs: `window.hlx.initSidekick({
-        plugins: [{
-          id: 'help',
-          button: {
-            text: 'Help',
-            action: (_, sk) => {
-              sk.showHelp({
-                id: 'test',
-                steps: [
-                  {
-                    message: 'Lorem ipsum dolor sit amet',
-                    selector: '.env',
-                    align: 'bottom-right',
-                  },
-                ],
-              });
-              console.log(sk._modal);
+      post: (p) => p.evaluate(() => {
+        window.hlx.sidekick.showHelp({
+          id: 'test',
+          steps: [
+            {
+              message: 'Lorem ipsum dolor sit amet',
+              selector: '.env',
+              align: 'bottom-right',
             },
-          },
-        }],
-      });`,
+          ],
+        });
+      }),
       // eslint-disable-next-line no-underscore-dangle
       checkPage: (p) => p.evaluate(() => window.hlx.sidekick._modal.classList.toString()),
     }).run();
