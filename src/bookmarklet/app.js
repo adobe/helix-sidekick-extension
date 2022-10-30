@@ -69,9 +69,7 @@
             console.log('error retrieving custom sidekick config', e);
           }
           // apply base config
-          window.hlx.sidekickConfig = {
-            ...window.hlx.sidekickConfig,
-            ...baseConfig,
+          Object.assign(window.hlx.sidekickConfig, baseConfig);
           };
           window.hlx.initSidekick();
         }
