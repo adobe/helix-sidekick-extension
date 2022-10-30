@@ -1,12 +1,12 @@
 {
   "title": {
-    "message": "Helix Sidekick (Beta)"
+    "message": "Franklin Sidekick (Beta)"
   },
   "description": {
-    "message": "Helix Sidekick allows authors in Helix projects to easily preview and publish their content."
+    "message": "Franklin Sidekick allows authors in Franklin projects to easily preview and publish their content."
   },
   "description_shortcut": {
-    "message": "Toggle Helix Sidekick"
+    "message": "Toggle Sidekick"
   },
   "homepage": {
     "message": "https://www.hlx.live/tools/sidekick/"
@@ -73,7 +73,7 @@
     "message": "Sharing URL: https://www.hlx.live/sidekick..."
   }, 
   "config_shareurl_share_title": {
-    "message": "Helix Sidekick configuration for $1"
+    "message": "Sidekick configuration for $1"
   },
   "config_shareurl_copied": {
     "message": "Sharing URL for $1 copied to clipboard"
@@ -97,10 +97,10 @@
     "message": "Test project configuration locally"
   },
   "config_add_success": {
-    "message": "Project added to Helix Sidekick"
+    "message": "Project added to Sidekick"
   },
   "config_add_no_mountpoint": {
-    "message": "Project added to Helix Sidekick, but ...\n\nRetrieving the content URL has failed, so you won't be able to use Helix Sidekick in edit mode yet. To add it manually, click the Edit button next to the project's configuration."
+    "message": "Project added to Sidekick, but ...\n\nRetrieving the content URL has failed, so you won't be able to use Sidekick in edit mode yet. To add it manually, click the Edit button next to the project's configuration."
   },
   "config_share": {
     "message": "Share"
@@ -201,7 +201,7 @@
     "message": "Branch Name: test"
   },
   "admin_version": {
-    "message": "Use a specific Helix Admin API version"
+    "message": "Use a specific Franklin Admin API version"
   },
   "admin_version_placeholder": {
     "message": "Admin Version: x.y.z"
