@@ -63,10 +63,7 @@
             if (res.ok) {
               console.log(`custom sidekick config loaded from ${configOrigin}/tools/sidekick/config.json`);
               // apply custom config
-              window.hlx.sidekickConfig = {
-                ...window.hlx.sidekickConfig,
-                ...(await res.json()),
-              };
+              Object.assign(window.hlx.sidekickConfig, await res.json());
             }
           } catch (e) {
             console.log('error retrieving custom sidekick config', e);
