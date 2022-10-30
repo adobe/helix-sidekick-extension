@@ -61,7 +61,7 @@
           try {
             const res = await fetch(`${configOrigin}/tools/sidekick/config.json`);
             if (res.ok) {
-              console.log('custom sidekick config found');
+              console.log(`custom sidekick config loaded from ${configOrigin}/tools/sidekick/config.json`);
               // apply custom config
               window.hlx.sidekickConfig = {
                 ...window.hlx.sidekickConfig,
