@@ -713,52 +713,6 @@ describe('Test sidekick module', () => {
     assert.ok(checkPageResult, 'Did not show data view for JSON file');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
-  it.skip('Shows custom view for JSON file', async () => {
-    const { checkPageResult: [text, color] } = await new SidekickTest({
-      page,
-      loadModule: true,
-      type: 'json',
-      configJson: `{
-        specialViews: [
-          {
-            path: '**.json',
-            js: (container) => {
-              container.textContent = 'Custom JSON view';
-            },
-            css: '.hlx-sk-special-view { color: orange }',
-          },
-        ],
-      }`,
-      checkPage: (p) => p.evaluate(() => {
-        const view = window.hlx.sidekick.shadowRoot.querySelector('.hlx-sk-special-view');
-        return view ? [view.textContent, window.getComputedStyle(view).color] : [];
-      }),
-    }).run();
-    assert.strictEqual(text, 'Custom JSON view', 'Did not show custom view for JSON file');
-    assert.strictEqual(color, 'rgb(255, 165, 0)', 'Did not apply custom styling to special view');
-  }).timeout(IT_DEFAULT_TIMEOUT);
-
-  it('Shows custom view with external CSS', async () => {
-    const { checkPageResult: color } = await new SidekickTest({
-      page,
-      loadModule: true,
-      type: 'json',
-      configJson: `{
-        "specialViews": [
-          {
-            "path": "**.json",
-            "css": "${__dirname}/fixtures/custom-json-view.css"
-          }
-        ]
-      }`,
-      checkPage: (p) => p.evaluate(() => {
-        const view = window.hlx.sidekick.shadowRoot.querySelector('.hlx-sk-special-view');
-        return view ? window.getComputedStyle(view).color : '';
-      }),
-    }).run();
-    assert.strictEqual(color, 'rgb(0, 255, 0)', 'Did not apply custom styling to special view');
-  }).timeout(IT_DEFAULT_TIMEOUT);
-
   it('Shows help content', async () => {
     const { notification } = await new SidekickTest({
       page,
