@@ -534,9 +534,11 @@ The plugin configuration.
 | title | <code>string</code> |  | The button text |
 | titleI18n | <code>Object</code> | <code>{}</code> | A map of translated button texts |
 | url | <code>string</code> |  | The URL to open when the button is clicked |
-| event | <code>string</code> |  | The name of a custom event to fire when the button is clicked |
+| event | <code>string</code> |  | The name of a custom event to fire when the button is clicked.                      Note: Plugin events get a custom: prefix, e.g. "foo" becomes "custom:foo". |
 | containerId | <code>string</code> |  | The ID of a dropdown to add this plugin to (optional) |
 | isContainer | <code>boolean</code> |  | Determines whether to turn this plugin into a dropdown |
+| isPalette | <code>boolean</code> |  | Determines whether a URL is opened in a palette instead of a new tab |
+| paletteRect | <code>string</code> |  | The dimensions and position of a palette (optional) |
 | environments | <code>Array.&lt;string&gt;</code> |  | Specifies when to show this plugin (edit, preview, live, or prod) |
 | excludePaths | <code>Array.&lt;string&gt;</code> |  | Exclude the plugin from these paths (glob patterns supported) |
 | includePaths | <code>Array.&lt;string&gt;</code> |  | Include the plugin on these paths (glob patterns supported) |

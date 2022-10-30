@@ -17,14 +17,18 @@ const assert = require('assert');
 
 const {
   IT_DEFAULT_TIMEOUT,
+  DEBUG,
   startBrowser,
   stopBrowser,
   openPage,
+  Nock,
+  checkEventFired,
 } = require('./utils.js');
 const { SidekickTest } = require('./SidekickTest.js');
 
 describe('Test sidekick module', () => {
   let browser;
+  let nock;
 
   before(async function before() {
     this.timeout(10000);
@@ -35,10 +39,14 @@ describe('Test sidekick module', () => {
   let page;
   beforeEach(async () => {
     page = await openPage(browser);
+    nock = new Nock();
   });
 
   afterEach(async () => {
-    page?.close(browser);
+    if (!DEBUG) {
+      page?.close(browser);
+    }
+    nock.done();
   });
 
   it('Does not render without config', async () => {
@@ -181,6 +189,10 @@ describe('Test sidekick module', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Loads config and plugins from project config', async () => {
+    nock('https://www.hlx.live')
+      .get('/')
+      .reply(200, 'some content...');
+
     const test = new SidekickTest({
       page,
       loadModule: true,
@@ -189,17 +201,76 @@ describe('Test sidekick module', () => {
         "plugins": [{
           "id": "bar",
           "title": "Bar",
-          "url": "https://www.foo.bar"
+          "url": "https://www.hlx.live/"
         }]
       }`,
+      plugin: 'bar',
+      pluginSleep: 2000,
     });
-    const { configLoaded, plugins, sidekick: { config: { host } } } = await test.run();
+    const {
+      configLoaded,
+      plugins,
+      popupOpened,
+      sidekick: { config: { host } },
+    } = await test.run();
     assert.ok(configLoaded, 'Did not load project config');
     assert.ok(plugins.find((p) => p.id === 'bar'), 'Did not load plugins from project');
+    assert.ok(popupOpened === 'https://www.hlx.live/', 'Did not open plugin URL');
     assert.strictEqual(host, 'blog.adobe.com', 'Did not load config from project');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
-  it('Loads config and plugins from development environment', async () => {
+  it('Plugin shows palette', async () => {
+    const test = new SidekickTest({
+      page,
+      loadModule: true,
+      configJson: `{
+        "host": "blog.adobe.com",
+        "plugins": [{
+          "id": "bar",
+          "title": "Bar",
+          "url": "https://www.hlx.live/",
+          "isPalette": true
+        }]
+      }`,
+      plugin: 'bar',
+      pluginSleep: 2000,
+    });
+    const {
+      configLoaded,
+      plugins,
+    } = await test.run();
+    const palette = await page.evaluate(() => window.hlx.sidekick.shadowRoot
+      .querySelector('.hlx-sk-palette'));
+    assert.ok(configLoaded, 'Did not load project config');
+    assert.ok(plugins.find((p) => p.id === 'bar'), 'Did not load plugins from project');
+    assert.ok(palette, 'Did not show palette');
+  }).timeout(IT_DEFAULT_TIMEOUT);
+
+  it('Plugin fires custom event', async () => {
+    const test = new SidekickTest({
+      page,
+      loadModule: true,
+      configJson: `{
+        "host": "blog.adobe.com",
+        "plugins": [{
+          "id": "bar",
+          "title": "Bar",
+          "event": "foo"
+        }]
+      }`,
+      plugin: 'bar',
+      checkEvents: ['custom:foo'],
+    });
+    const {
+      configLoaded,
+      plugins,
+    } = await test.run();
+    assert.ok(configLoaded, 'Did not load project config');
+    assert.ok(plugins.find((p) => p.id === 'bar'), 'Did not load plugins from project');
+    assert.ok(checkEventFired(page, 'custom:foo'), 'Did not fire plugin event');
+  }).timeout(IT_DEFAULT_TIMEOUT);
+
+  it('Loads config from development environment', async () => {
     const { configLoaded } = await new SidekickTest({
       page,
       loadModule: true,
