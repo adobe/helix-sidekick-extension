@@ -70,16 +70,11 @@
           }
           // apply base config
           Object.assign(window.hlx.sidekickConfig, baseConfig);
-          };
           window.hlx.initSidekick();
         }
       }
     });
-    moduleScript.addEventListener('error', () => {
-      console.error('failed to load sidekick module');
-    });
     document.head.append(moduleScript);
-    window.hlx.sidekickScript = moduleScript;
   } else if (window.hlx.sidekick) {
     // sidekick already loaded > toggle
     window.hlx.sidekick.toggle();
