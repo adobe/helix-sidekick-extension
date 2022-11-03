@@ -1302,6 +1302,7 @@
                         tag: 'iframe',
                         attrs: {
                           src: target,
+                          allow: 'clipboard-write',
                         },
                       });
                     }
@@ -1890,9 +1891,6 @@
 
       // collapse dropdowns when document is clicked
       document.addEventListener('click', () => collapseDropdowns(this));
-      // announce to the document that the sidekick is ready
-      document.dispatchEvent(new CustomEvent('sidekick-ready'));
-      document.dispatchEvent(new CustomEvent('helix-sidekick-ready')); // legacy
     }
 
     /**
@@ -2816,6 +2814,10 @@
       window.hlx.sidekick = document.createElement('helix-sidekick');
       document.body.prepend(window.hlx.sidekick);
       window.hlx.sidekick.show();
+
+      // announce to the document that the sidekick is ready
+      document.dispatchEvent(new CustomEvent('sidekick-ready'));
+      document.dispatchEvent(new CustomEvent('helix-sidekick-ready')); // legacy
     } else {
       // toggle sidekick
       window.hlx.sidekick.toggle();
