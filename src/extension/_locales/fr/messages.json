@@ -1,12 +1,12 @@
 {
   "title": {
-    "message": "Franklin Sidekick (Beta)"
+    "message": "Franklin Sidekick"
   },
   "description": {
     "message": "Le Franklin Sidekick permet aux auteurs de simplement visualiser et publier leur contenu."
   },
   "description_shortcut": {
-    "message": "Afficher / cacher le Sidekick"
+    "message": "Afficher/cacher le Sidekick"
   },
   "homepage": {
     "message": "https://www.hlx.live/tools/sidekick/"
@@ -66,7 +66,7 @@
     "message": "Ajouter via une URL de partage"
   },
   "config_shareurl_description": {
-    "message": "Demander à quelqu'un de partager une configuration de son Sidekick : il lui suffit de cliquer sur le bouton partage du côté droit du Sidekick."
+    "message": "Demander à quelqu'un de partager une configuration de son Sidekick: il lui suffit de cliquer sur le bouton partage du côté droit du Sidekick."
   },
   "config_shareurl_placeholder": {
     "message": "URL de partage: https://www.hlx.live/sidekick..."
@@ -186,18 +186,6 @@
   },
   "caution_side_effects": {
     "message": "Attention: effets indésirables!"
-  },
-  "developer_mode": {
-    "message": "Tester le Sidekick localement"
-  },
-  "developer_mode_description": {
-    "message": "Invoquer une version locale du Sidekick"
-  },
-  "branch_name": {
-    "message": "Tester une version de branche du Sidekick"
-  },
-  "branch_name_placeholder": {
-    "message": "Nom de la branche: test"
   },
   "admin_version": {
     "message": "Utiliser une version spécifique de l'API Franklin Admin"

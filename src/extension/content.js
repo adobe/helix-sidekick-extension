@@ -19,51 +19,63 @@
   const {
     log,
     getState,
-    getConfigMatches,
   } = await import('./utils.js');
 
-  const inject = (selectedConfig = window.hlx.selectedSidekickConfig) => {
-    getState(({
-      configs, display, devMode, proxyUrl, branchName, adminVersion, pushDown,
-    }) => {
-      let matches = [];
-      let matchingConfig;
-      if (!selectedConfig) {
-        // find config matches
-        matches = getConfigMatches(configs, window.location.href, proxyUrl);
-        log.debug('content.js: found matches', matches.length);
-        if (matches.length === 0) {
-          // no config matches, do nothing
-          return;
+  let inject = () => {};
+  if (!window.hlx.projectMatches) {
+    inject = (selectedProject = window.hlx.selectedSidekickProject) => {
+      getState(({
+        display, adminVersion, pushDown,
+      }) => {
+        const matches = window.hlx.projectMatches || [];
+        let matchingProject;
+        if (!selectedProject) {
+          // find config matches
+          log.debug('content.js: found matches', matches.length);
+          if (matches.length === 0) {
+            // no config matches, do nothing
+            return;
+          }
+          if (matches.length === 1) {
+            // single config match
+            [matchingProject] = matches;
+          }
         }
-        if (matches.length === 1) {
-          // single config match
-          [matchingConfig] = matches;
+        if (selectedProject
+          || (matchingProject && window.location.origin !== 'https://docs.google.com')) {
+          log.info('content.js: selected or single matching config found, inject sidekick');
+          // user selected config or single match, remember and show sidekick
+          window.hlx.selectedSidekickProject = selectedProject;
+          const config = selectedProject || matchingProject;
+          if (adminVersion) {
+            config.adminVersion = adminVersion;
+          }
+          if (pushDown) {
+            config.pushDown = true;
+          }
+          import('./sidekick.js')
+            .then((mod) => mod.default(config, display))
+            .catch((e) => log.error('failed to load sidekick', e));
+        } else if (matches.length > 0) {
+          log.info('content.js: gdrive or multiple matching configs found, inject config picker', matches);
+          // multiple matches, show config picker
+          import('./configpicker.js')
+            .then((mod) => mod.default(matches, display, pushDown, inject))
+            .catch((e) => log.error('failed to load config picker', e));
         }
-      }
-      if (selectedConfig
-        || (matchingConfig && window.location.origin !== 'https://docs.google.com')) {
-        log.info('content.js: selected or single matching config found, inject sidekick');
-        // user selected config or single match, remember and show sidekick
-        window.hlx.selectedSidekickConfig = selectedConfig;
-        const config = selectedConfig || matchingConfig;
-        if (adminVersion) {
-          config.adminVersion = adminVersion;
-        }
-        if (pushDown) {
-          config.pushDown = true;
-        }
-        import('./sidekick.js')
-          .then((mod) => mod.default(config, display, devMode, branchName))
-          .catch((e) => log.error('failed to load sidekick', e));
-      } else if (matches.length > 0) {
-        log.info('content.js: gdrive or multiple matching configs found, inject config picker', matches);
-        // multiple matches, show config picker
-        import('./configpicker.js')
-          .then((mod) => mod.default(matches, display, pushDown, inject))
-          .catch((e) => log.error('failed to load config picker', e));
+      });
+    };
+
+    log.debug('content.js: waiting for config matches...');
+    chrome.runtime.onMessage.addListener(({ projectMatches }, { tab }) => {
+      // make sure message is from extension
+      if (!tab) {
+        window.hlx.projectMatches = projectMatches;
+        inject();
       }
     });
-  };
-  inject();
+  } else {
+    log.debug('content.js: reusing project matches', window.hlx.projectMatches);
+    inject();
+  }
 })();

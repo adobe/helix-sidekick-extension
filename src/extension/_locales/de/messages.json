@@ -1,6 +1,6 @@
 {
   "title": {
-    "message": "Franklin Sidekick (Beta)"
+    "message": "Franklin Sidekick"
   },
   "description": {
     "message": "Franklin Sidekick erlaubt es Autoren in Franklin-Projekten, Inhalte zu publizieren."
@@ -60,7 +60,7 @@
     "message": "Dieses Projekt aktivieren"
   },
   "config_project_disable": {
-    "message": "Dieses Project deaktivieren"
+    "message": "Dieses Projekt deaktivieren"
   },
   "config_shareurl_title": {
     "message": "Mit Teilen-URL hinzufügen"
@@ -186,18 +186,6 @@
   },
   "caution_side_effects": {
     "message": "Achtung: unerwartete Nebeneffekte!"
-  },
-  "developer_mode": {
-    "message": "Sidekick lokal testen"
-  },
-  "developer_mode_description": {
-    "message": "Eine lokale Entwicklungsversion des Sidekick aufrufen"
-  },
-  "branch_name": {
-    "message": "Eine Branch-Version des Sidekick testen"
-  },
-  "branch_name_placeholder": {
-    "message": "Branch-Name: test"
   },
   "admin_version": {
     "message": "Eine spezifische Version des Franklin Admin API verwenden"

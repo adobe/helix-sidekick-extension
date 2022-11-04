@@ -1,5 +1,5 @@
 {
-  "manifest_version": 2,
+  "manifest_version": 3,
   "name": "__MSG_title__",
   "version": "5.9.0",
   "author": "Adobe",
@@ -7,38 +7,44 @@
   "default_locale": "en",
   "options_page": "options.html",
   "description": "__MSG_description__",
-  "__chrome__permissions": [
+  "permissions": [
     "contextMenus",
+    "scripting",
     "storage",
-    "tabs",
-    "webRequest",
-    "https://*/*",
-    "http://localhost:3000/*"
+    "activeTab"
   ],
-  "__safari__permissions": [
-    "contextMenus",
-    "storage",
-    "tabs",
-    "https://*/*",
-    "http://localhost:3000/*"
+  "host_permissions": [
+    "http://localhost:3000/*",
+    "https://*/*"
   ],
   "background": {
-    "__safari__persistent": false,
-    "page": "background.html"
+    "service_worker": "background.js",
+    "type": "module"
   },
   "externally_connectable": {
     "matches": [
       "https://admin.hlx.page/*"
     ]
   },
-  "web_accessible_resources": [
-    "configpicker.js",
-    "lib/polyfills.min.js",
-    "lib/js-yaml.min.js",
-    "sidekick.js",
-    "utils.js"
-  ],
-  "page_action": {
+  "web_accessible_resources": [{
+    "resources": [
+      "app.css",
+      "de.css",
+      "configpicker.js",
+      "fr.css",
+      "lib/polyfills.min.js",
+      "lib/js-yaml.min.js",
+      "module.js",
+      "sidekick.js",
+      "utils.js",
+      "view/json.js"
+    ],
+    "matches": [
+      "https://*/*",
+      "http://localhost:3000/*"
+    ]
+  }],
+  "action": {
     "default_title": "__MSG_title__",
     "default_icon": {
       "16": "icons/helix_logo_16.png",
@@ -48,7 +54,7 @@
     }
   },
   "commands": {
-    "_execute_page_action": {
+    "_execute_action": {
       "suggested_key": {
         "default": "Ctrl+Shift+H",
         "mac": "MacCtrl+Shift+H"

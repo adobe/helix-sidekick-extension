@@ -1,0 +1,60 @@
+{
+  "total": 4,
+  "offset": 0,
+  "limit": 4,
+  "data": [
+    {
+      "date": "44581",
+      "image": "/test/fixtures/media_0000.png?width=1200&format=pjpg&optimize=medium",
+      "path": "/en/publish/2022/01/20/adobe-is-helping-government-agencies-modernize-grants-management",
+      "title": "Adobe is helping government agencies modernize grants management",
+      "author": "Heather Whitlock",
+      "description": "Government grant management requires processes that are easy for citizen and organizations to use. Digital modernization enables government agencies to simplify and streamline workflows and processes to deliver better citizen experiences.",
+      "tags": "[\"Digital Transformation\",\"Document Cloud\",\"Insights & Inspiration\",\"Customer Stories\",\"Government\",\"Acrobat\",\"Sign\",\"Experience Manager\"]",
+      "imageAlt": "Cell phone with a form on it's screen.",
+      "robots": "0",
+      "checkSum": 1234,
+      "lastModified": "1642643210"
+    },
+    {
+      "date": "44581",
+      "image": "/test/fixtures/media_0000.png?width=1200&format=pjpg&optimize=medium",
+      "path": "/en/publish/2022/01/20/axel-springer-embraces-digital-signatures-support-global-media-brands",
+      "title": "Axel Springer embraces digital signatures to support global media brands",
+      "author": "Document Cloud Team",
+      "description": "Groups across Axel Springer, including HR and legal, complete several thousands of transactions a quarter through Adobe Sign. Between the easy delivery and signing, the average turnaround time for signatures has been reduced from several weeks to just 25 hours.",
+      "tags": "[\"Document Cloud\",\"Insights & Inspiration\",\"Customer Stories\",\"Digital Transformation\",\"Media & Entertainment\",\"Sign\",\"Productivity\",\"Future of Work\"]",
+      "imageAlt": "Axel Springer_",
+      "robots": "0",
+      "checkSum": 1234,
+      "lastModified": "1642643348"
+    },
+    {
+      "date": "44581",
+      "image": "/test/fixtures/media_0000.png?width=1200&format=pjpg&optimize=medium",
+      "path": "/en/publish/2022/01/20/make-creative-work-easier-with-adobe-acrobat",
+      "title": "Make creative work easier with Adobe Acrobat",
+      "author": "Adobe Acrobat Team",
+      "description": "Ideate, organize, share, and collaborate on your creative work with Adobe, Acrobat PDF tools.",
+      "tags": "[\"Future of Work\",\"Insights & Inspiration\",\"Creative Cloud\",\"Document Cloud\",\"Photoshop\",\"Acrobat\",\"Scan\",\"Productivity\"]",
+      "imageAlt": "Acrobat online tools for creative designers.",
+      "robots": "0",
+      "checkSum": 1234,
+      "lastModified": "1642643478"
+    },
+    {
+      "date": "44581",
+      "image": "/test/fixtures/media_0000.png?width=1200&format=pjpg&optimize=medium",
+      "path": "/en/publish/2022/01/20/register-now-adobe-summit-2022-is-free-virtual-and-global",
+      "title": "Register now: Adobe Summit 2022 is free, virtual, and global",
+      "author": "Adobe Events Team",
+      "description": "We’re less than eight weeks away from the start of Adobe Summit 2022 — and registration for this free, all-virtual event is officially open.",
+      "tags": "[\"Adobe Summit\",\"Insights & Inspiration\",\"Events\",\"Experience Cloud\",\"Digital Transformation\",\"UK\",\"APAC\"]",
+      "imageAlt": "Adobe Summit 2022.",
+      "robots": "0",
+      "checkSum": 1234,
+      "lastModified": "1642643576"
+    }
+  ],
+  ":type": "sheet"
+}

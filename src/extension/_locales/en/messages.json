@@ -1,9 +1,9 @@
 {
   "title": {
-    "message": "Franklin Sidekick (Beta)"
+    "message": "Franklin Sidekick"
   },
   "description": {
-    "message": "Franklin Sidekick allows authors in Franklin projects to easily preview and publish their content."
+    "message": "Franklin Sidekick allows authors in Franklin projects to easily preview and publish content."
   },
   "description_shortcut": {
     "message": "Toggle Sidekick"
@@ -71,7 +71,7 @@
   },
   "config_shareurl_placeholder": {
     "message": "Sharing URL: https://www.hlx.live/sidekick..."
-  }, 
+  },
   "config_shareurl_share_title": {
     "message": "Sidekick configuration for $1"
   },
@@ -187,18 +187,6 @@
   },
   "caution_side_effects": {
     "message": "Caution: unexpected side effects!"
-  },
-  "developer_mode": {
-    "message": "Test Sidekick locally"
-  },
-  "developer_mode_description": {
-    "message": "Invoke a local development version of the Sidekick"
-  },
-  "branch_name": {
-    "message": "Test a branch version of the Sidekick"
-  },
-  "branch_name_placeholder": {
-    "message": "Branch Name: test"
   },
   "admin_version": {
     "message": "Use a specific Franklin Admin API version"

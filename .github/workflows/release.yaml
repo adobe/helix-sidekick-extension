@@ -1,0 +1,41 @@
+name: Release (Bookmarklet)
+on:
+  push:
+    branches:
+      - main
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    if: "${{ !contains(github.event.head_commit.message, '[skip ci]') }}"
+    steps:
+      - name: Checkout source repo
+        uses: actions/checkout@v3
+        with:
+          ssh-key: ${{ secrets.SSH-KEY }}
+      - name: Checkout target repo
+        uses: actions/checkout@v3
+        with:
+          repository: adobe/helix-website
+          ref: main
+          path: _target
+      - name: Copy files from source to target repo
+        run: |
+          cp src/sidekick/bookmarklet/app.js _target/tools/sidekick/
+          cp src/sidekick/extension/module.js _target/tools/sidekick/
+          cp src/sidekick/extension/app.css _target/tools/sidekick/
+          cp src/sidekick/extension/de.css _target/tools/sidekick/
+          cp src/sidekick/extension/fr.css _target/tools/sidekick/
+          cp -r src/sidekick/extension/view _target/tools/sidekick/
+          cp docs/config.schema.json _target/tools/sidekick/
+      - name: Create branch commit and pull request in target repo
+        uses: peter-evans/create-pull-request@v4
+        with:
+          commit-message: "chore(sidekick): new release candidate [skip ci]"
+          token: ${{ secrets.PAT }}
+          path: _target
+          base: main
+          branch: sidekick-rc
+          branch-suffix: short-commit-hash
+          delete-branch: true
+          title: Sidekick Bookmarklet RC
+          body: This PR has been auto-generated from https://github.com/adobe/helix-sidekick-extension/.

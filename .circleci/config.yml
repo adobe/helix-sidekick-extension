@@ -2,53 +2,53 @@ version: 2.1
 executors:
   node14:
     docker:
-    - image: circleci/node:14
-    environment:
-      NPM_CONFIG_PREFIX: ~/.npm-global
+      - image: cimg/node:14.19
 
 orbs:
   browser-tools: circleci/browser-tools@1.4.0
+  codecov: codecov/codecov@3.2.3
 
 commands:
   setup:
     steps:
-    - checkout
-    # - restore_cache:
-    #     keys:
-    #     - v1-dependencies-{{ arch }}-{{ checksum "package-lock.json" }}
-    - run:
-        name: install latest npm
-        command: sudo npm -g install npm
-    - run:
-        name: Installing Dependencies
-        command: npm ci
-    # - save_cache:
-    #     paths:
-    #     - node_modules
-    #     key: v1-dependencies-{{ arch }}-{{ checksum "package-lock.json" }}
-    - run:
-        name: prepare test git user
-        command: git config --global user.email "circleci@example.com" && git config --global user.name "CircleCi Build"
+      - checkout
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ arch }}-{{ checksum "package-lock.json" }}
+      - run:
+          name: install latest npm
+          command: npm -g install npm
+      - run:
+          name: Installing Dependencies
+          command: npm ci
+      - save_cache:
+          paths:
+            - node_modules
+          key: v1-dependencies-{{ arch }}-{{ checksum "package-lock.json" }}
+      - run:
+          name: prepare test git user
+          command: git config --global user.email "circleci@example.com" && git config --global user.name "CircleCi Build"
 
 jobs:
   build:
     executor: node14
     steps:
-    - setup
-    - run: mkdir junit
-    - run:
-        name: Lint
-        command: npm run lint
-    - browser-tools/install-chrome
-    - run:
-        name: Test
-        command: |
-          export CHROME_PATH=`find /home/circleci/project/node_modules -name chrome`
-          npm run test
-    - store_test_results:
-        path: junit
-    - store_artifacts:
-        path: junit
+      - setup
+      - run: mkdir junit
+      - run:
+          name: Lint
+          command: npm run lint
+      - browser-tools/install-chrome
+      - run:
+          name: Test
+          command: |
+            export CHROME_PATH=`find /home/circleci/project/node_modules -name chrome`
+            npm run test
+      - codecov/upload
+      - store_test_results:
+          path: junit
+      - store_artifacts:
+          path: junit
   semantic-release:
     executor: node14
     steps:
@@ -67,11 +67,11 @@ workflows:
   version: 2
   build:
     jobs:
-    - build
-    - semantic-release:
-        context: Project Helix
-        requires:
-          - build
-        filters:
-          branches:
-            only: main
+      - build
+      - semantic-release:
+          context: Project Helix
+          requires:
+            - build
+          filters:
+            branches:
+              only: main

@@ -4,8 +4,12 @@
   "description": "Franklin Sidekick Extension",
   "scripts": {
     "lint": "./node_modules/.bin/eslint .",
-    "test": "wtr \"./test/*/*.test.js\" --node-resolve --port=2000 --coverage",
+    "test:mocha": "nyc mocha",
+    "test:wtr": "wtr \"./test/unit/*.test.js\" \"./test/extension/*.test.js\"",
+    "test:wtr:watch": "npm run test:wtr -- --watch",
+    "test": "npm run test:mocha && npm run test:wtr",
     "test:watch": "npm run test -- --watch",
+    "docs": "npx jsdoc2md -c .jsdoc.json --files './src/extension/module.js'  > docs/API.md",
     "start": "node ./debug/debug.js",
     "semantic-release": "semantic-release",
     "update-version": "node ./build/updateVersion.js",
@@ -13,7 +17,8 @@
     "build:safari": "node ./build/build.js safari",
     "build:chrome": "node ./build/build.js chrome",
     "publish:chrome": "node ./build/publish.js chrome",
-    "release:chrome": "npm run update-version && npm run build:chrome && npm run publish:chrome"
+    "release:chrome": "npm run update-version && npm run build:chrome && npm run publish:chrome",
+    "prepare": "husky install"
   },
   "repository": {
     "type": "git",
@@ -42,18 +47,19 @@
     "eslint-plugin-header": "3.1.1",
     "eslint-plugin-import": "2.26.0",
     "express": "4.18.2",
-    "fs-extra": "10.1.0",
+    "husky": "8.0.1",
+    "jsdoc-to-markdown": "7.1.1",
     "lint-staged": "13.0.3",
+    "mocha": "10.0.0",
+    "nock": "13.2.8",
+    "nyc": "15.1.0",
+    "puppeteer": "14.2.1",
+    "puppeteer-to-istanbul": "1.4.0",
     "semantic-release": "19.0.5",
     "shelljs": "0.8.5",
     "sinon": "14.0.1"
   },
   "lint-staged": {
     "*.js": "eslint"
-  },
-  "config": {
-    "ghooks": {
-      "pre-commit": "npx lint-staged"
-    }
   }
 }

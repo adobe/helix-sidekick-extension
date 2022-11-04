@@ -13,6 +13,35 @@ import { readFile } from '@web/test-runner-commands';
 
 const ID = 'dummy';
 
+class StorageMock {
+  constructor(state = {}) {
+    this.state = state;
+  }
+
+  get(name, callback) {
+    callback({
+      [name]: this.state[name],
+    });
+  }
+
+  set(obj, callback) {
+    Object.keys(obj).forEach((key) => {
+      this.state[key] = obj[key];
+    });
+    callback();
+  }
+
+  remove(name, callback) {
+    delete this.state[name];
+    callback();
+  }
+
+  clear(callback) {
+    this.state = {};
+    callback();
+  }
+}
+
 export default {
   i18n: {
     getMessage: () => {},
@@ -21,18 +50,27 @@ export default {
     id: ID,
     getManifest: async () => readFile({ path: '../../src/extension/manifest.json' }).then((mf) => JSON.parse(mf)),
     getURL: (path) => `chrome-extension://${ID}${path}`,
-    lastError: new Error('foo'),
+    lastError: null,
   },
   storage: {
-    sync: {
-      get: (name, callback) => callback({ name }),
-      set: (_, callback) => callback(),
-      clear: (callback) => callback(),
-    },
-    local: {
-      get: (name, callback) => callback({ name }),
-      set: (_, callback) => callback(),
-      clear: (callback) => callback(),
-    },
+    sync: new StorageMock({
+      hlxSidekickConfigs: [{
+        giturl: 'https://github.com/test/legacy-project',
+        owner: 'test',
+        repo: 'legacy-project',
+        ref: 'main',
+      }],
+      hlxSidekickProjects: ['adobe/blog'],
+      'adobe/blog': {
+        giturl: 'https://github.com/adobe/blog',
+        owner: 'adobe',
+        repo: 'blog',
+        ref: 'main',
+      },
+    }),
+    local: new StorageMock({
+      hlxSidekickDisplay: true,
+      test: 'test',
+    }),
   },
 };
