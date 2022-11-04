@@ -81,6 +81,10 @@
         "url": {
           "type": "url",
           "description": "The URL to open when the button is clicked"
+        },
+        "passReferrer": {
+          "type": "boolean",
+          "description": "Append the referrer URL as a query param on new URL button click"
         }
       },
       "anyOf": [
