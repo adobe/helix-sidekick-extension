@@ -1,3 +1,10 @@
+# [5.10.0](https://github.com/adobe/helix-sidekick-extension/compare/v5.9.0...v5.10.0) (2022-11-04)
+
+
+### Features
+
+* migrate to manifest v3 ([78723c7](https://github.com/adobe/helix-sidekick-extension/commit/78723c7d7cc9d1bd42c7862bf04ee813bab6f376))
+
 # [5.9.0](https://github.com/adobe/helix-sidekick-extension/compare/v5.8.0...v5.9.0) (2022-08-22)
 
 
