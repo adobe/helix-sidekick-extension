@@ -219,6 +219,38 @@ describe('Test sidekick module', () => {
     assert.strictEqual(host, 'blog.adobe.com', 'Did not load config from project');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
+  it('Plugin passes referrer in url', async () => {
+    const pluginUrl = 'https://www.hlx.live/';
+    const expectedReferrerParam = '?referrer=https%3A%2F%2Fmain--blog--adobe.hlx.page%2Fen%2Ftopics%2Fbla';
+    const expectedPopupUrl = `${pluginUrl}${expectedReferrerParam}`;
+    const mockUrl = `/${expectedReferrerParam}`;
+
+    nock('https://www.hlx.live')
+      .get(mockUrl)
+      .reply(200, 'some content...');
+
+    const test = new SidekickTest({
+      page,
+      loadModule: true,
+      configJson: `{
+        "plugins": [{
+          "id": "bar",
+          "title": "Bar",
+          "url": "${pluginUrl}",
+          "passReferrer": true
+        }]
+      }`,
+      plugin: 'bar',
+      pluginSleep: 2000,
+    });
+    const {
+      plugins,
+      popupOpened,
+    } = await test.run();
+    assert.ok(plugins.find((p) => p.id === 'bar'), 'Did not load plugins from project');
+    assert.ok(popupOpened === expectedPopupUrl, 'Did not pass referrer in plugin URL');
+  }).timeout(IT_DEFAULT_TIMEOUT);
+
   it('Plugin shows palette', async () => {
     const test = new SidekickTest({
       page,
