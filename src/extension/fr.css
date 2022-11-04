@@ -195,7 +195,7 @@
 }
 
 .hlx-sk-overlay .modal.modal-status-404-document::before {
-  content: "404 Not found: Check your Sidekick configuration and make sure g has access to this document.";
+  content: "404 Not found: Check your Sidekick configuration and make sure Franklin has access to this document.";
 }
 
 .hlx-sk-overlay .modal.modal-status-404-content::before {
