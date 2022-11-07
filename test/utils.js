@@ -14,14 +14,15 @@
 'use strict';
 
 const assert = require('assert');
-const { fetch } = require('@adobe/helix-fetch').h1();
+const { fetch } = require('@adobe/fetch').h1();
 const nock = require('nock');
 const puppeteer = require('puppeteer');
 const pti = require('puppeteer-to-istanbul');
+const { CDPBrowser } = require('../node_modules/puppeteer/node_modules/puppeteer-core/lib/cjs/puppeteer/common/Browser.js');
 
 // set debug to true to see browser window and debug output
 const DEBUG = false;
-const DEBUG_LOGS = false;
+const DEBUG_LOGS = true;
 
 const IT_DEFAULT_TIMEOUT = 60000;
 
@@ -416,22 +417,20 @@ const sleep = async (delay = 1000) => new Promise((resolve) => {
 /**
  * Registers a fetch interceptor for newly created targets and proxies the requests via
  * helix-fetch. This allows to use 'nock' for the network responses.
- * @param {Browser} browser
+ * @param {Connection} connection
  * @returns {Promise<void>}
  */
-async function interceptPopups(browser) {
-  // eslint-disable-next-line no-underscore-dangle
-  await browser._connection.send('Target.setAutoAttach', {
+async function interceptPopups(connection) {
+  await connection.send('Target.setAutoAttach', {
     autoAttach: true,
     waitForDebuggerOnStart: true,
     flatten: true,
   });
-  // eslint-disable-next-line no-underscore-dangle
-  browser._connection.on('Target.attachedToTarget', async (event) => {
+  connection.on('Target.attachedToTarget', async (event) => {
     const { sessionId } = event;
 
     // eslint-disable-next-line no-underscore-dangle
-    const getSession = () => browser._connection._sessions.get(sessionId);
+    const getSession = () => connection.session(sessionId);
     const session = getSession();
 
     if (!event.waitingForDebugger || !session || event.targetInfo.type !== 'page') {
@@ -442,13 +441,22 @@ async function interceptPopups(browser) {
       const { request } = evt;
       if (DEBUG_LOGS) {
         // eslint-disable-next-line no-console
-        console.log('[pup] handling request to', request.url);
+        console.log('[pup] intercepting request to', request.url);
       }
 
       let innerSession = getSession();
       if (!innerSession) {
         // eslint-disable-next-line no-console
         console.log(`[pup] session ${sessionId} no longer valid. maybe pending request?`);
+        return;
+      }
+
+      // ignore internal requests (?)
+      if (request.url.endsWith('/tools/sidekick/config.json')) {
+        if (DEBUG_LOGS) {
+          // eslint-disable-next-line no-console
+          console.log('[pup] intercepting request to', request.url, ' (ignored)');
+        }
         return;
       }
 
@@ -463,18 +471,18 @@ async function interceptPopups(browser) {
         headers: request.headers,
       });
 
-      // refetch session, in case no longer valid
-      innerSession = getSession();
-      if (!innerSession) {
-        // eslint-disable-next-line no-console
-        console.log(`[pup] session ${sessionId} no longer valid after received response to ${request.url}.`);
-        return;
-      }
-
       const responseHeaders = Object.entries(res.headers.plain())
         .map(([name, value]) => ({ name, value }));
       const body = (await res.buffer()).toString('base64');
       try {
+        // refetch session, in case no longer valid
+        innerSession = getSession();
+        if (!innerSession) {
+          // eslint-disable-next-line no-console
+          console.log(`[pup] session ${sessionId} no longer valid after received response to ${request.url}.`);
+          return;
+        }
+
         await innerSession.send('Fetch.fulfillRequest', {
           requestId: evt.requestId,
           responseCode: res.status,
@@ -486,15 +494,20 @@ async function interceptPopups(browser) {
         console.error('[pup] error handling request', e);
       }
     };
-    await session.on('Fetch.requestPaused', handleRequestPaused);
-    await session.send('Fetch.enable', {
-      handleAuthRequests: true,
-      patterns: [
-        { urlPattern: 'https://*' },
-        { urlPattern: 'http://*' },
-      ],
-    });
-    await session.send('Runtime.runIfWaitingForDebugger');
+    try {
+      await session.on('Fetch.requestPaused', handleRequestPaused);
+      await session.send('Fetch.enable', {
+        handleAuthRequests: true,
+        patterns: [
+          { urlPattern: 'https://*' },
+          { urlPattern: 'http://*' },
+        ],
+      });
+      await session.send('Runtime.runIfWaitingForDebugger');
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.error('[pup] error setting up request-interception', e);
+    }
   });
 }
 
@@ -503,6 +516,15 @@ async function interceptPopups(browser) {
  * @returns {Promise<Browser>}
  */
 async function startBrowser() {
+  let browserConnection;
+  // eslint-disable-next-line no-underscore-dangle
+  const oldCreate = CDPBrowser._create;
+  // eslint-disable-next-line no-underscore-dangle
+  CDPBrowser._create = (product, connection, ...args) => {
+    browserConnection = connection;
+    return oldCreate(product, connection, ...args);
+  };
+
   const browser = await puppeteer.launch({
     devtools: DEBUG || process.env.HLX_SK_TEST_DEBUG,
     // headless: false,
@@ -514,7 +536,7 @@ async function startBrowser() {
     ],
     slowMo: false,
   });
-  await interceptPopups(browser);
+  await interceptPopups(browserConnection);
   return browser;
 }
 
@@ -574,6 +596,7 @@ function Nock() {
     }
     if (!unmatched) {
       unmatched = [];
+      nock.disableNetConnect();
       nock.emitter.on('no match', noMatchHandler);
     }
     return scope;
@@ -586,7 +609,9 @@ function Nock() {
       nock.cleanAll();
     }
     if (unmatched) {
-      assert.deepStrictEqual(unmatched.map((req) => req.options || req), []);
+      const msg = ['Nock has unmatched requests:'];
+      unmatched.forEach((req) => msg.push(`- ${req.href || req}`));
+      assert.fail(msg.join('\n'));
       nock.emitter.off('no match', noMatchHandler);
     }
   };

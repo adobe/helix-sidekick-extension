@@ -50,6 +50,7 @@ describe('Test editor preview plugin', () => {
   it('Editor preview plugin updates preview when switching from editor', async () => {
     nock('https://main--blog--adobe.hlx.page')
       .get('/en/topics/bla')
+      .twice()
       .reply(200, 'blog adobe...');
     const { requestsMade } = await new SidekickTest({
       page,
@@ -78,6 +79,7 @@ describe('Test editor preview plugin', () => {
   it('Editor preview plugin refetches status and retries on error', async () => {
     nock('https://main--blog--adobe.hlx.page')
       .get('/en/topics/bla')
+      .twice()
       .reply(200, 'blog adobe...');
     const test = new SidekickTest({
       page,
