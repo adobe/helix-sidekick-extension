@@ -415,12 +415,13 @@ const sleep = async (delay = 1000) => new Promise((resolve) => {
 });
 
 /**
- * Registers a fetch interceptor for newly created targets and proxies the requests via
- * helix-fetch. This allows to use 'nock' for the network responses.
+ * Registers a fetch interceptor for newly created targets and proxies them via @adobe/fetch.
+ * This allows to use 'nock' for the network responses.
  * @param {Connection} connection
+ * @param {boolean} proxyAdmin if {@code true} requests to admin are proxied.
  * @returns {Promise<void>}
  */
-async function interceptPopups(connection) {
+async function interceptRequests(connection, proxyAdmin = false) {
   await connection.send('Target.setAutoAttach', {
     autoAttach: true,
     waitForDebuggerOnStart: true,
@@ -452,7 +453,9 @@ async function interceptPopups(connection) {
       }
 
       // ignore internal requests (?)
-      if (request.url.endsWith('/tools/sidekick/config.json')) {
+      if (request.url.startsWith('file://')
+        || request.url.endsWith('/tools/sidekick/config.json')
+        || (request.url.startsWith('https://admin.hlx.page/') && !proxyAdmin)) {
         if (DEBUG_LOGS) {
           // eslint-disable-next-line no-console
           console.log('[pup] intercepting request to', request.url, ' (ignored)');
@@ -515,7 +518,7 @@ async function interceptPopups(connection) {
  * Starts the browser
  * @returns {Promise<Browser>}
  */
-async function startBrowser() {
+async function startBrowser(proxyAdmin) {
   let browserConnection;
   // eslint-disable-next-line no-underscore-dangle
   const oldCreate = CDPBrowser._create;
@@ -536,7 +539,7 @@ async function startBrowser() {
     ],
     slowMo: false,
   });
-  await interceptPopups(browserConnection);
+  await interceptRequests(browserConnection, proxyAdmin);
   return browser;
 }
 
@@ -596,7 +599,6 @@ function Nock() {
     }
     if (!unmatched) {
       unmatched = [];
-      nock.disableNetConnect();
       nock.emitter.on('no match', noMatchHandler);
     }
     return scope;
@@ -608,9 +610,9 @@ function Nock() {
     } finally {
       nock.cleanAll();
     }
-    if (unmatched) {
+    if (unmatched?.length) {
       const msg = ['Nock has unmatched requests:'];
-      unmatched.forEach((req) => msg.push(`- ${req.href || req}`));
+      unmatched.forEach((req) => msg.push(`- ${req.method || req.options?.method || 'GET?'} ${req.href || req.options?.href || req}`));
       assert.fail(msg.join('\n'));
       nock.emitter.off('no match', noMatchHandler);
     }

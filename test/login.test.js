@@ -32,7 +32,7 @@ describe('Test sidekick login', () => {
 
   before(async function before() {
     this.timeout(10000);
-    browser = await startBrowser();
+    browser = await startBrowser(true);
   });
   after(async () => stopBrowser(browser));
 
@@ -76,6 +76,8 @@ describe('Test sidekick login', () => {
     });
 
     nock('https://admin.hlx.page')
+      .get('/status/adobe/blog/main/en/topics/bla?editUrl=auto')
+      .reply(401)
       .get('/login/adobe/blog/main/en/topics/bla?loginRedirect=https%3A%2F%2Fwww.hlx.live%2Ftools%2Fsidekick%2Flogin-success')
       .times(DEBUG ? 2 : 1) // when dev-tools are enabled, browser makes 2 requests.
       .delay(1500) // delay so that 2 requests are made
