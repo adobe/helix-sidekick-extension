@@ -53,7 +53,7 @@
     "mocha": "10.0.0",
     "nock": "13.2.8",
     "nyc": "15.1.0",
-    "puppeteer": "14.2.1",
+    "puppeteer": "19.2.2",
     "puppeteer-to-istanbul": "1.4.0",
     "semantic-release": "19.0.5",
     "shelljs": "0.8.5",
