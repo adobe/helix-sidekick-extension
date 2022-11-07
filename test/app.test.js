@@ -668,4 +668,15 @@ describe('Test sidekick bookmarklet', () => {
     }).run();
     assert.ok(checkPageResult, 'Did not show login dialog on 401');
   });
+
+  it('Shows extension hint', async () => {
+    const { notification } = await new SidekickTest({
+      page,
+      allowNavigation: true,
+    }).run();
+    assert.ok(
+      notification.message && notification.message.startsWith('Did you know that the Sidekick is also available'),
+      'Did not show extension hint',
+    );
+  });
 });
