@@ -53,7 +53,6 @@ describe('Test sidekick login', () => {
     let loggedIn = false;
     const test = new SidekickTest({
       page,
-      loadModule: true,
       apiResponses: (req) => {
         if (req.headers.cookie === 'auth_token=foobar') {
           loggedIn = true;
@@ -70,6 +69,8 @@ describe('Test sidekick login', () => {
         };
       },
       waitPopup: 2000,
+      // suppress extension hint
+      pre: (p) => p.evaluate(() => window.localStorage.setItem('hlxSidekickExtensionHint', Date.now() + 31536000000)),
       post: async (p) => {
         const btn = await p.waitForFunction(() => window.hlx.sidekick.shadowRoot.querySelector('.hlx-sk .user div.user-login button'));
         await btn.click();
@@ -108,11 +109,12 @@ describe('Test sidekick login', () => {
   it('Opens login window and shows aborted modal', async () => {
     const test = new SidekickTest({
       page,
-      loadModule: true,
       apiResponses: [{
         status: 401,
       }],
       waitPopup: 2000,
+      // suppress extension hint
+      pre: (p) => p.evaluate(() => window.localStorage.setItem('hlxSidekickExtensionHint', Date.now() + 31536000000)),
       post: async (p) => {
         const btn = await p.waitForFunction(() => window.hlx.sidekick.shadowRoot.querySelector('.hlx-sk .user div.user-login button'));
         await btn.click();
