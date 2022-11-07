@@ -53,6 +53,7 @@ describe('Test sidekick login', () => {
     let loggedIn = false;
     const test = new SidekickTest({
       page,
+      loadModule: true,
       apiResponses: (req) => {
         if (req.headers.cookie === 'auth_token=foobar') {
           loggedIn = true;
@@ -107,6 +108,7 @@ describe('Test sidekick login', () => {
   it('Opens login window and shows aborted modal', async () => {
     const test = new SidekickTest({
       page,
+      loadModule: true,
       apiResponses: [{
         status: 401,
       }],
