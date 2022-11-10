@@ -17,10 +17,12 @@ const assert = require('assert');
 
 const {
   IT_DEFAULT_TIMEOUT,
+  DEBUG,
   startBrowser,
   stopBrowser,
   openPage,
   closeAllPages,
+  Nock,
 } = require('./utils.js');
 const { SidekickTest } = require('./SidekickTest.js');
 
@@ -677,6 +679,60 @@ describe('Test sidekick bookmarklet', () => {
     assert.ok(
       notification.message && notification.message.startsWith('Did you know that the Sidekick is also available'),
       'Did not show extension hint',
+    );
+  });
+
+  it('Extension hint opens share URL and writes local storage', async () => {
+    const nock = new Nock();
+    nock('https://www.hlx.live')
+      .get('/tools/sidekick/?giturl=https%3A%2F%2Fgithub.com%2Fadobe%2Fblog%2Ftree%2Fmain')
+      .times(DEBUG ? 2 : 1) // when dev-tools are enabled, browser makes 2 requests.
+      .reply(200, 'Share URL');
+
+    const { popupOpened } = await new SidekickTest({
+      page,
+      allowNavigation: true,
+      pre: (p) => p.evaluate(() => window.localStorage.removeItem('hlxSidekickExtensionHint')),
+      post: (p) => p.evaluate(() => {
+        const installButton = window.hlx.sidekick.shadowRoot
+          .querySelector('.hlx-sk-overlay .modal button:first-of-type');
+        installButton.click();
+      }),
+      waitPopup: 2000,
+    }).run();
+    nock.done();
+    const ts = await page.evaluate(() => window.localStorage.getItem('hlxSidekickExtensionHint'));
+    assert.strictEqual(
+      popupOpened,
+      'https://www.hlx.live/tools/sidekick/?giturl=https%3A%2F%2Fgithub.com%2Fadobe%2Fblog%2Ftree%2Fmain',
+      'Did not open share URL',
+    );
+    assert.ok(ts && ts * 1 > Date.now(), 'Did not write local storage');
+  });
+
+  it('Extension hint opens share URL', async () => {
+    const nock = new Nock();
+    nock('https://www.hlx.live')
+      .get('/tools/sidekick/?giturl=https%3A%2F%2Fgithub.com%2Fadobe%2Fblog%2Ftree%2Fmain')
+      .times(DEBUG ? 2 : 1) // when dev-tools are enabled, browser makes 2 requests.
+      .reply(200, 'Share URL');
+
+    const { popupOpened } = await new SidekickTest({
+      page,
+      allowNavigation: true,
+      pre: (p) => p.evaluate(() => window.localStorage.removeItem('hlxSidekickExtensionHint')),
+      post: (p) => p.evaluate(() => {
+        const installButton = window.hlx.sidekick.shadowRoot
+          .querySelector('.hlx-sk-overlay .modal button:first-of-type');
+        installButton.click();
+      }),
+      waitPopup: 2000,
+    }).run();
+    nock.done();
+    assert.strictEqual(
+      popupOpened,
+      'https://www.hlx.live/tools/sidekick/?giturl=https%3A%2F%2Fgithub.com%2Fadobe%2Fblog%2Ftree%2Fmain',
+      'Did not open share URL',
     );
   });
 });
