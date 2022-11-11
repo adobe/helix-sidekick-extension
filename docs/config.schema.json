@@ -82,7 +82,7 @@
           "type": "url",
           "description": "The URL to open when the button is clicked"
         },
-        "passInfo": {
+        "passConfig": {
           "type": "boolean",
           "description": "Append ref, repo, owner, host, and project as query params on new URL button click"
         },

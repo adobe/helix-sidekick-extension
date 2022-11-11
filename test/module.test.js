@@ -251,9 +251,9 @@ describe('Test sidekick module', () => {
     assert.ok(popupOpened === expectedPopupUrl, 'Did not pass referrer in plugin URL');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
-  it('Plugin passes additional info in url', async () => {
+  it('Plugin passes config info into url using passConfig', async () => {
     const pluginUrl = 'https://www.hlx.live/';
-    const expectedInfoParam = '?ref=main&repo=blog&owner=adobe&host=undefined&project=';
+    const expectedInfoParam = '?ref=main&repo=blog&owner=adobe';
     const expectedPopupUrl = `${pluginUrl}${expectedInfoParam}`;
     const mockUrl = `/${expectedInfoParam}`;
 
@@ -269,7 +269,7 @@ describe('Test sidekick module', () => {
           "id": "bar",
           "title": "Bar",
           "url": "${pluginUrl}",
-          "passInfo": true
+          "passConfig": true
         }]
       }`,
       plugin: 'bar',
