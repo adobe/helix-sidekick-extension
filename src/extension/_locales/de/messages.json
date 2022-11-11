@@ -117,7 +117,7 @@
     "message": "Ungültige Teilen-URL"
   },
   "config_invalid_giturl": {
-    "message": "Ungültige Repository-URL"
+    "message": "Ungültige Repository-URL, muss beginnen mit https://github.com"
   },
   "config_invalid_import": {
     "message": "Wähle eine gültige Datei zum Importieren aus"

@@ -117,7 +117,7 @@
     "message": "URL de partage incorrecte"
   },
   "config_invalid_giturl": {
-    "message": "URL du code dans GitHub incorrecte"
+    "message": "URL de référentiel non valide, doit commencer par https://github.com"
   },
   "config_invalid_import": {
     "message": "Fichier à importer invalide"
