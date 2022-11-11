@@ -1,3 +1,10 @@
+# [6.1.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.0.0...v6.1.0) (2022-11-11)
+
+
+### Features
+
+* add ability to pass additional sk config info to url ([51b47a2](https://github.com/adobe/helix-sidekick-extension/commit/51b47a294632add72d47ac9b0f206bc930cb9c07))
+
 # [6.0.0](https://github.com/adobe/helix-sidekick-extension/compare/v5.10.0...v6.0.0) (2022-11-04)
 
 
