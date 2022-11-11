@@ -1601,10 +1601,9 @@
    * @param {number} skHeight The current height of the sidekick (optional)
    */
   function pushDownContent(sk, skHeight) {
-    const { config, location } = sk;
+    const { config } = sk;
     if (config.pushDown
-      && !sk.hasAttribute('pushdown')
-      && location.host !== 'docs.google.com') {
+      && !sk.hasAttribute('pushdown')) {
       window.setTimeout(() => {
         if (!skHeight) {
           skHeight = parseFloat(window.getComputedStyle(sk.root).height, 10);
@@ -1635,10 +1634,9 @@
    * @param {Sidekick} sk The sidekick
    */
   function revertPushDownContent(sk) {
-    const { config, location } = sk;
+    const { config } = sk;
     if (config.pushDown
-      && sk.hasAttribute('pushdown')
-      && location.host !== 'docs.google.com') {
+      && sk.hasAttribute('pushdown')) {
       sk.removeAttribute('pushdown');
       config.pushDownElements.forEach((elem) => {
         elem.style.marginTop = 'initial';
