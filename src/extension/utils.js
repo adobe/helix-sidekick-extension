@@ -88,13 +88,14 @@ export async function getMountpoints(owner, repo, ref) {
 
 export function getGitHubSettings(giturl) {
   if (typeof giturl === 'string' && giturl.startsWith(GH_URL)) {
-    const segs = new URL(giturl).pathname.substring(1).split('/');
-    if (segs.length >= 2) {
-      // need at least owner and repo
+    const [owner, repository,, ref = 'main'] = new URL(giturl).pathname.toLowerCase()
+      .substring(1).split('/');
+    if (owner && repository) {
+      const repo = repository.endsWith('.git') ? repository.split('.git')[0] : repository;
       return {
-        owner: segs[0].toLowerCase(),
-        repo: segs[1].toLowerCase(),
-        ref: (segs[2] === 'tree' ? segs[3].toLowerCase() : undefined) || 'main',
+        owner,
+        repo,
+        ref,
       };
     }
   }
