@@ -1,3 +1,17 @@
+# [6.2.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.1.0...v6.2.0) (2022-11-14)
+
+
+### Bug Fixes
+
+* exclude auth tokens from backup ([04dc8af](https://github.com/adobe/helix-sidekick-extension/commit/04dc8af59a02842bcf15ab3a739cc6d82c78e76f))
+* extend existing plugin ([d5bab99](https://github.com/adobe/helix-sidekick-extension/commit/d5bab9908382515efb87b77d5692443522487d3a))
+
+
+### Features
+
+* detect git clone url when adding project ([eb503f4](https://github.com/adobe/helix-sidekick-extension/commit/eb503f4287ba8ce00ee4106bee75b96e83bfda0a))
+* show extension hint to bookmarklet users ([b91b7a3](https://github.com/adobe/helix-sidekick-extension/commit/b91b7a39550f93911e866ecbdf09302d918ba4c0))
+
 # [6.1.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.0.0...v6.1.0) (2022-11-11)
 
 
