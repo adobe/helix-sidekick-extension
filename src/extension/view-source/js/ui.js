@@ -143,6 +143,9 @@ const makeStylesReadyForCopy = (element) => {
       img.setAttribute('height', img.height);
     };
 
+    // gdoc does not seem to support webply
+    img.setAttribute('src', img.src.replace('webply', 'pjpg'));
+
     if (img.complete) {
       setDimensions();
     } else {
