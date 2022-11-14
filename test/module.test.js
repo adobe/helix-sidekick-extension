@@ -334,6 +334,24 @@ describe('Test sidekick module', () => {
     assert.ok(checkEventFired(page, 'custom:foo'), 'Did not fire plugin event');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
+  it('Plugin extends existing plugin', async () => {
+    const test = new SidekickTest({
+      page,
+      loadModule: true,
+      configJson: `{
+        "host": "blog.adobe.com",
+        "plugins": [{
+          "id": "publish",
+          "excludePaths": ["**/drafts/**"]
+        }]
+      }`,
+    });
+    const {
+      plugins,
+    } = await test.run('https://main--blog--adobe.hlx.page/en/drafts/foo');
+    assert.ok(!plugins.find((p) => p.id === 'publish'), 'Did not extend existing plugin');
+  }).timeout(IT_DEFAULT_TIMEOUT);
+
   it('Loads config from development environment', async () => {
     const { configLoaded } = await new SidekickTest({
       page,
