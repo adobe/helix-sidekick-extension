@@ -120,6 +120,9 @@ describe('Test extension utils', () => {
     // default ref
     const { ref: defaultRef } = utils.getGitHubSettings('https://github.com/foo/bar');
     expect(defaultRef).to.equal('main');
+    // clone url
+    const { repo: noDotGit } = utils.getGitHubSettings('https://github.com/foo/bar.git');
+    expect(noDotGit).to.equal('bar');
   });
 
   it('getShareSettings', async () => {

@@ -333,6 +333,7 @@ window.addEventListener('DOMContentLoaded', () => {
     getState(({ projects = [] }) => {
       if (projects.length > 0) {
         // prepare export data
+        projects.forEach((p) => delete p.authToken);
         const info = {
           name: MANIFEST.name,
           version: MANIFEST.version,

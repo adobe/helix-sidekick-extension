@@ -69,6 +69,8 @@ describe('Test sidekick login', () => {
         };
       },
       waitPopup: 2000,
+      // suppress extension hint
+      pre: (p) => p.evaluate(() => window.localStorage.setItem('hlxSidekickExtensionHint', Date.now() + 31536000000)),
       post: async (p) => {
         const btn = await p.waitForFunction(() => window.hlx.sidekick.shadowRoot.querySelector('.hlx-sk .user div.user-login button'));
         await btn.click();
@@ -111,6 +113,8 @@ describe('Test sidekick login', () => {
         status: 401,
       }],
       waitPopup: 2000,
+      // suppress extension hint
+      pre: (p) => p.evaluate(() => window.localStorage.setItem('hlxSidekickExtensionHint', Date.now() + 31536000000)),
       post: async (p) => {
         const btn = await p.waitForFunction(() => window.hlx.sidekick.shadowRoot.querySelector('.hlx-sk .user div.user-login button'));
         await btn.click();
