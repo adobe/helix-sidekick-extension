@@ -255,6 +255,10 @@ async function updateHelpContent() {
   }
 }
 
+/**
+ * Opens the view document source popup for a give tab.
+ * @param {String} id The tab id
+ */
 function openViewSourcePopup(id) {
   chrome.windows.create({
     url: chrome.runtime.getURL(`/view-source/index.html?tabId=${id}`),

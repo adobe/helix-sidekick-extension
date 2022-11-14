@@ -44,7 +44,8 @@ const sendMessage = async (message) => {
 const getEditorElement = () => document.getElementById('editor');
 
 /**
- * Runs the copy (to clipboard...) action
+ * Copies the provided HTML to clipboard
+ * @param {String} action The html to copy to clipboard
  */
 const copyHTMLToClipboard = (html) => {
   const callback = (e) => {
@@ -58,6 +59,14 @@ const copyHTMLToClipboard = (html) => {
   document.removeEventListener('copy', callback);
 };
 
+/**
+ * Converts the source HTML (~Franklin Pipeline output) to HTML friendly for edition.
+ * While the header and footer are not needed (only the main is), the head is needed to
+ * compute the metadata block.
+ * @param {HTMLElement} main The source main element
+ * @param {HTMLElement} head The source head element
+ * @param {String} url The url of the page
+ */
 const htmlSourceToEdition = (main, head, url) => {
   main.querySelectorAll('img').forEach((img) => {
     if (!img.src) return;
@@ -82,6 +91,10 @@ const htmlSourceToEdition = (main, head, url) => {
   addMetadataBlock(main, head);
 };
 
+/**
+ * Converts the HTML friendly for edition to the source HTML (~Franklin Pipeline output)
+ * @returns {String} The HTML content of the editor
+ */
 const htmlEditionToSource = () => {
   const editor = getEditorElement();
   const doc = new DOMParser().parseFromString(editor.innerHTML, 'text/html');
@@ -93,7 +106,11 @@ const htmlEditionToSource = () => {
   return main.innerHTML;
 };
 
-// required styling for the copy/paste to Word / gdoc to look the same
+/**
+ * Applies to the element the required styles necessary
+ * for the copy/paste to Word / gdoc to look the same
+ * @param {*} element The element to apply the styles to
+ */
 const makeStylesReadyForCopy = (element) => {
   const forceStyles = (el, properties) => {
     const styles = [];
@@ -133,15 +150,19 @@ const makeStylesReadyForCopy = (element) => {
   });
 };
 
-const loadEditor = async (tab) => {
-  const req = await fetch(tab.url);
+/**
+ * Loads the editor with the HTML content of the given url
+ * @param {String} url The url to load
+ */
+const loadEditor = async (url) => {
+  const req = await fetch(url);
   const source = await req.text();
 
   const doc = new DOMParser().parseFromString(source, 'text/html');
   const { head } = doc;
   const main = doc.querySelector('main');
 
-  htmlSourceToEdition(main, head, tab.url);
+  htmlSourceToEdition(main, head, url);
 
   const editor = getEditorElement();
   editor.innerHTML = main.innerHTML;
@@ -149,6 +170,13 @@ const loadEditor = async (tab) => {
   makeStylesReadyForCopy(editor);
 };
 
+/**
+ * Helper debounce function
+ * @param {Function} func Function to debounce
+ * @param {Integer} wait The debounce time in milliseconds
+ * @param {Boolean} immed True to run the function immediately
+ * @returns {Function} The debounced function
+ */
 const debounce = (func, wait, immed) => {
   let timeout;
   return (...args) => {
@@ -175,7 +203,7 @@ const load = async () => {
     files: ['/view-source/js/content.js'],
   });
 
-  loadEditor(tab);
+  loadEditor(tab.url);
 
   const editor = getEditorElement();
 

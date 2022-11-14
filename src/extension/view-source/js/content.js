@@ -10,6 +10,10 @@
  * governing permissions and limitations under the License.
  */
 {
+  /**
+   * Sends the main back to the source window.
+   * @param {Object} params Contains the new HTML of the main element
+   */
   const setMain = async ({ html }) => {
     // page needs to listen for this event
     window.postMessage({ type: 'refresh-main', html }, '*');

@@ -10,7 +10,12 @@
  * governing permissions and limitations under the License.
  */
 
-export const classNameToBlockType = (className) => {
+/**
+ * Converts a css className (comma separated class names) into a block name.
+ * @param {String} className The css className
+ * @returns {String} The block name
+ */
+export const classNameToBlockName = (className) => {
   let blockType = className.shift();
   blockType = blockType.charAt(0).toUpperCase() + blockType.slice(1).toLowerCase();
   if (className.length) {
@@ -22,8 +27,13 @@ export const classNameToBlockType = (className) => {
   return blockType;
 };
 
-export const metaToDisplay = (meta) => classNameToBlockType([meta]);
+export const metaToDisplay = (meta) => classNameToBlockName([meta]);
 
+/**
+ * Converts a block name to a list of css class names.
+ * @param {String} text The block name
+ * @returns {[String]} A list of css class names
+ */
 export const toBlockCSSClassNames = (text) => {
   if (!text) {
     return [];
@@ -45,12 +55,16 @@ export const toBlockCSSClassNames = (text) => {
     .filter((name) => !!name);
 };
 
+/**
+ * Converts the block as div to block as table inside the main element.
+ * @param {HTMLElement} main The main element
+ */
 export const blockDivToTable = (main) => {
   main.querySelectorAll('div[class]').forEach((div) => {
     const table = document.createElement('table');
     const thead = document.createElement('thead');
     const th = document.createElement('th');
-    th.innerHTML = classNameToBlockType(Array.from(div.classList));
+    th.innerHTML = classNameToBlockName(Array.from(div.classList));
     thead.appendChild(th);
     table.appendChild(thead);
 
@@ -80,6 +94,10 @@ export const blockDivToTable = (main) => {
   });
 };
 
+/**
+ * Converts the block as table to block as div inside the main element.
+ * @param {HTMLElement} main The main element
+ */
 export const blockTableToDiv = (main) => {
   main.querySelectorAll('table').forEach((table) => {
     const div = document.createElement('div');
@@ -97,6 +115,10 @@ export const blockTableToDiv = (main) => {
   });
 };
 
+/**
+ * Creates the visual section breaks (hr) for the provided main element.
+ * @param {HTMLElement} main The main element
+ */
 export const createSectionBreaks = (main) => {
   const divs = main.querySelectorAll(':scope > div');
   divs.forEach((div, index) => {
@@ -107,6 +129,10 @@ export const createSectionBreaks = (main) => {
   });
 };
 
+/**
+ * Removes the visual section breaks (hr) from the provided main element.
+ * @param {HTMLElement} main The main element
+ */
 export const removeSectionBreaks = (main) => {
   main.querySelectorAll('hr').forEach((hr) => {
     hr.remove();
@@ -115,6 +141,11 @@ export const removeSectionBreaks = (main) => {
 
 const META_EXCLUDE = ['viewport', 'google-site-verification', 'serp-content-type'];
 
+/**
+ * Adds a metadata block (as a table) to the main element based on the provided head.
+ * @param {HTMLElement} main The main element to add the metadata block to.
+ * @param {HTMLElement} head The head element to extract the metadata from.
+ */
 export const addMetadataBlock = (main, head) => {
   const table = document.createElement('table');
 
