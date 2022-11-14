@@ -206,9 +206,6 @@ export const addMetadataBlock = (main, head) => {
   // END: special cases
 
   head.querySelectorAll('meta').forEach((meta) => {
-    const row = document.createElement('tr');
-    tbody.appendChild(row);
-
     let name = meta.getAttribute('name');
     if (!name) {
       name = meta.getAttribute('property');
@@ -217,6 +214,9 @@ export const addMetadataBlock = (main, head) => {
     if (name
       && (name.indexOf(':') === -1)
       && !META_EXCLUDE.includes(name)) {
+      const row = document.createElement('tr');
+      tbody.appendChild(row);
+
       const nameCell = document.createElement('td');
       nameCell.innerHTML = metaToDisplay(name);
       row.appendChild(nameCell);

@@ -130,6 +130,7 @@ const makeStylesReadyForCopy = (element) => {
     table.setAttribute('cellpadding', '0');
     table.setAttribute('cellspacing', '0');
     forceStyles(table, ['border', 'border-spacing', 'border-collapse', 'width']);
+    table.after(document.createElement('br'));
   });
 
   element.querySelectorAll('th, td').forEach((el) => {
