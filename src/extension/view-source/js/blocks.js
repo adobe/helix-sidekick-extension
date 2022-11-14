@@ -11,18 +11,15 @@
  */
 
 /**
- * Converts a css className (comma separated class names) into a block name.
- * @param {String} className The css className
+ * Converts a list of css class names into a block name.
+ * @param {Array[String]} classList The list of css class names
  * @returns {String} The block name
  */
-export const classNameToBlockName = (className) => {
-  let blockType = className.shift();
-  blockType = blockType.charAt(0).toUpperCase() + blockType.slice(1).toLowerCase();
-  if (className.length) {
-    const options = className.map((cls) => cls.split('-').join(' '));
-    blockType += ` (${options.join(', ')})`;
-  } else {
-    blockType = blockType.split('-').map((s) => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase()).join(' ');
+export const classNameToBlockName = (classList) => {
+  let blockType = classList.shift();
+  blockType = blockType.split('-').map((s) => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase()).join(' ');
+  if (classList.length) {
+    blockType += ` (${classList.join(', ')})`;
   }
   return blockType;
 };
