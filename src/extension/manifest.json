@@ -11,7 +11,8 @@
     "contextMenus",
     "scripting",
     "storage",
-    "activeTab"
+    "activeTab",
+    "webNavigation"
   ],
   "host_permissions": [
     "http://localhost:3000/*",
@@ -38,7 +39,8 @@
         "module.js",
         "sidekick.js",
         "utils.js",
-        "view/json.js"
+        "view/json.js",
+        "view-source/js/content.js"
       ],
       "matches": [
         "https://*/*",

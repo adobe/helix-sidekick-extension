@@ -255,6 +255,15 @@ async function updateHelpContent() {
   }
 }
 
+function openViewSourcePopup(id) {
+  chrome.windows.create({
+    url: chrome.runtime.getURL(`/view-source/index.html?tabId=${id}`),
+    type: 'popup',
+    width: 740,
+    height: 1200,
+  });
+}
+
 /**
  * Adds the listeners for the extension.
  */
@@ -344,6 +353,15 @@ async function updateHelpContent() {
     if (tab && tab.url && new URL(tab.url).pathname.startsWith(SHARE_PREFIX)
       && actionFromTab && typeof actions[actionFromTab] === 'function') {
       actions[actionFromTab](tab);
+    }
+  });
+
+  // listen for web navigation and check view-doc-source query param
+  chrome.webNavigation.onCompleted.addListener((details) => {
+    const u = new URL(details.url);
+    const vds = u.searchParams.get('view-doc-source');
+    if (vds && vds === 'true') {
+      openViewSourcePopup(details.tabId);
     }
   });
 })();
