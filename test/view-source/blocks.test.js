@@ -18,6 +18,8 @@ import {
   toBlockCSSClassNames,
   blockDivToTable,
   blockTableToDiv,
+  createSectionBreaks,
+  removeSectionBreaks,
 } from '../../src/extension/view-source/js/blocks.js';
 
 document.body.innerHTML = '<div id="container"></div>';
@@ -77,4 +79,17 @@ describe('blocks conversion methods', () => {
   it('blocks#blockDivToTable single', async () => testBlockTableToDiv('single'));
   it('blocks#blockDivToTable blocks', async () => testBlockDivToTable('blocks'));
   it('blocks#blockDivToTable blocks', async () => testBlockTableToDiv('blocks'));
+});
+
+describe('blocks section breaks methods', () => {
+  it('blocks#createSectionBreaks and blocks#removeSectionBreaks', async () => {
+    const main = document.createElement('div');
+    main.innerHTML = await readFile({ path: './fixtures/blocks-div.html' });
+    const initialSectionCount = main.querySelectorAll(':scope > div').length;
+    createSectionBreaks(main);
+    expect(main.querySelectorAll(':scope > div').length).to.equal(initialSectionCount);
+
+    removeSectionBreaks(main);
+    expect(main.querySelectorAll('hr').length).to.equal(0);
+  });
 });
