@@ -20,6 +20,7 @@ import {
   blockTableToDiv,
   createSectionBreaks,
   removeSectionBreaks,
+  addMetadataBlock,
 } from '../../src/extension/view-source/js/blocks.js';
 
 document.body.innerHTML = '<div id="container"></div>';
@@ -91,5 +92,22 @@ describe('blocks section breaks methods', () => {
 
     removeSectionBreaks(main);
     expect(main.querySelectorAll('hr').length).to.equal(0);
+  });
+});
+
+describe('blocks metadata methods', () => {
+  it('blocks#addMetadataBlock', async () => {
+    const head = document.createElement('head');
+    head.innerHTML = await readFile({ path: './fixtures/metadata-head.html' });
+    // empty main is fine for this test
+    const main = document.createElement('div');
+    addMetadataBlock(main, head);
+
+    const table = main.querySelector('table');
+    // eslint-disable-next-line no-unused-expressions
+    expect(table).to.not.be.null;
+
+    const expected = await readFile({ path: './fixtures/metadata-table.html' });
+    expect(trim(table.outerHTML)).to.equal(trim(expected));
   });
 });

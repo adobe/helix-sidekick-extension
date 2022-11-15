@@ -149,10 +149,12 @@ export const addMetadataBlock = (main, head) => {
   const table = document.createElement('table');
 
   const thead = document.createElement('thead');
+  const tr = document.createElement('tr');
   const th = document.createElement('th');
   th.innerHTML = 'Metadata';
   th.colSpan = 2;
-  thead.appendChild(th);
+  tr.appendChild(th);
+  thead.appendChild(tr);
   table.appendChild(thead);
 
   const tbody = document.createElement('tbody');
