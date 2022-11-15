@@ -19,7 +19,7 @@ export const classNameToBlockName = (classList) => {
   let blockType = classList.shift();
   blockType = blockType.split('-').map((s) => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase()).join(' ');
   if (classList.length) {
-    blockType += ` (${classList.join(', ')})`;
+    blockType += ` (${classList.map((s) => s.split('-').join(' ')).join(', ')})`;
   }
   return blockType;
 };

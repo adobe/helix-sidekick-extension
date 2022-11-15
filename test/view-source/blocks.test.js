@@ -26,7 +26,7 @@ describe('blocks tests', () => {
     expect(classNameToBlockName(['section-metadata'])).to.equal('Section Metadata');
     expect(classNameToBlockName(['app-cards-header'])).to.equal('App Cards Header');
     expect(classNameToBlockName(['app-download', 'orange'])).to.equal('App Download (orange)');
-    expect(classNameToBlockName(['app-download', 'content-stacked', 'blue'])).to.equal('App Download (content-stacked, blue)');
+    expect(classNameToBlockName(['app-download', 'content-stacked', 'blue'])).to.equal('App Download (content stacked, blue)');
   });
 
   it('blocks#metaToDisplay', async () => {
