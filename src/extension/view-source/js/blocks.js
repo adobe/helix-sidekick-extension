@@ -145,7 +145,7 @@ const META_EXCLUDE = ['viewport', 'google-site-verification', 'serp-content-type
  * @param {HTMLElement} main The main element to add the metadata block to.
  * @param {HTMLElement} head The head element to extract the metadata from.
  */
-export const addMetadataBlock = (main, head) => {
+export const addMetadataBlock = (main, head, url) => {
   const table = document.createElement('table');
 
   const thead = document.createElement('thead');
@@ -223,7 +223,15 @@ export const addMetadataBlock = (main, head) => {
       row.appendChild(nameCell);
 
       const content = document.createElement('td');
-      content.innerHTML = meta.getAttribute('content');
+      const value = meta.getAttribute('content');
+      if (value && value.indexOf('media_') !== -1) {
+        const img = document.createElement('img');
+        const u = new URL(url);
+        img.src = `${u.origin}${u.pathname}${value.substring(value.lastIndexOf('/'))}`;
+        content.appendChild(img);
+      } else {
+        content.innerHTML = value || '';
+      }
       row.appendChild(content);
     }
   });

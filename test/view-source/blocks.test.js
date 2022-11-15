@@ -102,7 +102,7 @@ describe('blocks metadata methods', () => {
     head.innerHTML = await readFile({ path: './fixtures/metadata-head.html' });
     // empty main is fine for this test
     const main = document.createElement('div');
-    addMetadataBlock(main, head);
+    addMetadataBlock(main, head, 'https://example.com');
 
     const table = main.querySelector('table');
     // eslint-disable-next-line no-unused-expressions

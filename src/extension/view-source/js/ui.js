@@ -86,7 +86,7 @@ const htmlSourceToEdition = (main, head, url) => {
 
   blockDivToTable(main);
   createSectionBreaks(main);
-  addMetadataBlock(main, head);
+  addMetadataBlock(main, head, url);
 };
 
 /**
