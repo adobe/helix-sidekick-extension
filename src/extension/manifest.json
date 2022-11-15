@@ -11,8 +11,7 @@
     "contextMenus",
     "scripting",
     "storage",
-    "activeTab",
-    "webNavigation"
+    "activeTab"
   ],
   "host_permissions": [
     "http://localhost:3000/*",

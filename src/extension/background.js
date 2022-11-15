@@ -256,15 +256,26 @@ async function updateHelpContent() {
 }
 
 /**
- * Opens the view document source popup for a give tab.
- * @param {String} id The tab id
+ * Checks if the view source popp needs to be openeded, and opens it if necessary.
+ * @param {*} id The tab ID
  */
-function openViewSourcePopup(id) {
-  chrome.windows.create({
-    url: chrome.runtime.getURL(`/view-source/index.html?tabId=${id}`),
-    type: 'popup',
-    width: 740,
-    height: 1200,
+function checkViewSource(id) {
+  chrome.tabs.get(id, (tab = {}) => {
+    if (!tab.url) return;
+    try {
+      const u = new URL(tab.url);
+      const vds = u.searchParams.get('view-doc-source');
+      if (vds && vds === 'true') {
+        chrome.windows.create({
+          url: chrome.runtime.getURL(`/view-source/index.html?tabId=${id}`),
+          type: 'popup',
+          width: 740,
+          height: 1200,
+        });
+      }
+    } catch (e) {
+      log.warn('error checking view source', e);
+    }
   });
 }
 
@@ -335,6 +346,7 @@ function openViewSourcePopup(id) {
     // wait until the tab is done loading
     if (info.status === 'complete') {
       checkTab(id);
+      checkViewSource(id);
     }
   });
 
@@ -357,15 +369,6 @@ function openViewSourcePopup(id) {
     if (tab && tab.url && new URL(tab.url).pathname.startsWith(SHARE_PREFIX)
       && actionFromTab && typeof actions[actionFromTab] === 'function') {
       actions[actionFromTab](tab);
-    }
-  });
-
-  // listen for web navigation and check view-doc-source query param
-  chrome.webNavigation.onCompleted.addListener((details) => {
-    const u = new URL(details.url);
-    const vds = u.searchParams.get('view-doc-source');
-    if (vds && vds === 'true') {
-      openViewSourcePopup(details.tabId);
     }
   });
 })();
