@@ -60,9 +60,11 @@ export const blockDivToTable = (main) => {
   main.querySelectorAll('div[class]').forEach((div) => {
     const table = document.createElement('table');
     const thead = document.createElement('thead');
+    const tr = document.createElement('tr');
     const th = document.createElement('th');
     th.innerHTML = classNameToBlockName(Array.from(div.classList));
-    thead.appendChild(th);
+    tr.appendChild(th);
+    thead.appendChild(tr);
     table.appendChild(thead);
 
     const tbody = document.createElement('tbody');

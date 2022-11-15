@@ -10,18 +10,20 @@
  * governing permissions and limitations under the License.
  */
 /* global describe it */
-
+import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import {
   classNameToBlockName,
   metaToDisplay,
   toBlockCSSClassNames,
+  blockDivToTable,
+  blockTableToDiv,
 } from '../../src/extension/view-source/js/blocks.js';
 
 document.body.innerHTML = '<div id="container"></div>';
 
-describe('blocks tests', () => {
-  it('blocks#classNameToBlockName', async () => {
+describe('blocks util methods', () => {
+  it('blocks#classNameToBlockName', () => {
     expect(classNameToBlockName(['block'])).to.equal('Block');
     expect(classNameToBlockName(['section-metadata'])).to.equal('Section Metadata');
     expect(classNameToBlockName(['app-cards-header'])).to.equal('App Cards Header');
@@ -29,13 +31,13 @@ describe('blocks tests', () => {
     expect(classNameToBlockName(['app-download', 'content-stacked', 'blue'])).to.equal('App Download (content stacked, blue)');
   });
 
-  it('blocks#metaToDisplay', async () => {
+  it('blocks#metaToDisplay', () => {
     expect(metaToDisplay('title')).to.equal('Title');
     expect(metaToDisplay('publication-date')).to.equal('Publication Date');
     expect(metaToDisplay('primary-product-name')).to.equal('Primary Product Name');
   });
 
-  it('blocks#toBlockCSSClassNames', async () => {
+  it('blocks#toBlockCSSClassNames', () => {
     expect(toBlockCSSClassNames('Block')).to.deep.equal(['block']);
     expect(toBlockCSSClassNames('Section Metadata')).to.deep.equal(['section-metadata']);
     expect(toBlockCSSClassNames('App Cards Header')).to.deep.equal(['app-cards-header']);
@@ -43,4 +45,36 @@ describe('blocks tests', () => {
     expect(toBlockCSSClassNames('App Download (content-stacked, blue)')).to.deep.equal(['app-download', 'content-stacked', 'blue']);
     expect(toBlockCSSClassNames('App Download (content stacked, blue)')).to.deep.equal(['app-download', 'content-stacked', 'blue']);
   });
+});
+
+const trim = (html) => html
+  .replace(/^\s*/gm, '')
+  .replace(/\s*$/gm, '')
+  .replace(/\n/gm, '')
+  .replace(/\/>\s*</gm, '/><');
+
+describe('blocks conversion methods', () => {
+  const testBlockDivToTable = async (fixture) => {
+    const main = document.createElement('div');
+    main.innerHTML = await readFile({ path: `./fixtures/${fixture}-div.html` });
+    blockDivToTable(main);
+    const expected = document.createElement('div');
+    expected.innerHTML = await readFile({ path: `./fixtures/${fixture}-table.html` });
+    expect(trim(main.innerHTML)).to.equal(trim(expected.innerHTML));
+  };
+
+  const testBlockTableToDiv = async (fixture) => {
+    const main = document.createElement('div');
+    main.innerHTML = await readFile({ path: `./fixtures/${fixture}-table.html` });
+    blockTableToDiv(main);
+    const expected = document.createElement('div');
+    expected.innerHTML = await readFile({ path: `./fixtures/${fixture}-div.html` });
+    expect(trim(main.innerHTML)).to.equal(trim(expected.innerHTML));
+  };
+
+  // test block as div to table back to div.
+  it('blocks#blockDivToTable single', async () => testBlockDivToTable('single'));
+  it('blocks#blockDivToTable single', async () => testBlockTableToDiv('single'));
+  it('blocks#blockDivToTable blocks', async () => testBlockDivToTable('blocks'));
+  it('blocks#blockDivToTable blocks', async () => testBlockTableToDiv('blocks'));
 });
