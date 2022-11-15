@@ -41,6 +41,7 @@ describe('blocks util methods', () => {
   });
 
   it('blocks#toBlockCSSClassNames', () => {
+    expect(toBlockCSSClassNames()).to.deep.equal([]);
     expect(toBlockCSSClassNames('Block')).to.deep.equal(['block']);
     expect(toBlockCSSClassNames('Section Metadata')).to.deep.equal(['section-metadata']);
     expect(toBlockCSSClassNames('App Cards Header')).to.deep.equal(['app-cards-header']);
