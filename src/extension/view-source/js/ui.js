@@ -70,14 +70,12 @@ const copyHTMLToClipboard = (html) => {
 const htmlSourceToEdition = (main, head, url) => {
   main.querySelectorAll('img').forEach((img) => {
     if (!img.src) return;
-    const extension = new URL(window.location.href);
     const content = new URL(url);
-    img.src = img.src.replace(extension.origin, content.origin);
+    img.src = `${content.origin}${content.pathname}${img.src.substring(img.src.lastIndexOf('/'))}`;
   });
 
   main.querySelectorAll('picture source').forEach((source) => {
     if (!source.srcset) return;
-    // const extension = new URL(window.location.href);
     const content = new URL(url);
     if (source.srcset.startsWith('./')) {
       source.srcset = `${content.origin}/${source.srcset.substring(2)}`;
@@ -144,7 +142,7 @@ const makeStylesReadyForCopy = (element) => {
     };
 
     // gdoc does not seem to support webply
-    img.setAttribute('src', img.src.replace('webply', 'pjpg'));
+    img.setAttribute('src', img.src.replace('webply', 'png'));
 
     if (img.complete) {
       setDimensions();
