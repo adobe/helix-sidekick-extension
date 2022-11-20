@@ -1,3 +1,10 @@
+## [6.2.1](https://github.com/adobe/helix-sidekick-extension/compare/v6.2.0...v6.2.1) (2022-11-20)
+
+
+### Bug Fixes
+
+* login/logout flow ([b133a19](https://github.com/adobe/helix-sidekick-extension/commit/b133a19ddeae2e6b082ff0e9f5aabeea9fdd7396))
+
 # [6.2.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.1.0...v6.2.0) (2022-11-14)
 
 
