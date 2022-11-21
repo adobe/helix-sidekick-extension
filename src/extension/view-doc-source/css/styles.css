@@ -1,0 +1,201 @@
+/*
+ * Copyright 2022 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+
+:host,
+:root {
+  /* MENU */
+  --hlx-viewsource-main-button-background-color: #484848;
+  --hlx-viewsource-main-button-color: #fff;
+  --hlx-viewsource-main-button-border-color: #dedede;
+
+  --hlx-viewsource-main-font-family: 'Arial', sans-serif;
+  
+  --hlx-viewsource-main-button-font-size: 16px;
+
+  /* EDITOR */
+  --hlx-viewsource-text-color: #000;
+  --hlx-viewsource-link-color: #0563C1;
+  --hlx-viewsource-secondary-heading-color: #434343;
+  --hlx-viewsource-tertiary-heading-color: #666;
+  --hlx-viewsource-background-color: #fff;
+  --hlx-viewsource-table-head-background-color: #F5CBCD;
+
+  --hlx-viewsource-font-family: 'Arial', sans-serif;
+
+  --hlx-viewsource-body-font-size: 14px;
+  --hlx-viewsource-h1-font-size: 25px;
+  --hlx-viewsource-h2-font-size: 20px;
+  --hlx-viewsource-h3-font-size: 18px;
+  --hlx-viewsource-h4-font-size: 15px;
+  --hlx-viewsource-h5-font-size: var(--hlx-viewsource-body-font-size);
+  --hlx-viewsource-h6-font-size: var(--hlx-viewsource-body-font-size);
+}
+
+body {
+  font-family: var(--hlx-viewsource-main-font-family);
+}
+
+.hidden {
+  display: none;
+}
+
+header {
+  display: grid;
+  grid-template-columns: 1fr 130px;
+}
+
+#copy {
+  font-size: var(--hlx-viewsource-main-button-font-size);
+  background-color: var(--hlx-viewsource-main-button-background-color);
+  color: var(--hlx-viewsource-main-button-color);
+  white-space: nowrap;
+  border: 1px solid var(--hlx-viewsource-main-button-border-color);
+  border-radius: 6px;
+  line-height: 27px;
+  max-height: 32px;
+  align-self: center;
+}
+
+#copy:hover {
+  background-color: #909090;
+  color: #303030;
+}
+
+#copy.copied {
+  background-color: rgb(25, 179, 25);
+}
+
+#editor {
+  width: auto;
+  height: 100%;
+  border: 1px solid lightgrey;
+  padding: 30px 40px;
+  background-color: #fff;
+  color: var(--hlx-viewsource-text-color);
+  font-family: var(--hlx-viewsource-font-family);
+  font-size: var(--hlx-viewsource-body-font-size);
+  line-height: 1.15;
+  overflow-y: auto;
+}
+
+#editor > div {
+  max-width: 650px;
+}
+
+#editor h1,
+#editor h2,
+#editor h3,
+#editor h4,
+#editor h5,
+#editor h6 {
+  margin: 0;
+  padding-bottom: 6px;
+  font-weight: normal;
+}
+
+#editor h1 {
+  padding-top: 20px;
+  font-size: var(--hlx-viewsource-h1-font-size);
+}
+
+#editor h2 {
+  padding-top: 18px;
+  font-size: var(--hlx-viewsource-h2-font-size);
+}
+
+#editor h3 {
+  padding-top: 16px;
+  padding-bottom: 4px;
+  color: var(--hlx-viewsource-secondary-heading-color);
+  font-size: var(--hlx-viewsource-h3-font-size);
+}
+
+#editor h4 {
+  padding-top: 14px;
+  padding-bottom: 4px;
+  color: var(--hlx-viewsource-tertiary-heading-color);
+  font-size: var(--hlx-viewsource-h4-font-size);
+}
+
+#editor h5 {
+  padding-top: 12px;
+  padding-bottom: 4px;
+  color: var(--hlx-viewsource-tertiary-heading-color);
+  font-size: var(--hlx-viewsource-h5-font-size);
+}
+
+#editor h6 {
+  padding-top: 12px;
+  padding-bottom: 4px;
+  color: var(--hlx-viewsource-tertiary-heading-color);
+  font-size: var(--hlx-viewsource-h6-font-size);
+  font-style: italic;
+}
+
+#editor p {
+  margin: 10px 0;
+}
+
+#editor a:any-link {
+  color: var(--hlx-viewsource-link-color);
+}
+
+#editor ul {
+  padding-inline-start: 20px;
+  list-style-type: none;
+}
+
+#editor ul li {
+  position: relative;
+}
+
+#editor ul li::before {
+  position: absolute;
+  margin-left: -20px;
+  content: '\2011';
+}
+
+#editor img {
+  max-width: 100%;
+  height: auto;
+}
+
+#editor table,
+#editor th,
+#editor td {
+  border: 1px solid var(--hlx-viewsource-text-color);
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+#editor th,
+#editor td {
+  text-align: left;
+  margin: 0;
+  padding: 6px;
+  vertical-align: top;
+}
+
+#editor table {
+  max-width: 600px;
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+#editor thead tr,
+#editor thead th {
+  background-color: var(--hlx-viewsource-table-head-background-color);
+}
+
+#editor hr {
+  margin: 20px 0;
+}

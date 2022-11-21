@@ -221,5 +221,8 @@
   },
   "help_user_status_description": {
     "message": "Markierte Themen werden nicht mehr angezeigt. Entferne das Häkchen neben einem Thema, das du noch einmal sehen möchtest."
+  },
+  "open_view_doc_source": {
+    "message": "Quelldokument anzeigen"
   }
 }

@@ -251,6 +251,38 @@ describe('Test sidekick module', () => {
     assert.ok(popupOpened === expectedPopupUrl, 'Did not pass referrer in plugin URL');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
+  it('Plugin passes config info into url using passConfig', async () => {
+    const pluginUrl = 'https://www.hlx.live/';
+    const expectedInfoParam = '?ref=main&repo=blog&owner=adobe';
+    const expectedPopupUrl = `${pluginUrl}${expectedInfoParam}`;
+    const mockUrl = `/${expectedInfoParam}`;
+
+    nock('https://www.hlx.live')
+      .get(mockUrl)
+      .reply(200, 'some content...');
+
+    const test = new SidekickTest({
+      page,
+      loadModule: true,
+      configJson: `{
+        "plugins": [{
+          "id": "bar",
+          "title": "Bar",
+          "url": "${pluginUrl}",
+          "passConfig": true
+        }]
+      }`,
+      plugin: 'bar',
+      pluginSleep: 2000,
+    });
+    const {
+      plugins,
+      popupOpened,
+    } = await test.run();
+    assert.ok(plugins.find((p) => p.id === 'bar'), 'Did not load plugins from project');
+    assert.ok(popupOpened === expectedPopupUrl, 'Did not pass additional info in plugin URL');
+  }).timeout(IT_DEFAULT_TIMEOUT);
+
   it('Plugin shows palette', async () => {
     const test = new SidekickTest({
       page,
@@ -300,6 +332,24 @@ describe('Test sidekick module', () => {
     assert.ok(configLoaded, 'Did not load project config');
     assert.ok(plugins.find((p) => p.id === 'bar'), 'Did not load plugins from project');
     assert.ok(checkEventFired(page, 'custom:foo'), 'Did not fire plugin event');
+  }).timeout(IT_DEFAULT_TIMEOUT);
+
+  it('Plugin extends existing plugin', async () => {
+    const test = new SidekickTest({
+      page,
+      loadModule: true,
+      configJson: `{
+        "host": "blog.adobe.com",
+        "plugins": [{
+          "id": "publish",
+          "excludePaths": ["**/drafts/**"]
+        }]
+      }`,
+    });
+    const {
+      plugins,
+    } = await test.run('https://main--blog--adobe.hlx.page/en/drafts/foo');
+    assert.ok(!plugins.find((p) => p.id === 'publish'), 'Did not extend existing plugin');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Loads config from development environment', async () => {

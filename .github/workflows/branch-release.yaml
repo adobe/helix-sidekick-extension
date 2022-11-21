@@ -4,7 +4,7 @@ on: push
 jobs:
   branch-release:
     runs-on: ubuntu-latest
-    if: "${{ !endsWith(github.ref, '/main') && !contains(github.event.head_commit.message, '[skip ci]') }}"
+    if: "${{ !endsWith(github.ref, '/main') && !contains(github.ref, '/renovate-') && !contains(github.event.head_commit.message, '[skip ci]') }}"
     steps:
       - name: Checkout source repo
         uses: actions/checkout@v3

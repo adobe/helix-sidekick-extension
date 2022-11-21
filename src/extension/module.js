@@ -61,6 +61,8 @@
    * @prop {string} title The button text
    * @prop {Object} titleI18n={} A map of translated button texts
    * @prop {string} url The URL to open when the button is clicked
+   * @prop {boolean} passConfig Append additional sk info to the url as query parameters:
+   *                          ref, repo, owner, host, project
    * @prop {boolean} passReferrer Append the referrer URL as a query param on new URL button click
    * @prop {string} event The name of a custom event to fire when the button is clicked.
    *                      Note: Plugin events get a custom: prefix, e.g. "foo" becomes "custom:foo".
@@ -1195,6 +1197,7 @@
             title,
             titleI18n,
             url,
+            passConfig,
             passReferrer,
             isPalette,
             paletteRect,
@@ -1205,14 +1208,47 @@
             containerId,
             isContainer,
           } = cfg;
-          // check mandatory properties
-          let missingProperty = '';
-          if (!sk.get(id)) {
+          const condition = (s) => {
+            let excluded = false;
+            const pathSearchHash = location.href.replace(location.origin, '');
+            if (excludePaths && Array.isArray(excludePaths)
+              && excludePaths.some((glob) => globToRegExp(glob).test(pathSearchHash))) {
+              excluded = true;
+            }
+            if (includePaths && Array.isArray(includePaths)
+              && includePaths.some((glob) => globToRegExp(glob).test(pathSearchHash))) {
+              excluded = false;
+            }
+            if (excluded) {
+              // excluding plugin
+              return false;
+            }
+            if (!environments || environments.includes('any')) {
+              return true;
+            }
+            const envChecks = {
+              dev: s.isDev,
+              edit: s.isEditor,
+              preview: s.isInner,
+              live: s.isOuter,
+              prod: s.isProd,
+            };
+            return environments.some((env) => envChecks[env] && envChecks[env].call(s));
+          };
+          const existingPlugin = sk.get(id);
+          if (existingPlugin) {
+            // extend existing plugin
+            if (!condition(sk)) {
+              sk.remove(id);
+            }
+          } else {
+            // check mandatory properties
+            let missingProperty = '';
             // plugin config not extending existing plugin
             if (!title) {
               missingProperty = 'title';
             } else if (!(url || eventName || isContainer)) {
-              missingProperty = 'url, modalUrl, event, or isContainer';
+              missingProperty = 'url, event, or isContainer';
             }
             if (missingProperty) {
               console.log(`plugin config missing required property: ${missingProperty}`, cfg);
@@ -1222,41 +1258,21 @@
           // assemble plugin config
           const plugin = {
             id: id || `custom-plugin-${i}`,
-            condition: (s) => {
-              let excluded = false;
-              const pathSearchHash = location.href.replace(location.origin, '');
-              if (excludePaths && Array.isArray(excludePaths)
-                && excludePaths.some((glob) => globToRegExp(glob).test(pathSearchHash))) {
-                excluded = true;
-              }
-              if (includePaths && Array.isArray(includePaths)
-                && includePaths.some((glob) => globToRegExp(glob).test(pathSearchHash))) {
-                excluded = false;
-              }
-              if (excluded) {
-                // excluding plugin
-                return false;
-              }
-              if (!environments || environments.includes('any')) {
-                return true;
-              }
-              const envChecks = {
-                dev: s.isDev,
-                edit: s.isEditor,
-                preview: s.isInner,
-                live: s.isOuter,
-                prod: s.isProd,
-              };
-              return environments.some((env) => envChecks[env] && envChecks[env].call(s));
-            },
+            condition,
             button: {
               text: (titleI18n && titleI18n[language]) || title,
               action: () => {
                 if (url) {
                   const target = url.startsWith('/') ? new URL(url, `https://${innerHost}/`) : new URL(url);
+                  if (passConfig) {
+                    target.searchParams.append('ref', sk.config.ref);
+                    target.searchParams.append('repo', sk.config.repo);
+                    target.searchParams.append('owner', sk.config.owner);
+                    if (sk.config.host) target.searchParams.append('host', sk.config.host);
+                    if (sk.config.project) target.searchParams.append('project', sk.config.project);
+                  }
                   if (passReferrer) {
-                    const { searchParams } = target;
-                    searchParams.append('referrer', location.href);
+                    target.searchParams.append('referrer', location.href);
                   }
                   if (isPalette) {
                     let palette = sk.shadowRoot.getElementById(`hlx-sk-palette-${id}`);
@@ -1420,10 +1436,15 @@
       ...getAdminFetchOptions(sk.config),
     })
       .then(() => {
-        fireEvent(sk, 'loggedout');
-        window.location.reload();
+        delete sk.config.authToken;
+        sk.status = {
+          loggedOut: true,
+        };
       })
-      .catch(() => {
+      .then(() => fireEvent(sk, 'loggedout'))
+      .then(() => sk.fetchStatus())
+      .catch((e) => {
+        console.error('logout failed', e);
         sk.showModal({
           css: 'modal-logout-error',
           level: 0,
@@ -1439,11 +1460,7 @@
   function checkUserState(sk) {
     const toggle = sk.get('user').firstElementChild;
     toggle.removeAttribute('disabled');
-    const { profile } = sk.status;
-    if (profile) {
-      const { name, email, picture } = profile;
-      toggle.title = name;
-      // user picture
+    const updateUserPicture = (picture) => {
       toggle.querySelectorAll('.user-picture').forEach((img) => img.remove());
       if (picture) {
         toggle.querySelector('.user-icon').classList.add('user-icon-hidden');
@@ -1457,6 +1474,12 @@
       } else {
         toggle.querySelector('.user-icon').classList.remove('user-icon-hidden');
       }
+    };
+    const { profile } = sk.status;
+    if (profile) {
+      const { name, email, picture } = profile;
+      toggle.title = name;
+      updateUserPicture(picture);
       const info = sk.get('user-info');
       if (!info) {
         sk.add({
@@ -1513,16 +1536,19 @@
         },
       });
     } else {
-      // login
-      sk.add({
-        container: 'user',
-        id: 'user-login',
-        condition: (sidekick) => !sidekick.status.profile || !sidekick.isAuthenticated(),
-        button: {
-          action: () => login(sk),
-        },
-      });
-      if (!sk.isAuthenticated()) {
+      updateUserPicture();
+      if (!sk.get('user-login')) {
+        // login
+        sk.add({
+          container: 'user',
+          id: 'user-login',
+          condition: (sidekick) => !sidekick.status.profile || !sidekick.isAuthenticated(),
+          button: {
+            action: () => login(sk),
+          },
+        });
+      }
+      if (!sk.status.loggedOut && !sk.isAuthenticated()) {
         // // encourage login
         toggle.click();
         toggle.nextElementSibling.classList.add('highlight');
@@ -1820,7 +1846,7 @@
         addPublishPlugin(this);
         addUnpublishPlugin(this);
         addCustomPlugins(this);
-      });
+      }, { once: true });
       this.addEventListener('statusfetched', () => {
         checkUserState(this);
         checkPlugins(this);

@@ -1,3 +1,38 @@
+# [6.3.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.2.1...v6.3.0) (2022-11-21)
+
+
+### Features
+
+* view document source popup ([#177](https://github.com/adobe/helix-sidekick-extension/issues/177)) ([f99d3ba](https://github.com/adobe/helix-sidekick-extension/commit/f99d3ba1b832034f1e938887ad6f88e79644a4a7))
+
+## [6.2.1](https://github.com/adobe/helix-sidekick-extension/compare/v6.2.0...v6.2.1) (2022-11-20)
+
+
+### Bug Fixes
+
+* login/logout flow ([b133a19](https://github.com/adobe/helix-sidekick-extension/commit/b133a19ddeae2e6b082ff0e9f5aabeea9fdd7396))
+
+# [6.2.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.1.0...v6.2.0) (2022-11-14)
+
+
+### Bug Fixes
+
+* exclude auth tokens from backup ([04dc8af](https://github.com/adobe/helix-sidekick-extension/commit/04dc8af59a02842bcf15ab3a739cc6d82c78e76f))
+* extend existing plugin ([d5bab99](https://github.com/adobe/helix-sidekick-extension/commit/d5bab9908382515efb87b77d5692443522487d3a))
+
+
+### Features
+
+* detect git clone url when adding project ([eb503f4](https://github.com/adobe/helix-sidekick-extension/commit/eb503f4287ba8ce00ee4106bee75b96e83bfda0a))
+* show extension hint to bookmarklet users ([b91b7a3](https://github.com/adobe/helix-sidekick-extension/commit/b91b7a39550f93911e866ecbdf09302d918ba4c0))
+
+# [6.1.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.0.0...v6.1.0) (2022-11-11)
+
+
+### Features
+
+* add ability to pass additional sk config info to url ([51b47a2](https://github.com/adobe/helix-sidekick-extension/commit/51b47a294632add72d47ac9b0f206bc930cb9c07))
+
 # [6.0.0](https://github.com/adobe/helix-sidekick-extension/compare/v5.10.0...v6.0.0) (2022-11-04)
 
 

@@ -89,15 +89,12 @@ export default async function injectSidekick(config, display) {
 
     // todo: improve config change handling. currently we only update the authToken
     chrome.storage.sync.onChanged.addListener((changes) => {
-      log.debug('store changed', changes);
-      // find changes to this sidekicks config
-      changes.hlxSidekickProjects?.newValue?.forEach((newHandle) => {
-        if (newHandle === `${owner}/${repo}`) {
-          log.debug(`updating config for ${newHandle} and reloading sidekick.`);
-          window.hlx.sidekickConfig.authToken = newHandle.authToken;
-          window.hlx.sidekick.loadContext();
-        }
-      });
+      const newAuthToken = changes[`${owner}/${repo}`]?.newValue?.authToken;
+      if (newAuthToken) {
+        log.debug(`adding authToken to config ${owner}/${repo} and refreshig sidekick`);
+        window.hlx.sidekickConfig.authToken = newAuthToken;
+        window.hlx.sidekick.loadContext(window.hlx.sidekickConfig);
+      }
     });
 
     // wait for sidekick to instrument
@@ -111,7 +108,8 @@ export default async function injectSidekick(config, display) {
           setDisplay(false);
         });
         sk.addEventListener('loggedout', async () => {
-          // delete the authToken from the config
+          // user clicked logout, delete the authToken from the config
+          log.debug(`removing authToken from config ${owner}/${repo}`);
           await storeAuthToken(owner, repo, '');
         });
         const helpOptOut = await getConfig('sync', 'hlxSidekickHelpOptOut');
