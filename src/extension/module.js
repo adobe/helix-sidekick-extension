@@ -1466,11 +1466,11 @@
         if (picture.startsWith('https://admin.hlx.page/')) {
           // fetch the image with auth token
           const resp = await fetch(picture, {
-              headers: {
-                'x-auth-token': sk.config.authToken,
-              },
-           });
-           picture = URL.createObjectURL(await resp.blob());
+            headers: {
+              'x-auth-token': sk.config.authToken,
+            },
+          });
+          picture = URL.createObjectURL(await resp.blob());
         }
         toggle.querySelector('.user-icon').classList.add('user-icon-hidden');
         appendTag(toggle, {
