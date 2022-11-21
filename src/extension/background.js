@@ -135,6 +135,13 @@ async function checkContextMenu(tabUrl, configs = []) {
               ],
             });
           }
+          chrome.contextMenus.create({
+            id: 'openViewDocSource',
+            title: i18n('open_view_doc_source'),
+            contexts: [
+              'action',
+            ],
+          });
         }
       }
     });
@@ -325,6 +332,7 @@ function checkViewSource(id) {
         }
       }
     },
+    openViewDocSource: async ({ id }) => checkViewSource(id),
   };
 
   if (chrome.contextMenus) {
