@@ -1,3 +1,10 @@
+## [6.3.1](https://github.com/adobe/helix-sidekick-extension/compare/v6.3.0...v6.3.1) (2022-11-21)
+
+
+### Bug Fixes
+
+* sharepoint avatar cannot be loaded ([0f9e8b3](https://github.com/adobe/helix-sidekick-extension/commit/0f9e8b3d06b63e974eefb96640616b6308fc9fcd))
+
 # [6.3.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.2.1...v6.3.0) (2022-11-21)
 
 
