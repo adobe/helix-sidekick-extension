@@ -202,7 +202,7 @@ const load = async () => {
 
   await chrome.scripting.executeScript({
     target: { tabId: tab.id },
-    files: ['/view-source/js/content.js'],
+    files: ['/view-doc-source/js/content.js'],
   });
 
   loadEditor(tab.url);

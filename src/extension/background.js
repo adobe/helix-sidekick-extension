@@ -267,7 +267,7 @@ function checkViewSource(id) {
       const vds = u.searchParams.get('view-doc-source');
       if (vds && vds === 'true') {
         chrome.windows.create({
-          url: chrome.runtime.getURL(`/view-source/index.html?tabId=${id}`),
+          url: chrome.runtime.getURL(`/view-doc-source/index.html?tabId=${id}`),
           type: 'popup',
           width: 740,
           height: 1200,

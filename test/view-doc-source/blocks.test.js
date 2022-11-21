@@ -21,7 +21,7 @@ import {
   createSectionBreaks,
   removeSectionBreaks,
   addMetadataBlock,
-} from '../../src/extension/view-source/js/blocks.js';
+} from '../../src/extension/view-doc-source/js/blocks.js';
 
 document.body.innerHTML = '<div id="container"></div>';
 
