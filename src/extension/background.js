@@ -270,7 +270,6 @@ function checkViewSource(id) {
           url: chrome.runtime.getURL(`/view-doc-source/index.html?tabId=${id}`),
           type: 'popup',
           width: 740,
-          height: 1200,
         });
       }
     } catch (e) {
