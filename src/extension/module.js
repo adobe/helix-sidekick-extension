@@ -1460,9 +1460,18 @@
   function checkUserState(sk) {
     const toggle = sk.get('user').firstElementChild;
     toggle.removeAttribute('disabled');
-    const updateUserPicture = (picture) => {
+    const updateUserPicture = async (picture) => {
       toggle.querySelectorAll('.user-picture').forEach((img) => img.remove());
       if (picture) {
+        if (picture.startsWith('https://admin.hlx.page/')) {
+          // fetch the image with auth token
+          const resp = await fetch(picture, {
+            headers: {
+              'x-auth-token': sk.config.authToken,
+            },
+          });
+          picture = URL.createObjectURL(await resp.blob());
+        }
         toggle.querySelector('.user-icon').classList.add('user-icon-hidden');
         appendTag(toggle, {
           tag: 'img',
