@@ -5,7 +5,7 @@
   "scripts": {
     "lint": "./node_modules/.bin/eslint .",
     "test:mocha": "nyc mocha",
-    "test:wtr": "wtr \"./test/unit/*.test.js\" \"./test/extension/*.test.js\"",
+    "test:wtr": "wtr \"./test/unit/*.test.js\" \"./test/extension/*.test.js\" \"./test/view-doc-source/*.test.js\"",
     "test:wtr:watch": "npm run test:wtr -- --watch",
     "test": "npm run test:mocha && npm run test:wtr",
     "test:watch": "npm run test -- --watch",

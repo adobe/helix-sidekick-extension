@@ -221,5 +221,8 @@
   },
   "help_user_status_description": {
     "message": "Les sujets sélectionnés ne seront plus affichés. Décochez la case à côté d'un sujet que vous souhaitez revoir."
+  },
+  "open_view_doc_source": {
+    "message": "Voir le document source"
   }
 }

@@ -38,7 +38,8 @@
         "module.js",
         "sidekick.js",
         "utils.js",
-        "view/json.js"
+        "view/json.js",
+        "view-doc-source/js/content.js"
       ],
       "matches": [
         "https://*/*",

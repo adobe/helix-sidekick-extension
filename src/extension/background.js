@@ -135,6 +135,13 @@ async function checkContextMenu(tabUrl, configs = []) {
               ],
             });
           }
+          chrome.contextMenus.create({
+            id: 'openViewDocSource',
+            title: i18n('open_view_doc_source'),
+            contexts: [
+              'action',
+            ],
+          });
         }
       }
     });
@@ -256,6 +263,29 @@ async function updateHelpContent() {
 }
 
 /**
+ * Checks if the view source popp needs to be openeded, and opens it if necessary.
+ * @param {*} id The tab ID
+ */
+function checkViewSource(id) {
+  chrome.tabs.get(id, (tab = {}) => {
+    if (!tab.url) return;
+    try {
+      const u = new URL(tab.url);
+      const vds = u.searchParams.get('view-doc-source');
+      if (vds && vds === 'true') {
+        chrome.windows.create({
+          url: chrome.runtime.getURL(`/view-doc-source/index.html?tabId=${id}`),
+          type: 'popup',
+          width: 740,
+        });
+      }
+    } catch (e) {
+      log.warn('error checking view source', e);
+    }
+  });
+}
+
+/**
  * Adds the listeners for the extension.
  */
 (() => {
@@ -302,6 +332,7 @@ async function updateHelpContent() {
         }
       }
     },
+    openViewDocSource: async ({ id }) => checkViewSource(id),
   };
 
   if (chrome.contextMenus) {
@@ -322,6 +353,7 @@ async function updateHelpContent() {
     // wait until the tab is done loading
     if (info.status === 'complete') {
       checkTab(id);
+      checkViewSource(id);
     }
   });
 

@@ -222,5 +222,8 @@
   },
   "help_user_status_description": {
     "message": "Checked topics will not be shown anymore. Remove the checkmark next to a topic you wish to see again."
+  },
+  "open_view_doc_source": {
+    "message": "View source document"
   }
 }
