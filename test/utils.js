@@ -9,15 +9,15 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+/* eslint-disable max-classes-per-file */
 /* eslint-env mocha */
-
-'use strict';
-
 const assert = require('assert');
 const { fetch } = require('@adobe/fetch').h1();
 const nock = require('nock');
 const puppeteer = require('puppeteer');
 const pti = require('puppeteer-to-istanbul');
+const { fileURLToPath } = require('url');
+const { promises: fs } = require('fs');
 const { CDPBrowser } = require('../node_modules/puppeteer/node_modules/puppeteer-core/lib/cjs/puppeteer/common/Browser.js');
 
 // set debug to true to see browser window and debug output
@@ -232,15 +232,6 @@ class Setup {
   apiResponse(api = 'status', type = 'html') {
     return { ...this._setup.api[api][type] };
   }
-
-  /**
-   * Returns the content response for a given content type.
-   * @param {string} type=html The content type (html, xml or json)
-   * @returns {string} The content response
-   */
-  contentResponse(type = 'html') {
-    return { ...this._setup.content[type] };
-  }
 }
 
 const toResp = (resp) => {
@@ -415,170 +406,238 @@ const sleep = async (delay = 1000) => new Promise((resolve) => {
 });
 
 /**
- * Registers a fetch interceptor for newly created targets and proxies them via @adobe/fetch.
- * This allows to use 'nock' for the network responses.
- * @param {Connection} connection
- * @param {boolean} proxyAdmin if {@code true} requests to admin are proxied.
- * @returns {Promise<void>}
+ * Due to an issue in puppeteer, newly created targets can't be intercepted correctly:
+ * https://github.com/puppeteer/puppeteer/issues/3667
+ *
+ * so we need to create our own abstraction for network interception.
  */
-async function interceptRequests(connection, proxyAdmin = false) {
-  await connection.send('Target.setAutoAttach', {
-    autoAttach: true,
-    waitForDebuggerOnStart: true,
-    flatten: true,
-  });
-  connection.on('Target.attachedToTarget', async (event) => {
-    const { sessionId } = event;
+class TestBrowser {
+  constructor(browser) {
+    this.browser = browser;
+    // track frames to detect navigation requests
+    // this.frames = {};
+  }
 
-    // eslint-disable-next-line no-underscore-dangle
-    const getSession = () => connection.session(sessionId);
-    const session = getSession();
+  withRequestHandler(handler) {
+    this.requestHandler = handler;
+    return this;
+  }
 
-    if (!event.waitingForDebugger || !session || event.targetInfo.type !== 'page') {
-      return;
-    }
+  /**
+   * Registers a fetch interceptor for newly created targets and proxies them via @adobe/fetch.
+   * This allows to use 'nock' for the network responses.
+   * @param {Connection} connection
+   * @param {boolean} proxyAdmin if {@code true} requests to admin are proxied.
+   * @returns {Promise<void>}
+   */
+  async setupInterceptRequests(connection) {
+    await connection.send('Target.setAutoAttach', {
+      autoAttach: true,
+      waitForDebuggerOnStart: true,
+      flatten: true,
+    });
+    connection.on('Target.attachedToTarget', async (event) => {
+      const { sessionId } = event;
 
-    const handleRequestPaused = async (evt) => {
-      const { request } = evt;
-      if (DEBUG_LOGS) {
-        // eslint-disable-next-line no-console
-        console.log('[pup] intercepting request to', request.url);
-      }
+      // eslint-disable-next-line no-underscore-dangle
+      const getSession = () => connection.session(sessionId);
+      const session = getSession();
 
-      let innerSession = getSession();
-      if (!innerSession) {
-        // eslint-disable-next-line no-console
-        console.log(`[pup] session ${sessionId} no longer valid. maybe pending request?`);
+      if (!event.waitingForDebugger || !session || event.targetInfo.type !== 'page') {
         return;
       }
 
-      // ignore internal requests (?)
-      if (request.url.startsWith('file://')
-        || request.url.endsWith('/tools/sidekick/config.json')
-        || (request.url.startsWith('https://admin.hlx.page/') && !proxyAdmin)) {
+      const handleRequestPaused = async (evt) => {
+        const { request } = evt;
+        request.isNavigationRequest = evt.resourceType === 'Document';
         if (DEBUG_LOGS) {
           // eslint-disable-next-line no-console
-          console.log('[pup] intercepting request to', request.url, ' (ignored)');
+          console.log(`[pup] intercepting ${request.isNavigationRequest ? 'navigation ' : ''}request to`, request.url);
+          // console.log(evt);
         }
-        return;
-      }
 
-      if (request.url.endsWith('/favicon.ico')) {
-        await innerSession.send('Fetch.fulfillRequest', {
-          requestId: evt.requestId,
-          responseCode: 404,
-        });
-      }
-      const res = await fetch(request.url, {
-        method: request.method,
-        headers: request.headers,
-      });
-
-      const responseHeaders = Object.entries(res.headers.plain())
-        .map(([name, value]) => ({ name, value }));
-      const body = (await res.buffer()).toString('base64');
-      try {
-        // refetch session, in case no longer valid
-        innerSession = getSession();
+        let innerSession = getSession();
         if (!innerSession) {
           // eslint-disable-next-line no-console
-          console.log(`[pup] session ${sessionId} no longer valid after received response to ${request.url}.`);
+          console.log(`[pup] session ${sessionId} no longer valid. maybe pending request?`);
           return;
         }
 
-        await innerSession.send('Fetch.fulfillRequest', {
-          requestId: evt.requestId,
-          responseCode: res.status,
-          responseHeaders,
-          body,
+        try {
+          let res = await this.requestHandler?.(request);
+          if (res === -1) {
+            if (DEBUG_LOGS) {
+              // eslint-disable-next-line no-console
+              console.log('[pup] request aborted', request.url);
+            }
+            await innerSession.send('Fetch.failRequest', {
+              requestId: evt.requestId,
+              errorReason: 'Aborted',
+            });
+            return;
+          }
+
+          if (!res && request.url.startsWith('file://')) {
+            // let file requests through
+            if (DEBUG_LOGS) {
+              // eslint-disable-next-line no-console
+              console.log('[pup] loading', request.url);
+            }
+            res = toResp(await fs.readFile(fileURLToPath(request.url), 'utf-8'));
+          }
+
+          // if no response, proxy the request so it can be nocked
+          if (!res) {
+            const fetchResponse = await fetch(request.url, {
+              method: request.method,
+              headers: request.headers,
+            });
+
+            const responseHeaders = Object.entries(fetchResponse.headers.plain())
+              .map(([name, value]) => ({ name, value }));
+            res = {
+              status: fetchResponse.status,
+              headers: responseHeaders,
+              buffer: await fetchResponse.buffer(),
+            };
+          }
+
+          // refetch session, in case no longer valid
+          innerSession = getSession();
+          if (!innerSession) {
+            // eslint-disable-next-line no-console
+            console.log(`[pup] session ${sessionId} no longer valid after received response to ${request.url}.`);
+            return;
+          }
+
+          const buffer = res.buffer ?? Buffer.from(res.body ?? '', 'utf-8');
+          await innerSession.send('Fetch.fulfillRequest', {
+            requestId: evt.requestId,
+            responseCode: res.status,
+            responseHeaders: res.headers ?? [],
+            body: buffer.toString('base64'),
+          });
+
+        // // ignore internal requests (?)
+        // if (request.url.startsWith('file://')
+        //   || request.url.endsWith('/tools/sidekick/config.json')
+        //   || (request.url.startsWith('https://admin.hlx.page/') && !proxyAdmin)) {
+        //   if (DEBUG_LOGS) {
+        //     // eslint-disable-next-line no-console
+        //     console.log('[pup] intercepting request to', request.url, ' (ignored)');
+        //   }
+        //   return;
+        // }
+        //
+        // if (request.url.endsWith('/favicon.ico')) {
+        //   await innerSession.send('Fetch.fulfillRequest', {
+        //     requestId: evt.requestId,
+        //     responseCode: 404,
+        //   });
+        // }
+        } catch (e) {
+          // eslint-disable-next-line no-console
+          console.error('[pup] error handling request', e);
+        }
+      };
+      try {
+        await session.on('Fetch.requestPaused', handleRequestPaused);
+        await session.send('Fetch.enable', {
+          handleAuthRequests: true,
+          patterns: [
+            { urlPattern: 'https://*' },
+            { urlPattern: 'http://*' },
+            { urlPattern: 'file://*' },
+          ],
         });
+        // session.on('Page.lifecycleEvent', (evt) => {
+        //   console.log('[[Page.lifecycleEvent]]', evt);
+          // if (evt.name === 'init') {
+          //   this.frames[evt.frameId] = {
+          //     loaderId: evt.loaderId,
+          //   };
+          // }
+        // });
+        // session.on('Page.frameNavigated', (evt) => {
+        //   // todo: propagate properly to tests?
+        //   // console.log('[[Page.frameNavigated]]', evt);
+        // });
+        // session.on('Page.frameAttached', (evt) => {
+        //   console.log('[[Page.frameAttached]]', evt);
+        // });
+
+        // await session.send('Page.enable');
+        // await session.send('Page.setLifecycleEventsEnabled', { enabled: true });
+        await session.send('Runtime.runIfWaitingForDebugger');
       } catch (e) {
         // eslint-disable-next-line no-console
-        console.error('[pup] error handling request', e);
+        console.error('[pup] error setting up request-interception', e);
       }
-    };
-    try {
-      await session.on('Fetch.requestPaused', handleRequestPaused);
-      await session.send('Fetch.enable', {
-        handleAuthRequests: true,
-        patterns: [
-          { urlPattern: 'https://*' },
-          { urlPattern: 'http://*' },
-        ],
-      });
-      await session.send('Runtime.runIfWaitingForDebugger');
-    } catch (e) {
-      // eslint-disable-next-line no-console
-      console.error('[pup] error setting up request-interception', e);
-    }
-  });
-}
-
-/**
- * Starts the browser
- * @returns {Promise<Browser>}
- */
-async function startBrowser(proxyAdmin) {
-  let browserConnection;
-  // eslint-disable-next-line no-underscore-dangle
-  const oldCreate = CDPBrowser._create;
-  // eslint-disable-next-line no-underscore-dangle
-  CDPBrowser._create = (product, connection, ...args) => {
-    browserConnection = connection;
-    return oldCreate(product, connection, ...args);
-  };
-
-  const browser = await puppeteer.launch({
-    devtools: DEBUG || process.env.HLX_SK_TEST_DEBUG,
-    // headless: false,
-    args: [
-      '--disable-popup-blocking',
-      '--disable-web-security',
-      '-no-sandbox',
-      '-disable-setuid-sandbox',
-    ],
-    slowMo: false,
-  });
-  await interceptRequests(browserConnection, proxyAdmin);
-  return browser;
-}
-
-/**
- * Opens a new browser page
- * @returns {Promise<Page>}
- */
-async function openPage(browser) {
-  const page = await browser.newPage();
-  await page.coverage.startJSCoverage();
-  await page.coverage.startCSSCoverage();
-  return page;
-}
-
-async function stopBrowser(browser) {
-  if (!DEBUG) {
-    await browser.close();
+    });
   }
-}
 
-async function closeAllPages(browser) {
-  if (!DEBUG) {
-    await Promise.all((await browser.pages()).map(async (page) => {
-      const url = page.url();
-      if (url.startsWith('file:///')) {
-        // only get coverage from file urls
-        const [jsCoverage, cssCoverage] = await Promise.all([
-          page.coverage.stopJSCoverage(),
-          page.coverage.stopCSSCoverage(),
-        ]);
-        pti.write([...jsCoverage, ...cssCoverage], {
-          includeHostname: true,
-          storagePath: './.nyc_output',
-        });
-      }
-      if (url !== 'about:blank') {
-        await page.close();
-      }
-    }));
+  static async create() {
+    let browserConnection;
+    // eslint-disable-next-line no-underscore-dangle
+    const oldCreate = CDPBrowser._create;
+    // eslint-disable-next-line no-underscore-dangle
+    CDPBrowser._create = (product, connection, ...args) => {
+      browserConnection = connection;
+      return oldCreate(product, connection, ...args);
+    };
+    const browser = await puppeteer.launch({
+      devtools: DEBUG || process.env.HLX_SK_TEST_DEBUG,
+      // headless: false,
+      args: [
+        '--disable-popup-blocking',
+        '--disable-web-security',
+        '-no-sandbox',
+        '-disable-setuid-sandbox',
+      ],
+      slowMo: false,
+    });
+    const testBrowser = new TestBrowser(browser);
+    await testBrowser.setupInterceptRequests(browserConnection);
+    return testBrowser;
+  }
+
+  /**
+   * Opens a new browser page
+   * @returns {Promise<Page>}
+   */
+  async openPage() {
+    const page = await this.browser.newPage();
+    await page.coverage.startJSCoverage();
+    await page.coverage.startCSSCoverage();
+    return page;
+  }
+
+  async close() {
+    if (!DEBUG) {
+      await this.browser.close();
+    }
+  }
+
+  async closeAllPages() {
+    if (!DEBUG) {
+      await Promise.all((await this.browser.pages()).map(async (page) => {
+        const url = page.url();
+        if (url.startsWith('file:///')) {
+          // only get coverage from file urls
+          const [jsCoverage, cssCoverage] = await Promise.all([
+            page.coverage.stopJSCoverage(),
+            page.coverage.stopCSSCoverage(),
+          ]);
+          pti.write([...jsCoverage, ...cssCoverage], {
+            includeHostname: true,
+            storagePath: './.nyc_output',
+          });
+        }
+        if (url !== 'about:blank') {
+          await page.close();
+        }
+      }));
+    }
   }
 }
 
@@ -618,6 +677,13 @@ function Nock() {
     }
   };
 
+  nocker.admin = (/** @type Setup */ setup, route, type) => nocker(`https://admin.hlx.page/${route}/`)
+    .get(/.*/)
+    .reply(() => {
+      const resp = setup.apiResponse(route, type);
+      return [200, resp];
+    });
+
   nocker.edit = () => nocker('https://adobe.sharepoint.com')
     .get('/:w:/r/sites/TheBlog/_layouts/15/Doc.aspx?sourcedoc=%7BE8EC80CB-24C3-4B95-B082-C51FD8BC8760%7D&file=bla.docx&action=default&mobileredirect=true')
     .reply(200, 'this would be a docx...', {
@@ -643,9 +709,6 @@ module.exports = {
   clickButton,
   getNotification,
   sleep,
-  startBrowser,
-  stopBrowser,
-  closeAllPages,
-  openPage,
+  TestBrowser,
   Nock,
 };

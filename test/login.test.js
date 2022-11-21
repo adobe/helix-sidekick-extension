@@ -17,58 +17,45 @@ const assert = require('assert');
 
 const {
   IT_DEFAULT_TIMEOUT,
-  startBrowser,
-  stopBrowser,
-  openPage,
-  closeAllPages,
   Nock,
   sleep,
   DEBUG,
+  TestBrowser,
 } = require('./utils.js');
 const { SidekickTest } = require('./SidekickTest.js');
 
 describe('Test sidekick login', () => {
+  /** @type TestBrowser */
   let browser;
 
   before(async function before() {
     this.timeout(10000);
-    browser = await startBrowser(true);
+    browser = await TestBrowser.create();
   });
-  after(async () => stopBrowser(browser));
+
+  after(async () => browser.close());
 
   let page;
   let nock;
 
   beforeEach(async () => {
-    page = await openPage(browser);
+    page = await browser.openPage();
     nock = new Nock();
   });
 
   afterEach(async () => {
-    await closeAllPages(browser);
+    await browser.closeAllPages();
     nock.done();
   });
 
   it('Opens login window and logs in via auth-cookie', async () => {
     let loggedIn = false;
     const test = new SidekickTest({
+      browser,
       page,
-      apiResponses: (req) => {
-        if (req.headers.cookie === 'auth_token=foobar') {
-          loggedIn = true;
-          return {
-            status: 200,
-            headers: {
-              'content-type': 'application/json',
-            },
-            body: '{}',
-          };
-        }
-        return {
-          status: 401,
-        };
-      },
-      waitPopup: 2000,
+      waitPopup: 4000,
+      waitNavigation: 'xx',
+      waitNavigationTime: 10000,
       post: async (p) => {
         const btn = await p.waitForFunction(() => window.hlx.sidekick.shadowRoot.querySelector('.hlx-sk .user div.user-login button'));
         await btn.click();
@@ -77,12 +64,29 @@ describe('Test sidekick login', () => {
 
     nock('https://admin.hlx.page')
       .get('/status/adobe/blog/main/en/topics/bla?editUrl=auto')
-      .reply(401)
+      .times(4)
+      .reply(function req() {
+        console.log(this.req.headers);
+        if (this.req.headers.cookie === 'auth_token=foobar') {
+          loggedIn = true;
+          return [200, '{}', { 'content-type': 'application/json' }];
+        }
+        return [401];
+      })
       .get('/login/adobe/blog/main/en/topics/bla?loginRedirect=https%3A%2F%2Fwww.hlx.live%2Ftools%2Fsidekick%2Flogin-success')
       .times(DEBUG ? 2 : 1) // when dev-tools are enabled, browser makes 2 requests.
       .delay(1500) // delay so that 2 requests are made
       .reply(200, 'logged in!', {
         'set-cookie': 'auth_token=foobar; Path=/; HttpOnly; Secure; SameSite=None',
+      })
+      .get('/profile')
+      .times(4)
+      .reply(function req() {
+        console.log('profile', this.req.headers);
+        if (this.req.headers.cookie === 'auth_token=foobar') {
+          return [200, '{}', { 'content-type': 'application/json' }];
+        }
+        return [401];
       });
 
     await test.run();

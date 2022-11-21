@@ -15,7 +15,6 @@
 
 const { EventEmitter } = require('events');
 const fs = require('fs').promises;
-const { fileURLToPath } = require('url');
 
 const {
   DEBUG_LOGS,
@@ -77,13 +76,6 @@ const {
  */
 
 /**
- * @callback SidekickTest~CheckRequest
- * @description A function to call if an HTTP request occurs.
- * @param {HttpRequest} req The Puppeteer HTTP request
- * @returns A truthy (stored in {@link Sidekick~Result.checkRequestResult}) or falsy value
- */
-
-/**
  * @callback SidekickTest~CheckPage
  * @description A function to execute after loading the sidekick.
  * @param {Page} page The Puppeteer page
@@ -92,6 +84,7 @@ const {
 
 /**
  * @typedef {Object} SidekickTest~Options The test options
+ * @param {TestBrowser} o.browser Our test browser
  * @param {Page} o.page The Puppeteer page
  * @param {Setup|string} o.setup The [test setup]{@link Setup}
  * @param {string} o.env=preview The environment (preview or live)
@@ -104,7 +97,6 @@ const {
  * @param {boolean} allowNavigation=false Defines whether navigation is allowed
  * @param {SidekickTest~Pre} o.pre A function to call before loading the sidekick
  * @param {SidekickTest~Post} o.post A function to call after loading the sidekick
- * @param {SidekickTest~CheckRequest} o.checkRequest A function to call if an HTTP request occurs
  * @param {SidekickTest~CheckPage} o.checkPage A function to call at the end of the test run
  * @param {string[]} o.checkPlugins An array of plugin IDs to check for
  * @param {string[]} o.checkEvents An array of event names to check for
@@ -113,8 +105,6 @@ const {
  * @param {string} o.url A URL to use as test location (optional setup override)
  * @param {string} o.configJs A project config JS (optional setup override)
  * @param {Object} o.sidekickConfig A sidekick config (optional setup override)
- * @param {Object[]} o.apiResponses An array of API responses (optional setup override)
- * @param {Object[]} o.contentResponses An array of content responses (optional setup override)
  */
 
 /**
@@ -135,7 +125,6 @@ const {
  * @prop {Object} dialog A dialog displayed by the sidekick
  * @prop {string} dialog.type The dialog type (alert or confirm)
  * @prop {string} dialog.message The dialog message
- * @prop {*} checkRequestResult The result of {@link SidekickTest~CheckRequest}
  * @prop {*} checkPageResult The result of {@link SidekickTest~CheckPage}
  */
 
@@ -150,6 +139,8 @@ class SidekickTest extends EventEmitter {
   constructor(o = {}) {
     super();
     // main options
+    /** @type TestBrowser */
+    this.browser = o.browser;
     this.page = o.page;
     this.setup = o.setup instanceof Setup ? o.setup : new Setup(o.setup || 'blog');
     this.env = o.env || 'preview';
@@ -172,15 +163,12 @@ class SidekickTest extends EventEmitter {
     this.configJs = o.configJs || this.setup.configJs;
     this.configJson = o.configJson || this.setup.configJson;
     this.sidekickConfig = o.sidekickConfig || JSON.parse(JSON.stringify(this.setup.sidekickConfig));
-    this.apiResponses = o.apiResponses || [this.setup.apiResponse('status', this.type)];
-    this.contentResponses = o.contentResponses || [this.setup.contentResponse(this.type)];
 
     // optional pre/post sidekick injection functions
     this.pre = o.pre || (async () => {});
     this.post = o.post || (async () => {});
 
     // optional checks
-    this.checkRequest = o.checkRequest;
     this.checkPlugins = o.checkPlugins;
     this.checkEvents = o.checkEvents;
     this.checkPage = o.checkPage;
@@ -209,9 +197,6 @@ class SidekickTest extends EventEmitter {
     const {
       acceptDialogs,
       allowNavigation,
-      checkRequest,
-      apiResponses,
-      contentResponses,
       configJs,
       configJson,
     } = this;
@@ -224,7 +209,6 @@ class SidekickTest extends EventEmitter {
     let plugins;
     let notification;
     let dialog;
-    let checkRequestResult;
     let checkPageResult;
     let popupTarget;
 
@@ -274,81 +258,56 @@ class SidekickTest extends EventEmitter {
           }
         });
         // instrument requests
-        this.page.setRequestInterception(true);
-        this.page.on('request', async (req) => {
-          const url = req.url();
+        this.browser.withRequestHandler(async (req) => {
+          const { url } = req;
           if (DEBUG_LOGS) {
             // eslint-disable-next-line no-console
-            console.log('[pup] request', url);
+            console.log(`[pup]${req.isNavigationRequest ? ' navigation' : ''} request`, url);
           }
-          if (req.isNavigationRequest()) {
+          if (req.isNavigationRequest) {
             if (!pageLoaded) {
               pageLoaded = true;
             } else {
               navigated = url;
               if (!allowNavigation) {
-                req.abort('aborted');
+                // return -1;
               }
+            }
+            if (this.waitNavigation.delete(url)) {
+              return -1;
             }
           }
           if (url.startsWith('http')) {
-            this.waitNavigation.delete(url);
             const reqObj = {
-              method: req.method(),
-              headers: req.headers(),
+              method: req.method,
+              headers: req.headers,
               url,
             };
             requestsMade.push(reqObj);
-            if (typeof checkRequest === 'function') {
-              checkRequestResult = checkRequest(req);
-              if (checkRequestResult) {
-                resolve(SidekickTest.CHECK_REQUEST);
-                return;
-              }
-            }
-            if (url.startsWith('https://admin.hlx.page/')) {
-              if (typeof apiResponses === 'function') {
-                req.respond(await apiResponses(reqObj));
-              } else {
-                req.respond(toResp(apiResponses.length === 1
-                  ? apiResponses[0] : apiResponses.shift()));
-              }
-            } else if (url.endsWith('/tools/sidekick/config.json')) {
+            if (url.endsWith('/tools/sidekick/config.json')) {
               configLoaded = url;
-              req.respond(toResp(configJson));
+              return toResp(configJson);
             } else if (url.endsWith('/tools/sidekick/config.js')) {
               configLoaded = url;
-              req.respond(toResp(configJs));
+              return toResp(configJs);
             } else if (url === 'https://www.hlx.live/tools/sidekick/module.js') {
               try {
                 // return local module.js
                 const module = await fs.readFile(`${__dirname}/../src/extension/module.js`, 'utf-8');
-                req.respond(toResp(module));
+                return toResp(module);
               } catch (e) {
                 reject(new Error('failed to load local module.js'));
               }
             } else {
-              req.respond(toResp(contentResponses.length === 1
-                ? contentResponses[0] : contentResponses.shift()));
+              return null;
             }
-          } else if (url.startsWith('file://')) {
-            // let file requests through
+          } else if (url.startsWith('file://') && url.indexOf('/bookmarklet/') > 0 && !url.endsWith('/app.js')) {
+            // rewrite all `/bookmarklet/` requests (except app.js)
             if (DEBUG_LOGS) {
               // eslint-disable-next-line no-console
-              console.log('[pup] loading', url);
+              console.log('[pup] rewriting', url);
             }
-            // rewrite all `/bookmarklet/` requests (except app.js)
-            if (url.indexOf('/bookmarklet/') > 0 && !url.endsWith('/app.js')) {
-              const path = fileURLToPath(url).replace('/bookmarklet/', '/extension/');
-              try {
-                req.respond(toResp(await fs.readFile(path, 'utf-8')));
-                return;
-              } catch (e) {
-                reject(new Error(`failed to load: ${path}`));
-                return;
-              }
-            }
-            req.continue();
+            req.url = req.url.replace('/bookmarklet/', '/extension/');
           }
         });
       }
@@ -496,6 +455,7 @@ class SidekickTest extends EventEmitter {
         })
         .catch((e) => reject(e))
         .finally(() => {
+          this.browser.withRequestHandler(null);
           this.page.browser().off('targetcreated', recordTargetCreated);
         });
     });
@@ -512,7 +472,6 @@ class SidekickTest extends EventEmitter {
       plugins,
       notification,
       dialog,
-      checkRequestResult,
       checkPageResult,
     };
   }

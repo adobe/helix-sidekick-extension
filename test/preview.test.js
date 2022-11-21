@@ -17,41 +17,41 @@ const assert = require('assert');
 
 const {
   IT_DEFAULT_TIMEOUT,
-  startBrowser,
-  stopBrowser,
-  openPage,
-  closeAllPages,
+  TestBrowser,
   Nock,
 } = require('./utils.js');
 const { SidekickTest } = require('./SidekickTest.js');
 
 describe('Test preview plugin', () => {
+  /** @type TestBrowser */
   let browser;
 
   before(async function before() {
     this.timeout(10000);
-    browser = await startBrowser();
+    browser = await TestBrowser.create();
   });
-  after(async () => stopBrowser(browser));
+
+  after(async () => browser.close());
 
   let page;
   let nock;
 
   beforeEach(async () => {
-    page = await openPage(browser);
+    page = await browser.openPage();
     nock = new Nock();
   });
 
   afterEach(async () => {
-    await closeAllPages(browser);
+    await browser.closeAllPages();
     nock.done();
   });
 
   it('Preview plugin switches to preview from gdrive URL', async () => {
     nock('https://main--pages--adobe.hlx.page')
       .get('/creativecloud/en/test')
-      .reply(200, 'some content...');
+      .reply(200, '<html></html>');
     const { popupOpened } = await new SidekickTest({
+      browser,
       page,
       setup: 'pages',
       url: 'https://docs.google.com/document/d/2E1PNphAhTZAZrDjevM0BX7CZr7KjomuBO6xE1TUo9NU/edit',
@@ -68,8 +68,9 @@ describe('Test preview plugin', () => {
   it('Preview plugin switches to preview from onedrive URL', async () => {
     nock('https://main--blog--adobe.hlx.page')
       .get('/en/topics/bla')
-      .reply(200, 'some content...');
+      .reply(200, '<html></html>');
     const { popupOpened } = await new SidekickTest({
+      browser,
       page,
       url: 'https://adobe.sharepoint.com/:w:/r/sites/TheBlog/_layouts/15/Doc.aspx?sourcedoc=%7BE8EC80CB-24C3-4B95-B082-C51FD8BC8760%7D&file=bla.docx&action=default&mobileredirect=true',
       plugin: 'preview',
@@ -84,6 +85,7 @@ describe('Test preview plugin', () => {
 
   it('Preview plugin switches to preview from live URL', async () => {
     const { navigated } = await new SidekickTest({
+      browser,
       page,
       url: 'https://main--blog--adobe.hlx.live/en/topics/bla',
       plugin: 'preview',
@@ -98,6 +100,7 @@ describe('Test preview plugin', () => {
 
   it('Preview plugin switches to preview from production URL', async () => {
     const { navigated } = await new SidekickTest({
+      browser,
       page,
       url: 'https://blog.adobe.com/en/topics/bla',
       plugin: 'preview',
@@ -112,6 +115,7 @@ describe('Test preview plugin', () => {
 
   it('Preview plugin preserves query parameters and hash when switching to preview', async () => {
     const { navigated } = await new SidekickTest({
+      browser,
       page,
       url: 'https://main--blog--adobe.hlx.live/en/topics/bla?foo=bar',
       plugin: 'preview',
@@ -129,6 +133,7 @@ describe('Test preview plugin', () => {
       .get('/en/topics/bla')
       .reply(200, 'some content...');
     const { popupOpened } = await new SidekickTest({
+      browser,
       page,
       url: 'https://adobe.sharepoint.com/:w:/r/sites/TheBlog/_layouts/15/Doc.aspx?sourcedoc=%7BE8EC80CB-24C3-4B95-B082-C51FD8BC8760%7D&file=bla.docx&action=default&mobileredirect=true',
       plugin: 'preview',
