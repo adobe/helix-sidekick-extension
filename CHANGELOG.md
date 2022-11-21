@@ -1,3 +1,10 @@
+# [6.3.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.2.1...v6.3.0) (2022-11-21)
+
+
+### Features
+
+* view document source popup ([#177](https://github.com/adobe/helix-sidekick-extension/issues/177)) ([f99d3ba](https://github.com/adobe/helix-sidekick-extension/commit/f99d3ba1b832034f1e938887ad6f88e79644a4a7))
+
 ## [6.2.1](https://github.com/adobe/helix-sidekick-extension/compare/v6.2.0...v6.2.1) (2022-11-20)
 
 
