@@ -17,38 +17,39 @@ const assert = require('assert');
 
 const {
   IT_DEFAULT_TIMEOUT,
-  startBrowser,
-  stopBrowser,
-  openPage,
-  closeAllPages,
   Nock,
+  TestBrowser,
+  Setup,
 } = require('./utils.js');
 const { SidekickTest } = require('./SidekickTest.js');
 
 describe('Test dev plugin', () => {
+  /** @type TestBrowser */
   let browser;
 
   before(async function before() {
     this.timeout(10000);
-    browser = await startBrowser();
+    browser = await TestBrowser.create();
   });
-  after(async () => stopBrowser(browser));
+
+  after(async () => browser.close());
 
   let page;
   let nock;
 
   beforeEach(async () => {
-    page = await openPage(browser);
+    page = await browser.openPage();
     nock = new Nock();
   });
 
   afterEach(async () => {
-    await closeAllPages(browser);
+    await browser.closeAllPages();
     nock.done();
   });
 
   it('Dev plugin hidden by default', async () => {
     const { plugins } = await new SidekickTest({
+      browser,
       page,
     }).run();
     assert.ok(
@@ -61,7 +62,9 @@ describe('Test dev plugin', () => {
     nock('http://localhost:3000')
       .get('/creativecloud/en/test')
       .reply(200, 'local dev...');
+    nock.admin(new Setup('pages'));
     const { popupOpened } = await new SidekickTest({
+      browser,
       page,
       setup: 'pages',
       url: 'https://docs.google.com/document/d/2E1PNphAhTZAZrDjevM0BX7CZr7KjomuBO6xE1TUo9NU/edit',
@@ -79,7 +82,9 @@ describe('Test dev plugin', () => {
     nock('http://localhost:3000')
       .get('/en/topics/bla')
       .reply(200, 'local dev...');
+    nock.admin(new Setup('blog'));
     const { popupOpened } = await new SidekickTest({
+      browser,
       page,
       url: 'https://adobe.sharepoint.com/:w:/r/sites/TheBlog/_layouts/15/Doc.aspx?sourcedoc=%7BE8EC80CB-24C3-4B95-B082-C51FD8BC8760%7D&file=bla.docx&action=default&mobileredirect=true',
       plugin: 'dev',
@@ -93,29 +98,23 @@ describe('Test dev plugin', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Dev plugin switches to dev from preview URL', async () => {
-    const { requestsMade } = await new SidekickTest({
+    nock.admin(new Setup('blog'));
+    await new SidekickTest({
+      browser,
       page,
       plugin: 'dev',
       waitNavigation: 'http://localhost:3000/en/topics/bla',
     }).run();
-    assert.strictEqual(
-      requestsMade.pop().url,
-      'http://localhost:3000/en/topics/bla',
-      'Dev URL not opened',
-    );
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Dev plugin switches to dev from production URL', async () => {
-    const { requestsMade } = await new SidekickTest({
+    nock.admin(new Setup('blog'));
+    await new SidekickTest({
+      browser,
       page,
       url: 'https://blog.adobe.com/en/topics/bla',
       plugin: 'dev',
       waitNavigation: 'http://localhost:3000/en/topics/bla',
     }).run();
-    assert.strictEqual(
-      requestsMade.pop().url,
-      'http://localhost:3000/en/topics/bla',
-      'Live URL not opened',
-    );
   }).timeout(IT_DEFAULT_TIMEOUT);
 });

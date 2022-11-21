@@ -17,61 +17,69 @@ const assert = require('assert');
 
 const {
   IT_DEFAULT_TIMEOUT,
-  startBrowser,
-  stopBrowser,
-  openPage,
-  closeAllPages,
+  TestBrowser,
+  Nock,
+  Setup,
 } = require('./utils.js');
 const { SidekickTest } = require('./SidekickTest.js');
 
 describe('Test unpublish plugin', () => {
+  /** @type TestBrowser */
   let browser;
 
   before(async function before() {
     this.timeout(10000);
-    browser = await startBrowser();
+    browser = await TestBrowser.create();
   });
-  after(async () => stopBrowser(browser));
+
+  after(async () => browser.close());
 
   let page;
+  let nock;
+
   beforeEach(async () => {
-    page = await openPage(browser);
+    page = await browser.openPage();
+    nock = new Nock();
   });
 
   afterEach(async () => {
-    await closeAllPages(browser);
+    await browser.closeAllPages();
+    nock.done();
   });
 
   it('Unpublish plugin uses live API', async () => {
-    const test = new SidekickTest({
+    const setup = new Setup('blog');
+    setup.apiResponse().edit = {}; // no source doc
+    nock.admin(setup);
+    nock('https://admin.hlx.page')
+      .delete('/live/adobe/blog/main/en/topics/bla')
+      .reply(201);
+    await new SidekickTest({
+      browser,
       page,
       acceptDialogs: true,
       plugin: 'unpublish',
-      waitNavigation: 'https://admin.hlx.page/live/adobe/blog/main/en/topics/bla',
-    });
-    test.apiResponses[0].edit = {}; // no source doc
-    const { requestsMade } = await test.run();
-    const unpublishReq = requestsMade.find((r) => r.method === 'DELETE');
-    assert.ok(
-      unpublishReq && unpublishReq.url.startsWith('https://admin.hlx.page/live/'),
-      'Live API not called',
-    );
+    }).run();
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('No unpublish plugin if source document still exists', async () => {
+    nock.admin(new Setup('blog'));
     const { plugins } = await new SidekickTest({
+      browser,
       page,
     }).run();
     assert.ok(!plugins.find((p) => p.id === 'unpublish'), 'Unexpected unpublish plugin found');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('No unpublish plugin if page not published', async () => {
-    const test = new SidekickTest({
+    const setup = new Setup('blog');
+    setup.apiResponse().edit = {}; // no source doc
+    setup.apiResponse().live = {}; // page not published
+    nock.admin(setup);
+    const { plugins } = await new SidekickTest({
+      browser,
       page,
-    });
-    test.apiResponses[0].edit = {}; // no source doc
-    test.apiResponses[0].live = {}; // page not published
-    const { plugins } = await test.run();
+    }).run();
     assert.ok(!plugins.find((p) => p.id === 'unpublish'), 'Unexpected unpublish plugin found');
   }).timeout(IT_DEFAULT_TIMEOUT);
 });

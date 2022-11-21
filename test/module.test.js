@@ -17,40 +17,40 @@ const assert = require('assert');
 
 const {
   IT_DEFAULT_TIMEOUT,
-  DEBUG,
-  startBrowser,
-  stopBrowser,
-  openPage,
   Nock,
   checkEventFired,
+  TestBrowser,
+  Setup,
 } = require('./utils.js');
 const { SidekickTest } = require('./SidekickTest.js');
 
 describe('Test sidekick module', () => {
+  /** @type TestBrowser */
   let browser;
-  let nock;
 
   before(async function before() {
     this.timeout(10000);
-    browser = await startBrowser();
+    browser = await TestBrowser.create();
   });
-  after(async () => stopBrowser(browser));
+
+  after(async () => browser.close());
 
   let page;
+  let nock;
+
   beforeEach(async () => {
-    page = await openPage(browser);
+    page = await browser.openPage();
     nock = new Nock();
   });
 
   afterEach(async () => {
-    if (!DEBUG) {
-      page?.close(browser);
-    }
+    await browser.closeAllPages();
     nock.done();
   });
 
   it('Does not render without config', async () => {
     const { sidekick } = await new SidekickTest({
+      browser,
       page,
       setup: 'none',
       url: 'https://foo.bar/',
@@ -59,7 +59,9 @@ describe('Test sidekick module', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Renders with config', async () => {
+    nock.admin(new Setup('blog'));
     const result = await new SidekickTest({
+      browser,
       page,
       loadModule: true,
       setup: 'blog',
@@ -78,11 +80,18 @@ describe('Test sidekick module', () => {
       { status: 500, body: 'Server error' },
       { status: 504, body: 'Gateway timeout' },
     ];
+    nock('https://admin.hlx.page')
+      .get('/status/adobe/blog/main/en/topics/bla?editUrl=auto')
+      .reply(404)
+      .get('/status/adobe/blog/main/en/topics/bla?editUrl=auto')
+      .reply(500)
+      .get('/status/adobe/blog/main/en/topics/bla?editUrl=auto')
+      .reply(504);
     const test = new SidekickTest({
+      browser,
       page,
       loadModule: true,
       allowNavigation: true,
-      apiResponses: [...errors],
       checkPage: (p) => p.evaluate(() => {
         // click overlay and return sidekick reference
         const modal = window.hlx.sidekick.shadowRoot.querySelector('.hlx-sk-overlay .modal');
@@ -105,7 +114,9 @@ describe('Test sidekick module', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Uses main branch by default', async () => {
+    nock.admin(new Setup('blog'));
     const result = await new SidekickTest({
+      browser,
       page,
       loadModule: true,
       setup: 'blog',
@@ -119,7 +130,9 @@ describe('Test sidekick module', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Adds plugin from config', async () => {
+    nock.admin(new Setup('blog'));
     const { configLoaded, plugins } = await new SidekickTest({
+      browser,
       page,
       loadModule: true,
       configJson: `{
@@ -135,7 +148,9 @@ describe('Test sidekick module', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Detects innerHost and outerHost from config', async () => {
+    nock.admin(new Setup('blog'));
     const result = await new SidekickTest({
+      browser,
       page,
       loadModule: true,
       setup: 'blog',
@@ -147,8 +162,10 @@ describe('Test sidekick module', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Uses outerHost from config', async () => {
+    nock.admin(new Setup('blog'));
     const testOuterHost = 'test--blog--adobe.hlx.live';
     const { sidekick: { config: { outerHost } } } = await new SidekickTest({
+      browser,
       page,
       loadModule: true,
       setup: 'blog',
@@ -163,7 +180,9 @@ describe('Test sidekick module', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Adds plugin via API', async () => {
+    nock.admin(new Setup('blog'));
     const { plugins } = await new SidekickTest({
+      browser,
       page,
       loadModule: true,
       post: (p) => p.evaluate(() => {
@@ -189,11 +208,13 @@ describe('Test sidekick module', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Loads config and plugins from project config', async () => {
+    nock.admin(new Setup('blog'));
     nock('https://www.hlx.live')
       .get('/')
       .reply(200, 'some content...');
 
     const test = new SidekickTest({
+      browser,
       page,
       loadModule: true,
       configJson: `{
@@ -229,7 +250,9 @@ describe('Test sidekick module', () => {
       .get(mockUrl)
       .reply(200, 'some content...');
 
+    nock.admin(new Setup('blog'));
     const test = new SidekickTest({
+      browser,
       page,
       loadModule: true,
       configJson: `{
@@ -261,7 +284,9 @@ describe('Test sidekick module', () => {
       .get(mockUrl)
       .reply(200, 'some content...');
 
+    nock.admin(new Setup('blog'));
     const test = new SidekickTest({
+      browser,
       page,
       loadModule: true,
       configJson: `{
@@ -284,7 +309,13 @@ describe('Test sidekick module', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Plugin shows palette', async () => {
+    nock('https://www.hlx.live')
+      .get('/')
+      .reply(200, 'some content...');
+
+    nock.admin(new Setup('blog'));
     const test = new SidekickTest({
+      browser,
       page,
       loadModule: true,
       configJson: `{
@@ -311,7 +342,9 @@ describe('Test sidekick module', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Plugin fires custom event', async () => {
+    nock.admin(new Setup('blog'));
     const test = new SidekickTest({
+      browser,
       page,
       loadModule: true,
       configJson: `{
@@ -335,7 +368,9 @@ describe('Test sidekick module', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Plugin extends existing plugin', async () => {
+    nock.admin(new Setup('blog'));
     const test = new SidekickTest({
+      browser,
       page,
       loadModule: true,
       configJson: `{
@@ -353,7 +388,9 @@ describe('Test sidekick module', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Loads config from development environment', async () => {
+    nock.admin(new Setup('blog'));
     const { configLoaded } = await new SidekickTest({
+      browser,
       page,
       loadModule: true,
       sidekickConfig: {
@@ -368,7 +405,9 @@ describe('Test sidekick module', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Replaces plugin', async () => {
+    nock.admin(new Setup('blog'));
     const { plugins } = await new SidekickTest({
+      browser,
       page,
       loadModule: true,
       post: (p) => p.evaluate(() => {
@@ -389,7 +428,9 @@ describe('Test sidekick module', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Extends plugin', async () => {
+    nock.admin(new Setup('blog'));
     const { plugins } = await new SidekickTest({
+      browser,
       page,
       loadModule: true,
       post: (p) => p.evaluate(() => {
@@ -408,7 +449,9 @@ describe('Test sidekick module', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Removes plugin', async () => {
+    nock.admin(new Setup('blog'));
     const { plugins } = await new SidekickTest({
+      browser,
       page,
       loadModule: true,
       post: (p) => p.evaluate(() => window.hlx.sidekick.remove('edit')),
@@ -417,7 +460,9 @@ describe('Test sidekick module', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Adds HTML element in plugin', async () => {
+    nock.admin(new Setup('blog'));
     const { plugins } = await new SidekickTest({
+      browser,
       page,
       loadModule: true,
       post: (p) => p.evaluate(() => {
@@ -436,7 +481,9 @@ describe('Test sidekick module', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Enables plugin button', async () => {
+    nock.admin(new Setup('blog'));
     const { plugins } = await new SidekickTest({
+      browser,
       page,
       loadModule: true,
       post: (p) => p.evaluate(() => {
@@ -453,7 +500,9 @@ describe('Test sidekick module', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Adds dropdown as plugin container', async () => {
+    nock.admin(new Setup('blog'));
     const { plugins } = await new SidekickTest({
+      browser,
       page,
       loadModule: true,
       post: (p) => p.evaluate(() => {
@@ -478,7 +527,9 @@ describe('Test sidekick module', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Loads custom CSS', async () => {
+    nock.admin(new Setup('blog'));
     const { checkPageResult } = await new SidekickTest({
+      browser,
       page,
       loadModule: true,
       post: (p) => p.evaluate(() => window.hlx.sidekick.loadCSS('custom.css')),
@@ -492,7 +543,9 @@ describe('Test sidekick module', () => {
 
   it('Shows notifications', async () => {
     // shows modal
+    nock.admin(new Setup('blog'));
     let result = await new SidekickTest({
+      browser,
       page,
       loadModule: true,
       allowNavigation: true,
@@ -503,7 +556,9 @@ describe('Test sidekick module', () => {
     assert.strictEqual(result.notification.message, 'Lorem ipsum', 'Did not show modal');
 
     // shows sticky modal
+    nock.admin(new Setup('blog'));
     result = await new SidekickTest({
+      browser,
       page,
       loadModule: true,
       allowNavigation: true,
@@ -515,7 +570,9 @@ describe('Test sidekick module', () => {
     assert.strictEqual(result.notification.message, 'Sticky', 'Did not show sticky modal');
 
     // adds css class
+    nock.admin(new Setup('blog'));
     result = await new SidekickTest({
+      browser,
       page,
       loadModule: true,
       allowNavigation: true,
@@ -526,7 +583,9 @@ describe('Test sidekick module', () => {
     assert.ok(result.notification.className.includes('test'), 'Did not add CSS class');
 
     // shows legacy notification
+    nock.admin(new Setup('blog'));
     result = await new SidekickTest({
+      browser,
       page,
       loadModule: true,
       allowNavigation: true,
@@ -535,7 +594,9 @@ describe('Test sidekick module', () => {
     assert.strictEqual(result.notification.message, 'Lorem ipsum', 'Did not show legacy notification');
 
     // shows legacy modal
+    nock.admin(new Setup('blog'));
     result = await new SidekickTest({
+      browser,
       page,
       loadModule: true,
       allowNavigation: true,
@@ -544,7 +605,9 @@ describe('Test sidekick module', () => {
     assert.strictEqual(result.notification.message, 'Sticky', 'Did not show legacy modal');
 
     // shows multi-line modal
+    nock.admin(new Setup('blog'));
     result = await new SidekickTest({
+      browser,
       page,
       loadModule: true,
       allowNavigation: true,
@@ -557,7 +620,9 @@ describe('Test sidekick module', () => {
 
   it('Hides notifications', async () => {
     // hides sticky modal
+    nock.admin(new Setup('blog'));
     const { notification } = await new SidekickTest({
+      browser,
       page,
       loadModule: true,
       allowNavigation: true,
@@ -569,7 +634,10 @@ describe('Test sidekick module', () => {
     assert.strictEqual(notification.message, null, 'Did not hide sticky modal');
 
     // hides sticky modal on overlay click
+    nock.admin(new Setup('blog'));
+    nock.admin(new Setup('blog'));
     const { checkPageResult } = await new SidekickTest({
+      browser,
       page,
       loadModule: true,
       checkPage: (p) => p.evaluate(() => {
@@ -584,7 +652,9 @@ describe('Test sidekick module', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Hides sidekick on close button click', async () => {
+    nock.admin(new Setup('blog'));
     const { checkPageResult, eventsFired } = await new SidekickTest({
+      browser,
       page,
       loadModule: true,
       post: (p) => p.evaluate(() => window.hlx.sidekick
@@ -602,7 +672,9 @@ describe('Test sidekick module', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Copies sharing URL to clipboard on share button click', async () => {
+    nock.admin(new Setup('blog'));
     const { notification } = await new SidekickTest({
+      browser,
       page,
       loadModule: true,
       post: (p) => p.evaluate(() => window.hlx.sidekick
@@ -614,7 +686,9 @@ describe('Test sidekick module', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Detects edit environment correctly', async () => {
+    nock.admin(new Setup('blog'));
     const test = new SidekickTest({
+      browser,
       page,
       loadModule: true,
       allowNavigation: true,
@@ -623,17 +697,23 @@ describe('Test sidekick module', () => {
     // check with google docs url
     const { checkPageResult: gdocsUrl } = await test.run('https://docs.google.com/document/d/1234567890/edit');
     assert.ok(gdocsUrl, 'Did not detect google docs URL');
+
     // check with sharepoint url
+    nock.admin(new Setup('blog'));
     const { checkPageResult: standardSharepointUrl } = await test.run('https://adobe.sharepoint.com/:w:/r/sites/TheBlog/_layouts/15/Doc.aspx?sourcedoc=%7BE8EC80CB-24C3-4B95-B082-C51FD8BC8760%7D&file=bla.docx&action=default&mobileredirect=true');
     assert.ok(standardSharepointUrl, 'Did not detect standard sharepoint URL');
+
     // check again with custom sharepoint url as mountpoint
     test.sidekickConfig.mountpoint = 'https://foo.custom/sites/foo/Shared%20Documents/root1';
+    nock.admin(new Setup('blog'));
     const { checkPageResult: customSharepointUrl } = await test.run('https://foo.custom/:w:/r/sites/foo/_layouts/15/Doc.aspx?sourcedoc=%7BBFD9A19C-4A68-4DBF-8641-DA2F1283C895%7D&file=index.docx&action=default&mobileredirect=true');
     assert.ok(customSharepointUrl, 'Did not detect custom sharepoint URL');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Detects development environment correctly', async () => {
+    nock.admin(new Setup('blog'));
     const { checkPageResult } = await new SidekickTest({
+      browser,
       page,
       loadModule: true,
       url: 'http://localhost:3000/',
@@ -643,7 +723,9 @@ describe('Test sidekick module', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Detects preview environment correctly', async () => {
+    nock.admin(new Setup('blog'));
     const test = new SidekickTest({
+      browser,
       page,
       loadModule: true,
       allowNavigation: true,
@@ -651,11 +733,13 @@ describe('Test sidekick module', () => {
     });
     assert.ok((await test.run()).checkPageResult, 'Did not detect preview URL');
     // check again with different ref
+    nock.admin(new Setup('blog'));
     assert.ok(
       (await test.run('https://test--blog--adobe.hlx.page/')).checkPageResult,
       'Did not detect preview URL with different ref',
     );
     // check again with hlx3.page
+    nock.admin(new Setup('blog'));
     assert.ok(
       (await test.run('https://main--blog--adobe.hlx3.page/')).checkPageResult,
       'Did not detect preview URL with hlx3.page',
@@ -664,6 +748,7 @@ describe('Test sidekick module', () => {
 
   it('Detects live environment correctly', async () => {
     const test = new SidekickTest({
+      browser,
       page,
       loadModule: true,
       allowNavigation: true,
@@ -680,6 +765,7 @@ describe('Test sidekick module', () => {
 
   it('Detects production environment correctly', async () => {
     const test = new SidekickTest({
+      browser,
       page,
       loadModule: true,
       url: 'https://blog.adobe.com/',
@@ -691,6 +777,7 @@ describe('Test sidekick module', () => {
 
   it('Does not push down page content by default', async () => {
     const { checkPageResult } = await new SidekickTest({
+      browser,
       page,
       loadModule: true,
       checkPage: (p) => p.evaluate(() => document.documentElement.style.marginTop),
@@ -700,6 +787,7 @@ describe('Test sidekick module', () => {
 
   it('Pushes down page content if configured', async () => {
     const test = new SidekickTest({
+      browser,
       page,
       loadModule: true,
       sleep: 500,
@@ -712,6 +800,7 @@ describe('Test sidekick module', () => {
 
   it('Pushes down custom elements', async () => {
     const { checkPageResult } = await new SidekickTest({
+      browser,
       page,
       loadModule: true,
       sleep: 500,
@@ -730,6 +819,7 @@ describe('Test sidekick module', () => {
 
   it('Push down adjusts height of word iframe', async () => {
     const { checkPageResult } = await new SidekickTest({
+      browser,
       page,
       loadModule: true,
       sleep: 500,
@@ -752,6 +842,7 @@ describe('Test sidekick module', () => {
 
   it('Reverts push down when hidden', async () => {
     const { checkPageResult } = await new SidekickTest({
+      browser,
       page,
       loadModule: true,
       sleep: 500,
@@ -764,6 +855,7 @@ describe('Test sidekick module', () => {
 
   it('Does not push down if pushDown false', async () => {
     const { checkPageResult } = await new SidekickTest({
+      browser,
       page,
       loadModule: true,
       configJson: '{"pushDown":false}',
@@ -784,7 +876,12 @@ describe('Test sidekick module', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Shows special view for JSON file', async () => {
+    nock.admin(new Setup('blog'));
+    nock('https://main--blog--adobe.hlx.page')
+      .get('/en/bla.json')
+      .reply(200, '{}');
     const { checkPageResult } = await new SidekickTest({
+      browser,
       page,
       loadModule: true,
       type: 'json',
@@ -797,6 +894,7 @@ describe('Test sidekick module', () => {
 
   it('Shows help content', async () => {
     const { notification } = await new SidekickTest({
+      browser,
       page,
       loadModule: true,
       post: (p) => p.evaluate(() => {
@@ -819,7 +917,9 @@ describe('Test sidekick module', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Calls admin API with a specific version', async () => {
+    nock.admin(new Setup('blog'));
     const test = new SidekickTest({
+      browser,
       page,
       loadModule: true,
     });
@@ -834,12 +934,13 @@ describe('Test sidekick module', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Handles 401 response from admin API', async () => {
+    nock('https://admin.hlx.page')
+      .get('/status/adobe/blog/main/en/topics/bla?editUrl=auto')
+      .reply(401);
     const { checkPageResult } = await new SidekickTest({
+      browser,
       page,
       loadModule: true,
-      apiResponses: [{
-        status: 401,
-      }],
       checkPage: (p) => p.evaluate(() => window.hlx.sidekick.shadowRoot
         .querySelector('.hlx-sk .feature-container .user .dropdown-container')
         .classList.contains('highlight')),

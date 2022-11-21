@@ -173,6 +173,9 @@ class SidekickTest extends EventEmitter {
     this.checkEvents = o.checkEvents;
     this.checkPage = o.checkPage;
 
+    // optional request handler
+    this.requestHandler = o.requestHandler;
+
     // timeout settings
     this.timeoutFailure = o.timeoutFailure || 0;
     this.timeoutSuccess = o.timeoutSuccess || 0;
@@ -224,94 +227,108 @@ class SidekickTest extends EventEmitter {
       }
     }
 
-    const result = await new Promise((resolve, reject) => {
-      if (!this.hasRun) {
-        // set timeouts
-        if (this.timeoutFailure || this.timeoutSuccess) {
-          setTimeout(() => {
-            if (this.timeoutSuccess) {
-              resolve(SidekickTest.TIMED_OUT);
-            } else {
-              reject(new Error('timed out'));
-            }
-          }, +(this.timeoutFailure || this.timeoutSuccess));
-        }
-        // instrument popups
-        this.page.browser().on('targetcreated', recordTargetCreated);
-        // instrument dialogs
-        this.page.on('dialog', async (d) => {
-          dialog = {
-            type: d.type(),
-            message: d.message(),
-          };
-          if (acceptDialogs) {
-            await d.accept();
-          } else {
-            await d.dismiss();
-          }
-        });
-        this.page.on('console', (msg) => {
-          // eslint-disable-next-line no-console
-          if (DEBUG_LOGS) {
-            // eslint-disable-next-line no-console
-            console.log(`> [${msg.type()}] ${msg.text()}`);
-          }
-        });
-        // instrument requests
-        this.browser.withRequestHandler(async (req) => {
-          const { url } = req;
-          if (DEBUG_LOGS) {
-            // eslint-disable-next-line no-console
-            console.log(`[pup]${req.isNavigationRequest ? ' navigation' : ''} request`, url);
-          }
-          if (req.isNavigationRequest) {
-            if (!pageLoaded) {
-              pageLoaded = true;
-            } else {
-              navigated = url;
-              if (!allowNavigation) {
-                // return -1;
-              }
-            }
-            if (this.waitNavigation.delete(url)) {
-              return -1;
-            }
-          }
-          if (url.startsWith('http')) {
-            const reqObj = {
-              method: req.method,
-              headers: req.headers,
-              url,
-            };
-            requestsMade.push(reqObj);
-            if (url.endsWith('/tools/sidekick/config.json')) {
-              configLoaded = url;
-              return toResp(configJson);
-            } else if (url.endsWith('/tools/sidekick/config.js')) {
-              configLoaded = url;
-              return toResp(configJs);
-            } else if (url === 'https://www.hlx.live/tools/sidekick/module.js') {
-              try {
-                // return local module.js
-                const module = await fs.readFile(`${__dirname}/../src/extension/module.js`, 'utf-8');
-                return toResp(module);
-              } catch (e) {
-                reject(new Error('failed to load local module.js'));
-              }
-            } else {
-              return null;
-            }
-          } else if (url.startsWith('file://') && url.indexOf('/bookmarklet/') > 0 && !url.endsWith('/app.js')) {
-            // rewrite all `/bookmarklet/` requests (except app.js)
-            if (DEBUG_LOGS) {
-              // eslint-disable-next-line no-console
-              console.log('[pup] rewriting', url);
-            }
-            req.url = req.url.replace('/bookmarklet/', '/extension/');
-          }
-        });
+    async function printConsole(msg) {
+      // eslint-disable-next-line no-console
+      if (DEBUG_LOGS) {
+        // eslint-disable-next-line no-console
+        console.log(`> [${msg.type()}] ${msg.text()}`);
       }
-      this.hasRun = true;
+    }
+
+    async function handleDialogs(d) {
+      dialog = {
+        type: d.type(),
+        message: d.message(),
+      };
+      if (acceptDialogs) {
+        await d.accept();
+      } else {
+        await d.dismiss();
+      }
+    }
+
+    let browserRequestHandler = async (req) => {
+      const { url } = req;
+      if (DEBUG_LOGS) {
+        // eslint-disable-next-line no-console
+        console.log(`[pup]${req.isNavigationRequest ? ' navigation' : ''} request`, req.method, url);
+      }
+      const reqObj = {
+        method: req.method,
+        headers: req.headers,
+        url,
+      };
+      if (this.requestHandler) {
+        const r = await this.requestHandler(reqObj);
+        if (r) {
+          return r;
+        }
+      }
+
+      if (req.isNavigationRequest) {
+        if (!pageLoaded) {
+          pageLoaded = true;
+        } else {
+          navigated = url;
+          if (!allowNavigation) {
+            // return -1;
+          }
+        }
+        if (this.waitNavigation.delete(url)) {
+          requestsMade.push(reqObj);
+          return -1;
+        }
+      }
+      if (url.startsWith('http')) {
+        requestsMade.push(reqObj);
+        if (url.endsWith('/tools/sidekick/config.json')) {
+          configLoaded = url;
+          return toResp(configJson);
+        } else if (url.endsWith('/tools/sidekick/config.js')) {
+          configLoaded = url;
+          return toResp(configJs);
+        } else if (url === 'https://www.hlx.live/tools/sidekick/module.js') {
+          try {
+            // return local module.js
+            const module = await fs.readFile(`${__dirname}/../src/extension/module.js`, 'utf-8');
+            return toResp(module);
+          } catch (e) {
+            throw new Error('failed to load local module.js');
+          }
+        } else {
+          return null;
+        }
+      } else if (url.startsWith('file://') && url.indexOf('/bookmarklet/') > 0 && !url.endsWith('/app.js')) {
+        // rewrite all `/bookmarklet/` requests (except app.js)
+        if (DEBUG_LOGS) {
+          // eslint-disable-next-line no-console
+          console.log('[pup] rewriting', url);
+        }
+        req.url = req.url.replace('/bookmarklet/', '/extension/');
+      }
+      return null;
+    };
+    browserRequestHandler = browserRequestHandler.bind(this);
+
+    let timeOutHandle;
+    const result = await new Promise((resolve, reject) => {
+      // set timeouts
+      if (this.timeoutFailure || this.timeoutSuccess) {
+        timeOutHandle = setTimeout(() => {
+          timeOutHandle = null;
+          if (this.timeoutSuccess) {
+            resolve(SidekickTest.TIMED_OUT);
+          } else {
+            reject(new Error('timed out'));
+          }
+        }, +(this.timeoutFailure || this.timeoutSuccess));
+      }
+      // instrument popups
+      this.page.browser().on('targetcreated', recordTargetCreated);
+      this.page.on('dialog', handleDialogs);
+      this.page.on('console', printConsole);
+      this.browser.onRequestHandler(browserRequestHandler);
+
       // open fixture and run test
       this.page
         .goto(`file://${__dirname}/fixtures/${this.fixture}`, { waitUntil: 'load' })
@@ -455,8 +472,13 @@ class SidekickTest extends EventEmitter {
         })
         .catch((e) => reject(e))
         .finally(() => {
-          this.browser.withRequestHandler(null);
+          if (timeOutHandle) {
+            clearTimeout(timeOutHandle);
+          }
+          this.browser.offRequestHandler(browserRequestHandler);
           this.page.browser().off('targetcreated', recordTargetCreated);
+          this.page.off('console', printConsole);
+          this.page.off('dialog', handleDialogs);
         });
     });
     // run test

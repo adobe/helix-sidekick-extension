@@ -17,38 +17,39 @@ const assert = require('assert');
 
 const {
   IT_DEFAULT_TIMEOUT,
-  startBrowser,
-  stopBrowser,
-  openPage,
-  closeAllPages,
   Nock,
+  TestBrowser,
+  Setup,
 } = require('./utils.js');
 const { SidekickTest } = require('./SidekickTest.js');
 
 describe('Test live plugin', () => {
+  /** @type TestBrowser */
   let browser;
 
   before(async function before() {
     this.timeout(10000);
-    browser = await startBrowser();
+    browser = await TestBrowser.create();
   });
-  after(async () => stopBrowser(browser));
+
+  after(async () => browser.close());
 
   let page;
   let nock;
 
   beforeEach(async () => {
-    page = await openPage(browser);
+    page = await browser.openPage();
     nock = new Nock();
   });
 
   afterEach(async () => {
-    await closeAllPages(browser);
+    await browser.closeAllPages();
     nock.done();
   });
 
   it('Live plugin without production host', async () => {
     const { plugins } = await new SidekickTest({
+      browser,
       page,
     }).run();
     assert.ok(plugins.find((p) => p.id === 'live'), 'Live plugin not found');
@@ -56,6 +57,7 @@ describe('Test live plugin', () => {
 
   it('Live plugin hidden with production host', async () => {
     const test = new SidekickTest({
+      browser,
       page,
     });
     test.sidekickConfig.host = 'blog.adobe.com';
@@ -70,7 +72,9 @@ describe('Test live plugin', () => {
     nock('https://main--pages--adobe.hlx.live')
       .get('/creativecloud/en/test')
       .reply(200, 'some content...');
+    nock.admin(new Setup('pages'));
     const { popupOpened } = await new SidekickTest({
+      browser,
       page,
       setup: 'pages',
       url: 'https://docs.google.com/document/d/2E1PNphAhTZAZrDjevM0BX7CZr7KjomuBO6xE1TUo9NU/edit',
@@ -88,7 +92,9 @@ describe('Test live plugin', () => {
     nock('https://main--blog--adobe.hlx.live')
       .get('/en/topics/bla')
       .reply(200, 'some content...');
+    nock.admin(new Setup('blog'));
     const { popupOpened } = await new SidekickTest({
+      browser,
       page,
       url: 'https://adobe.sharepoint.com/:w:/r/sites/TheBlog/_layouts/15/Doc.aspx?sourcedoc=%7BE8EC80CB-24C3-4B95-B082-C51FD8BC8760%7D&file=bla.docx&action=default&mobileredirect=true',
       plugin: 'live',
@@ -102,20 +108,24 @@ describe('Test live plugin', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Live plugin switches to live from preview URL', async () => {
+    nock.admin(new Setup('blog'));
     const { requestsMade } = await new SidekickTest({
+      browser,
       page,
       plugin: 'live',
       waitNavigation: 'https://main--blog--adobe.hlx.live/en/topics/bla',
     }).run();
     assert.strictEqual(
-      requestsMade.pop().url,
-      'https://main--blog--adobe.hlx.live/en/topics/bla',
+      requestsMade.findIndex((f) => f.url === 'https://main--blog--adobe.hlx.live/en/topics/bla') >= 0,
+      true,
       'Live URL not opened',
     );
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Live plugin switches to live from production URL', async () => {
+    nock.admin(new Setup('blog'));
     const { requestsMade } = await new SidekickTest({
+      browser,
       page,
       url: 'https://blog.adobe.com/en/topics/bla',
       plugin: 'live',
@@ -129,11 +139,14 @@ describe('Test live plugin', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Live plugin button disabled if page not published', async () => {
-    const test = new SidekickTest({
+    const setup = new Setup('blog');
+    setup.apiResponse().live = {};
+    nock.admin(setup);
+
+    const { plugins } = await new SidekickTest({
+      browser,
       page,
-    });
-    test.apiResponses[0].live = {};
-    const { plugins } = await test.run();
+    }).run();
     assert.ok(plugins.find((p) => p.id === 'live' && !p.buttonEnabled), 'Live plugin button not disabled');
   }).timeout(IT_DEFAULT_TIMEOUT);
 });

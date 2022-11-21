@@ -17,39 +17,41 @@ const assert = require('assert');
 
 const {
   IT_DEFAULT_TIMEOUT,
-  startBrowser,
-  stopBrowser,
-  openPage,
-  closeAllPages,
   Nock,
+  TestBrowser,
+  Setup,
 } = require('./utils.js');
 const { SidekickTest } = require('./SidekickTest.js');
 
 describe('Test edit plugin', () => {
+  /** @type TestBrowser */
   let browser;
 
   before(async function before() {
     this.timeout(10000);
-    browser = await startBrowser();
+    browser = await TestBrowser.create();
   });
-  after(async () => stopBrowser(browser));
+
+  after(async () => browser.close());
 
   let page;
   let nock;
 
   beforeEach(async () => {
-    page = await openPage(browser);
+    page = await browser.openPage();
     nock = new Nock();
   });
 
   afterEach(async () => {
-    await closeAllPages(browser);
+    await browser.closeAllPages();
     nock.done();
   });
 
   it('Edit plugin opens editor from preview URL', async () => {
     nock.edit();
+    nock.admin(new Setup('blog'));
     const { popupOpened } = await new SidekickTest({
+      browser,
       page,
       plugin: 'edit',
       waitPopup: 3000,
@@ -62,7 +64,9 @@ describe('Test edit plugin', () => {
 
   it('Edit plugin opens editor from production URL', async () => {
     nock.edit();
+    nock.admin(new Setup('blog'));
     const { popupOpened } = await new SidekickTest({
+      browser,
       page,
       url: 'https://blog.adobe.com/en/topics/bla',
       plugin: 'edit',
@@ -75,11 +79,13 @@ describe('Test edit plugin', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Edit plugin button disabled without source document', async () => {
-    const test = new SidekickTest({
+    const setup = new Setup('blog');
+    delete setup.apiResponse().edit;
+    nock.admin(setup);
+    const { plugins } = await new SidekickTest({
+      browser,
       page,
-    });
-    delete test.apiResponses[0].edit;
-    const { plugins } = await test.run();
+    }).run();
     assert.ok(plugins.find((p) => p.id === 'edit' && !p.buttonEnabled), 'Edit plugin button not disabled');
   }).timeout(IT_DEFAULT_TIMEOUT);
 });

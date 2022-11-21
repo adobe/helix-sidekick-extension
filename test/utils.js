@@ -11,6 +11,7 @@
  */
 /* eslint-disable max-classes-per-file */
 /* eslint-env mocha */
+const v8 = require('node:v8');
 const assert = require('assert');
 const { fetch } = require('@adobe/fetch').h1();
 const nock = require('nock');
@@ -186,7 +187,8 @@ class Setup {
       throw new Error('name is mandatory');
     }
     this.name = name;
-    this._setup = SETUPS[name];
+    // poor men's deep clone
+    this._setup = v8.deserialize(v8.serialize(SETUPS[name]));
   }
 
   /**
@@ -230,7 +232,7 @@ class Setup {
    * @returns {Object} The API response
    */
   apiResponse(api = 'status', type = 'html') {
-    return { ...this._setup.api[api][type] };
+    return this._setup.api[api][type];
   }
 }
 
@@ -418,8 +420,15 @@ class TestBrowser {
     // this.frames = {};
   }
 
-  withRequestHandler(handler) {
+  onRequestHandler(handler) {
     this.requestHandler = handler;
+    return this;
+  }
+
+  offRequestHandler(handler) {
+    if (this.requestHandler === handler) {
+      this.requestHandler = null;
+    }
     return this;
   }
 
@@ -664,6 +673,7 @@ function Nock() {
   }
 
   nocker.done = () => {
+    nock.emitter.off('no match', noMatchHandler);
     try {
       Object.values(scopes).forEach((s) => s.done());
     } finally {

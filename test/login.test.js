@@ -64,9 +64,8 @@ describe('Test sidekick login', () => {
 
     nock('https://admin.hlx.page')
       .get('/status/adobe/blog/main/en/topics/bla?editUrl=auto')
-      .times(4)
+      .times(2)
       .reply(function req() {
-        console.log(this.req.headers);
         if (this.req.headers.cookie === 'auth_token=foobar') {
           loggedIn = true;
           return [200, '{}', { 'content-type': 'application/json' }];
@@ -80,9 +79,8 @@ describe('Test sidekick login', () => {
         'set-cookie': 'auth_token=foobar; Path=/; HttpOnly; Secure; SameSite=None',
       })
       .get('/profile')
-      .times(4)
+      .times(2)
       .reply(function req() {
-        console.log('profile', this.req.headers);
         if (this.req.headers.cookie === 'auth_token=foobar') {
           return [200, '{}', { 'content-type': 'application/json' }];
         }
@@ -112,10 +110,8 @@ describe('Test sidekick login', () => {
 
   it('Opens login window and shows aborted modal', async () => {
     const test = new SidekickTest({
+      browser,
       page,
-      apiResponses: [{
-        status: 401,
-      }],
       waitPopup: 2000,
       // suppress extension hint
       pre: (p) => p.evaluate(() => window.localStorage.setItem('hlxSidekickExtensionHint', Date.now() + 31536000000)),
@@ -126,6 +122,11 @@ describe('Test sidekick login', () => {
     });
 
     nock('https://admin.hlx.page')
+      .get('/status/adobe/blog/main/en/topics/bla?editUrl=auto')
+      .reply(401)
+      .get('/profile')
+      .times(2)
+      .reply(401)
       .get('/login/adobe/blog/main/en/topics/bla')
       .query({
         loginRedirect: 'https://www.hlx.live/tools/sidekick/login-success',
