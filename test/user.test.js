@@ -17,31 +17,40 @@ const assert = require('assert');
 
 const {
   IT_DEFAULT_TIMEOUT,
-  startBrowser,
-  stopBrowser, openPage, closeAllPages,
+  TestBrowser,
+  Nock,
+  Setup,
 } = require('./utils.js');
 const { SidekickTest } = require('./SidekickTest.js');
 
 describe('Test user auth handling', () => {
+  /** @type TestBrowser */
   let browser;
 
   before(async function before() {
     this.timeout(10000);
-    browser = await startBrowser();
+    browser = await TestBrowser.create();
   });
-  after(async () => stopBrowser(browser));
+
+  after(async () => browser.close());
 
   let page;
+  let nock;
+
   beforeEach(async () => {
-    page = await openPage(browser);
+    page = await browser.openPage();
+    nock = new Nock();
   });
 
   afterEach(async () => {
-    await closeAllPages(browser);
+    await browser.closeAllPages();
+    nock.done();
   });
 
   it('Shows user info from profile', async () => {
+    nock.admin(new Setup('blog'));
     const { checkPageResult } = await new SidekickTest({
+      browser,
       page,
       checkPage: (p) => p.evaluate(() => [...window.hlx.sidekick.get('user')
         .querySelectorAll(':scope .dropdown-container > div > div')]
@@ -52,7 +61,11 @@ describe('Test user auth handling', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Shows login option in user menu if user not logged in', async () => {
+    nock('https://admin.hlx.page')
+      .get('/status/adobe/blog/main/en/topics/bla?editUrl=auto')
+      .reply(401);
     const { plugins } = await new SidekickTest({
+      browser,
       page,
       apiResponses: [{
         status: 401,
@@ -62,7 +75,9 @@ describe('Test user auth handling', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Shows switch user and logout option in user menu if user logged in', async () => {
+    nock.admin(new Setup('blog'));
     const { plugins } = await new SidekickTest({
+      browser,
       page,
     }).run();
     assert.ok(plugins.find((p) => p.id === 'user-switch'), 'Did not show switch user option');
@@ -70,12 +85,13 @@ describe('Test user auth handling', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Keeps plugin buttons disabled based on permissions', async () => {
-    const test = new SidekickTest({
+    const setup = new Setup('blog');
+    setup.apiResponse().live.permissions = ['read'];
+    nock.admin(setup);
+    const { plugins } = await new SidekickTest({
+      browser,
       page,
-    });
-    // change live permissions to readonly
-    test.apiResponses[0].live.permissions = ['read'];
-    const { plugins } = await test.run();
+    }).run();
     assert.ok(plugins.find((p) => p.id === 'publish' && !p.buttonEnabled), 'Did not keep publish plugin disabled');
   }).timeout(IT_DEFAULT_TIMEOUT);
 });

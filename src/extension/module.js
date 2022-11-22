@@ -999,7 +999,7 @@
       condition: (s) => s.config.innerHost && (s.isInner() || s.isDev()),
       button: {
         action: async (evt) => {
-          const { status, location } = sk;
+          const { status } = sk;
           if (status.edit && status.edit.sourceLocation
             && status.edit.sourceLocation.startsWith('onedrive:')) {
             // show ctrl/cmd + s hint on onedrive docs
@@ -1016,7 +1016,7 @@
               console.error(resp);
               throw new Error(resp);
             }
-            console.log(`reloading ${location.href}`);
+            console.log(`reloading ${window.location.href}`);
             if (newTab(evt)) {
               window.open(window.location.href);
               sk.hideModal();
@@ -2787,10 +2787,14 @@
         );
         // bust client cache for live and production
         if (config.outerHost) {
-          await fetch(`https://${config.outerHost}${path}`, { cache: 'reload', mode: 'no-cors' });
+          // reuse purgeURL to ensure page relative paths (e.g. when publishing dependencies)
+          purgeURL.hostname = config.outerHost;
+          await fetch(purgeURL.href, { cache: 'reload', mode: 'no-cors' });
         }
         if (config.host) {
-          await fetch(`https://${config.host}${path}`, { cache: 'reload', mode: 'no-cors' });
+          // reuse purgeURL to ensure page relative paths (e.g. when publishing dependencies)
+          purgeURL.hostname = config.host;
+          await fetch(purgeURL.href, { cache: 'reload', mode: 'no-cors' });
         }
         fireEvent(this, 'published', path);
       } catch (e) {

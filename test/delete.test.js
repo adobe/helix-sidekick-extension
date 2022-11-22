@@ -17,112 +17,120 @@ const assert = require('assert');
 
 const {
   IT_DEFAULT_TIMEOUT,
-  startBrowser,
-  stopBrowser,
-  openPage,
-  closeAllPages,
+  TestBrowser,
+  Nock,
+  Setup,
 } = require('./utils.js');
 const { SidekickTest } = require('./SidekickTest.js');
 
 describe('Test delete plugin', () => {
+  /** @type TestBrowser */
   let browser;
 
   before(async function before() {
     this.timeout(10000);
-    browser = await startBrowser();
+    browser = await TestBrowser.create();
   });
-  after(async () => stopBrowser(browser));
+
+  after(async () => browser.close());
 
   let page;
+  let nock;
+
   beforeEach(async () => {
-    page = await openPage(browser);
+    page = await browser.openPage();
+    nock = new Nock();
   });
 
   afterEach(async () => {
-    await closeAllPages(browser);
+    await browser.closeAllPages();
+    nock.done();
   });
 
   it('Delete plugin uses preview API if page not published', async () => {
-    const test = new SidekickTest({
+    const setup = new Setup('blog');
+    setup.apiResponse().edit = {}; // no source doc
+    setup.apiResponse().live = {}; // not published
+    nock.admin(setup);
+    nock('https://admin.hlx.page')
+      .delete('/preview/adobe/blog/main/en/topics/bla')
+      .reply(201);
+    const { dialog } = await new SidekickTest({
+      browser,
       page,
       acceptDialogs: true,
+      waitNavigation: 'https://main--blog--adobe.hlx.page/',
       plugin: 'delete',
-    });
-    test.apiResponses[0].edit = {}; // no source doc
-    test.apiResponses[0].live = {}; // not published
-    const { dialog, requestsMade } = await test.run();
-    const delReq = requestsMade.find((r) => r.method === 'DELETE');
-    const homeReq = requestsMade.pop();
+    }).run();
     assert.ok(
       dialog && dialog.message.includes('Are you sure you want to delete it?'),
       `Unexpected dialog: "${dialog}"`,
-    );
-    assert.ok(
-      delReq && delReq.url.startsWith('https://admin.hlx.page/preview/'),
-      'Preview API not called',
-    );
-    assert.ok(
-      homeReq && homeReq.url === 'https://main--blog--adobe.hlx.page/',
-      'Redirect to homepage not triggered',
     );
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Delete plugin uses preview and live API if page published', async () => {
-    const test = new SidekickTest({
+    const setup = new Setup('blog');
+    setup.apiResponse().edit = {}; // no source doc
+    nock.admin(setup);
+    nock('https://admin.hlx.page')
+      .delete('/preview/adobe/blog/main/en/topics/bla')
+      .reply(201)
+      .delete('/live/adobe/blog/main/en/topics/bla')
+      .reply(201);
+
+    const { dialog } = await new SidekickTest({
+      browser,
       page,
       acceptDialogs: true,
+      waitNavigation: 'https://main--blog--adobe.hlx.page/',
       plugin: 'delete',
-    });
-    test.apiResponses[0].edit = {}; // no source doc
-    const { dialog, requestsMade } = await test.run();
-    const delPreviewReq = requestsMade.find((r) => r.method === 'DELETE' && r.url.includes('/preview/'));
-    const delLiveReq = requestsMade.find((r) => r.method === 'DELETE' && r.url.includes('/live/'));
-    const homeReq = requestsMade.pop();
+    }).run();
     assert.ok(
       dialog && dialog.message.includes('Are you sure you want to delete it?'),
       `Unexpected dialog: "${dialog}"`,
-    );
-    assert.ok(delPreviewReq, 'Preview API not called');
-    assert.ok(delLiveReq, 'Live API not called');
-    assert.ok(
-      homeReq && homeReq.url === 'https://main--blog--adobe.hlx.page/',
-      'Redirect to homepage not triggered',
     );
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Delete plugin uses code API', async () => {
-    const test = new SidekickTest({
+    const setup = new Setup('blog');
+    setup.apiResponse().edit = {}; // no source doc
+    nock.admin(setup);
+    nock('https://admin.hlx.page')
+      .delete('/code/adobe/blog/main/en/topics/bla')
+      .reply(201);
+
+    const { dialog } = await new SidekickTest({
+      browser,
       page,
       type: 'xml',
       acceptDialogs: true,
+      waitNavigation: 'https://main--blog--adobe.hlx.page/',
       plugin: 'delete',
-    });
-    test.apiResponses[0].edit = {}; // no source doc
-    const { dialog, requestsMade } = await test.run();
-    const delReq = requestsMade.find((r) => r.method === 'DELETE');
+    }).run();
+
     assert.ok(
       dialog && dialog.message.includes('Are you sure you want to delete it?'),
       `Unexpected dialog: "${dialog}"`,
     );
-    assert.ok(
-      delReq && delReq.url.startsWith('https://admin.hlx.page/code/'),
-      'Code API not called',
-    );
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('No delete plugin if source document exists', async () => {
+    nock.admin(new Setup('blog'));
     const { plugins } = await new SidekickTest({
+      browser,
       page,
     }).run();
     assert.ok(!plugins.find((p) => p.id === 'delete'), 'Unexpected delete plugin found');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('No delete plugin if preview does not exist', async () => {
-    const test = new SidekickTest({
+    const setup = new Setup('blog');
+    setup.apiResponse().preview = {}; // no preview
+    nock.admin(setup);
+    const { plugins } = await new SidekickTest({
+      browser,
       page,
-    });
-    test.apiResponses[0].preview = {}; // no preview
-    const { plugins } = await test.run();
+    }).run();
     assert.ok(!plugins.find((p) => p.id === 'delete'), 'Unexpected delete plugin found');
   }).timeout(IT_DEFAULT_TIMEOUT);
 });

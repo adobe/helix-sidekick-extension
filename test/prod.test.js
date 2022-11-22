@@ -17,33 +17,33 @@ const assert = require('assert');
 
 const {
   IT_DEFAULT_TIMEOUT,
-  startBrowser,
-  stopBrowser,
-  openPage,
-  closeAllPages,
   Nock,
+  TestBrowser,
+  Setup,
 } = require('./utils.js');
 const { SidekickTest } = require('./SidekickTest.js');
 
 describe('Test production plugin', () => {
+  /** @type TestBrowser */
   let browser;
 
   before(async function before() {
     this.timeout(10000);
-    browser = await startBrowser();
+    browser = await TestBrowser.create();
   });
-  after(async () => stopBrowser(browser));
+
+  after(async () => browser.close());
 
   let page;
   let nock;
 
   beforeEach(async () => {
-    page = await openPage(browser);
+    page = await browser.openPage();
     nock = new Nock();
   });
 
   afterEach(async () => {
-    await closeAllPages(browser);
+    await browser.closeAllPages();
     nock.done();
   });
 
@@ -51,7 +51,9 @@ describe('Test production plugin', () => {
     nock('https://pages.adobe.com')
       .get('/creativecloud/en/test')
       .reply(200, 'some content...');
+    nock.admin(new Setup('pages'));
     const { popupOpened } = await new SidekickTest({
+      browser,
       page,
       setup: 'pages',
       url: 'https://docs.google.com/document/d/2E1PNphAhTZAZrDjevM0BX7CZr7KjomuBO6xE1TUo9NU/edit',
@@ -69,7 +71,9 @@ describe('Test production plugin', () => {
     nock('https://blog.adobe.com')
       .get('/en/topics/bla')
       .reply(200, 'some content...');
+    nock.admin(new Setup('blog'));
     const { popupOpened } = await new SidekickTest({
+      browser,
       page,
       url: 'https://adobe.sharepoint.com/:w:/r/sites/TheBlog/_layouts/15/Doc.aspx?sourcedoc=%7BE8EC80CB-24C3-4B95-B082-C51FD8BC8760%7D&file=bla.docx&action=default&mobileredirect=true',
       plugin: 'prod',
@@ -83,7 +87,9 @@ describe('Test production plugin', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Production plugin switches to production from preview URL', async () => {
+    nock.admin(new Setup('blog'));
     const { requestsMade } = await new SidekickTest({
+      browser,
       page,
       plugin: 'prod',
       waitNavigation: 'https://blog.adobe.com/en/topics/bla',
@@ -96,7 +102,9 @@ describe('Test production plugin', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Production plugin switches to production from live URL', async () => {
+    nock.admin(new Setup('blog'));
     const { requestsMade } = await new SidekickTest({
+      browser,
       page,
       url: 'https://main--blog--adobe.hlx.live/en/topics/bla?foo=bar',
       plugin: 'prod',
@@ -110,11 +118,13 @@ describe('Test production plugin', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Production plugin button disabled if page not published', async () => {
-    const test = new SidekickTest({
+    const setup = new Setup('blog');
+    setup.apiResponse().live = {};
+    nock.admin(setup);
+    const { plugins } = await new SidekickTest({
+      browser,
       page,
-    });
-    test.apiResponses[0].live = {};
-    const { plugins } = await test.run();
+    }).run();
     assert.ok(plugins.find((p) => p.id === 'prod' && !p.buttonEnabled), 'Production plugin button not disabled');
   }).timeout(IT_DEFAULT_TIMEOUT);
 });

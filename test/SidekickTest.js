@@ -15,7 +15,6 @@
 
 const { EventEmitter } = require('events');
 const fs = require('fs').promises;
-const { fileURLToPath } = require('url');
 
 const {
   DEBUG_LOGS,
@@ -77,13 +76,6 @@ const {
  */
 
 /**
- * @callback SidekickTest~CheckRequest
- * @description A function to call if an HTTP request occurs.
- * @param {HttpRequest} req The Puppeteer HTTP request
- * @returns A truthy (stored in {@link Sidekick~Result.checkRequestResult}) or falsy value
- */
-
-/**
  * @callback SidekickTest~CheckPage
  * @description A function to execute after loading the sidekick.
  * @param {Page} page The Puppeteer page
@@ -92,6 +84,7 @@ const {
 
 /**
  * @typedef {Object} SidekickTest~Options The test options
+ * @param {TestBrowser} o.browser Our test browser
  * @param {Page} o.page The Puppeteer page
  * @param {Setup|string} o.setup The [test setup]{@link Setup}
  * @param {string} o.env=preview The environment (preview or live)
@@ -101,10 +94,8 @@ const {
  * @param {string} o.plugin A plugin to execute after loading the sidekick
  * @param {number} o.pluginSleep=2000 The number of milliseconds to wait after executing a plugin
  * @param {boolean} acceptDialogs=false Defines whether dialogs will be accepted or dismissed
- * @param {boolean} allowNavigation=false Defines whether navigation is allowed
  * @param {SidekickTest~Pre} o.pre A function to call before loading the sidekick
  * @param {SidekickTest~Post} o.post A function to call after loading the sidekick
- * @param {SidekickTest~CheckRequest} o.checkRequest A function to call if an HTTP request occurs
  * @param {SidekickTest~CheckPage} o.checkPage A function to call at the end of the test run
  * @param {string[]} o.checkPlugins An array of plugin IDs to check for
  * @param {string[]} o.checkEvents An array of event names to check for
@@ -113,8 +104,6 @@ const {
  * @param {string} o.url A URL to use as test location (optional setup override)
  * @param {string} o.configJs A project config JS (optional setup override)
  * @param {Object} o.sidekickConfig A sidekick config (optional setup override)
- * @param {Object[]} o.apiResponses An array of API responses (optional setup override)
- * @param {Object[]} o.contentResponses An array of content responses (optional setup override)
  */
 
 /**
@@ -135,7 +124,6 @@ const {
  * @prop {Object} dialog A dialog displayed by the sidekick
  * @prop {string} dialog.type The dialog type (alert or confirm)
  * @prop {string} dialog.message The dialog message
- * @prop {*} checkRequestResult The result of {@link SidekickTest~CheckRequest}
  * @prop {*} checkPageResult The result of {@link SidekickTest~CheckPage}
  */
 
@@ -150,6 +138,8 @@ class SidekickTest extends EventEmitter {
   constructor(o = {}) {
     super();
     // main options
+    /** @type TestBrowser */
+    this.browser = o.browser;
     this.page = o.page;
     this.setup = o.setup instanceof Setup ? o.setup : new Setup(o.setup || 'blog');
     this.env = o.env || 'preview';
@@ -159,7 +149,6 @@ class SidekickTest extends EventEmitter {
     this.plugin = o.plugin;
     this.pluginSleep = o.pluginSleep ?? 0;
     this.acceptDialogs = o.acceptDialogs || false;
-    this.allowNavigation = o.allowNavigation || false;
     this.waitPopup = o.waitPopup ?? 0;
     this.waitNavigation = o.waitNavigation
       ? new Set(Array.isArray(o.waitNavigation) ? o.waitNavigation : [o.waitNavigation])
@@ -172,18 +161,18 @@ class SidekickTest extends EventEmitter {
     this.configJs = o.configJs || this.setup.configJs;
     this.configJson = o.configJson || this.setup.configJson;
     this.sidekickConfig = o.sidekickConfig || JSON.parse(JSON.stringify(this.setup.sidekickConfig));
-    this.apiResponses = o.apiResponses || [this.setup.apiResponse('status', this.type)];
-    this.contentResponses = o.contentResponses || [this.setup.contentResponse(this.type)];
 
     // optional pre/post sidekick injection functions
     this.pre = o.pre || (async () => {});
     this.post = o.post || (async () => {});
 
     // optional checks
-    this.checkRequest = o.checkRequest;
     this.checkPlugins = o.checkPlugins;
     this.checkEvents = o.checkEvents;
     this.checkPage = o.checkPage;
+
+    // optional request handler
+    this.requestHandler = o.requestHandler;
 
     // timeout settings
     this.timeoutFailure = o.timeoutFailure || 0;
@@ -208,10 +197,6 @@ class SidekickTest extends EventEmitter {
     const requestsMade = [];
     const {
       acceptDialogs,
-      allowNavigation,
-      checkRequest,
-      apiResponses,
-      contentResponses,
       configJs,
       configJson,
     } = this;
@@ -224,7 +209,6 @@ class SidekickTest extends EventEmitter {
     let plugins;
     let notification;
     let dialog;
-    let checkRequestResult;
     let checkPageResult;
     let popupTarget;
 
@@ -240,119 +224,105 @@ class SidekickTest extends EventEmitter {
       }
     }
 
-    const result = await new Promise((resolve, reject) => {
-      if (!this.hasRun) {
-        // set timeouts
-        if (this.timeoutFailure || this.timeoutSuccess) {
-          setTimeout(() => {
-            if (this.timeoutSuccess) {
-              resolve(SidekickTest.TIMED_OUT);
-            } else {
-              reject(new Error('timed out'));
-            }
-          }, +(this.timeoutFailure || this.timeoutSuccess));
-        }
-        // instrument popups
-        this.page.browser().on('targetcreated', recordTargetCreated);
-        // instrument dialogs
-        this.page.on('dialog', async (d) => {
-          dialog = {
-            type: d.type(),
-            message: d.message(),
-          };
-          if (acceptDialogs) {
-            await d.accept();
-          } else {
-            await d.dismiss();
-          }
-        });
-        this.page.on('console', (msg) => {
-          // eslint-disable-next-line no-console
-          if (DEBUG_LOGS) {
-            // eslint-disable-next-line no-console
-            console.log(`> [${msg.type()}] ${msg.text()}`);
-          }
-        });
-        // instrument requests
-        this.page.setRequestInterception(true);
-        this.page.on('request', async (req) => {
-          const url = req.url();
-          if (DEBUG_LOGS) {
-            // eslint-disable-next-line no-console
-            console.log('[pup] request', url);
-          }
-          if (req.isNavigationRequest()) {
-            if (!pageLoaded) {
-              pageLoaded = true;
-            } else {
-              navigated = url;
-              if (!allowNavigation) {
-                req.abort('aborted');
-              }
-            }
-          }
-          if (url.startsWith('http')) {
-            this.waitNavigation.delete(url);
-            const reqObj = {
-              method: req.method(),
-              headers: req.headers(),
-              url,
-            };
-            requestsMade.push(reqObj);
-            if (typeof checkRequest === 'function') {
-              checkRequestResult = checkRequest(req);
-              if (checkRequestResult) {
-                resolve(SidekickTest.CHECK_REQUEST);
-                return;
-              }
-            }
-            if (url.startsWith('https://admin.hlx.page/')) {
-              if (typeof apiResponses === 'function') {
-                req.respond(await apiResponses(reqObj));
-              } else {
-                req.respond(toResp(apiResponses.length === 1
-                  ? apiResponses[0] : apiResponses.shift()));
-              }
-            } else if (url.endsWith('/tools/sidekick/config.json')) {
-              configLoaded = url;
-              req.respond(toResp(configJson));
-            } else if (url.endsWith('/tools/sidekick/config.js')) {
-              configLoaded = url;
-              req.respond(toResp(configJs));
-            } else if (url === 'https://www.hlx.live/tools/sidekick/module.js') {
-              try {
-                // return local module.js
-                const module = await fs.readFile(`${__dirname}/../src/extension/module.js`, 'utf-8');
-                req.respond(toResp(module));
-              } catch (e) {
-                reject(new Error('failed to load local module.js'));
-              }
-            } else {
-              req.respond(toResp(contentResponses.length === 1
-                ? contentResponses[0] : contentResponses.shift()));
-            }
-          } else if (url.startsWith('file://')) {
-            // let file requests through
-            if (DEBUG_LOGS) {
-              // eslint-disable-next-line no-console
-              console.log('[pup] loading', url);
-            }
-            // rewrite all `/bookmarklet/` requests (except app.js)
-            if (url.indexOf('/bookmarklet/') > 0 && !url.endsWith('/app.js')) {
-              const path = fileURLToPath(url).replace('/bookmarklet/', '/extension/');
-              try {
-                req.respond(toResp(await fs.readFile(path, 'utf-8')));
-                return;
-              } catch (e) {
-                reject(new Error(`failed to load: ${path}`));
-                return;
-              }
-            }
-            req.continue();
-          }
-        });
+    async function printConsole(msg) {
+      // eslint-disable-next-line no-console
+      if (DEBUG_LOGS) {
+        // eslint-disable-next-line no-console
+        console.log(`> [${msg.type()}] ${msg.text()}`);
       }
-      this.hasRun = true;
+    }
+
+    async function handleDialogs(d) {
+      dialog = {
+        type: d.type(),
+        message: d.message(),
+      };
+      if (acceptDialogs) {
+        await d.accept();
+      } else {
+        await d.dismiss();
+      }
+    }
+
+    let browserRequestHandler = async (req) => {
+      const { url } = req;
+      if (DEBUG_LOGS) {
+        // eslint-disable-next-line no-console
+        console.log(`[pup]${req.isNavigationRequest ? ' navigation' : ''} request`, req.method, url);
+      }
+      const reqObj = {
+        method: req.method,
+        headers: req.headers,
+        url,
+      };
+      if (this.requestHandler) {
+        const r = await this.requestHandler(reqObj);
+        if (r) {
+          return r;
+        }
+      }
+
+      if (req.isNavigationRequest) {
+        if (!pageLoaded) {
+          pageLoaded = true;
+        } else {
+          navigated = url;
+        }
+        if (this.waitNavigation.delete(url)) {
+          requestsMade.push(reqObj);
+          return -1;
+        }
+      }
+      if (url.startsWith('http')) {
+        requestsMade.push(reqObj);
+        if (url.endsWith('/tools/sidekick/config.json')) {
+          configLoaded = url;
+          return toResp(configJson);
+        } else if (url.endsWith('/tools/sidekick/config.js')) {
+          configLoaded = url;
+          return toResp(configJs);
+        } else if (url === 'https://www.hlx.live/tools/sidekick/module.js') {
+          try {
+            // return local module.js
+            const module = await fs.readFile(`${__dirname}/../src/extension/module.js`, 'utf-8');
+            return toResp(module);
+          } catch (e) {
+            throw new Error('failed to load local module.js');
+          }
+        } else {
+          return null;
+        }
+      } else if (url.startsWith('file://') && url.indexOf('/bookmarklet/') > 0 && !url.endsWith('/app.js')) {
+        // rewrite all `/bookmarklet/` requests (except app.js)
+        if (DEBUG_LOGS) {
+          // eslint-disable-next-line no-console
+          console.log('[pup] rewriting', url);
+        }
+        req.url = req.url.replace('/bookmarklet/', '/extension/');
+      }
+      return null;
+    };
+    browserRequestHandler = browserRequestHandler.bind(this);
+
+    let timeOutHandle;
+    const result = await new Promise((resolve, reject) => {
+      // set timeouts
+      if (this.timeoutFailure || this.timeoutSuccess) {
+        timeOutHandle = setTimeout(() => {
+          timeOutHandle = null;
+          if (this.timeoutSuccess) {
+            resolve(SidekickTest.TIMED_OUT);
+          } else {
+            reject(new Error('timed out'));
+          }
+        }, +(this.timeoutFailure || this.timeoutSuccess));
+      }
+      // instrument popups
+      this.page.browser().on('targetcreated', recordTargetCreated);
+      this.page.on('dialog', handleDialogs);
+      this.page.on('console', printConsole);
+      this.browser.onRequestHandler(browserRequestHandler);
+
       // open fixture and run test
       this.page
         .goto(`file://${__dirname}/fixtures/${this.fixture}`, { waitUntil: 'load' })
@@ -496,7 +466,13 @@ class SidekickTest extends EventEmitter {
         })
         .catch((e) => reject(e))
         .finally(() => {
+          if (timeOutHandle) {
+            clearTimeout(timeOutHandle);
+          }
+          this.browser.offRequestHandler(browserRequestHandler);
           this.page.browser().off('targetcreated', recordTargetCreated);
+          this.page.off('console', printConsole);
+          this.page.off('dialog', handleDialogs);
         });
     });
     // run test
@@ -512,7 +488,6 @@ class SidekickTest extends EventEmitter {
       plugins,
       notification,
       dialog,
-      checkRequestResult,
       checkPageResult,
     };
   }

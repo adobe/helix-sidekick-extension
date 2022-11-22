@@ -17,33 +17,50 @@ const assert = require('assert');
 
 const {
   IT_DEFAULT_TIMEOUT,
-  startBrowser,
-  stopBrowser,
-  openPage,
-  closeAllPages,
+  TestBrowser,
+  Nock,
+  Setup,
 } = require('./utils.js');
 const { SidekickTest } = require('./SidekickTest.js');
 
 describe('Test publish plugin', () => {
+  /** @type TestBrowser */
   let browser;
 
   before(async function before() {
     this.timeout(10000);
-    browser = await startBrowser();
+    browser = await TestBrowser.create();
   });
-  after(async () => stopBrowser(browser));
+
+  after(async () => browser.close());
 
   let page;
+  let nock;
+
   beforeEach(async () => {
-    page = await openPage(browser);
+    page = await browser.openPage();
+    nock = new Nock();
   });
 
   afterEach(async () => {
-    await closeAllPages(browser);
+    await browser.closeAllPages();
+    nock.done();
   });
 
   it('Publish plugin uses live API', async () => {
+    nock.admin(new Setup('blog'));
+    nock('https://admin.hlx.page')
+      .post('/live/adobe/blog/main/en/topics/bla')
+      .reply(200);
+    nock('https://main--blog--adobe.hlx.live')
+      .get('/en/topics/bla')
+      .reply(200, 'bla');
+    nock('https://blog.adobe.com')
+      .get('/en/topics/bla')
+      .twice()
+      .reply(200, 'bla');
     const { requestsMade, navigated } = await new SidekickTest({
+      browser,
       page,
       plugin: 'publish',
       waitNavigation: 'https://blog.adobe.com/en/topics/bla',
@@ -57,7 +74,31 @@ describe('Test publish plugin', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Publish plugin also publishes dependencies', async () => {
+    nock.admin(new Setup('blog'));
+    nock('https://admin.hlx.page')
+      .post('/live/adobe/blog/main/en/topics/bla')
+      .reply(200)
+      .post('/live/adobe/blog/main/en/topics/foo')
+      .reply(200)
+      .post('/live/adobe/blog/main/en/topics/bar')
+      .reply(200);
+    nock('https://main--blog--adobe.hlx.live')
+      .get('/en/topics/bla')
+      .reply(200, 'bla')
+      .get('/en/topics/foo')
+      .reply(200, 'bla')
+      .get('/en/topics/bar')
+      .reply(200, 'bla');
+    nock('https://blog.adobe.com')
+      .get('/en/topics/bla')
+      .twice()
+      .reply(200, 'bla')
+      .get('/en/topics/foo')
+      .reply(200, 'bla')
+      .get('/en/topics/bar')
+      .reply(200, 'bla');
     const { requestsMade } = await new SidekickTest({
+      browser,
       page,
       plugin: 'publish',
       post: (p) => p.evaluate(() => {
@@ -77,7 +118,20 @@ describe('Test publish plugin', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Publish plugin busts client cache', async () => {
+    nock.admin(new Setup('blog'));
+    nock('https://admin.hlx.page')
+      .post('/live/adobe/blog/main/en/topics/bla')
+      .reply(200);
+    nock('https://main--blog--adobe.hlx.live')
+      .get('/en/topics/bla')
+      .reply(200, 'bla');
+    nock('https://blog.adobe.com')
+      .get('/en/topics/bla')
+      .twice()
+      .reply(200, 'bla');
+
     const { requestsMade } = await new SidekickTest({
+      browser,
       page,
       plugin: 'publish',
       waitNavigation: 'https://blog.adobe.com/en/topics/bla',
@@ -94,22 +148,27 @@ describe('Test publish plugin', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Publish plugin button disabled without source document', async () => {
-    const test = new SidekickTest({
+    const setup = new Setup('blog');
+    setup.apiResponse().edit = {};
+    nock.admin(setup);
+    const { plugins } = await new SidekickTest({
+      browser,
       page,
       url: 'https://blog.adobe.com/en/topics/bla',
-    });
-    test.apiResponses[0].edit = {}; // no source doc
-    const { plugins } = await test.run();
+    }).run();
     assert.ok(plugins.find((p) => p.id === 'publish' && !p.buttonEnabled), 'Publish plugin button not disabled');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Publish plugin shows update indicator if preview is newer than live', async () => {
+    const setup = new Setup('blog');
+    const liveLastMod = setup.apiResponse().live.lastModified;
+    setup.apiResponse().live.lastModified = new Date(new Date(liveLastMod)
+      .setFullYear(2019)).toUTCString();
+    nock.admin(setup);
     const test = new SidekickTest({
+      browser,
       page,
     });
-    const liveLastMod = test.apiResponses[0].live.lastModified;
-    test.apiResponses[0].live.lastModified = new Date(new Date(liveLastMod)
-      .setFullYear(2019)).toUTCString();
     const { plugins } = await test.run();
     assert.ok(
       plugins.find((p) => p.id === 'publish')?.classes.includes('update'),

@@ -12,7 +12,7 @@
 /* eslint-disable no-console, import/no-extraneous-dependencies, no-case-declarations */
 
 const fs = require('fs-extra');
-const { fetch } = require('@adobe/helix-fetch').h1();
+const { fetch } = require('@adobe/fetch').h1();
 
 const supportedBrowsers = ['chrome'];
 

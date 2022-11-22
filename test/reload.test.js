@@ -17,93 +17,126 @@ const assert = require('assert');
 
 const {
   IT_DEFAULT_TIMEOUT,
-  startBrowser,
-  stopBrowser,
-  openPage,
-  closeAllPages,
+  TestBrowser,
+  Nock,
+  Setup,
 } = require('./utils.js');
 const { SidekickTest } = require('./SidekickTest.js');
 
 describe('Test reload plugin', () => {
+  /** @type TestBrowser */
   let browser;
 
   before(async function before() {
     this.timeout(10000);
-    browser = await startBrowser();
+    browser = await TestBrowser.create();
   });
-  after(async () => stopBrowser(browser));
+
+  after(async () => browser.close());
 
   let page;
+  let nock;
+
   beforeEach(async () => {
-    page = await openPage(browser);
+    page = await browser.openPage();
+    nock = new Nock();
   });
 
   afterEach(async () => {
-    await closeAllPages(browser);
+    await browser.closeAllPages();
+    nock.done();
   });
 
   it('Reload plugin uses preview API', async () => {
-    const { requestsMade, navigated } = await new SidekickTest({
+    nock.admin(new Setup('blog'));
+    nock('https://admin.hlx.page')
+      .post('/preview/adobe/blog/main/en/topics/bla')
+      .reply(200);
+    nock('https://main--blog--adobe.hlx.page')
+      .get('/en/topics/bla')
+      .reply(200);
+
+    let preventReload = false;
+    await new SidekickTest({
+      browser,
       page,
       plugin: 'reload',
-      waitNavigation: 'https://main--blog--adobe.hlx.page/en/topics/bla',
+      pluginWait: 1000,
+      // waitNavigation: 'https://main--blog--adobe.hlx.page/en/topics/bla',
+      // this is a bit hairy, because the sidekick does a window.location.reload() which is the
+      // generic.html in this case. the problem is that it will discard the sidekick js, which
+      // will fail the page evaluations in SidekickTest.js
+      requestHandler: (req) => {
+        if (req.url.endsWith('/test/fixtures/generic.html')) {
+          if (preventReload) {
+            return -1;
+          }
+          preventReload = true;
+        }
+        return null;
+      },
     }).run();
-    const reloadReq = requestsMade.find((r) => r.method === 'POST');
     assert.ok(
-      reloadReq && reloadReq.url.startsWith('https://admin.hlx.page/preview/'),
-      'Preview URL not updated',
-    );
-    assert.ok(
-      navigated,
+      preventReload,
       'Reload not triggered',
     );
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Reload plugin uses code API', async () => {
-    const { requestsMade, navigated } = await new SidekickTest({
+    nock.admin(new Setup('blog'));
+    nock('https://admin.hlx.page')
+      .post('/code/adobe/blog/main/en/topics/bla')
+      .reply(200);
+    nock('https://main--blog--adobe.hlx.page')
+      .get('/en/topics/bla')
+      .reply(200);
+    let preventReload = false;
+    const { requestsMade } = await new SidekickTest({
+      browser,
       page,
       type: 'xml',
       plugin: 'reload',
-      waitNavigation: 'https://main--blog--adobe.hlx.page/en/bla.xml',
+      pluginWait: 1000,
+      // waitNavigation: 'https://main--blog--adobe.hlx.page/en/bla.xml',
+      requestHandler: (req) => {
+        if (req.url.endsWith('/test/fixtures/generic.html')) {
+          if (preventReload) {
+            return -1;
+          }
+          preventReload = true;
+        }
+        return null;
+      },
     }).run();
     const reloadReq = requestsMade.find((r) => r.method === 'POST');
     assert.ok(
       reloadReq && reloadReq.url.startsWith('https://admin.hlx.page/code/'),
       'Code API not called',
     );
-    assert.ok(navigated, 'Reload not triggered');
-  }).timeout(IT_DEFAULT_TIMEOUT);
-
-  it('Reload plugin busts client cache', async () => {
-    const { requestsMade } = await new SidekickTest({
-      page,
-      plugin: 'reload',
-      waitNavigation: 'https://main--blog--adobe.hlx.page/en/topics/bla',
-    }).run();
-    const afterReload = requestsMade.slice(requestsMade.findIndex((r) => r.method === 'POST') + 1);
-    assert.ok(
-      afterReload[0] && afterReload[0].url.startsWith('https://main--blog--adobe.hlx.page/'),
-      'Client cache not busted',
-    );
+    assert.ok(preventReload, 'Reload not triggered');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Reload plugin button disabled without source document', async () => {
-    const test = new SidekickTest({
+    const setup = new Setup('blog');
+    setup.apiResponse().edit = {};
+    nock.admin(setup);
+    const { plugins } = await new SidekickTest({
+      browser,
       page,
-    });
-    test.apiResponses[0].edit = {}; // no source doc
-    const { plugins } = await test.run();
+    }).run();
     assert.ok(plugins.find((p) => p.id === 'reload' && !p.buttonEnabled), 'Reload plugin button not disabled');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Reload plugin shows update indicator if edit is newer than preview', async () => {
-    const test = new SidekickTest({
-      page,
-    });
-    const previewLastMod = test.apiResponses[0].preview.lastModified;
-    test.apiResponses[0].preview.lastModified = new Date(new Date(previewLastMod)
+    const setup = new Setup('blog');
+    const previewLastMod = setup.apiResponse().preview.lastModified;
+    setup.apiResponse().preview.lastModified = new Date(new Date(previewLastMod)
       .setFullYear(2020)).toUTCString();
-    const { plugins } = await test.run();
+    nock.admin(setup);
+    const { plugins } = await new SidekickTest({
+      browser,
+      page,
+    }).run();
     assert.ok(
       plugins.find((p) => p.id === 'reload')?.classes.includes('update'),
       'Reload plugin without update class',

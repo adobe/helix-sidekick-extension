@@ -2,11 +2,11 @@ version: 2.1
 executors:
   node14:
     docker:
-      - image: cimg/node:14.19
+      - image: cimg/node:14.21
 
 orbs:
   browser-tools: circleci/browser-tools@1.4.0
-  codecov: codecov/codecov@3.2.3
+  codecov: codecov/codecov@3.2.4
 
 commands:
   setup:
