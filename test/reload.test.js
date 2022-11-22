@@ -61,6 +61,7 @@ describe('Test reload plugin', () => {
       browser,
       page,
       plugin: 'reload',
+      pluginWait: 1000,
       // waitNavigation: 'https://main--blog--adobe.hlx.page/en/topics/bla',
       // this is a bit hairy, because the sidekick does a window.location.reload() which is the
       // generic.html in this case. the problem is that it will discard the sidekick js, which
@@ -95,6 +96,7 @@ describe('Test reload plugin', () => {
       page,
       type: 'xml',
       plugin: 'reload',
+      pluginWait: 1000,
       // waitNavigation: 'https://main--blog--adobe.hlx.page/en/bla.xml',
       requestHandler: (req) => {
         if (req.url === 'file:///Users/tripod/codez/helix/helix-sidekick-extension/test/fixtures/generic.html') {

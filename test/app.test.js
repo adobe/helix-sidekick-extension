@@ -56,7 +56,6 @@ describe('Test sidekick bookmarklet only', () => {
     const { notification } = await new SidekickTest({
       browser,
       page,
-      allowNavigation: true,
     }).run();
     assert.ok(
       notification.message && notification.message.startsWith('Did you know that the Sidekick is also available'),
@@ -74,7 +73,6 @@ describe('Test sidekick bookmarklet only', () => {
     const { popupOpened } = await new SidekickTest({
       browser,
       page,
-      allowNavigation: true,
       pre: (p) => p.evaluate(() => window.localStorage.removeItem('hlxSidekickExtensionHint')),
       post: (p) => p.evaluate(() => {
         const installButton = window.hlx.sidekick.shadowRoot
@@ -102,7 +100,6 @@ describe('Test sidekick bookmarklet only', () => {
     const { popupOpened } = await new SidekickTest({
       browser,
       page,
-      allowNavigation: true,
       pre: (p) => p.evaluate(() => window.localStorage.removeItem('hlxSidekickExtensionHint')),
       post: (p) => p.evaluate(() => {
         const installButton = window.hlx.sidekick.shadowRoot

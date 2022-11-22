@@ -93,7 +93,6 @@ describe('Test sidekick', () => {
           browser,
           page,
           loadModule,
-          allowNavigation: true,
           checkPage: (p) => p.evaluate(() => {
             // click overlay and return sidekick reference
             const modal = window.hlx.sidekick.shadowRoot.querySelector('.hlx-sk-overlay .modal');
@@ -550,7 +549,6 @@ describe('Test sidekick', () => {
           browser,
           page,
           loadModule,
-          allowNavigation: true,
           post: (p) => p.evaluate(() => window.hlx.sidekick.showModal({
             message: 'Lorem ipsum',
           })),
@@ -563,7 +561,6 @@ describe('Test sidekick', () => {
           browser,
           page,
           loadModule,
-          allowNavigation: true,
           post: (p) => p.evaluate(() => window.hlx.sidekick.showModal({
             message: 'Sticky',
             sticky: true,
@@ -577,7 +574,6 @@ describe('Test sidekick', () => {
           browser,
           page,
           loadModule,
-          allowNavigation: true,
           post: (p) => p.evaluate(() => window.hlx.sidekick.showModal({
             css: 'test',
           })),
@@ -590,7 +586,6 @@ describe('Test sidekick', () => {
           browser,
           page,
           loadModule,
-          allowNavigation: true,
           post: (p) => p.evaluate(() => window.hlx.sidekick.notify('Lorem ipsum')),
         }).run();
         assert.strictEqual(result.notification.message, 'Lorem ipsum', 'Did not show legacy notification');
@@ -601,7 +596,6 @@ describe('Test sidekick', () => {
           browser,
           page,
           loadModule,
-          allowNavigation: true,
           post: (p) => p.evaluate(() => window.hlx.sidekick.showModal('Sticky', true)),
         }).run();
         assert.strictEqual(result.notification.message, 'Sticky', 'Did not show legacy modal');
@@ -612,7 +606,6 @@ describe('Test sidekick', () => {
           browser,
           page,
           loadModule,
-          allowNavigation: true,
           post: (p) => p.evaluate(() => window.hlx.sidekick.showModal({
             message: ['Lorem ipsum', 'sit amet'],
           })),
@@ -627,7 +620,6 @@ describe('Test sidekick', () => {
           browser,
           page,
           loadModule,
-          allowNavigation: true,
           post: (p) => p.evaluate(() => {
             window.hlx.sidekick.showModal({ message: 'Sticky', sticky: true });
             window.hlx.sidekick.hideModal();
@@ -693,7 +685,6 @@ describe('Test sidekick', () => {
           browser,
           page,
           loadModule,
-          allowNavigation: true,
           checkPage: async (p) => p.evaluate(() => window.hlx.sidekick.isEditor()),
         });
         // check with google docs url
@@ -730,7 +721,6 @@ describe('Test sidekick', () => {
           browser,
           page,
           loadModule,
-          allowNavigation: true,
           checkPage: async (p) => p.evaluate(() => window.hlx.sidekick.isInner()),
         });
         assert.ok((await test.run()).checkPageResult, 'Did not detect preview URL');
@@ -753,7 +743,6 @@ describe('Test sidekick', () => {
           browser,
           page,
           loadModule,
-          allowNavigation: true,
           url: 'https://main--blog--adobe.hlx.live/',
           checkPage: async (p) => p.evaluate(() => window.hlx.sidekick.isOuter()),
         });

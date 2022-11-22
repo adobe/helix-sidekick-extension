@@ -94,7 +94,6 @@ const {
  * @param {string} o.plugin A plugin to execute after loading the sidekick
  * @param {number} o.pluginSleep=2000 The number of milliseconds to wait after executing a plugin
  * @param {boolean} acceptDialogs=false Defines whether dialogs will be accepted or dismissed
- * @param {boolean} allowNavigation=false Defines whether navigation is allowed
  * @param {SidekickTest~Pre} o.pre A function to call before loading the sidekick
  * @param {SidekickTest~Post} o.post A function to call after loading the sidekick
  * @param {SidekickTest~CheckPage} o.checkPage A function to call at the end of the test run
@@ -150,7 +149,6 @@ class SidekickTest extends EventEmitter {
     this.plugin = o.plugin;
     this.pluginSleep = o.pluginSleep ?? 0;
     this.acceptDialogs = o.acceptDialogs || false;
-    this.allowNavigation = o.allowNavigation || false;
     this.waitPopup = o.waitPopup ?? 0;
     this.waitNavigation = o.waitNavigation
       ? new Set(Array.isArray(o.waitNavigation) ? o.waitNavigation : [o.waitNavigation])
@@ -199,7 +197,6 @@ class SidekickTest extends EventEmitter {
     const requestsMade = [];
     const {
       acceptDialogs,
-      allowNavigation,
       configJs,
       configJson,
     } = this;
@@ -270,9 +267,6 @@ class SidekickTest extends EventEmitter {
           pageLoaded = true;
         } else {
           navigated = url;
-          if (!allowNavigation) {
-            // return -1;
-          }
         }
         if (this.waitNavigation.delete(url)) {
           requestsMade.push(reqObj);
