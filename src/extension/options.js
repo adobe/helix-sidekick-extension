@@ -486,4 +486,4 @@ window.addEventListener('DOMContentLoaded', () => {
     });
   });
 });
-window.setProject = setProject;
+// window.setProject = setProject;
