@@ -999,7 +999,7 @@
       condition: (s) => s.config.innerHost && (s.isInner() || s.isDev()),
       button: {
         action: async (evt) => {
-          const { status, location } = sk;
+          const { status } = sk;
           if (status.edit && status.edit.sourceLocation
             && status.edit.sourceLocation.startsWith('onedrive:')) {
             // show ctrl/cmd + s hint on onedrive docs
