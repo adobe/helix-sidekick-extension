@@ -1,3 +1,10 @@
+## [6.3.2](https://github.com/adobe/helix-sidekick-extension/compare/v6.3.1...v6.3.2) (2022-11-22)
+
+
+### Bug Fixes
+
+* **deps:** update external fixes ([eb516d9](https://github.com/adobe/helix-sidekick-extension/commit/eb516d9a70e1a0cc41c35932522276193d4dc82c))
+
 ## [6.3.1](https://github.com/adobe/helix-sidekick-extension/compare/v6.3.0...v6.3.1) (2022-11-21)
 
 
