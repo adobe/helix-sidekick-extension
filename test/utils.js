@@ -23,7 +23,7 @@ const { CDPBrowser } = require('../node_modules/puppeteer/node_modules/puppeteer
 
 // set debug to true to see browser window and debug output
 const DEBUG = false;
-const DEBUG_LOGS = true;
+const DEBUG_LOGS = false;
 
 const IT_DEFAULT_TIMEOUT = 60000;
 
@@ -526,24 +526,6 @@ class TestBrowser {
             responseHeaders: res.headers ?? [],
             body: buffer.toString('base64'),
           });
-
-        // // ignore internal requests (?)
-        // if (request.url.startsWith('file://')
-        //   || request.url.endsWith('/tools/sidekick/config.json')
-        //   || (request.url.startsWith('https://admin.hlx.page/') && !proxyAdmin)) {
-        //   if (DEBUG_LOGS) {
-        //     // eslint-disable-next-line no-console
-        //     console.log('[pup] intercepting request to', request.url, ' (ignored)');
-        //   }
-        //   return;
-        // }
-        //
-        // if (request.url.endsWith('/favicon.ico')) {
-        //   await innerSession.send('Fetch.fulfillRequest', {
-        //     requestId: evt.requestId,
-        //     responseCode: 404,
-        //   });
-        // }
         } catch (e) {
           // eslint-disable-next-line no-console
           console.error('[pup] error handling request', e);
@@ -559,24 +541,6 @@ class TestBrowser {
             { urlPattern: 'file://*' },
           ],
         });
-        // session.on('Page.lifecycleEvent', (evt) => {
-        //   console.log('[[Page.lifecycleEvent]]', evt);
-          // if (evt.name === 'init') {
-          //   this.frames[evt.frameId] = {
-          //     loaderId: evt.loaderId,
-          //   };
-          // }
-        // });
-        // session.on('Page.frameNavigated', (evt) => {
-        //   // todo: propagate properly to tests?
-        //   // console.log('[[Page.frameNavigated]]', evt);
-        // });
-        // session.on('Page.frameAttached', (evt) => {
-        //   console.log('[[Page.frameAttached]]', evt);
-        // });
-
-        // await session.send('Page.enable');
-        // await session.send('Page.setLifecycleEventsEnabled', { enabled: true });
         await session.send('Runtime.runIfWaitingForDebugger');
       } catch (e) {
         // eslint-disable-next-line no-console
