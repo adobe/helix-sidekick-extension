@@ -67,7 +67,7 @@ describe('Test reload plugin', () => {
       // generic.html in this case. the problem is that it will discard the sidekick js, which
       // will fail the page evaluations in SidekickTest.js
       requestHandler: (req) => {
-        if (req.url === 'file:///Users/tripod/codez/helix/helix-sidekick-extension/test/fixtures/generic.html') {
+        if (req.url.endsWith('/test/fixtures/generic.html')) {
           if (preventReload) {
             return -1;
           }
@@ -99,7 +99,7 @@ describe('Test reload plugin', () => {
       pluginWait: 1000,
       // waitNavigation: 'https://main--blog--adobe.hlx.page/en/bla.xml',
       requestHandler: (req) => {
-        if (req.url === 'file:///Users/tripod/codez/helix/helix-sidekick-extension/test/fixtures/generic.html') {
+        if (req.url.endsWith('/test/fixtures/generic.html')) {
           if (preventReload) {
             return -1;
           }

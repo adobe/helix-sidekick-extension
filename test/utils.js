@@ -23,7 +23,7 @@ const { CDPBrowser } = require('../node_modules/puppeteer/node_modules/puppeteer
 
 // set debug to true to see browser window and debug output
 const DEBUG = false;
-const DEBUG_LOGS = false;
+const DEBUG_LOGS = true;
 
 const IT_DEFAULT_TIMEOUT = 60000;
 
