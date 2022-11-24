@@ -191,8 +191,8 @@ header {
   margin-bottom: 20px;
 }
 
-#editor thead tr,
-#editor thead th {
+#editor table > tbody > tr:first-child,
+#editor table > tbody > tr:first-child td {
   background-color: var(--hlx-viewsource-table-head-background-color);
 }
 

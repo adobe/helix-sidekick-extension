@@ -18,7 +18,8 @@
     "build:chrome": "node ./build/build.js chrome",
     "publish:chrome": "node ./build/publish.js chrome",
     "release:chrome": "npm run update-version && npm run build:chrome && npm run publish:chrome",
-    "prepare": "husky install"
+    "prepare:module": "webpack --config src/module/webpack.cjs",
+    "prepare": "husky install && npm run prepare:module"
   },
   "repository": {
     "type": "git",
@@ -52,12 +53,25 @@
     "lint-staged": "13.0.3",
     "mocha": "10.1.0",
     "nock": "13.2.9",
+    "node-polyfill-webpack-plugin": "2.0.1",
     "nyc": "15.1.0",
     "puppeteer": "19.2.2",
     "puppeteer-to-istanbul": "1.4.0",
     "semantic-release": "19.0.5",
     "shelljs": "0.8.5",
-    "sinon": "14.0.2"
+    "sinon": "14.0.2",
+    "webpack-cli": "5.0.0"
+  },
+  "dependencies": {
+    "@adobe/mdast-util-gridtables": "1.0.3",
+    "@adobe/remark-gridtables": "1.0.0",
+    "hast-util-raw": "7.2.2",
+    "hast-util-to-html": "8.0.3",
+    "mdast-util-to-hast": "12.2.4",
+    "rehype-format": "4.0.1",
+    "remark-gfm": "3.0.1",
+    "remark-parse": "10.0.1",
+    "unified": "10.1.2"
   },
   "lint-staged": {
     "*.js": "eslint"

@@ -11,12 +11,11 @@
  */
 
 import {
-  blockDivToTable,
   blockTableToDiv,
-  createSectionBreaks,
   removeSectionBreaks,
-  addMetadataBlock,
 } from './blocks.js';
+
+import md2html from '../../lib/md2html.lib.js';
 
 /**
  * Returns the current tab
@@ -57,36 +56,6 @@ const copyHTMLToClipboard = (html) => {
   document.addEventListener('copy', callback);
   document.execCommand('copy');
   document.removeEventListener('copy', callback);
-};
-
-/**
- * Converts the source HTML (~Franklin Pipeline output) to HTML friendly for edition.
- * While the header and footer are not needed (only the main is), the head is needed to
- * compute the metadata block.
- * @param {HTMLElement} main The source main element
- * @param {HTMLElement} head The source head element
- * @param {String} url The url of the page
- */
-const htmlSourceToEdition = (main, head, url) => {
-  main.querySelectorAll('img').forEach((img) => {
-    if (!img.src) return;
-    const content = new URL(url);
-    img.src = `${content.origin}${content.pathname}${img.src.substring(img.src.lastIndexOf('/'))}`;
-  });
-
-  main.querySelectorAll('picture source').forEach((source) => {
-    if (!source.srcset) return;
-    const content = new URL(url);
-    if (source.srcset.startsWith('./')) {
-      source.srcset = `${content.origin}/${source.srcset.substring(2)}`;
-    } else if (source.srcset.startsWith('/')) {
-      source.srcset = `${content.origin}${source.srcset}`;
-    }
-  });
-
-  blockDivToTable(main);
-  createSectionBreaks(main);
-  addMetadataBlock(main, head, url);
 };
 
 /**
@@ -157,17 +126,17 @@ const makeStylesReadyForCopy = (element) => {
  * @param {String} url The url to load
  */
 const loadEditor = async (url) => {
-  const req = await fetch(url);
-  const source = await req.text();
-
-  const doc = new DOMParser().parseFromString(source, 'text/html');
-  const { head } = doc;
-  const main = doc.querySelector('main');
-
-  htmlSourceToEdition(main, head, url);
+  const u = new URL(url);
+  let { pathname } = u;
+  if (pathname.endsWith('/')) {
+    pathname += 'index';
+  }
+  const req = await fetch(`${u.origin}${pathname}.md`);
+  const md = await req.text();
+  const html = md2html(md);
 
   const editor = getEditorElement();
-  editor.innerHTML = main.innerHTML;
+  editor.innerHTML = html;
 
   makeStylesReadyForCopy(editor);
 };
