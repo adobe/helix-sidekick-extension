@@ -41,8 +41,7 @@
             [matchingProject] = matches;
           }
         }
-        if (selectedProject
-          || (matchingProject && window.location.origin !== 'https://docs.google.com')) {
+        if (selectedProject || matchingProject) {
           log.info('content.js: selected or single matching config found, inject sidekick');
           // user selected config or single match, remember and show sidekick
           window.hlx.selectedSidekickProject = selectedProject;
@@ -57,7 +56,7 @@
             .then((mod) => mod.default(config, display))
             .catch((e) => log.error('failed to load sidekick', e));
         } else if (matches.length > 0) {
-          log.info('content.js: gdrive or multiple matching configs found, inject config picker', matches);
+          log.info('content.js: multiple matching configs found, inject config picker', matches);
           // multiple matches, show config picker
           import('./configpicker.js')
             .then((mod) => mod.default(matches, display, pushDown, inject))

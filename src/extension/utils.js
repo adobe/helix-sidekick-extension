@@ -20,6 +20,9 @@ export const GH_URL = 'https://github.com/';
 
 export const DEV_URL = 'http://localhost:3000';
 
+const DISCOVERY_CACHE = [];
+const DISCOVERY_CACHE_TTL = 7200000;
+
 export const log = {
   LEVEL: 2,
   /* eslint-disable no-console */
@@ -151,77 +154,67 @@ export async function getState(cb) {
   }
 }
 
-function sameSharePointSite(mountpoint, pathname) {
-  const match = [
-    '/sites/',
-    '/:f:/s/',
-    '/personal/',
-    '/:f:/p/',
-  ].find((prefix) => mountpoint.includes(prefix));
-  if (match) {
-    const site = mountpoint.split(match)[1].split('/').shift();
-    return pathname.toLowerCase().includes(`/${site.toLowerCase()}`);
-  }
-  return false;
-}
-
-export function getProjectMatches(configs, tabUrl) {
-  const matches = [];
+export async function getProjectMatches(configs, tabUrl) {
   const {
     host: checkHost,
-    pathname,
-    searchParams,
+    pathname: checkPath,
   } = new URL(tabUrl);
-  configs.filter((cfg) => !cfg.disabled).forEach((config) => {
+  // exclude disabled configs
+  configs = configs.filter((cfg) => !cfg.disabled);
+  const matches = configs.filter((cfg) => {
     const {
       owner,
       repo,
-      host,
+      host: prodHost,
       outerHost,
-      mountpoints,
-    } = config;
-    const match = (host && checkHost === host) // production host
-      || (checkHost.endsWith(`--${repo.toLowerCase()}--${owner.toLowerCase()}.hlx.live`)
-        || checkHost === outerHost) // outer
-      || checkHost.endsWith(`--${repo.toLowerCase()}--${owner.toLowerCase()}.hlx3.page`) // hlx3
-      || checkHost.endsWith(`--${repo.toLowerCase()}--${owner.toLowerCase()}.hlx.page`) // inner
-      || checkHost === new URL(DEV_URL).host
-      || mountpoints // editor
-        .filter((mp) => !!mp)
-        .map((mp) => {
-          const mpUrl = new URL(mp);
-          return [mpUrl.host, mpUrl.pathname];
-        })
-        .some(([mpHost, mpPath]) => {
-          if (checkHost === mpHost) {
-            if (checkHost === 'drive.google.com') {
-              // gdrive browser
-              return false;
-            } else {
-              // assume sharepoint
-              const res = /^\/:(.):\//.exec(pathname);
-              if (res && !'wx'.includes(res[1])) {
-                // editor url, but neither word nor excel
-                return false;
-              } else if (!pathname.endsWith('.pdf')
-                && (!/\/doc\d?\.aspx$/i.test(pathname)
-                || !searchParams.has('sourcedoc'))) {
-                // not an editor url
-                return false;
-              }
-              // editor url, check for site name in path
-              return sameSharePointSite(mpPath, pathname);
-            }
-          } else if (checkHost === 'docs.google.com' && mpHost === 'drive.google.com') {
-            // gdrive file
-            return true;
-          }
-          return false;
-        });
-    if (match) {
-      matches.push(config);
-    }
+    } = cfg;
+    return checkHost === prodHost // production host
+      || checkHost === outerHost // custom outer
+      || checkHost.split('.hlx.')[0].endsWith(`${repo}--${owner}`); // inner or outer
   });
+  if (matches.length === 0
+    && (/(docs|drive)\.google\.com$/.test(checkHost) // gdrive
+    || /^\/:(.):\//.test(checkPath))) { // sharepoint
+    let results = [];
+    // check cache
+    log.debug('discovery cache', DISCOVERY_CACHE);
+    const entry = DISCOVERY_CACHE.find((e) => e.url === tabUrl);
+    if (entry && entry.expiry > Date.now()) {
+      // reuse fresh entry from cache
+      results = entry.results;
+    } else {
+      // discover project details from edit url
+      const discoverUrl = new URL('https://admin.hlx.page/discover/');
+      discoverUrl.searchParams.append('url', tabUrl);
+      const resp = await fetch(discoverUrl);
+      if (resp.ok) {
+        results = await resp.json();
+        // cache for 2h
+        const newEntry = {
+          url: tabUrl,
+          results,
+          expiry: Date.now() + DISCOVERY_CACHE_TTL,
+        };
+        const index = DISCOVERY_CACHE.indexOf(entry);
+        if (index >= 0) {
+          // update expired cache entry
+          log.debug('updating discovery cache', newEntry);
+          DISCOVERY_CACHE.splice(index, 1, newEntry);
+        } else {
+          // add cache entry
+          log.debug('extending discovery cache', newEntry);
+          DISCOVERY_CACHE.push(newEntry);
+        }
+      }
+    }
+    // check results for config matches
+    results.forEach(({ owner, repo }) => {
+      const match = configs.find((cfg) => cfg.owner === owner && cfg.repo === repo);
+      if (match) {
+        matches.push(match);
+      }
+    });
+  }
   return matches;
 }
 
