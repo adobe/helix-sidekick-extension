@@ -111,16 +111,16 @@ async function guessIfFranklinSite({ id }) {
     chrome.scripting.executeScript({
       target: { tabId: id },
       func: () => {
-        const isHelixSite = document.head.querySelectorAll('script[src*="scripts.js"]').length > 0
+        const isFranklinSite = document.head.querySelectorAll('script[src*="scripts.js"]').length > 0
           && document.head.querySelectorAll('link[href*="styles.css"]').length > 0
           && document.body.querySelector('main > div.section') !== null;
-        chrome.runtime.sendMessage({ isHelixSite });
+        chrome.runtime.sendMessage({ isFranklinSite });
       },
     });
     // listen for response message from tab
-    const listener = ({ isHelixSite }) => {
+    const listener = ({ isFranklinSite }) => {
       chrome.runtime.onMessage.removeListener(listener);
-      resolve(isHelixSite);
+      resolve(isFranklinSite);
     };
     chrome.runtime.onMessage.addListener(listener);
   });
@@ -164,8 +164,8 @@ async function checkContextMenu({ url: tabUrl, id }, configs = []) {
       }
 
       // add the open view doc context menu item only if the current tab is a Franklin site (guess)
-      guessIfFranklinSite({ id }).then((isHelixSite) => {
-        if (isHelixSite) {
+      guessIfFranklinSite({ id }).then((isFranklinSite) => {
+        if (isFranklinSite) {
           chrome.contextMenus.create({
             id: 'openViewDocSource',
             title: i18n('open_view_doc_source'),
