@@ -1,3 +1,10 @@
+# [6.4.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.3.2...v6.4.0) (2022-11-28)
+
+
+### Features
+
+* show the View Document Source context menu item if site is a Franklin site ([#188](https://github.com/adobe/helix-sidekick-extension/issues/188)) ([126ba50](https://github.com/adobe/helix-sidekick-extension/commit/126ba50a7765b550c0b08e1fe246191e256cc6b7))
+
 ## [6.3.2](https://github.com/adobe/helix-sidekick-extension/compare/v6.3.1...v6.3.2) (2022-11-22)
 
 
