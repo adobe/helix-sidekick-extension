@@ -163,7 +163,7 @@ async function checkContextMenu({ url: tabUrl, id }, configs = []) {
         }
       }
 
-      // add the open view doc context menu item only if the current tab is a Frankin site (guess)
+      // add the open view doc context menu item only if the current tab is a Franklin site (guess)
       guessIfFranklinSite({ id }).then((isHelixSite) => {
         if (isHelixSite) {
           chrome.contextMenus.create({
