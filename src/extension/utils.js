@@ -189,21 +189,23 @@ export async function getProjectMatches(configs, tabUrl) {
       const resp = await fetch(discoverUrl);
       if (resp.ok) {
         results = await resp.json();
-        // cache for 2h
-        const newEntry = {
-          url: tabUrl,
-          results,
-          expiry: Date.now() + DISCOVERY_CACHE_TTL,
-        };
-        const index = DISCOVERY_CACHE.indexOf(entry);
-        if (index >= 0) {
-          // update expired cache entry
-          log.debug('updating discovery cache', newEntry);
-          DISCOVERY_CACHE.splice(index, 1, newEntry);
-        } else {
-          // add cache entry
-          log.debug('extending discovery cache', newEntry);
-          DISCOVERY_CACHE.push(newEntry);
+        if (results.length > 0) {
+          // cache for 2h
+          const newEntry = {
+            url: tabUrl,
+            results,
+            expiry: Date.now() + DISCOVERY_CACHE_TTL,
+          };
+          const index = DISCOVERY_CACHE.indexOf(entry);
+          if (index >= 0) {
+            // update expired cache entry
+            log.debug('updating discovery cache', newEntry);
+            DISCOVERY_CACHE.splice(index, 1, newEntry);
+          } else {
+            // add cache entry
+            log.debug('extending discovery cache', newEntry);
+            DISCOVERY_CACHE.push(newEntry);
+          }
         }
       }
     }
