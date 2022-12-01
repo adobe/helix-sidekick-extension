@@ -70,7 +70,8 @@
    * @prop {boolean} isContainer Determines whether to turn this plugin into a dropdown
    * @prop {boolean} isPalette Determines whether a URL is opened in a palette instead of a new tab
    * @prop {string} paletteRect The dimensions and position of a palette (optional)
-   * @prop {string[]} environments Specifies when to show this plugin (edit, preview, live, or prod)
+   * @prop {string[]} environments Specifies when to show this plugin
+   *                               (admin, edit, preview, live, prod)
    * @prop {string[]} excludePaths Exclude the plugin from these paths (glob patterns supported)
    * @prop {string[]} includePaths Include the plugin on these paths (glob patterns supported)
    */
@@ -1194,9 +1195,13 @@
             sk.showModal('No or invalid selection found');
           } else if (window.confirm(`Are you sure you want to preview ${selection.length} item${selection.length === 1 ? '' : 's'}?`)) {
             sk.showWait();
-            const results = await Promise.all(selection.map(async (file) => sk.update(file.path)));
-            console.log('done', results);
-            sk.showModal(['Selection previewed:', ...results.map((res) => `${res.path} (${res.ok ? 'OK' : 'ERROR'})`)]);
+            sk.addEventListener('statusfetched', async () => {
+              const results = await Promise.all(
+                selection.map(async (file) => sk.update(file.path)),
+              );
+              sk.showModal(['Selection previewed:', ...results.map((res) => `${res.path} (${res.ok ? 'OK' : 'ERROR'})`)]);
+            }, { once: true });
+            sk.fetchStatus();
           }
         },
       },
