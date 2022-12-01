@@ -1178,6 +1178,38 @@
   }
 
   /**
+   * Adds the preview plugin to the sidekick.
+   * @private
+   * @param {Sidekick} sk The sidekick
+   */
+  function addAdminPreviewPlugin(sk) {
+    sk.add({
+      id: 'admin-preview',
+      condition: (sidekick) => sidekick.isAdmin(),
+      button: {
+        text: 'Bulk Preview',
+        action: async () => {
+          const { status } = sk;
+          const selection = [...document.querySelectorAll('[role="row"][aria-selected="true"] ')]
+            .filter((row) => row.querySelector(':scope img'))
+            .map((row) => ({
+              type: new URL(row.querySelector('div > img').getAttribute('src')).pathname.split('/').slice(-2).join('/'),
+              path: `${status.webPath}/${row.querySelector(':scope > div > div:nth-of-type(2)').textContent.trim()}`,
+            }));
+          if (selection.length === 0) {
+            sk.showModal('No or invalid selection found');
+          } else {
+            sk.showWait();
+            const results = await Promise.all(selection.map(async (file) => sk.update(file.path)));
+            console.log('done', results);
+            sk.showModal(['Selection previewed:', ...results.map((res) => `${res.path} (${res.ok ? 'OK' : 'ERROR'})`)]);
+          }
+        },
+      },
+    });
+  }
+
+  /**
    * Adds custom plugins to the sidekick.
    * @private
    * @param {Sidekick} sk The sidekick
@@ -1854,6 +1886,7 @@
         addDeletePlugin(this);
         addPublishPlugin(this);
         addUnpublishPlugin(this);
+        addAdminPreviewPlugin(this);
         addCustomPlugins(this);
       }, { once: true });
       this.addEventListener('statusfetched', () => {
@@ -1947,9 +1980,9 @@
         const apiUrl = getAdminUrl(
           this.config,
           'status',
-          this.isEditor() ? '' : pathname,
+          (this.isEditor() || this.isAdmin()) ? '' : pathname,
         );
-        apiUrl.searchParams.append('editUrl', this.isEditor() ? href : 'auto');
+        apiUrl.searchParams.append('editUrl', (this.isEditor() || this.isAdmin()) ? href : 'auto');
         this.status.apiUrl = apiUrl.toString();
       }
       fetch(this.status.apiUrl, {
@@ -2226,7 +2259,13 @@
       const { config, location } = this;
       return /.*\.sharepoint\.com/.test(location.host)
         || location.host === 'docs.google.com'
-        || (config.mountpoint && new URL(config.mountpoint).host === location.host);
+        || (config.mountpoint && new URL(config.mountpoint).host === location.host
+          && !this.isAdmin());
+    }
+
+    isAdmin() {
+      const { location } = this;
+      return location.host === 'drive.google.com';
     }
 
     /**
@@ -2293,7 +2332,8 @@
     isContent() {
       const file = this.location.pathname.split('/').pop();
       const ext = file && file.split('.').pop();
-      return this.isEditor() || ext === file || ext === 'html' || ext === 'json' || ext === 'pdf';
+      return this.isEditor() || this.isAdmin() || ext === file || ext === 'html'
+        || ext === 'json' || ext === 'pdf';
     }
 
     /**
@@ -2696,9 +2736,9 @@
      * @fires Sidekick#updated
      * @returns {Response} The response object
      */
-    async update() {
+    async update(path) {
       const { config, status } = this;
-      const path = status.webPath;
+      path = path || status.webPath;
       let resp;
       try {
         // update preview
