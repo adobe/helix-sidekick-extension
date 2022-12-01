@@ -1978,7 +1978,7 @@
       if (!owner || !repo || !ref) {
         return this;
       }
-      if (!this.status.apiUrl) {
+      if (!this.status.apiUrl || refreshLocation) {
         const { href, pathname } = this.location;
         const apiUrl = getAdminUrl(
           this.config,
