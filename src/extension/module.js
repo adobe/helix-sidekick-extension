@@ -1190,19 +1190,19 @@
       button: {
         text: 'Bulk Preview',
         action: async () => {
-          const selection = sk.getAdminSelection();
-          if (selection.length === 0) {
-            sk.showModal('No or invalid selection found');
-          } else if (window.confirm(`Are you sure you want to preview ${selection.length} item${selection.length === 1 ? '' : 's'}?`)) {
-            sk.showWait();
-            sk.addEventListener('statusfetched', async () => {
+          sk.addEventListener('statusfetched', async () => {
+            const selection = sk.getAdminSelection();
+            if (selection.length === 0) {
+              sk.showModal('No or invalid selection found');
+            } else if (window.confirm(`Are you sure you want to preview ${selection.length} item${selection.length === 1 ? '' : 's'}?`)) {
+              sk.showWait();
               const results = await Promise.all(
                 selection.map(async (file) => sk.update(file.path)),
               );
               sk.showModal(['Selection previewed:', ...results.map((res) => `${res.path} (${res.ok ? 'OK' : 'ERROR'})`)]);
-            }, { once: true });
-            sk.fetchStatus();
-          }
+            }
+          }, { once: true });
+          sk.fetchStatus();
         },
       },
     });
