@@ -1972,7 +1972,7 @@
      */
     async fetchStatus(refreshLocation) {
       if (refreshLocation) {
-        this.location = this.getLocation();
+        this.location = getLocation();
       }
       const { owner, repo, ref } = this.config;
       if (!owner || !repo || !ref) {
