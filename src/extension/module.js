@@ -1192,7 +1192,7 @@
           const selection = sk.getAdminSelection();
           if (selection.length === 0) {
             sk.showModal('No or invalid selection found');
-          } else {
+          } else if (window.confirm(`Are you sure you want to preview ${selection.length} item${selection.length === 1 ? '' : 's'}?`)) {
             sk.showWait();
             const results = await Promise.all(selection.map(async (file) => sk.update(file.path)));
             console.log('done', results);
