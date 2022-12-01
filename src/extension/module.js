@@ -1202,8 +1202,7 @@
               sk.showModal(['Selection previewed:', ...results.map((res) => `${res.path} (${res.ok ? 'OK' : 'ERROR'})`)]);
             }
           }, { once: true });
-          sk.loadContext();
-          sk.fetchStatus();
+          sk.fetchStatus(true);
         },
       },
     });
@@ -1968,9 +1967,13 @@
     /**
      * Fetches the status for the current resource.
      * @fires Sidekick#statusfetched
+     * @param {boolean} refreshLocation Refresh the sidekick's location (optional)
      * @returns {Sidekick} The sidekick
      */
-    async fetchStatus() {
+    async fetchStatus(refreshLocation) {
+      if (refreshLocation) {
+        this.location = this.getLocation();
+      }
       const { owner, repo, ref } = this.config;
       if (!owner || !repo || !ref) {
         return this;
