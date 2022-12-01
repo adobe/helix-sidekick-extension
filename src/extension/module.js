@@ -1202,6 +1202,7 @@
               sk.showModal(['Selection previewed:', ...results.map((res) => `${res.path} (${res.ok ? 'OK' : 'ERROR'})`)]);
             }
           }, { once: true });
+          sk.loadContext();
           sk.fetchStatus();
         },
       },
