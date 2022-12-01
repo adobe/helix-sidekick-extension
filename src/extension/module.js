@@ -1189,13 +1189,7 @@
       button: {
         text: 'Bulk Preview',
         action: async () => {
-          const { status } = sk;
-          const selection = [...document.querySelectorAll('[role="row"][aria-selected="true"] ')]
-            .filter((row) => row.querySelector(':scope img'))
-            .map((row) => ({
-              type: new URL(row.querySelector('div > img').getAttribute('src')).pathname.split('/').slice(-2).join('/'),
-              path: `${status.webPath}/${row.querySelector(':scope > div > div:nth-of-type(2)').textContent.trim()}`,
-            }));
+          const selection = sk.getAdminSelection();
           if (selection.length === 0) {
             sk.showModal('No or invalid selection found');
           } else {
@@ -2257,15 +2251,37 @@
      */
     isEditor() {
       const { config, location } = this;
-      return /.*\.sharepoint\.com/.test(location.host)
+      return (/.*\.sharepoint\.com/.test(location.host) && location.pathname.endsWith('_layouts/15/Doc.aspx'))
         || location.host === 'docs.google.com'
         || (config.mountpoint && new URL(config.mountpoint).host === location.host
           && !this.isAdmin());
     }
 
+    getAdminSelection() {
+      const { location, status } = this;
+      if (location.host === 'drive.google.com') {
+        return [...document.querySelectorAll('[role="row"][aria-selected="true"]')]
+          .filter((row) => row.querySelector(':scope img'))
+          .map((row) => ({
+            type: new URL(row.querySelector('div > img').getAttribute('src')).pathname.split('/').slice(-2).join('/'),
+            path: `${status.webPath}/${row.querySelector(':scope > div > div:nth-of-type(2)').textContent.trim()}`,
+          }));
+      }
+      if (location.host.match(/\w+\.sharepoint.com/) && location.pathname.endsWith('/Forms/AllItems.aspx')) {
+        return [...document.querySelectorAll('[role="presentation"] div[aria-selected="true"]')]
+          .filter((row) => !row.querySelector('img').getAttribute('src').endsWith('folder.svg'))
+          .map((row) => ({
+            type: new URL(row.querySelector('img').getAttribute('src')).pathname.split('/').slice(-1)[0].split('.')[0],
+            path: `${status.webPath}/${row.querySelector('button').textContent.trim()}`,
+          }));
+      }
+      return [];
+    }
+
     isAdmin() {
       const { location } = this;
-      return location.host === 'drive.google.com';
+      return (location.host === 'drive.google.com')
+        || (location.host.match(/\w+\.sharepoint.com/) && location.pathname.endsWith('/Forms/AllItems.aspx'));
     }
 
     /**
