@@ -1199,7 +1199,45 @@
               const results = await Promise.all(
                 selection.map(async (file) => sk.update(file.path)),
               );
-              sk.showModal(['Selection previewed:', ...results.map((res) => `${res.path} (${res.ok ? 'OK' : 'ERROR'})`)]);
+              sk.showModal(['Selection previewed:', ...results.map((res) => `${res.path} (${res.ok ? 'OK' : `Failed: ${res.error}`})`)]);
+            }
+          }, { once: true });
+          sk.fetchStatus(true);
+        },
+      },
+    });
+  }
+
+  /**
+   * Adds the preview plugin to the sidekick.
+   * @private
+   * @param {Sidekick} sk The sidekick
+   */
+  function addAdminPublishPlugin(sk) {
+    sk.add({
+      id: 'admin-publish',
+      condition: (sidekick) => sidekick.isAdmin(),
+      button: {
+        text: 'Bulk Publish',
+        action: async () => {
+          sk.addEventListener('statusfetched', async () => {
+            const selection = sk.getAdminSelection();
+            if (selection.length === 0) {
+              sk.showModal('No or invalid selection found');
+            } else if (window.confirm(`Are you sure you want to publish ${selection.length} item${selection.length === 1 ? '' : 's'}?`)) {
+              sk.showWait();
+              const results = await Promise.all(
+                selection.map(async ({ path }) => {
+                  const resp = await sk.publish(path);
+                  return {
+                    ok: (resp && resp.ok) || false,
+                    status: (resp && resp.status) || 0,
+                    error: (resp && resp.headers.get('x-error')) || '',
+                    path,
+                  };
+                }),
+              );
+              sk.showModal(['Selection published:', ...results.map((res) => `${res.path} (${res.ok ? 'OK' : `Failed: ${res.error}`})`)]);
             }
           }, { once: true });
           sk.fetchStatus(true);
@@ -1886,6 +1924,7 @@
         addPublishPlugin(this);
         addUnpublishPlugin(this);
         addAdminPreviewPlugin(this);
+        addAdminPublishPlugin(this);
         addCustomPlugins(this);
       }, { once: true });
       this.addEventListener('statusfetched', () => {
