@@ -1192,25 +1192,42 @@
         action: async () => {
           sk.addEventListener('statusfetched', async () => {
             const selection = sk.getAdminSelection();
-            const numItems = `${selection.length} item${selection.length === 1 ? '' : 's'}`;
+            const numItems = (length) => `${length} item${length === 1 ? '' : 's'}`;
+
             if (selection.length === 0) {
               sk.showModal('No valid selection found');
-            } else if (window.confirm(`Are you sure you want to preview ${numItems}?`)) {
+            } else if (window.confirm(`Are you sure you want to preview ${numItems(selection.length)}?`)) {
               sk.showWait();
               const results = await Promise.all(
                 selection.map(async (file) => sk.update(file.path)),
               );
-              const { config } = sk;
-              const host = config.innerHost;
-              navigator.clipboard.writeText(selection.map((item) => `https://${host}${item.path}`).join('\n'));
-              const msg = `${numItems} previewed and copied to clipboard`;
-              if (results.length <= 3) {
-                sk.showModal([`${msg}:`, ...results.map(
-                  (res) => `${res.path} (${res.ok ? 'OK' : `Failed: ${res.error}`})`,
-                )]);
-              } else {
-                sk.showModal(msg);
+              const ok = results.filter((res) => res.ok);
+              const failed = results.filter((res) => !res.ok);
+              const lines = [];
+
+              if (ok.length > 0) {
+                const { config } = sk;
+                const host = config.innerHost;
+
+                lines.push(`${numItems(ok.length)} previewed and copied to clipboard`);
+                navigator.clipboard.writeText(ok.map((item) => `https://${host}${item.path}`).join('\n'));
               }
+              if (failed.length > 0) {
+                lines.push(`${numItems(failed.length)} failed to preview:`);
+                lines.push(...failed.map((item) => `${item.path}: ${item.error}`));
+              }
+              let level = 2;
+              if (failed.length > 0) {
+                level = 1;
+                if (ok.length === 0) {
+                  level = 0;
+                }
+              }
+              sk.showModal(
+                lines,
+                failed.length > 0,
+                level,
+              );
             }
           }, { once: true });
           sk.fetchStatus(true);
@@ -1233,10 +1250,11 @@
         action: async () => {
           sk.addEventListener('statusfetched', async () => {
             const selection = sk.getAdminSelection();
-            const numItems = `${selection.length} item${selection.length === 1 ? '' : 's'}`;
+            const numItems = (length) => `${length} item${length === 1 ? '' : 's'}`;
+
             if (selection.length === 0) {
               sk.showModal('No valid selection found');
-            } else if (window.confirm(`Are you sure you want to publish ${numItems}?`)) {
+            } else if (window.confirm(`Are you sure you want to publish ${numItems(selection.length)}?`)) {
               sk.showWait();
               const results = await Promise.all(
                 selection.map(async ({ path }) => {
@@ -1249,17 +1267,33 @@
                   };
                 }),
               );
-              const { config } = sk;
-              const host = config.host || config.outerHost;
-              navigator.clipboard.writeText(selection.map((item) => `https://${host}${item.path}`).join('\n'));
-              const msg = `${numItems} published and copied to clipboard`;
-              if (results.length <= 3) {
-                sk.showModal([`${msg}:`, ...results.map(
-                  (res) => `${res.path} (${res.ok ? 'OK' : `Failed: ${res.error}`})`,
-                )]);
-              } else {
-                sk.showModal(msg);
+              const ok = results.filter((res) => res.ok);
+              const failed = results.filter((res) => !res.ok);
+              const lines = [];
+
+              if (ok.length > 0) {
+                const { config } = sk;
+                const host = config.host || config.outerHost;
+
+                lines.push(`${numItems(ok.length)} published and copied to clipboard`);
+                navigator.clipboard.writeText(ok.map((item) => `https://${host}${item.path}`).join('\n'));
               }
+              if (failed.length > 0) {
+                lines.push(`${numItems(failed.length)} failed to publish:`);
+                lines.push(...failed.map((item) => `${item.path}: ${item.error}`));
+              }
+              let level = 2;
+              if (failed.length > 0) {
+                level = 1;
+                if (ok.length === 0) {
+                  level = 0;
+                }
+              }
+              sk.showModal(
+                lines,
+                failed.length > 0,
+                level,
+              );
             }
           }, { once: true });
           sk.fetchStatus(true);
