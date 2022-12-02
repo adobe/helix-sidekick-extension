@@ -1755,7 +1755,7 @@
     const { config, location } = sk;
     if (config.pushDown
       && !sk.hasAttribute('pushdown')
-      && location.host !== 'docs.google.com') {
+      && !location.host.endsWith('.google.com')) {
       window.setTimeout(() => {
         if (!skHeight) {
           skHeight = parseFloat(window.getComputedStyle(sk.root).height, 10);
@@ -1789,7 +1789,7 @@
     const { config, location } = sk;
     if (config.pushDown
       && sk.hasAttribute('pushdown')
-      && location.host !== 'docs.google.com') {
+      && !location.host.endsWith('.google.com')) {
       sk.removeAttribute('pushdown');
       config.pushDownElements.forEach((elem) => {
         elem.style.marginTop = 'initial';
