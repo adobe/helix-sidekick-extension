@@ -251,6 +251,51 @@
     prod: 'host',
   };
 
+/**
+ * log RUM if part of the sample.
+ * @param {string} checkpoint identifies the checkpoint in funnel
+ * @param {Object} data additional data for RUM sample
+ */
+
+// eslint-disable-next-line import/prefer-default-export
+function sampleRUM(checkpoint, collect = false, data = {}) {
+  try {
+    window.hlx = window.hlx || {};
+    if (!window.hlx.rum) {
+      const usp = new URLSearchParams(window.location.search);
+      const weight = 5; 
+      // eslint-disable-next-line no-bitwise
+      const hashCode = (s) => s.split('').reduce((a, b) => (((a << 5) - a) + b.charCodeAt(0)) | 0, 0);
+      const urlParams = new URLSearchParams(window.location.href);
+      let target;
+      //filename is in search parameters here and ends with .docx
+      if(urlParams.has('file')){
+        target = urlParams.get('file');
+      }
+      else{
+        //is a production or preview url which has filename at end 
+        target = new URL(window.location.href).pathname.split('/').pop();
+        target = target + '.docx';
+      }
+      const id = `${hashCode(window.location.href)}-${new Date().getDay()}-${new Date().getHours()}`;
+      const random = Math.random();
+      const isSelected = (random * weight <= (collect) ? 5 : 1);
+      // eslint-disable-next-line object-curly-newline
+      window.hlx.rum = { weight, id, random, target, isSelected };
+    }
+    const { random, weight, id, target } = window.hlx.rum;
+    if (random && (random * weight <= (collect) ? 5 : 1)) {
+      // eslint-disable-next-line object-curly-newline
+      const body = JSON.stringify({ weight, id, referer: window.location.href, generation: 'sidekick-gen1', checkpoint, src: window.location.pathname, target, ...data });
+      const url = `https://rum.hlx3.page/.rum/${weight}`;
+      // eslint-disable-next-line no-unused-expressions
+      navigator.sendBeacon(url, body); // we should probably use XHR instead of fetch
+    }
+  } catch (e) {
+    console.log('could not collect rum');
+  }
+}
+
   /**
    * The URL of the development environment.
    * @see {@link https://github.com/adobe/helix-cli|Franklin CLI}).
@@ -2715,6 +2760,7 @@
             await fetch(`https://${config.innerHost}${path}`, { cache: 'reload', mode: 'no-cors' });
           }
           fireEvent(this, 'updated', path);
+          sampleRUM('sidekick:preview');
         }
       } catch (e) {
         console.error('failed to update', path, e);
@@ -2797,6 +2843,7 @@
           await fetch(purgeURL.href, { cache: 'reload', mode: 'no-cors' });
         }
         fireEvent(this, 'published', path);
+        sampleRUM('sidekick:publish');
       } catch (e) {
         console.error('failed to unpublish', path, e);
       }
@@ -2864,6 +2911,9 @@
     } else {
       // toggle sidekick
       window.hlx.sidekick.toggle();
+    }
+    if(window.hlx.sidekick.isEditor()){
+      sampleRUM('sidekick:open', true);
     }
     return window.hlx.sidekick;
   }
