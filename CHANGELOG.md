@@ -1,3 +1,10 @@
+# [6.5.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.4.0...v6.5.0) (2022-12-05)
+
+
+### Features
+
+* improved config matching algorithm ([076a37b](https://github.com/adobe/helix-sidekick-extension/commit/076a37bd2cfcf03ca7673864004367b2fe072d9d))
+
 # [6.4.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.3.2...v6.4.0) (2022-11-28)
 
 
