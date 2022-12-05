@@ -24,6 +24,9 @@ const FSTAB_YAML = `mountpoints:
   /: https://drive.google.com/drive/u/0/folders/1MGzOt7ubUh3gu7zhZIPb7R7dyRzG371j
 `;
 
+const DISCOVER_JSON = [
+  { owner: 'foo', repo: 'bar1' },
+];
 class ResponseMock {
   constructor(body) {
     this.ok = true;
@@ -46,6 +49,8 @@ export default async function fetchMock(url) {
     return new ResponseMock(FSTAB_YAML);
   } else if (path === '/helix-env.json') {
     return new ResponseMock(JSON.stringify(HELIX_ENV_JSON));
+  } else if (path.startsWith('/discover')) {
+    return new ResponseMock(JSON.stringify(DISCOVER_JSON));
   }
   return new ResponseMock('');
 }

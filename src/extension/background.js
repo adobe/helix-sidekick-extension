@@ -210,7 +210,7 @@ function checkTab(id) {
           log.error('error instrumenting generator page', id, e);
         }
       }
-      const matches = getProjectMatches(projects, checkUrl);
+      const matches = await getProjectMatches(projects, checkUrl);
       log.debug('checking', id, checkUrl, matches);
       const allowed = matches.length > 0;
       if (allowed) {
