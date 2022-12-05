@@ -2902,7 +2902,9 @@ function sampleRUM(checkpoint, collect = false, data = {}) {
       window.hlx.sidekick.toggle();
     }
     if(window.hlx.sidekick.isEditor()){
-      sampleRUM('sidekick:open', true);
+      sampleRUM('sidekick:open', {
+             source: '', // TODO: the current URL being edited or previewed (this can be the word or google docs URL)
+          });
     }
     return window.hlx.sidekick;
   }
