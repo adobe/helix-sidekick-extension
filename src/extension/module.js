@@ -266,33 +266,22 @@ function sampleRUM(checkpoint, collect = false, data = {}) {
       const weight = 5; 
       // eslint-disable-next-line no-bitwise
       const hashCode = (s) => s.split('').reduce((a, b) => (((a << 5) - a) + b.charCodeAt(0)) | 0, 0);
-      const urlParams = new URLSearchParams(window.location.href);
-      let target;
-      //filename is in search parameters here and ends with .docx
-      if(urlParams.has('file')){
-        target = urlParams.get('file');
-      }
-      else{
-        //is a production or preview url which has filename at end 
-        target = new URL(window.location.href).pathname.split('/').pop();
-        target = target + '.docx';
-      }
-      const id = `${hashCode(window.location.href)}-${new Date().getDay()}-${new Date().getHours()}`;
+      const id = hashCode(`${chrome.runtime.id}-${new Date().getYear()}-${new Date().getMonth()}-${new Date().getDay()}`);
       const random = Math.random();
       const isSelected = (random * weight <= (collect) ? 5 : 1);
       // eslint-disable-next-line object-curly-newline
-      window.hlx.rum = { weight, id, random, target, isSelected };
+      window.hlx.rum = { weight, id, random, isSelected };
     }
-    const { random, weight, id, target } = window.hlx.rum;
+    const { random, weight, id } = window.hlx.rum;
     if (random && (random * weight <= (collect) ? 5 : 1)) {
       // eslint-disable-next-line object-curly-newline
-      const body = JSON.stringify({ weight, id, referer: window.location.href, generation: 'sidekick-gen1', checkpoint, src: window.location.pathname, target, ...data });
+      const body = JSON.stringify({ weight, id, referer: window.location.href, generation: 'sidekick-gen1', checkpoint, src: window.location.pathname, ...data });
       const url = `https://rum.hlx3.page/.rum/${weight}`;
       // eslint-disable-next-line no-unused-expressions
       navigator.sendBeacon(url, body); // we should probably use XHR instead of fetch
     }
   } catch (e) {
-    console.log('could not collect rum');
+    // something went wrong
   }
 }
 
@@ -2913,7 +2902,9 @@ function sampleRUM(checkpoint, collect = false, data = {}) {
       window.hlx.sidekick.toggle();
     }
     if(window.hlx.sidekick.isEditor()){
-      sampleRUM('sidekick:open', true);
+      sampleRUM('sidekick:open', {
+             source: '', // TODO: the current URL being edited or previewed (this can be the word or google docs URL)
+          });
     }
     return window.hlx.sidekick;
   }
