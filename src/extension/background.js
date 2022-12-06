@@ -311,7 +311,7 @@ function openViewDocSource(id) {
  */
 function checkViewDocSource(id) {
   chrome.tabs.get(id, (tab = {}) => {
-    if (!tab.url) return;
+    if (!tab.url || !tab.active) return;
     try {
       const u = new URL(tab.url);
       const vds = u.searchParams.get('view-doc-source');
@@ -319,7 +319,7 @@ function checkViewDocSource(id) {
         openViewDocSource(id);
       }
     } catch (e) {
-      log.warn('error checking view source', e);
+      log.warn(`Error checking view source for url: ${tab.url}`, e);
     }
   });
 }
