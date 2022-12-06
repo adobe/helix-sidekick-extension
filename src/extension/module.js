@@ -258,30 +258,30 @@
  */
 
 // eslint-disable-next-line import/prefer-default-export
-function sampleRUM(checkpoint, collect = false, data = {}) {
+function sampleRUM(checkpoint, data = {}) {
   try {
-    window.hlx = window.hlx || {};
-    if (!window.hlx.rum) {
-      const usp = new URLSearchParams(window.location.search);
-      const weight = 5; 
+    window.hlx.sidekick = window.hlx.sidekick || {};
+    if (!window.hlx.sidekick.rum) {
+      const { owner, repo, project } = window.hlx.sidekick.config; 
       // eslint-disable-next-line no-bitwise
       const hashCode = (s) => s.split('').reduce((a, b) => (((a << 5) - a) + b.charCodeAt(0)) | 0, 0);
-      const id = hashCode(`${chrome.runtime.id}-${new Date().getYear()}-${new Date().getMonth()}-${new Date().getDay()}`);
-      const random = Math.random();
-      const isSelected = (random * weight <= (collect) ? 5 : 1);
-      // eslint-disable-next-line object-curly-newline
-      window.hlx.rum = { weight, id, random, isSelected };
+      const id = hashCode(`${owner}-${repo}-${project}-${new Date().getYear()}-${new Date().getMonth()}-${new Date().getDay()}`);
+      window.hlx.sidekick.rum = {id};
     }
-    const { random, weight, id } = window.hlx.rum;
-    if (random && (random * weight <= (collect) ? 5 : 1)) {
-      // eslint-disable-next-line object-curly-newline
-      const body = JSON.stringify({ weight, id, referer: window.location.href, generation: 'sidekick-gen1', checkpoint, src: window.location.pathname, ...data });
-      const url = `https://rum.hlx3.page/.rum/${weight}`;
+    const { id } = window.hlx.sidekick.rum;
+    const sendPing = (pdata = data) => {
+      const weight = 1;
+      // eslint-disable-next-line object-curly-newline, max-len, no-use-before-define
+      const body = JSON.stringify({ weight, id, referer: window.location.href, generation: 'sidekick-gen3', checkpoint, ...data });
+      const url = `https://rum.hlx.page/.rum/${weight}`;
       // eslint-disable-next-line no-unused-expressions
-      navigator.sendBeacon(url, body); // we should probably use XHR instead of fetch
-    }
+      navigator.sendBeacon(url, body);
+      // eslint-disable-next-line no-console
+      console.debug(`ping:${checkpoint}`, pdata);
+    };
+    sendPing(data);
   } catch (e) {
-    // something went wrong
+    console.log('unable to log RUM data');
   }
 }
 
@@ -2749,7 +2749,6 @@ function sampleRUM(checkpoint, collect = false, data = {}) {
             await fetch(`https://${config.innerHost}${path}`, { cache: 'reload', mode: 'no-cors' });
           }
           fireEvent(this, 'updated', path);
-          sampleRUM('sidekick:preview');
         }
       } catch (e) {
         console.error('failed to update', path, e);
@@ -2832,7 +2831,14 @@ function sampleRUM(checkpoint, collect = false, data = {}) {
           await fetch(purgeURL.href, { cache: 'reload', mode: 'no-cors' });
         }
         fireEvent(this, 'published', path);
-        sampleRUM('sidekick:publish');
+        //this call to sampleRUM will let us know when a doc 
+        //has been published, and send us the outerCDN so that
+        //we can use this as a foreign key into bigquery to check
+        //when 
+        sampleRUM('sidekick:publish', {
+          source: window.hlx.sidekick.location.href,
+          target: window.hlx.sidekick.config.outerHost
+        });
       } catch (e) {
         console.error('failed to unpublish', path, e);
       }
@@ -2901,10 +2907,13 @@ function sampleRUM(checkpoint, collect = false, data = {}) {
       // toggle sidekick
       window.hlx.sidekick.toggle();
     }
+    //The call to sampleRUM should stay in the initialization because this is run whenever sidekick
+    //is initialized in a tab; which is everytime a tab is opened, even if it is hidden. 
     if(window.hlx.sidekick.isEditor()){
       sampleRUM('sidekick:open', {
-             source: '', // TODO: the current URL being edited or previewed (this can be the word or google docs URL)
-          });
+        source: window.hlx.sidekick.location.href,
+        target: window.hlx.sidekick.config.innerHost
+      });
     }
     return window.hlx.sidekick;
   }
