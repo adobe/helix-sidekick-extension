@@ -71,7 +71,8 @@ const htmlSourceToEdition = (main, head, url) => {
   main.querySelectorAll('img').forEach((img) => {
     if (!img.src) return;
     const content = new URL(url);
-    img.src = `${content.origin}${content.pathname}${img.src.substring(img.src.lastIndexOf('/'))}`;
+    const pathname = content.pathname.replace(/\/$/, '');
+    img.src = `${content.origin}${pathname}${img.src.substring(img.src.lastIndexOf('/'))}`;
   });
 
   main.querySelectorAll('picture source').forEach((source) => {
