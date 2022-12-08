@@ -962,7 +962,8 @@
             sk.switchEnv('preview', newTab(evt));
           };
           if (status.edit && status.edit.sourceLocation
-            && status.edit.sourceLocation.startsWith('onedrive:')) {
+            && status.edit.sourceLocation.startsWith('onedrive:')
+            && !sk.location.pathname.startsWith('/:x:/')) {
             // show ctrl/cmd + s hint on onedrive docs
             const mac = navigator.platform.toLowerCase().includes('mac') ? '-mac' : '';
             sk.showModal({
@@ -980,12 +981,34 @@
           } else {
             sk.showWait();
           }
-          updatePreview();
+          if (sk.location.pathname.startsWith('/:x:/')) {
+            // refresh excel with preview param
+            console.log('refresh excel with preview hook');
+            const url = new URL(sk.location.href);
+            url.searchParams.append('hlx-sk-preview', true);
+            window.location.href = url.toString();
+          } else {
+            updatePreview();
+          }
         },
         isEnabled: (sidekick) => sidekick.isAuthorized('preview', 'write')
           && sidekick.status.webPath,
       },
     });
+
+    const { location } = sk;
+    const url = new URL(location.href);
+    if (url.pathname.startsWith('/:x:/') && url.searchParams.get('hlx-sk-preview')) {
+      // excel preview param detected, wait for status...
+      sk.addEventListener('statusfetched', async () => {
+        const { status } = sk;
+        if (status.webPath && sk.isAuthorized('preview', 'write')) {
+          await sk.update(status.webPath);
+          url.searchParams.delete('hlx-sk-preview');
+          window.history.pushState({}, '', url);
+        }
+      }, { once: true });
+    }
   }
 
   /**
