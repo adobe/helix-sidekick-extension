@@ -57,7 +57,6 @@ describe('Test publish plugin', () => {
       .reply(200, 'bla');
     nock('https://blog.adobe.com')
       .get('/en/topics/bla')
-      .twice()
       .reply(200, 'bla');
     const { requestsMade, navigated } = await new SidekickTest({
       browser,
@@ -91,7 +90,6 @@ describe('Test publish plugin', () => {
       .reply(200, 'bla');
     nock('https://blog.adobe.com')
       .get('/en/topics/bla')
-      .twice()
       .reply(200, 'bla')
       .get('/en/topics/foo')
       .reply(200, 'bla')
@@ -127,7 +125,6 @@ describe('Test publish plugin', () => {
       .reply(200, 'bla');
     nock('https://blog.adobe.com')
       .get('/en/topics/bla')
-      .twice()
       .reply(200, 'bla');
 
     const { requestsMade } = await new SidekickTest({
