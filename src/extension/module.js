@@ -785,6 +785,44 @@
     return opts;
   }
 
+  async function updatePreview(sk, ranBefore) {
+    const { status } = sk;
+    const resp = await sk.update();
+    if (!resp.ok) {
+      if (!ranBefore) {
+        // assume document has been renamed, re-fetch status and try again
+        sk.addEventListener('statusfetched', async () => {
+          updatePreview(sk, true);
+        }, { once: true });
+        sk.fetchStatus();
+      } else if (status.webPath.startsWith('/.helix/') && resp.error) {
+        // show detail message only in config update mode
+        sk.showModal({
+          css: 'modal-config-failure',
+          message: resp.error,
+          sticky: true,
+          level: 0,
+        });
+      } else {
+        console.error(resp);
+        sk.showModal({
+          css: 'modal-preview-failure',
+          sticky: true,
+          level: 0,
+        });
+      }
+      return;
+    }
+    // handle special case /.helix/*
+    if (status.webPath.startsWith('/.helix/')) {
+      sk.showModal({
+        css: 'modal-config-success',
+      });
+      return;
+    }
+    sk.switchEnv('preview');
+  }
+
   /**
    * Adds the edit plugin to the sidekick.
    * @private
@@ -923,44 +961,8 @@
       id: 'edit-preview',
       condition: (sidekick) => sidekick.isEditor(),
       button: {
-        action: async (evt) => {
+        action: async () => {
           const { status } = sk;
-          const updatePreview = async (ranBefore) => {
-            const resp = await sk.update();
-            if (!resp.ok) {
-              if (!ranBefore) {
-                // assume document has been renamed, re-fetch status and try again
-                sk.addEventListener('statusfetched', async () => {
-                  updatePreview(true);
-                }, { once: true });
-                sk.fetchStatus();
-              } else if (status.webPath.startsWith('/.helix/') && resp.error) {
-                // show detail message only in config update mode
-                sk.showModal({
-                  css: 'modal-config-failure',
-                  message: resp.error,
-                  sticky: true,
-                  level: 0,
-                });
-              } else {
-                console.error(resp);
-                sk.showModal({
-                  css: 'modal-preview-failure',
-                  sticky: true,
-                  level: 0,
-                });
-              }
-              return;
-            }
-            // handle special case /.helix/*
-            if (status.webPath.startsWith('/.helix/')) {
-              sk.showModal({
-                css: 'modal-config-success',
-              });
-              return;
-            }
-            sk.switchEnv('preview', newTab(evt));
-          };
           if (status.edit && status.edit.sourceLocation
             && status.edit.sourceLocation.startsWith('onedrive:')
             && !sk.location.pathname.startsWith('/:x:/')) {
@@ -981,34 +983,37 @@
           } else {
             sk.showWait();
           }
-          if (sk.location.pathname.startsWith('/:x:/')) {
+          const url = new URL(sk.location.href);
+          if (url.pathname.startsWith('/:x:/') && !url.searchParams.get('hlx-sk-preview')) {
             // refresh excel with preview param
-            console.log('refresh excel with preview hook');
-            const url = new URL(sk.location.href);
-            url.searchParams.append('hlx-sk-preview', true);
+            url.searchParams.append('hlx-sk-preview', Date.now() + 60000); // valid for 1 minute
             window.location.href = url.toString();
           } else {
-            updatePreview();
+            updatePreview(sk);
           }
         },
         isEnabled: (sidekick) => sidekick.isAuthorized('preview', 'write')
           && sidekick.status.webPath,
       },
-    });
-
-    const { location } = sk;
-    const url = new URL(location.href);
-    if (url.pathname.startsWith('/:x:/') && url.searchParams.get('hlx-sk-preview')) {
-      // excel preview param detected, wait for status...
-      sk.addEventListener('statusfetched', async () => {
-        const { status } = sk;
-        if (status.webPath && sk.isAuthorized('preview', 'write')) {
-          await sk.update(status.webPath);
-          url.searchParams.delete('hlx-sk-preview');
-          window.history.pushState({}, '', url);
+      callback: (sidekick) => {
+        const url = new URL(sidekick.location.href);
+        const check = url.searchParams.get('hlx-sk-preview') || 0;
+        if (url.pathname.startsWith('/:x:/') && check > Date.now() && check < Date.now() + 60000) {
+          // excel preview param detected, wait for status...
+          sk.showWait();
+          sidekick.addEventListener('statusfetched', async () => {
+            const { status: newStatus } = sk;
+            if (newStatus.webPath && sidekick.isAuthorized('preview', 'write')) {
+              // update preview and remove preview param again
+              updatePreview(sidekick);
+              url.searchParams.delete('hlx-sk-preview');
+              window.history.replaceState({}, '', url);
+              sidekick.location = getLocation();
+            }
+          }, { once: true });
         }
-      }, { once: true });
-    }
+      },
+    });
   }
 
   /**
@@ -1130,7 +1135,6 @@
             // fetch and redirect to production
             const redirectHost = config.host || config.outerHost;
             const prodURL = `https://${redirectHost}${path}`;
-            await fetch(prodURL, { cache: 'reload', mode: 'no-cors' });
             console.log(`redirecting to ${prodURL}`);
             if (newTab(evt)) {
               window.open(prodURL);
@@ -1623,6 +1627,9 @@
         }
       }
     });
+    if (typeof plugin.callback === 'function') {
+      plugin.callback(sk, $plugin);
+    }
     return $plugin || null;
   }
 
