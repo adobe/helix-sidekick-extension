@@ -38,6 +38,7 @@
   --hlx-sk-button-disabled-hover-bg: transparent;
   --hlx-sk-button-badge: #F15B3A;
   --hlx-sk-button-badge-hover: #FFC40E;
+  --hlx-sk-label-font-size: 14px;
   --hlx-sk-dropdown-container-bg: rgba(224, 224, 224, .9);
   --hlx-sk-modal-overlay-bg: rgba(0,0,0, 0.5);
   --hlx-sk-modal-bg-0: #e60016;
@@ -182,6 +183,12 @@
   line-height: 28px;
 }
 
+.hlx-sk .plugin span {
+  display: inline-block;
+  margin: 7px 8px 0 0;
+  font-size: var(--hlx-sk-label-font-size);
+}
+
 .hlx-sk .feature-container {
   display: flex;
   flex-direction: row;
@@ -281,7 +288,7 @@
 }
 
 .hlx-sk .feature-container .user .user-info .profile-name {
-  font-weight: 600; 
+  font-weight: 600;
 }
 
 .hlx-sk .feature-container .share {
@@ -507,6 +514,22 @@
   color: var(--hlx-sk-modal-color);
 }
 
+.hlx-sk-overlay .level-0 button,
+.hlx-sk-overlay .level-1 button {
+  border-color: var(--hlx-sk-modal-color);
+  color: var(--hlx-sk-modal-color);
+}
+
+.hlx-sk-overlay .level-0 button:hover {
+  background-color: var(--hlx-sk-modal-color);
+  color: var(--hlx-sk-modal-bg-0);
+}
+
+.hlx-sk-overlay .level-1 button:hover {
+  background-color: var(--hlx-sk-modal-color);
+  color: var(--hlx-sk-modal-bg-1);
+}
+
 .hlx-sk-overlay .modal.help {
   margin-top: 15px;
   position: absolute;
@@ -595,14 +618,14 @@
 
 .hlx-sk-overlay .modal.help .help-step {
   padding: 19px 12px 9px 12px;
-  cursor: pointer;    
+  cursor: pointer;
 }
 
 .hlx-sk-overlay .modal.help .help-step .circle {
   border: 5px solid var(--hlx-sk-modal-help-color);
   border-radius: 50%;
   width: 0;
-  height: 0;  
+  height: 0;
   opacity: 0.45;
 }
 
@@ -770,6 +793,10 @@
   height: 100%;
 }
 
+.hlx-sk-placeholder {
+  display: none;
+}
+
 @media(max-width:600px) {
   .hlx-sk {
     background-image: none;
@@ -830,6 +857,7 @@
 }
 
 .hlx-sk .feature-container .close::before,
+.hlx-sk-overlay .hlx-sk-bulk-close::before,
 .hlx-sk-overlay .help-close button::before,
 .hlx-sk-palette .close::before {
   content: "Close";
@@ -854,7 +882,8 @@
 
 .hlx-sk .env.is-preview .dropdown-toggle::before,
 .hlx-sk .env .preview button::before,
-.hlx-sk .edit-preview button::before {
+.hlx-sk .edit-preview button::before,
+.hlx-sk .bulk-preview button::before {
   content: "Preview";
 }
 
@@ -876,7 +905,8 @@
   content: "Delete";
 }
 
-.hlx-sk .publish button::before {
+.hlx-sk .publish button::before,
+.hlx-sk .bulk-publish button::before {
   content: "Publish";
 }
 
@@ -1036,4 +1066,81 @@
 
 .hlx-sk-overlay .modal.modal-logout-error::before {
   content: "Sign out failed. Please try again later.";
+}
+
+.hlx-sk-overlay .modal .hlx-sk-bulk-copy-url::before {
+  content: "Copy link";
+}
+
+.hlx-sk-overlay .modal .hlx-sk-bulk-copy-urls::before {
+  content: "Copy links";
+}
+
+#hlx-sk-bulk-info:empty::before {
+  content: "Select files below";
+}
+
+#hlx-sk-bulk-info.selected-item::before {
+  content: "1 file selected";
+}
+
+#hlx-sk-bulk-info.selected-items::before {
+  content: "{n} files selected";
+  display: none;
+}
+
+#hlx-sk-bulk-info .hlx-sk-bulk-confirm:empty::before {
+  content: "No file selected";
+}
+
+#hlx-sk-bulk-info .hlx-sk-bulk-confirm-preview-item::before {
+  content: "Are you sure you want to preview 1 file?";
+}
+
+#hlx-sk-bulk-info .hlx-sk-bulk-confirm-preview-items::before {
+  content: "Are you sure you want to preview {n} files?";
+}
+
+#hlx-sk-bulk-info .hlx-sk-bulk-result-preview-item-success::before {
+  content: "1 file successfully previewed.";
+}
+
+#hlx-sk-bulk-info .hlx-sk-bulk-result-preview-items-success::before {
+  content: "{n} files successfully previewed.";
+}
+
+#hlx-sk-bulk-info .hlx-sk-bulk-result-preview-item-failure::before {
+  content: "Failed to preview 1 file.";
+}
+
+#hlx-sk-bulk-info .hlx-sk-bulk-result-preview-items-failure::before {
+  content: "Failed to preview {n} files.";
+}
+
+#hlx-sk-bulk-info .hlx-sk-bulk-confirm-publish-item::before {
+  content: "Are you sure you want to publish 1 file?";
+}
+
+#hlx-sk-bulk-info .hlx-sk-bulk-confirm-publish-items::before {
+  content: "Are you sure you want to publish {n} files?";
+}
+
+#hlx-sk-bulk-info .hlx-sk-bulk-result-publish-item-success::before {
+  content: "1 file successfully published.";
+}
+
+#hlx-sk-bulk-info .hlx-sk-bulk-result-publish-items-success::before {
+  content: "{n} files successfully published.";
+}
+
+#hlx-sk-bulk-info .hlx-sk-bulk-result-publish-item-failure::before {
+  content: "Failed to publish 1 file.";
+}
+
+#hlx-sk-bulk-info .hlx-sk-bulk-result-publish-items-failure::before {
+  content: "Failed to publish {n} files.";
+}
+
+#hlx-sk-bulk-info .hlx-sk-bulk-result-publish-item-error-no-source::before {
+  content: "File must be previewed first"
 }

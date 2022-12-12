@@ -440,6 +440,19 @@
   }
 
   /**
+   * Extracts an internationalized text from the CSS of a given element
+   * @private
+   * @param {HTMLElement} elem The HTML element
+   * @returns {string} The text
+   */
+  function getI18nText(elem) {
+    const text = window.getComputedStyle(elem, ':before').getPropertyValue('content');
+    return text !== 'normal' && text !== 'none'
+      ? text.substring(1, text.length - 1)
+      : '';
+  }
+
+  /**
    * Makes the given element accessible by setting a title attribute
    * based on its :before CSS style or text content, and enabling
    * keyboard access.
@@ -453,10 +466,7 @@
         if (!tag.title) {
           // wait for computed style to be available
           window.setTimeout(() => {
-            let title = window.getComputedStyle(tag, ':before').getPropertyValue('content');
-            title = title !== 'normal' && title !== 'none'
-              ? title.substring(1, title.length - 1)
-              : '';
+            let title = getI18nText(tag);
             if (!title) {
               title = tag.textContent;
             }
@@ -1179,127 +1189,261 @@
   }
 
   /**
-   * Adds the preview plugin to the sidekick.
+   * Adds the bulk plugins to the sidekick.
    * @private
    * @param {Sidekick} sk The sidekick
    */
-  function addAdminPreviewPlugin(sk) {
-    sk.add({
-      id: 'admin-preview',
-      condition: (sidekick) => sidekick.isAdmin(),
-      button: {
-        text: 'Bulk Preview',
-        action: async () => {
-          sk.addEventListener('statusfetched', async () => {
-            const selection = sk.getAdminSelection();
-            const numItems = (length) => `${length} item${length === 1 ? '' : 's'}`;
+  function addBulkPlugins(sk) {
+    if (sk.isAdmin()) {
+      let bulkSelection = [];
 
-            if (selection.length === 0) {
-              sk.showModal('No valid selection found');
-            } else if (window.confirm(`Are you sure you want to preview ${numItems(selection.length)}?`)) {
-              sk.showWait();
-              const results = await Promise.all(
-                selection.map(async (file) => sk.update(file.path)),
-              );
-              const ok = results.filter((res) => res.ok);
-              const failed = results.filter((res) => !res.ok);
-              const lines = [];
+      const getBulkSelection = () => {
+        const { location } = sk;
+        if (location.host === 'drive.google.com') {
+          return [...document.querySelectorAll('[role="row"][aria-selected="true"]')]
+            .filter((row) => row.querySelector(':scope img'))
+            .map((row) => ({
+              type: new URL(row.querySelector('div > img').getAttribute('src')).pathname.split('/').slice(-2).join('/'),
+              path: row.querySelector(':scope > div > div:nth-of-type(2)').textContent.trim(),
+            }));
+        }
+        if (location.host.match(/\w+\.sharepoint.com/) && location.pathname.endsWith('/Forms/AllItems.aspx')) {
+          return [...document.querySelectorAll('[role="presentation"] div[aria-selected="true"]')]
+            .filter((row) => !row.querySelector('img').getAttribute('src').endsWith('folder.svg'))
+            .map((row) => ({
+              type: new URL(row.querySelector('img').getAttribute('src')).pathname.split('/').slice(-1)[0].split('.')[0],
+              path: row.querySelector('button').textContent.trim(),
+            }));
+        }
+        return [];
+      };
 
-              if (ok.length > 0) {
-                const { config } = sk;
-                const host = config.innerHost;
+      const updateBulkInfo = () => {
+        const sel = getBulkSelection(sk);
+        bulkSelection = sel;
+        console.log('bulk selection changed', JSON.stringify(sel, null, 2));
+        const label = sk.root.querySelector('#hlx-sk-bulk-info');
+        label.textContent = '';
+        label.className = sel.length > 0 ? `selected-item${sel.length !== 1 ? 's' : ''}` : '';
+        if (sel.length > 1) {
+          label.textContent = getI18nText(label).replace('{n}', sel.length);
+        }
+        if (sel.length === 0) {
+          sk.get('bulk-preview').classList.add('hlx-sk-hidden');
+          sk.get('bulk-publish').classList.add('hlx-sk-hidden');
+        } else {
+          sk.get('bulk-preview').classList.remove('hlx-sk-hidden');
+          sk.get('bulk-publish').classList.remove('hlx-sk-hidden');
+        }
+      };
 
-                lines.push(`${numItems(ok.length)} previewed and copied to clipboard`);
-                navigator.clipboard.writeText(ok.map((item) => `https://${host}${item.path}`).join('\n'));
+      const getBulkText = (num, type, action, mod) => {
+        let cls = `hlx-sk-bulk-${type}`;
+        if (num > 0) {
+          cls = `${cls}-${action}-item${num === 1 ? '' : 's'}${mod ? `-${mod}` : ''}`;
+        }
+        const placeholder = createTag({
+          tag: 'span',
+          attrs: {
+            class: `hlx-sk-placeholder ${cls}`,
+          },
+        });
+        sk.root.querySelector('#hlx-sk-bulk-info').append(placeholder);
+        const bulkText = getI18nText(placeholder).replace('{n}', num);
+        placeholder.remove();
+        return bulkText;
+      };
+
+      // bulk info
+      sk.add({
+        id: 'bulk-info',
+        condition: (sidekick) => sidekick.isAdmin(),
+        elements: [{
+          tag: 'span',
+          attrs: {
+            id: 'hlx-sk-bulk-info',
+            class: 'hlx-sk-label hlx-sk-placeholder',
+          },
+        }],
+        callback: () => {
+          // listen for selection changes in the admin window
+          const { location } = sk;
+          const bulkObserver = new MutationObserver((list) => {
+            list.forEach((mutation) => {
+              if (mutation.type === 'attributes' && mutation.attributeName === 'aria-selected') {
+                updateBulkInfo();
               }
-              if (failed.length > 0) {
-                lines.push(`${numItems(failed.length)} failed to preview:`);
-                lines.push(...failed.map((item) => `${item.path}: ${item.error}`));
-              }
-              let level = 2;
-              if (failed.length > 0) {
-                level = 1;
-                if (ok.length === 0) {
-                  level = 0;
-                }
-              }
-              sk.showModal(
-                lines,
-                failed.length > 0,
-                level,
-              );
-            }
-          }, { once: true });
-          sk.fetchStatus(true);
+            });
+          });
+          const target = document.querySelector(location.host === 'drive.google.com'
+            ? '#drive_main_page'
+            : '#appRoot');
+          bulkObserver.observe(target, {
+            attributes: true,
+            subtree: true,
+          });
         },
-      },
-    });
-  }
+      });
 
-  /**
-   * Adds the preview plugin to the sidekick.
-   * @private
-   * @param {Sidekick} sk The sidekick
-   */
-  function addAdminPublishPlugin(sk) {
-    sk.add({
-      id: 'admin-publish',
-      condition: (sidekick) => sidekick.isAdmin(),
-      button: {
-        text: 'Bulk Publish',
-        action: async () => {
-          sk.addEventListener('statusfetched', async () => {
-            const selection = sk.getAdminSelection();
-            const numItems = (length) => `${length} item${length === 1 ? '' : 's'}`;
-
-            if (selection.length === 0) {
-              sk.showModal('No valid selection found');
-            } else if (window.confirm(`Are you sure you want to publish ${numItems(selection.length)}?`)) {
-              sk.showWait();
-              const results = await Promise.all(
-                selection.map(async ({ path }) => {
-                  const resp = await sk.publish(path);
-                  return {
-                    ok: (resp && resp.ok) || false,
-                    status: (resp && resp.status) || 0,
-                    error: (resp && resp.headers.get('x-error')) || '',
-                    path,
-                  };
-                }),
-              );
-              const ok = results.filter((res) => res.ok);
-              const failed = results.filter((res) => !res.ok);
-              const lines = [];
-
-              if (ok.length > 0) {
-                const { config } = sk;
-                const host = config.host || config.outerHost;
-
-                lines.push(`${numItems(ok.length)} published and copied to clipboard`);
-                navigator.clipboard.writeText(ok.map((item) => `https://${host}${item.path}`).join('\n'));
-              }
-              if (failed.length > 0) {
-                lines.push(`${numItems(failed.length)} failed to publish:`);
-                lines.push(...failed.map((item) => `${item.path}: ${item.error}`));
-              }
-              let level = 2;
-              if (failed.length > 0) {
-                level = 1;
-                if (ok.length === 0) {
-                  level = 0;
+      // bulk preview
+      sk.add({
+        id: 'bulk-preview',
+        condition: (sidekick) => sidekick.isAdmin(),
+        button: {
+          action: async () => {
+            sk.showWait();
+            sk.addEventListener('statusfetched', async () => {
+              const { status } = sk;
+              const sel = bulkSelection.map((item) => `${status.webPath}/${item.path}`);
+              const confirmText = getBulkText(sel.length, 'confirm', 'preview');
+              if (sel.length === 0) {
+                sk.showModal(confirmText);
+              } else if (window.confirm(confirmText)) {
+                const results = await Promise.all(
+                  sel.map(async (file) => sk.update(file)),
+                );
+                const lines = [];
+                const ok = results.filter((res) => res.ok);
+                if (ok.length > 0) {
+                  lines.push(getBulkText(ok.length, 'result', 'preview', 'success'));
+                  lines.push(createTag({
+                    tag: 'button',
+                    attrs: {
+                      class: `hlx-sk-bulk-copy-url${ok.length > 1 ? 's' : ''}`,
+                    },
+                    lstnrs: {
+                      click: (evt) => {
+                        evt.stopPropagation();
+                        const { config } = sk;
+                        const host = config.innerHost;
+                        navigator.clipboard.writeText(ok.map((item) => `https://${host}${item.path}`)
+                          .join('\n'));
+                        sk.hideModal();
+                      },
+                    },
+                  }));
                 }
+                const failed = results.filter((res) => !res.ok);
+                if (failed.length > 0) {
+                  const failureText = getBulkText(failed.length, 'result', 'preview', 'failure');
+                  lines.push(failureText);
+                  lines.push(...failed.map((item) => `${item.path}: ${item.error}`));
+                }
+                lines.push(createTag({
+                  tag: 'button',
+                  attrs: {
+                    class: 'hlx-sk-bulk-close',
+                  },
+                }));
+                let level = 2;
+                if (failed.length > 0) {
+                  level = 1;
+                  if (ok.length === 0) {
+                    level = 0;
+                  }
+                }
+                sk.showModal(
+                  lines,
+                  true,
+                  level,
+                );
+              } else {
+                sk.hideModal();
               }
-              sk.showModal(
-                lines,
-                failed.length > 0,
-                level,
-              );
-            }
-          }, { once: true });
-          sk.fetchStatus(true);
+            }, { once: true });
+            sk.fetchStatus(true);
+          },
+          isEnabled: (s) => s.isAuthorized('preview', 'write') && s.status.webPath,
         },
-      },
-    });
+      });
+
+      // bulk publish
+      sk.add({
+        id: 'bulk-publish',
+        condition: (sidekick) => sidekick.isAdmin(),
+        button: {
+          action: async () => {
+            sk.showWait();
+            sk.addEventListener('statusfetched', async () => {
+              const { status } = sk;
+              const sel = bulkSelection.map((item) => `${status.webPath}/${item.path}`);
+              const confirmText = getBulkText(sel.length, 'confirm', 'publish');
+              if (sel.length === 0) {
+                sk.showModal(confirmText);
+              } else if (window.confirm(confirmText)) {
+                const results = await Promise.all(
+                  sel.map(async (file) => {
+                    const resp = await sk.publish(file);
+                    return {
+                      ok: (resp.ok) || false,
+                      status: (resp.status) || 0,
+                      error: (resp.headers && resp.headers.get('x-error')) || '',
+                      path: (resp.ok && resp.json && (await resp.json()).webPath) || file,
+                    };
+                  }),
+                );
+                const lines = [];
+                const ok = results.filter((res) => res.ok);
+                if (ok.length > 0) {
+                  lines.push(getBulkText(ok.length, 'result', 'publish', 'success'));
+                  lines.push(createTag({
+                    tag: 'button',
+                    attrs: {
+                      class: `hlx-sk-bulk-copy-url${ok.length > 1 ? 's' : ''}`,
+                    },
+                    lstnrs: {
+                      click: (evt) => {
+                        evt.stopPropagation();
+                        const { config } = sk;
+                        const host = config.host || config.outerHost;
+                        navigator.clipboard.writeText(ok.map((item) => `https://${host}${item.path}`)
+                          .join('\n'));
+                        sk.hideModal();
+                      },
+                    },
+                  }));
+                }
+                const failed = results.filter((res) => !res.ok);
+                if (failed.length > 0) {
+                  const failureText = getBulkText(failed.length, 'result', 'publish', 'failure');
+                  lines.push(failureText);
+                  lines.push(...failed.map((item) => {
+                    if (item.error.startsWith('source does not exist')) {
+                      item.error = getBulkText(1, 'result', 'publish', 'error-no-source');
+                    }
+                    return `${item.path}: ${item.error}`;
+                  }));
+                }
+                lines.push(createTag({
+                  tag: 'button',
+                  attrs: {
+                    class: 'hlx-sk-bulk-close',
+                  },
+                }));
+                let level = 2;
+                if (failed.length > 0) {
+                  level = 1;
+                  if (ok.length === 0) {
+                    level = 0;
+                  }
+                }
+                sk.showModal(
+                  lines,
+                  true,
+                  level,
+                );
+              } else {
+                sk.hideModal();
+              }
+            }, { once: true });
+            sk.fetchStatus(true);
+          },
+          isEnabled: (s) => s.isAuthorized('live', 'write') && s.status.webPath,
+        },
+      });
+
+      updateBulkInfo();
+    }
   }
 
   /**
@@ -1725,6 +1869,9 @@
         }
       }
     });
+    if (typeof plugin.callback === 'function') {
+      plugin.callback(sk, $plugin);
+    }
     return $plugin || null;
   }
 
@@ -1979,8 +2126,7 @@
         addDeletePlugin(this);
         addPublishPlugin(this);
         addUnpublishPlugin(this);
-        addAdminPreviewPlugin(this);
-        addAdminPublishPlugin(this);
+        addBulkPlugins(this);
         addCustomPlugins(this);
       }, { once: true });
       this.addEventListener('statusfetched', () => {
@@ -2361,27 +2507,10 @@
           && !this.isAdmin());
     }
 
-    getAdminSelection() {
-      const { location, status } = this;
-      if (location.host === 'drive.google.com') {
-        return [...document.querySelectorAll('[role="row"][aria-selected="true"]')]
-          .filter((row) => row.querySelector(':scope img'))
-          .map((row) => ({
-            type: new URL(row.querySelector('div > img').getAttribute('src')).pathname.split('/').slice(-2).join('/'),
-            path: `${status.webPath}/${row.querySelector(':scope > div > div:nth-of-type(2)').textContent.trim()}`,
-          }));
-      }
-      if (location.host.match(/\w+\.sharepoint.com/) && location.pathname.endsWith('/Forms/AllItems.aspx')) {
-        return [...document.querySelectorAll('[role="presentation"] div[aria-selected="true"]')]
-          .filter((row) => !row.querySelector('img').getAttribute('src').endsWith('folder.svg'))
-          .map((row) => ({
-            type: new URL(row.querySelector('img').getAttribute('src')).pathname.split('/').slice(-1)[0].split('.')[0],
-            path: `${status.webPath}/${row.querySelector('button').textContent.trim()}`,
-          }));
-      }
-      return [];
-    }
-
+    /**
+     * Checks if the current location is an admin URL (SharePoint or Google Drive).
+     * @returns {boolean} <code>true</code> if admin URL, else <code>false</code>
+     */
     isAdmin() {
       const { location } = this;
       return (location.host === 'drive.google.com')
@@ -2860,6 +2989,7 @@
       const { config, status } = this;
       path = path || status.webPath;
       let resp;
+      let respPath;
       try {
         // update preview
         resp = await fetch(
@@ -2874,7 +3004,8 @@
             // bust client cache
             await fetch(`https://${config.innerHost}${path}`, { cache: 'reload', mode: 'no-cors' });
           }
-          fireEvent(this, 'updated', path);
+          respPath = (await resp.json()).webPath;
+          fireEvent(this, 'updated', respPath);
         }
       } catch (e) {
         console.error('failed to update', path, e);
@@ -2883,7 +3014,7 @@
         ok: (resp && resp.ok) || false,
         status: (resp && resp.status) || 0,
         error: (resp && resp.headers.get('x-error')) || '',
-        path,
+        path: respPath || path,
       };
     }
 
@@ -2958,7 +3089,7 @@
         }
         fireEvent(this, 'published', path);
       } catch (e) {
-        console.error('failed to unpublish', path, e);
+        console.error('failed to publish', path, e);
       }
       return resp;
     }

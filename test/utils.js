@@ -164,6 +164,14 @@ const SETUPS = {
             sourceLocation: 'https://raw.githubusercontent.com/adobe/blog/main/en/bla.xml',
           },
         },
+        admin: {
+          webPath: '/documents',
+          resourcePath: '/documents',
+          edit: {
+            url: 'https://adobe.sharepoint.com/sites/TheBlog/Shared%20Documents/Forms/AllItems.aspx?FolderCTID=0x0120004CC488DA1EFC304590C46DF3BE1EECC6&id=%2Fsites%2FTheBlog%2FShared%20Documents%2Fdocuments&viewid=91a3c9e8%2D58bf%2D47ea%2D8ea9%2De039dd257d40',
+            status: 200,
+          },
+        },
       },
     },
     content: {
