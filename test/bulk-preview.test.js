@@ -47,7 +47,7 @@ describe('Test bulk preview plugin', () => {
     nock.done();
   });
 
-  it.skip('Bulk preview plugin updates preview from selection in sharepoint folder view', async () => {
+  it('Bulk preview plugin updates preview from selection in sharepoint folder view', async () => {
     nock.admin(new Setup('blog'), 'status', 'admin');
     nock('https://admin.hlx.page')
       .post('/preview/adobe/blog/main/documents/file.pdf')

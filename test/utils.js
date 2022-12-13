@@ -17,6 +17,7 @@ const { fetch } = require('@adobe/fetch').h1();
 const nock = require('nock');
 const puppeteer = require('puppeteer');
 const pti = require('puppeteer-to-istanbul');
+const mime = require('mime');
 const { fileURLToPath } = require('url');
 const { promises: fs } = require('fs');
 const { CDPBrowser } = require('../node_modules/puppeteer/node_modules/puppeteer-core/lib/cjs/puppeteer/common/Browser.js');
@@ -244,7 +245,7 @@ class Setup {
   }
 }
 
-const toResp = (resp) => {
+const toResp = (resp, path) => {
   if (typeof resp === 'object' && resp.status) {
     return resp;
   } else {
@@ -252,6 +253,10 @@ const toResp = (resp) => {
       status: resp ? 200 : 404,
       // eslint-disable-next-line no-nested-ternary
       body: resp ? (typeof resp === 'object' ? JSON.stringify(resp) : resp) : '',
+      headers: [{
+        name: 'content-type',
+        value: path ? mime.getType(path) : 'application/octet-stream',
+      }],
     };
   }
 };
@@ -500,7 +505,7 @@ class TestBrowser {
               // eslint-disable-next-line no-console
               console.log('[pup] loading', request.url);
             }
-            res = toResp(await fs.readFile(fileURLToPath(request.url), 'utf-8'));
+            res = toResp(await fs.readFile(fileURLToPath(request.url), 'utf-8'), request.url);
           }
 
           // if no response, proxy the request so it can be nocked
