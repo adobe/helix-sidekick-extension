@@ -968,15 +968,25 @@
             sk.showModal({
               css: `modal-preview-onedrive${mac}`,
             });
-          } else if (status.edit.sourceLocation?.startsWith('gdrive:')
-            && status.edit.contentType !== 'application/vnd.google-apps.document'
-            && status.edit.contentType !== 'application/vnd.google-apps.spreadsheet') {
-            sk.showModal({
-              css: 'modal-preview-not-gdoc',
-              sticky: true,
-              level: 0,
-            });
-            return;
+          } else if (status.edit.sourceLocation?.startsWith('gdrive:')) {
+            const { contentType } = status.edit;
+            const neitherGdocOrGSheet = !(sk.isGoogleDocMime(contentType)
+            || sk.isGoogleSheetMime(contentType));
+            if (neitherGdocOrGSheet) {
+              let css = 'modal-preview-not-gdoc-generic'; // show generic message by default
+              if (sk.isMsDocMime(contentType)) {
+                css = 'modal-preview-not-gdoc-ms-doc';
+              } else if (sk.isMsExcelSheet(contentType)) {
+                css = 'modal-preview-not-gdoc-ms-excel';
+              }
+              sk.showModal({
+                css,
+                sticky: true,
+                level: 0,
+              });
+
+              return;
+            }
           } else {
             sk.showWait();
           }
@@ -2322,6 +2332,49 @@
         return true;
       }
       return this.status[feature].permissions.includes(permission);
+    }
+
+    /**
+     * Check if mime is that of a Google Doc
+     * see: https://developers.google.com/drive/api/guides/mime-types
+     * @param {string} mimeType the mimetype to check
+     * @returns {boolean} <code>true</code> if mime is that of a google doc, else <code>false</code>
+     */
+    static isGoogleDocMime(mimeType) {
+      return mimeType === 'application/vnd.google-apps.document';
+    }
+
+    /**
+     * Check if mime is that of a Google Sheet
+     * see: https://developers.google.com/drive/api/guides/mime-types
+     * @param {string} mimeType the mimetype to check
+     * @returns {boolean} <code>true</code> if mime is that of a google sheet,
+     *  else <code>false</code>
+     */
+    static isGoogleSheetMime(mimeType) {
+      return mimeType === 'application/vnd.google-apps.spreadsheet';
+    }
+
+    /**
+     * Check if mime is that of a Microsoft Word Doc
+     * see: https://developers.google.com/drive/api/guides/ref-export-formats
+     * @param {string} mimeType the mimetype to check
+     * @returns {boolean} <code>true</code> if mime is that of a microsoft word doc,
+     *  else <code>false</code>
+     */
+    static isMsDocMime(mimeType) {
+      return mimeType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+    }
+
+    /**
+     * Check if mime is that of a Microsoft Excel Sheet
+     * see: https://developers.google.com/drive/api/guides/ref-export-formats
+     * @param {string} mimeType the mimetype to check
+     * @returns {boolean} <code>true</code> if mime is that of a microsoft excel sheet,
+     *  else <code>false</code>
+     */
+    static isMsExcelSheet(mimeType) {
+      return mimeType === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
     }
 
     /**
