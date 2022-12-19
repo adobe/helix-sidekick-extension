@@ -179,11 +179,11 @@
 }
 
 .hlx-sk-overlay .modal.modal-preview-not-gdoc-ms-doc::before {
-  content: "Previewing failed. This is a Microsoft Doc. Please convert it to a Google Doc: 'File' > 'Save As Google Doc'";
+  content: "Dies ist ein Microsoft Word-Dokument. Bitte in Google-Dokument umwandeln: Datei > Als Google-Dokument speichern";
 }
 
-.hlx-sk-overlay .modal.modal-preview-not-gdoc-ms-excel::before {
-  content: "Previewing failed. This is an Excel Sheets Document. Please convert it to Google Sheets: 'File' > 'Save As Google Sheets'";
+.hlx-sk-overlay .modal.modal-preview-not-gsheet-ms-excel::before {
+  content: "Dies ist ein Microsoft Word-Dokument. Bitte in Google-Tabelle umwandeln: Datei > Als Google-Tabelle speichern";
 }
 
 .hlx-sk-overlay .modal.modal-reload-failure::before {
