@@ -136,7 +136,7 @@ async function checkContextMenu({ url: tabUrl, id }, configs = []) {
     // clear context menu
     chrome.contextMenus.removeAll(() => {
       // check if add project is applicable
-      if (configs && configs.length > 0 && !checkLastError()) {
+      if (configs && !checkLastError()) {
         const { giturl } = getConfigFromTabUrl(tabUrl);
         if (giturl) {
           const { owner, repo } = getGitHubSettings(giturl);
