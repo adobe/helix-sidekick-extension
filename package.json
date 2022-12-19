@@ -1,6 +1,6 @@
 {
   "name": "@adobe/helix-sidekick-extension",
-  "version": "6.3.2",
+  "version": "6.6.0",
   "description": "Franklin Sidekick Extension",
   "scripts": {
     "lint": "./node_modules/.bin/eslint .",
@@ -35,7 +35,7 @@
     "@adobe/fetch": "3.3.0",
     "@babel/eslint-parser": "7.19.1",
     "@esm-bundle/chai": "4.3.4-fix.0",
-    "@semantic-release/changelog": "6.0.1",
+    "@semantic-release/changelog": "6.0.2",
     "@semantic-release/exec": "6.0.3",
     "@semantic-release/git": "10.0.1",
     "@web/test-runner": "0.15.0",
@@ -43,22 +43,22 @@
     "ajv": "8.11.2",
     "archiver": "5.3.1",
     "codecov": "3.8.3",
-    "eslint": "8.28.0",
+    "eslint": "8.30.0",
     "eslint-plugin-header": "3.1.1",
     "eslint-plugin-import": "2.26.0",
     "express": "4.18.2",
     "husky": "8.0.2",
-    "jsdoc-to-markdown": "7.1.1",
-    "lint-staged": "13.0.4",
+    "jsdoc-to-markdown": "8.0.0",
+    "lint-staged": "13.1.0",
     "mime": "3.0.0",
-    "mocha": "10.1.0",
+    "mocha": "10.2.0",
     "nock": "13.2.9",
     "nyc": "15.1.0",
-    "puppeteer": "19.3.0",
+    "puppeteer": "19.4.1",
     "puppeteer-to-istanbul": "1.4.0",
     "semantic-release": "19.0.5",
     "shelljs": "0.8.5",
-    "sinon": "14.0.2"
+    "sinon": "15.0.1"
   },
   "lint-staged": {
     "*.js": "eslint"

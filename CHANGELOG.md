@@ -1,3 +1,29 @@
+# [6.6.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.5.0...v6.6.0) (2022-12-07)
+
+
+### Bug Fixes
+
+* remove trailing slash ([#197](https://github.com/adobe/helix-sidekick-extension/issues/197)) ([a8c8ee4](https://github.com/adobe/helix-sidekick-extension/commit/a8c8ee4990367893dfb991f6a0280c1a64029f66))
+
+
+### Features
+
+* view doc source only for active tab ([#198](https://github.com/adobe/helix-sidekick-extension/issues/198)) ([23026a7](https://github.com/adobe/helix-sidekick-extension/commit/23026a7b76d08c15cd64935605c50f82d48fc1fb))
+
+# [6.5.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.4.0...v6.5.0) (2022-12-05)
+
+
+### Features
+
+* improved config matching algorithm ([076a37b](https://github.com/adobe/helix-sidekick-extension/commit/076a37bd2cfcf03ca7673864004367b2fe072d9d))
+
+# [6.4.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.3.2...v6.4.0) (2022-11-28)
+
+
+### Features
+
+* show the View Document Source context menu item if site is a Franklin site ([#188](https://github.com/adobe/helix-sidekick-extension/issues/188)) ([126ba50](https://github.com/adobe/helix-sidekick-extension/commit/126ba50a7765b550c0b08e1fe246191e256cc6b7))
+
 ## [6.3.2](https://github.com/adobe/helix-sidekick-extension/compare/v6.3.1...v6.3.2) (2022-11-22)
 
 

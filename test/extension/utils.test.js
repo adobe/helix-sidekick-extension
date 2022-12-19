@@ -175,10 +175,18 @@ describe('Test extension utils', () => {
   });
 
   it('getProjectMatches', async () => {
+    const spy = sandbox.spy(window, 'fetch');
     // match sharepoint URL (docx)
     expect((await utils.getProjectMatches(CONFIGS, 'https://foo.sharepoint.com/:w:/r/sites/foo/_layouts/15/Doc.aspx?sourcedoc=%7BBFD9A19C-4A68-4DBF-8641-DA2F1283C895%7D&file=index.docx&action=default&mobileredirect=true')).length).to.equal(1);
     // match gdrive URL
     expect((await utils.getProjectMatches(CONFIGS, 'https://docs.google.com/document/d/1234567890/edit')).length).to.equal(1);
+    // reuse match from cache
+    await utils.getProjectMatches(CONFIGS, 'https://docs.google.com/document/d/1234567890/edit');
+    expect(spy.calledTwice).to.be.true;
+    // refreshes expired match in cache
+    sandbox.stub(Date, 'now').returns(Date.now() + 7205000); // fast-forward 2 days and 5 seconds
+    await utils.getProjectMatches(CONFIGS, 'https://docs.google.com/document/d/1234567890/edit');
+    expect(spy.calledThrice).to.be.true;
     // match preview URL
     expect((await utils.getProjectMatches(CONFIGS, 'https://main--bar1--foo.hlx.page/')).length).to.equal(1);
     // match preview URL with any ref
