@@ -178,12 +178,12 @@
   content: "Vorschau-Generierung fehlgeschlagen. Muss ein Google-Dokument oder eine Tabelle sein.";
 }
 
-.hlx-sk-overlay .modal.modal-preview-not-gdoc-ms-word::before {
-  content: "Previewing failed. This is a Microsoft Doc. Please convert it to a Google Doc: 'File' > 'Save As Google Doc'";
+.hlx-sk-overlay .modal.modal-preview-not-gdoc-ms-doc::before {
+  content: "Dies ist ein Microsoft Word-Dokument. Bitte in Google-Dokument umwandeln: Datei > Als Google-Dokument speichern";
 }
 
 .hlx-sk-overlay .modal.modal-preview-not-gsheet-ms-excel::before {
-  content: "Previewing failed. This is an Excel Sheets Document. Please convert it to Google Sheets: 'File' > 'Save As Google Sheets'";
+  content: "Dies ist ein Microsoft Word-Dokument. Bitte in Google-Tabelle umwandeln: Datei > Als Google-Tabelle speichern";
 }
 
 .hlx-sk-overlay .modal.modal-reload-failure::before {
