@@ -183,7 +183,7 @@
 }
 
 .hlx-sk-overlay .modal.modal-preview-not-gsheet-ms-excel::before {
-  content: "Dies ist ein Microsoft Word-Dokument. Bitte in Google-Tabelle umwandeln: Datei > Als Google-Tabelle speichern";
+  content: "Dies ist ein Microsoft Excel-Dokument. Bitte in Google-Tabelle umwandeln: Datei > Als Google-Tabelle speichern";
 }
 
 .hlx-sk-overlay .modal.modal-reload-failure::before {
