@@ -1197,6 +1197,20 @@
     if (sk.isAdmin()) {
       let bulkSelection = [];
 
+      const isSharePoint = (location) => location.host.match(/\w+\.sharepoint.com/)
+        && location.pathname.endsWith('/Forms/AllItems.aspx');
+
+      const toWebPath = (folder, name) => {
+        const nameParts = name.split('.');
+        const [file] = nameParts;
+        let [, ext] = nameParts;
+        if (isSharePoint(sk.location) && ['docx', 'xlsx'].includes(ext)) {
+          // omit docx and xlsx extension on sharepoint
+          ext = '';
+        }
+        return `${folder}/${file.toLowerCase().replace(/[^0-9a-z]/gi, '-')}${ext ? `.${ext}` : ''}`;
+      };
+
       const getBulkSelection = () => {
         const { location } = sk;
         if (location.host === 'drive.google.com') {
@@ -1207,7 +1221,7 @@
               path: row.querySelector(':scope > div > div:nth-of-type(2)').textContent.trim(),
             }));
         }
-        if (location.host.match(/\w+\.sharepoint.com/) && location.pathname.endsWith('/Forms/AllItems.aspx')) {
+        if (isSharePoint(location)) {
           return [...document.querySelectorAll('[role="presentation"] div[aria-selected="true"]')]
             .filter((row) => !row.querySelector('img').getAttribute('src').endsWith('folder.svg'))
             .map((row) => ({
@@ -1293,14 +1307,14 @@
         condition: (sidekick) => sidekick.isAdmin(),
         button: {
           action: async () => {
-            sk.showWait();
-            sk.addEventListener('statusfetched', async () => {
-              const { status } = sk;
-              const sel = bulkSelection.map((item) => `${status.webPath}/${item.path}`);
-              const confirmText = getBulkText([sel.length], 'confirm', 'preview');
-              if (sel.length === 0) {
-                sk.showModal(confirmText);
-              } else if (window.confirm(confirmText)) {
+            const confirmText = getBulkText([bulkSelection.length], 'confirm', 'preview');
+            if (bulkSelection.length === 0) {
+              sk.showModal(confirmText);
+            } else if (window.confirm(confirmText)) {
+              sk.showWait();
+              sk.addEventListener('statusfetched', async () => {
+                const { status } = sk;
+                const sel = bulkSelection.map((item) => toWebPath(status.webPath, item.path));
                 const results = [];
                 const total = sel.length;
                 const concurrency = 5;
@@ -1366,11 +1380,11 @@
                   true,
                   level,
                 );
-              } else {
-                sk.hideModal();
-              }
-            }, { once: true });
-            sk.fetchStatus(true);
+              }, { once: true });
+              sk.fetchStatus(true);
+            } else {
+              sk.hideModal();
+            }
           },
           isEnabled: (s) => s.isAuthorized('preview', 'write') && s.status.webPath,
         },
@@ -1382,14 +1396,14 @@
         condition: (sidekick) => sidekick.isAdmin(),
         button: {
           action: async () => {
-            sk.showWait();
-            sk.addEventListener('statusfetched', async () => {
-              const { status } = sk;
-              const sel = bulkSelection.map((item) => `${status.webPath}/${item.path}`);
-              const confirmText = getBulkText([sel.length], 'confirm', 'publish');
-              if (sel.length === 0) {
-                sk.showModal(confirmText);
-              } else if (window.confirm(confirmText)) {
+            const confirmText = getBulkText([bulkSelection.length], 'confirm', 'publish');
+            if (bulkSelection.length === 0) {
+              sk.showModal(confirmText);
+            } else if (window.confirm(confirmText)) {
+              sk.showWait();
+              sk.addEventListener('statusfetched', async () => {
+                const { status } = sk;
+                const sel = bulkSelection.map((item) => toWebPath(status.webPath, item.path));
                 const results = [];
                 const total = sel.length;
                 const concurrency = 5;
@@ -1460,11 +1474,11 @@
                   true,
                   level,
                 );
-              } else {
-                sk.hideModal();
-              }
-            }, { once: true });
-            sk.fetchStatus(true);
+              }, { once: true });
+              sk.fetchStatus(true);
+            } else {
+              sk.hideModal();
+            }
           },
           isEnabled: (s) => s.isAuthorized('live', 'write') && s.status.webPath,
         },
