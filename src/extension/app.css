@@ -793,7 +793,7 @@
   height: 100%;
 }
 
-.hlx-sk-placeholder {
+.hlx-sk span.hlx-sk-placeholder {
   display: none;
 }
 
@@ -1085,62 +1085,82 @@
 }
 
 #hlx-sk-bulk-info.selected-items::before {
-  content: "{n} files selected";
+  content: "$1 files selected";
   display: none;
 }
 
-#hlx-sk-bulk-info .hlx-sk-bulk-confirm:empty::before {
+.hlx-sk .bulk-info .hlx-sk-bulk-confirm:empty::before {
   content: "No file selected";
 }
 
-#hlx-sk-bulk-info .hlx-sk-bulk-confirm-preview-item::before {
+.hlx-sk .bulk-info .hlx-sk-bulk-confirm-preview-item::before {
   content: "Are you sure you want to preview 1 file?";
 }
 
-#hlx-sk-bulk-info .hlx-sk-bulk-confirm-preview-items::before {
-  content: "Are you sure you want to preview {n} files?";
+.hlx-sk .bulk-info .hlx-sk-bulk-confirm-preview-items::before {
+  content: "Are you sure you want to preview $1 files?";
 }
 
-#hlx-sk-bulk-info .hlx-sk-bulk-result-preview-item-success::before {
+.hlx-sk .bulk-info .hlx-sk-bulk-progress-preview-items::before {
+  content: "$1 of $2 files previewed...";
+}
+
+.hlx-sk .bulk-info .hlx-sk-bulk-result-preview-items-success::before {
+  content: "$1 files successfully previewed.";
+}
+
+.hlx-sk .bulk-info .hlx-sk-bulk-result-preview-item-success::before {
   content: "1 file successfully previewed.";
 }
 
-#hlx-sk-bulk-info .hlx-sk-bulk-result-preview-items-success::before {
-  content: "{n} files successfully previewed.";
+.hlx-sk .bulk-info .hlx-sk-bulk-result-preview-items-success::before {
+  content: "$1 files successfully previewed.";
 }
 
-#hlx-sk-bulk-info .hlx-sk-bulk-result-preview-item-failure::before {
-  content: "Failed to preview 1 file.";
+.hlx-sk .bulk-info .hlx-sk-bulk-result-preview-item-failure::before {
+  content: "Failed to preview 1 file:";
 }
 
-#hlx-sk-bulk-info .hlx-sk-bulk-result-preview-items-failure::before {
-  content: "Failed to preview {n} files.";
+.hlx-sk .bulk-info .hlx-sk-bulk-result-preview-items-failure::before {
+  content: "Failed to preview $1 files:";
 }
 
-#hlx-sk-bulk-info .hlx-sk-bulk-confirm-publish-item::before {
+.hlx-sk .bulk-info .hlx-sk-bulk-result-preview-item-error-no-docx::before {
+  content: "Microsoft Word document, convert to Google Docs first";
+}
+
+.hlx-sk .bulk-info .hlx-sk-bulk-result-preview-item-error-no-xlsx::before {
+  content: "Microsoft Excel document, convert to Google Sheets first";
+}
+
+.hlx-sk .bulk-info .hlx-sk-bulk-confirm-publish-item::before {
   content: "Are you sure you want to publish 1 file?";
 }
 
-#hlx-sk-bulk-info .hlx-sk-bulk-confirm-publish-items::before {
-  content: "Are you sure you want to publish {n} files?";
+.hlx-sk .bulk-info .hlx-sk-bulk-confirm-publish-items::before {
+  content: "Are you sure you want to publish $1 files?";
 }
 
-#hlx-sk-bulk-info .hlx-sk-bulk-result-publish-item-success::before {
+.hlx-sk .bulk-info .hlx-sk-bulk-progress-publish-items::before {
+  content: "$1 of $2 files published...";
+}
+
+.hlx-sk .bulk-info .hlx-sk-bulk-result-publish-item-success::before {
   content: "1 file successfully published.";
 }
 
-#hlx-sk-bulk-info .hlx-sk-bulk-result-publish-items-success::before {
-  content: "{n} files successfully published.";
+.hlx-sk .bulk-info .hlx-sk-bulk-result-publish-items-success::before {
+  content: "$1 files successfully published.";
 }
 
-#hlx-sk-bulk-info .hlx-sk-bulk-result-publish-item-failure::before {
-  content: "Failed to publish 1 file.";
+.hlx-sk .bulk-info .hlx-sk-bulk-result-publish-item-failure::before {
+  content: "Failed to publish 1 file:";
 }
 
-#hlx-sk-bulk-info .hlx-sk-bulk-result-publish-items-failure::before {
-  content: "Failed to publish {n} files.";
+.hlx-sk .bulk-info .hlx-sk-bulk-result-publish-items-failure::before {
+  content: "Failed to publish $1 files:";
 }
 
-#hlx-sk-bulk-info .hlx-sk-bulk-result-publish-item-error-no-source::before {
-  content: "File must be previewed first"
+.hlx-sk .bulk-info .hlx-sk-bulk-result-publish-item-error-no-source::before {
+  content: "File must be previewed first";
 }

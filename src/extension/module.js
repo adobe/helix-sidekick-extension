@@ -1203,7 +1203,7 @@
           return [...document.querySelectorAll('[role="row"][aria-selected="true"]')]
             .filter((row) => row.querySelector(':scope img'))
             .map((row) => ({
-              type: new URL(row.querySelector('div > img').getAttribute('src')).pathname.split('/').slice(-2).join('/'),
+              type: new URL(row.querySelector('div > img').getAttribute('src'), sk.location.href).pathname.split('/').slice(-2).join('/'),
               path: row.querySelector(':scope > div > div:nth-of-type(2)').textContent.trim(),
             }));
         }
@@ -1211,7 +1211,7 @@
           return [...document.querySelectorAll('[role="presentation"] div[aria-selected="true"]')]
             .filter((row) => !row.querySelector('img').getAttribute('src').endsWith('folder.svg'))
             .map((row) => ({
-              type: new URL(row.querySelector('img').getAttribute('src')).pathname.split('/').slice(-1)[0].split('.')[0],
+              type: new URL(row.querySelector('img').getAttribute('src'), sk.location.href).pathname.split('/').slice(-1)[0].split('.')[0],
               path: row.querySelector('button').textContent.trim(),
             }));
         }
@@ -1221,12 +1221,11 @@
       const updateBulkInfo = () => {
         const sel = getBulkSelection(sk);
         bulkSelection = sel;
-        console.log('bulk selection changed', JSON.stringify(sel, null, 2));
         const label = sk.root.querySelector('#hlx-sk-bulk-info');
         label.textContent = '';
         label.className = sel.length > 0 ? `selected-item${sel.length !== 1 ? 's' : ''}` : '';
         if (sel.length > 1) {
-          label.textContent = getI18nText(label).replace('{n}', sel.length);
+          label.textContent = getI18nText(label).replace('$1', sel.length);
         }
         if (sel.length === 0) {
           sk.get('bulk-preview').classList.add('hlx-sk-hidden');
@@ -1237,21 +1236,24 @@
         }
       };
 
-      const getBulkText = (num, type, action, mod) => {
+      const getBulkText = ([num, total], type, action, mod) => {
         let cls = `hlx-sk-bulk-${type}`;
         if (num > 0) {
-          cls = `${cls}-${action}-item${num === 1 ? '' : 's'}${mod ? `-${mod}` : ''}`;
+          cls = `${cls}-${action}-item${(total || num) === 1 ? '' : 's'}${mod ? `-${mod}` : ''}`;
         }
-        const placeholder = createTag({
-          tag: 'span',
-          attrs: {
-            class: `hlx-sk-placeholder ${cls}`,
-          },
-        });
-        sk.root.querySelector('#hlx-sk-bulk-info').append(placeholder);
-        const bulkText = getI18nText(placeholder).replace('{n}', num);
-        placeholder.remove();
-        return bulkText;
+        let placeholder = sk.get('bulk-info').querySelector(`.hlx-sk-placeholder.${cls}`);
+        if (!placeholder) {
+          placeholder = createTag({
+            tag: 'span',
+            attrs: {
+              class: `hlx-sk-placeholder ${cls}`,
+            },
+          });
+          sk.get('bulk-info').append(placeholder);
+        }
+        return getI18nText(placeholder)
+          .replace('$1', num)
+          .replace('$2', total);
       };
 
       // bulk info
@@ -1295,17 +1297,26 @@
             sk.addEventListener('statusfetched', async () => {
               const { status } = sk;
               const sel = bulkSelection.map((item) => `${status.webPath}/${item.path}`);
-              const confirmText = getBulkText(sel.length, 'confirm', 'preview');
+              const confirmText = getBulkText([sel.length], 'confirm', 'preview');
               if (sel.length === 0) {
                 sk.showModal(confirmText);
               } else if (window.confirm(confirmText)) {
-                const results = await Promise.all(
-                  sel.map(async (file) => sk.update(file)),
-                );
+                const results = [];
+                const total = sel.length;
+                const concurrency = 5;
+                for (let i = 0; i < concurrency; i += 1) {
+                  while (sel.length) {
+                    // eslint-disable-next-line no-await-in-loop
+                    results.push(await sk.update(sel.shift()));
+                    if (total > 1) {
+                      sk.showModal(getBulkText([results.length, total], 'progress', 'preview'), true);
+                    }
+                  }
+                }
                 const lines = [];
                 const ok = results.filter((res) => res.ok);
                 if (ok.length > 0) {
-                  lines.push(getBulkText(ok.length, 'result', 'preview', 'success'));
+                  lines.push(getBulkText([ok.length], 'result', 'preview', 'success'));
                   lines.push(createTag({
                     tag: 'button',
                     attrs: {
@@ -1325,9 +1336,17 @@
                 }
                 const failed = results.filter((res) => !res.ok);
                 if (failed.length > 0) {
-                  const failureText = getBulkText(failed.length, 'result', 'preview', 'failure');
+                  const failureText = getBulkText([failed.length], 'result', 'preview', 'failure');
                   lines.push(failureText);
-                  lines.push(...failed.map((item) => `${item.path}: ${item.error}`));
+                  lines.push(...failed.map((item) => {
+                    if (item.error.endsWith('docx with google not supported.')) {
+                      item.error = getBulkText([1], 'result', 'preview', 'error-no-docx');
+                    }
+                    if (item.error.endsWith('xlsx with google not supported.')) {
+                      item.error = getBulkText([1], 'result', 'preview', 'error-no-xlsx');
+                    }
+                    return `${item.path.split('/').pop()}: ${item.error}`;
+                  }));
                 }
                 lines.push(createTag({
                   tag: 'button',
@@ -1367,25 +1386,34 @@
             sk.addEventListener('statusfetched', async () => {
               const { status } = sk;
               const sel = bulkSelection.map((item) => `${status.webPath}/${item.path}`);
-              const confirmText = getBulkText(sel.length, 'confirm', 'publish');
+              const confirmText = getBulkText([sel.length], 'confirm', 'publish');
               if (sel.length === 0) {
                 sk.showModal(confirmText);
               } else if (window.confirm(confirmText)) {
-                const results = await Promise.all(
-                  sel.map(async (file) => {
+                const results = [];
+                const total = sel.length;
+                const concurrency = 5;
+                for (let i = 0; i < concurrency; i += 1) {
+                  while (sel.length) {
+                    /* eslint-disable no-await-in-loop */
+                    const file = sel.shift();
                     const resp = await sk.publish(file);
-                    return {
+                    results.push({
                       ok: (resp.ok) || false,
                       status: (resp.status) || 0,
                       error: (resp.headers && resp.headers.get('x-error')) || '',
                       path: (resp.ok && resp.json && (await resp.json()).webPath) || file,
-                    };
-                  }),
-                );
+                    });
+                    if (total > 1) {
+                      sk.showModal(getBulkText([results.length, total], 'progress', 'publish'), true);
+                    }
+                    /* eslint-enable no-await-in-loop */
+                  }
+                }
                 const lines = [];
                 const ok = results.filter((res) => res.ok);
                 if (ok.length > 0) {
-                  lines.push(getBulkText(ok.length, 'result', 'publish', 'success'));
+                  lines.push(getBulkText([ok.length], 'result', 'publish', 'success'));
                   lines.push(createTag({
                     tag: 'button',
                     attrs: {
@@ -1405,13 +1433,13 @@
                 }
                 const failed = results.filter((res) => !res.ok);
                 if (failed.length > 0) {
-                  const failureText = getBulkText(failed.length, 'result', 'publish', 'failure');
+                  const failureText = getBulkText([failed.length], 'result', 'publish', 'failure');
                   lines.push(failureText);
                   lines.push(...failed.map((item) => {
                     if (item.error.startsWith('source does not exist')) {
-                      item.error = getBulkText(1, 'result', 'publish', 'error-no-source');
+                      item.error = getBulkText([1], 'result', 'publish', 'error-no-source');
                     }
-                    return `${item.path}: ${item.error}`;
+                    return `${item.path.split('/').pop()}: ${item.error}`;
                   }));
                 }
                 lines.push(createTag({
