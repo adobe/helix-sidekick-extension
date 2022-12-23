@@ -1317,16 +1317,13 @@
                 const sel = bulkSelection.map((item) => toWebPath(status.webPath, item.path));
                 const results = [];
                 const total = sel.length;
-                const concurrency = 5;
-                for (let i = 0; i < concurrency; i += 1) {
-                  while (sel.length) {
-                    // eslint-disable-next-line no-await-in-loop
-                    results.push(await sk.update(sel.shift()));
-                    if (total > 1) {
-                      sk.showModal(getBulkText([results.length, total], 'progress', 'preview'), true);
-                    }
+                const { processQueue } = await import('./lib/process-queue.js');
+                await processQueue(sel, async (file) => {
+                  results.push(await sk.update(file));
+                  if (total > 1) {
+                    sk.showModal(getBulkText([results.length, total], 'progress', 'preview'), true);
                   }
-                }
+                }, 5);
                 const lines = [];
                 const ok = results.filter((res) => res.ok);
                 if (ok.length > 0) {
@@ -1406,24 +1403,19 @@
                 const sel = bulkSelection.map((item) => toWebPath(status.webPath, item.path));
                 const results = [];
                 const total = sel.length;
-                const concurrency = 5;
-                for (let i = 0; i < concurrency; i += 1) {
-                  while (sel.length) {
-                    /* eslint-disable no-await-in-loop */
-                    const file = sel.shift();
-                    const resp = await sk.publish(file);
-                    results.push({
-                      ok: (resp.ok) || false,
-                      status: (resp.status) || 0,
-                      error: (resp.headers && resp.headers.get('x-error')) || '',
-                      path: (resp.ok && resp.json && (await resp.json()).webPath) || file,
-                    });
-                    if (total > 1) {
-                      sk.showModal(getBulkText([results.length, total], 'progress', 'publish'), true);
-                    }
-                    /* eslint-enable no-await-in-loop */
+                const { processQueue } = await import('./lib/process-queue.js');
+                await processQueue(sel, async (file) => {
+                  const resp = await sk.publish(file);
+                  results.push({
+                    ok: (resp.ok) || false,
+                    status: (resp.status) || 0,
+                    error: (resp.headers && resp.headers.get('x-error')) || '',
+                    path: (resp.ok && resp.json && (await resp.json()).webPath) || file,
+                  });
+                  if (total > 1) {
+                    sk.showModal(getBulkText([results.length, total], 'progress', 'publish'), true);
                   }
-                }
+                }, 40);
                 const lines = [];
                 const ok = results.filter((res) => res.ok);
                 if (ok.length > 0) {
