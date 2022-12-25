@@ -39,6 +39,7 @@
   --hlx-sk-button-badge: #F15B3A;
   --hlx-sk-button-badge-hover: #FFC40E;
   --hlx-sk-dropdown-container-bg: rgba(224, 224, 224, .9);
+  --hlx-sk-dropdown-container-bg-solid: rgba(224, 224, 224);
   --hlx-sk-modal-overlay-bg: rgba(0,0,0, 0.5);
   --hlx-sk-modal-bg-0: #e60016;
   --hlx-sk-modal-bg-1: #e67316;
@@ -193,6 +194,21 @@
   border-color: transparent;
 }
 
+.hlx-sk .feature-container .info {
+  line-height: normal;
+}
+
+.hlx-sk .feature-container .info .dropdown-container {
+  width: 220px;
+  left: -80px;
+  background-color: var(--hlx-sk-dropdown-container-bg-solid);
+}
+
+.hlx-sk .feature-container .info .page-info {
+  font-size: 12px;
+  margin: 10px;
+}
+
 .hlx-sk .feature-container .user .dropdown-toggle {
   position: relative;
   border: none;
@@ -206,10 +222,15 @@
   line-height: 0;
 }
 
+.hlx-sk .feature-container .info .dropdown-toggle:disabled {
+  opacity: 0.4;
+}
+
 .hlx-sk .feature-container .user .dropdown-toggle:disabled {
   opacity: 0.8;
 }
 
+.hlx-sk .feature-container .info .dropdown-toggle::after,
 .hlx-sk .feature-container .user .dropdown-toggle::after {
   display: none;
 }
@@ -281,7 +302,7 @@
 }
 
 .hlx-sk .feature-container .user .user-info .profile-name {
-  font-weight: 600; 
+  font-weight: 600;
 }
 
 .hlx-sk .feature-container .share {
@@ -353,6 +374,34 @@
 .hlx-sk .feature-container .close::after,
 .hlx-sk-palette .close::after {
   transform: rotate(-45deg);
+}
+
+.hlx-sk .feature-container .info-button {
+  background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' height='18' viewBox='0 0 18 18' width='18'%3E%3Cdefs%3E%3Cstyle%3E .fill { fill: %23707070; } %3C/style%3E%3C/defs%3E%3Ctitle%3ES InfoOutline 18 N%3C/title%3E%3Crect id='Canvas' fill='%23ff13dc' opacity='0' width='18' height='18' /%3E%3Cpath class='fill' d='M10.075,6A1.075,1.075,0,1,1,9,4.925H9A1.075,1.075,0,0,1,10.075,6Zm.09173,6H10V8.2A.20005.20005,0,0,0,9.8,8H7.83324S7.25,8.01612,7.25,8.5c0,.48365.58325.5.58325.5H8v3H7.83325s-.58325.01612-.58325.5c0,.48365.58325.5.58325.5h2.3335s.58325-.01635.58325-.5C10.75,12.01612,10.16673,12,10.16673,12ZM9,.5A8.5,8.5,0,1,0,17.5,9,8.5,8.5,0,0,0,9,.5ZM9,15.6748A6.67481,6.67481,0,1,1,15.67484,9,6.67481,6.67481,0,0,1,9,15.6748Z' /%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-size: 26px;
+  border-radius: 5px;
+  position: absolute;
+  top: 1px;
+  left: 1px;
+  height: 28px;
+  width: 28px;
+}
+
+.hlx-sk .feature-container .info.plugin .dropdown-toggle:focus .info-button,
+.hlx-sk .feature-container .info.plugin .dropdown-toggle:hover .info-button {
+  filter: brightness(400%);
+}
+
+.hlx-sk .feature-container .modified-dates {
+  display: flex;
+  font-size: 12px;
+}
+
+.hlx-sk .feature-container .modified-dates > div {
+  line-height: normal;
+  margin: 0 10px;
+  white-space: pre;
 }
 
 .hlx-sk .dropdown,
@@ -595,14 +644,14 @@
 
 .hlx-sk-overlay .modal.help .help-step {
   padding: 19px 12px 9px 12px;
-  cursor: pointer;    
+  cursor: pointer;
 }
 
 .hlx-sk-overlay .modal.help .help-step .circle {
   border: 5px solid var(--hlx-sk-modal-help-color);
   border-radius: 50%;
   width: 0;
-  height: 0;  
+  height: 0;
   opacity: 0.45;
 }
 
@@ -1044,4 +1093,36 @@
 
 .hlx-sk-overlay .modal.modal-logout-error::before {
   content: "Sign out failed. Please try again later.";
+}
+
+.hlx-sk .feature-container .info .page-info .edit-date::before {
+  content: "Edited: ";
+}
+
+.hlx-sk .feature-container .info .page-info .preview-date::before {
+  content: "Previewed: ";
+}
+
+.hlx-sk .feature-container .info .page-info .publish-date::before {
+  content: "Published: ";
+}
+
+.hlx-sk .feature-container .info .page-info .now::before {
+  content: "Now";
+}
+
+.hlx-sk .feature-container .info .page-info .seconds-ago::before {
+  content: " Seconds ago";
+}
+
+.hlx-sk .feature-container .info .page-info .minutes-ago::before {
+  content: " Minutes ago";
+}
+
+.hlx-sk .feature-container .info .page-info .today::before {
+  content: "Today at ";
+}
+
+.hlx-sk .feature-container .info .page-info .yesterday::before {
+  content: "Yesterday at ";
 }

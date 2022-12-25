@@ -73,7 +73,7 @@ describe('Test sidekick', () => {
         assert.strictEqual(innerHost, 'main--blog--adobe.hlx.page', `Unexpected innerHost: ${innerHost}`);
         assert.strictEqual(outerHost, 'main--blog--adobe.hlx.live', `Unexpected outerHost: ${innerHost}`);
         // check plugins
-        assert.strictEqual(plugins.length, 12, `Wrong number of plugins: ${plugins.length}`);
+        assert.strictEqual(plugins.length, 14, `Wrong number of plugins: ${plugins.length}`);
       }).timeout(IT_DEFAULT_TIMEOUT);
 
       it('Handles errors fetching status from admin API', async () => {
@@ -677,6 +677,34 @@ describe('Test sidekick', () => {
             .click()),
         }).run();
         assert.ok(notification.className.includes('modal-share-success'), 'Did not copy sharing URL to clipboard');
+      }).timeout(IT_DEFAULT_TIMEOUT);
+
+      it('Displays page modified info on info button click', async () => {
+        // const { checkPageResult, plugins } = await new SidekickTest({
+        nock.admin(new Setup('blog'));
+        nock('https://admin.hlx.page')
+          .get('/status/adobe/blog/main/en/topics/bla?editUrl=auto')
+          .reply(200)
+          .get('/status/adobe/blog/main/en/topics/bla?editUrl=auto')
+          .reply(200);
+        const { checkPageResult } = await new SidekickTest({
+          browser,
+          page,
+          loadModule,
+          plugin: 'info',
+          post: (p) => p.evaluate(() => window.hlx.sidekick
+            .shadowRoot
+            .querySelector('.hlx-sk .info.plugin .dropdown-toggle')
+            .click()),
+          checkPage: (p) => p.evaluate(() => window.hlx.sidekick
+            .shadowRoot
+            .querySelector('.hlx-sk')
+            .innerText),
+        }).run();
+        assert.ok(
+          checkPageResult === 'Jun 18, 2021, 5:57 AM\nJun 18, 2021, 5:57 AM\nJun 18, 2021, 5:57 AM',
+          'Dates not displayed by info plugin',
+        );
       }).timeout(IT_DEFAULT_TIMEOUT);
 
       it('Detects edit environment correctly', async () => {
