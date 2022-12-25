@@ -1379,8 +1379,6 @@
                 );
               }, { once: true });
               sk.fetchStatus(true);
-            } else {
-              sk.hideModal();
             }
           },
           isEnabled: (s) => s.isAuthorized('preview', 'write') && s.status.webPath,
@@ -1468,8 +1466,6 @@
                 );
               }, { once: true });
               sk.fetchStatus(true);
-            } else {
-              sk.hideModal();
             }
           },
           isEnabled: (s) => s.isAuthorized('live', 'write') && s.status.webPath,
