@@ -90,9 +90,9 @@ const {
  * @param {string} o.env=preview The environment (preview or live)
  * @param {string} o.type=html The content type of the requested resource (html, xml or json)
  * @param {string} o.fixture=generic.html The fixture file to use as test bed
- * @param {number} o.sleep=1000 The number of milliseconds to wait after loading the sidekick
+ * @param {number} o.sleep=0 The number of milliseconds to wait after loading the sidekick
  * @param {string} o.plugin A plugin to execute after loading the sidekick
- * @param {number} o.pluginSleep=2000 The number of milliseconds to wait after executing a plugin
+ * @param {number} o.pluginSleep=0 The number of milliseconds to wait after executing a plugin
  * @param {boolean} acceptDialogs=false Defines whether dialogs will be accepted or dismissed
  * @param {SidekickTest~Pre} o.pre A function to call before loading the sidekick
  * @param {SidekickTest~Post} o.post A function to call after loading the sidekick
