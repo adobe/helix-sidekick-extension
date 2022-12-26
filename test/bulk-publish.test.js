@@ -106,7 +106,6 @@ describe('Test bulk publish plugin', () => {
         fixture,
         url: setup.getUrl('edit', 'admin'),
         plugin: 'bulk-publish',
-        pluginSleep: 1000,
         pre: (p) => p.evaluate(() => {
           // user deselects file
           document.getElementById('file-pdf').setAttribute('aria-selected', 'false');
@@ -136,7 +135,6 @@ describe('Test bulk publish plugin', () => {
         configJson: setup.configJson,
         url: setup.getUrl('edit', 'admin'),
         plugin: 'bulk-publish',
-        pluginSleep: 1000,
         loadModule: true,
         acceptDialogs: true,
         checkPage: (p) => p.evaluate(() => {
@@ -177,6 +175,7 @@ describe('Test bulk publish plugin', () => {
         sidekickConfig: setup.sidekickConfig,
         configJson: setup.configJson,
         url: setup.getUrl('edit', 'admin'),
+        sleep: 1000,
         plugin: 'bulk-publish',
         pluginSleep: 1000,
         post: (p) => p.evaluate(() => {

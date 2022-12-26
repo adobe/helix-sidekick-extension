@@ -1213,23 +1213,22 @@
 
       const getBulkSelection = () => {
         const { location } = sk;
-        if (location.host === 'drive.google.com') {
-          return [...document.querySelectorAll('[role="row"][aria-selected="true"]')]
+        if (isSharePoint(location)) {
+          return [...document.querySelectorAll('#appRoot [role="presentation"] div[aria-selected="true"]')]
+            .filter((row) => !row.querySelector('img').getAttribute('src').endsWith('folder.svg'))
+            .map((row) => ({
+              type: new URL(row.querySelector('img').getAttribute('src'), sk.location.href).pathname.split('/').slice(-1)[0].split('.')[0],
+              path: row.querySelector('button').textContent.trim(),
+            }));
+        } else {
+          // gdrive
+          return [...document.querySelectorAll('#drive_main_page [role="row"][aria-selected="true"]')]
             .filter((row) => row.querySelector(':scope img'))
             .map((row) => ({
               type: new URL(row.querySelector('div > img').getAttribute('src'), sk.location.href).pathname.split('/').slice(-2).join('/'),
               path: row.querySelector(':scope > div > div:nth-of-type(2)').textContent.trim(),
             }));
         }
-        if (isSharePoint(location)) {
-          return [...document.querySelectorAll('[role="presentation"] div[aria-selected="true"]')]
-            .filter((row) => !row.querySelector('img').getAttribute('src').endsWith('folder.svg'))
-            .map((row) => ({
-              type: new URL(row.querySelector('img').getAttribute('src'), sk.location.href).pathname.split('/').slice(-1)[0].split('.')[0],
-              path: row.querySelector('button').textContent.trim(),
-            }));
-        }
-        return [];
       };
 
       const updateBulkInfo = () => {
@@ -1270,203 +1269,209 @@
           .replace('$2', total);
       };
 
-      // bulk info
-      sk.add({
-        id: 'bulk-info',
-        condition: (sidekick) => sidekick.isAdmin(),
-        elements: [{
-          tag: 'span',
-          attrs: {
-            id: 'hlx-sk-bulk-info',
-            class: 'hlx-sk-label hlx-sk-placeholder',
-          },
-        }],
-        callback: () => {
-          // listen for selection changes in the admin window
-          const { location } = sk;
-          const bulkObserver = new MutationObserver((list) => {
-            list.forEach((mutation) => {
-              if (mutation.type === 'attributes' && mutation.attributeName === 'aria-selected') {
-                updateBulkInfo();
-              }
-            });
-          });
-          const target = document.querySelector(location.host === 'drive.google.com'
-            ? '#drive_main_page'
-            : '#appRoot');
-          bulkObserver.observe(target, {
-            attributes: true,
-            subtree: true,
-          });
-        },
-      });
+      const isChangedUrl = () => {
+        const $test = document.getElementById('sidekick_test_location');
+        if ($test) {
+          return $test.value !== sk.location.href;
+        }
+        return window.location.href !== sk.location.href;
+      };
 
-      // bulk preview
-      sk.add({
-        id: 'bulk-preview',
-        condition: (sidekick) => sidekick.isAdmin(),
-        button: {
-          action: async () => {
-            const confirmText = getBulkText([bulkSelection.length], 'confirm', 'preview');
-            if (bulkSelection.length === 0) {
-              sk.showModal(confirmText);
-            } else if (window.confirm(confirmText)) {
-              sk.showWait();
-              const { status } = sk;
-              const sel = bulkSelection.map((item) => toWebPath(status.webPath, item.path));
-              const results = [];
-              const total = sel.length;
-              const { processQueue } = await import('./lib/process-queue.js');
-              await processQueue(sel, async (file) => {
-                results.push(await sk.update(file));
-                if (total > 1) {
-                  sk.showModal(getBulkText([results.length, total], 'progress', 'preview'), true);
+      sk.addEventListener('statusfetched', () => {
+        // bulk info
+        sk.add({
+          id: 'bulk-info',
+          condition: (sidekick) => sidekick.isAdmin(),
+          elements: [{
+            tag: 'span',
+            attrs: {
+              id: 'hlx-sk-bulk-info',
+              class: 'hlx-sk-label hlx-sk-placeholder',
+            },
+          }],
+          callback: () => {
+            let fetchingStatus = false;
+            window.setInterval(() => {
+              updateBulkInfo();
+              if (isChangedUrl() && !fetchingStatus) {
+                // url changed, refetch status
+                sk.addEventListener('statusfetched', () => {
+                  fetchingStatus = false;
+                }, { once: true });
+                sk.fetchStatus(true);
+                fetchingStatus = true;
+              }
+            }, 500);
+          },
+        });
+
+        // bulk preview
+        sk.add({
+          id: 'bulk-preview',
+          condition: (sidekick) => sidekick.isAdmin(),
+          button: {
+            action: async () => {
+              const confirmText = getBulkText([bulkSelection.length], 'confirm', 'preview');
+              if (bulkSelection.length === 0) {
+                sk.showModal(confirmText);
+              } else if (window.confirm(confirmText)) {
+                sk.showWait();
+                const { status } = sk;
+                const sel = bulkSelection.map((item) => toWebPath(status.webPath, item.path));
+                const results = [];
+                const total = sel.length;
+                const { processQueue } = await import('./lib/process-queue.js');
+                await processQueue(sel, async (file) => {
+                  results.push(await sk.update(file));
+                  if (total > 1) {
+                    sk.showModal(getBulkText([results.length, total], 'progress', 'preview'), true);
+                  }
+                }, 5);
+                const lines = [];
+                const ok = results.filter((res) => res.ok);
+                if (ok.length > 0) {
+                  lines.push(getBulkText([ok.length], 'result', 'preview', 'success'));
+                  lines.push(createTag({
+                    tag: 'button',
+                    attrs: {
+                      class: `hlx-sk-bulk-copy-url${ok.length > 1 ? 's' : ''}`,
+                    },
+                    lstnrs: {
+                      click: (evt) => {
+                        evt.stopPropagation();
+                        const { config } = sk;
+                        const host = config.innerHost;
+                        navigator.clipboard.writeText(ok.map((item) => `https://${host}${item.path}`)
+                          .join('\n'));
+                        sk.hideModal();
+                      },
+                    },
+                  }));
                 }
-              }, 5);
-              const lines = [];
-              const ok = results.filter((res) => res.ok);
-              if (ok.length > 0) {
-                lines.push(getBulkText([ok.length], 'result', 'preview', 'success'));
+                const failed = results.filter((res) => !res.ok);
+                if (failed.length > 0) {
+                  const failureText = getBulkText([failed.length], 'result', 'preview', 'failure');
+                  lines.push(failureText);
+                  lines.push(...failed.map((item) => {
+                    if (item.error.endsWith('docx with google not supported.')) {
+                      item.error = getBulkText([1], 'result', 'preview', 'error-no-docx');
+                    }
+                    if (item.error.endsWith('xlsx with google not supported.')) {
+                      item.error = getBulkText([1], 'result', 'preview', 'error-no-xlsx');
+                    }
+                    return `${item.path.split('/').pop()}: ${item.error}`;
+                  }));
+                }
                 lines.push(createTag({
                   tag: 'button',
                   attrs: {
-                    class: `hlx-sk-bulk-copy-url${ok.length > 1 ? 's' : ''}`,
-                  },
-                  lstnrs: {
-                    click: (evt) => {
-                      evt.stopPropagation();
-                      const { config } = sk;
-                      const host = config.innerHost;
-                      navigator.clipboard.writeText(ok.map((item) => `https://${host}${item.path}`)
-                        .join('\n'));
-                      sk.hideModal();
-                    },
+                    class: 'hlx-sk-bulk-close',
                   },
                 }));
-              }
-              const failed = results.filter((res) => !res.ok);
-              if (failed.length > 0) {
-                const failureText = getBulkText([failed.length], 'result', 'preview', 'failure');
-                lines.push(failureText);
-                lines.push(...failed.map((item) => {
-                  if (item.error.endsWith('docx with google not supported.')) {
-                    item.error = getBulkText([1], 'result', 'preview', 'error-no-docx');
+                let level = 2;
+                if (failed.length > 0) {
+                  level = 1;
+                  if (ok.length === 0) {
+                    level = 0;
                   }
-                  if (item.error.endsWith('xlsx with google not supported.')) {
-                    item.error = getBulkText([1], 'result', 'preview', 'error-no-xlsx');
-                  }
-                  return `${item.path.split('/').pop()}: ${item.error}`;
-                }));
-              }
-              lines.push(createTag({
-                tag: 'button',
-                attrs: {
-                  class: 'hlx-sk-bulk-close',
-                },
-              }));
-              let level = 2;
-              if (failed.length > 0) {
-                level = 1;
-                if (ok.length === 0) {
-                  level = 0;
                 }
+                sk.showModal(
+                  lines,
+                  true,
+                  level,
+                );
               }
-              sk.showModal(
-                lines,
-                true,
-                level,
-              );
-            }
+            },
+            isEnabled: (s) => s.isAuthorized('preview', 'write') && s.status.webPath,
           },
-          isEnabled: (s) => s.isAuthorized('preview', 'write') && s.status.webPath,
-        },
-      });
+        });
 
-      // bulk publish
-      sk.add({
-        id: 'bulk-publish',
-        condition: (sidekick) => sidekick.isAdmin(),
-        button: {
-          action: async () => {
-            const confirmText = getBulkText([bulkSelection.length], 'confirm', 'publish');
-            if (bulkSelection.length === 0) {
-              sk.showModal(confirmText);
-            } else if (window.confirm(confirmText)) {
-              sk.showWait();
-              const { status } = sk;
-              const sel = bulkSelection.map((item) => toWebPath(status.webPath, item.path));
-              const results = [];
-              const total = sel.length;
-              const { processQueue } = await import('./lib/process-queue.js');
-              await processQueue(sel, async (file) => {
-                const resp = await sk.publish(file);
-                results.push({
-                  ok: (resp.ok) || false,
-                  status: (resp.status) || 0,
-                  error: (resp.headers && resp.headers.get('x-error')) || '',
-                  path: (resp.ok && resp.json && (await resp.json()).webPath) || file,
-                });
-                if (total > 1) {
-                  sk.showModal(getBulkText([results.length, total], 'progress', 'publish'), true);
+        // bulk publish
+        sk.add({
+          id: 'bulk-publish',
+          condition: (sidekick) => sidekick.isAdmin(),
+          button: {
+            action: async () => {
+              const confirmText = getBulkText([bulkSelection.length], 'confirm', 'publish');
+              if (bulkSelection.length === 0) {
+                sk.showModal(confirmText);
+              } else if (window.confirm(confirmText)) {
+                sk.showWait();
+                const { status } = sk;
+                const sel = bulkSelection.map((item) => toWebPath(status.webPath, item.path));
+                const results = [];
+                const total = sel.length;
+                const { processQueue } = await import('./lib/process-queue.js');
+                await processQueue(sel, async (file) => {
+                  const resp = await sk.publish(file);
+                  results.push({
+                    ok: (resp.ok) || false,
+                    status: (resp.status) || 0,
+                    error: (resp.headers && resp.headers.get('x-error')) || '',
+                    path: (resp.ok && resp.json && (await resp.json()).webPath) || file,
+                  });
+                  if (total > 1) {
+                    sk.showModal(getBulkText([results.length, total], 'progress', 'publish'), true);
+                  }
+                }, 40);
+                const lines = [];
+                const ok = results.filter((res) => res.ok);
+                if (ok.length > 0) {
+                  lines.push(getBulkText([ok.length], 'result', 'publish', 'success'));
+                  lines.push(createTag({
+                    tag: 'button',
+                    attrs: {
+                      class: `hlx-sk-bulk-copy-url${ok.length > 1 ? 's' : ''}`,
+                    },
+                    lstnrs: {
+                      click: (evt) => {
+                        evt.stopPropagation();
+                        const { config } = sk;
+                        const host = config.host || config.outerHost;
+                        navigator.clipboard.writeText(ok.map((item) => `https://${host}${item.path}`)
+                          .join('\n'));
+                        sk.hideModal();
+                      },
+                    },
+                  }));
                 }
-              }, 40);
-              const lines = [];
-              const ok = results.filter((res) => res.ok);
-              if (ok.length > 0) {
-                lines.push(getBulkText([ok.length], 'result', 'publish', 'success'));
+                const failed = results.filter((res) => !res.ok);
+                if (failed.length > 0) {
+                  const failureText = getBulkText([failed.length], 'result', 'publish', 'failure');
+                  lines.push(failureText);
+                  lines.push(...failed.map((item) => {
+                    if (item.error.startsWith('source does not exist')) {
+                      item.error = getBulkText([1], 'result', 'publish', 'error-no-source');
+                    }
+                    return `${item.path.split('/').pop()}: ${item.error}`;
+                  }));
+                }
                 lines.push(createTag({
                   tag: 'button',
                   attrs: {
-                    class: `hlx-sk-bulk-copy-url${ok.length > 1 ? 's' : ''}`,
-                  },
-                  lstnrs: {
-                    click: (evt) => {
-                      evt.stopPropagation();
-                      const { config } = sk;
-                      const host = config.host || config.outerHost;
-                      navigator.clipboard.writeText(ok.map((item) => `https://${host}${item.path}`)
-                        .join('\n'));
-                      sk.hideModal();
-                    },
+                    class: 'hlx-sk-bulk-close',
                   },
                 }));
-              }
-              const failed = results.filter((res) => !res.ok);
-              if (failed.length > 0) {
-                const failureText = getBulkText([failed.length], 'result', 'publish', 'failure');
-                lines.push(failureText);
-                lines.push(...failed.map((item) => {
-                  if (item.error.startsWith('source does not exist')) {
-                    item.error = getBulkText([1], 'result', 'publish', 'error-no-source');
+                let level = 2;
+                if (failed.length > 0) {
+                  level = 1;
+                  if (ok.length === 0) {
+                    level = 0;
                   }
-                  return `${item.path.split('/').pop()}: ${item.error}`;
-                }));
-              }
-              lines.push(createTag({
-                tag: 'button',
-                attrs: {
-                  class: 'hlx-sk-bulk-close',
-                },
-              }));
-              let level = 2;
-              if (failed.length > 0) {
-                level = 1;
-                if (ok.length === 0) {
-                  level = 0;
                 }
+                sk.showModal(
+                  lines,
+                  true,
+                  level,
+                );
               }
-              sk.showModal(
-                lines,
-                true,
-                level,
-              );
-            }
+            },
+            isEnabled: (s) => s.isAuthorized('live', 'write') && s.status.webPath,
           },
-          isEnabled: (s) => s.isAuthorized('live', 'write') && s.status.webPath,
-        },
-      });
+        });
 
-      updateBulkInfo();
+        updateBulkInfo();
+      }, { once: true });
     }
   }
 
@@ -2151,11 +2156,11 @@
         addPublishPlugin(this);
         addUnpublishPlugin(this);
         addCustomPlugins(this);
+        addBulkPlugins(this);
       }, { once: true });
       this.addEventListener('statusfetched', () => {
         checkUserState(this);
         checkPlugins(this);
-        addBulkPlugins(this);
         checkLastModified(this);
       });
       this.addEventListener('shown', async () => {
