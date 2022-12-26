@@ -135,6 +135,7 @@ describe('Test bulk publish plugin', () => {
         configJson: setup.configJson,
         url: setup.getUrl('edit', 'admin'),
         plugin: 'bulk-publish',
+        pluginSleep: 500,
         loadModule: true,
         acceptDialogs: true,
       }).run();
