@@ -90,6 +90,7 @@ describe('Test editor preview plugin', () => {
       .get('/status/adobe/blog/main?editUrl=https%3A%2F%2Fadobe.sharepoint.com%2F%3Ax%3A%2Fr%2Fsites%2FTheBlog%2F_layouts%2F15%2FDoc.aspx%3Fsourcedoc%3D%257BE8EC80CB-24C3-4B95-B082-C51FD8BC8760%257D%26file%3Dbla.docx%26action%3Ddefault%26mobileredirect%3Dtrue')
       .reply(200, setup.apiResponse());
     nock('https://main--blog--adobe.hlx.page')
+      .persist()
       .get('/en/topics/bla')
       .reply(200, 'blog adobe...');
     const { requestsMade } = await new SidekickTest({

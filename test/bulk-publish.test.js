@@ -27,15 +27,23 @@ const SHAREPOINT_FIXTURE = 'admin-sharepoint.html';
 const GDRIVE_FIXTURE = 'admin-gdrive.html';
 const TESTS = [{
   env: 'sharepoint',
-  setupName: 'blog',
+  setup: new Setup('blog'),
   fixture: SHAREPOINT_FIXTURE,
+  mockRequests: (nock) => {
+    nock('https://main--blog--adobe.hlx.live').persist().get(/.*/).reply(200, '');
+    nock('https://blog.adobe.com').persist().get(/.*/).reply(200, '');
+  },
 }, {
   env: 'gdrive',
-  setupName: 'pages',
+  setup: new Setup('pages'),
   fixture: GDRIVE_FIXTURE,
+  mockRequests: (nock) => {
+    nock('https://main--pages--adobe.hlx.live').persist().get(/.*/).reply(200, '');
+    nock('https://pages.adobe.com').persist().get(/.*/).reply(200, '');
+  },
 }];
 
-describe('Test bulk preview plugin', () => {
+describe('Test bulk publish plugin', () => {
   /** @type TestBrowser */
   let browser;
 
@@ -59,10 +67,17 @@ describe('Test bulk preview plugin', () => {
     nock.done();
   });
 
-  TESTS.forEach(({ env, fixture, setupName }) => {
-    it(`Bulk preview plugin hidden on empty selection in ${env}`, async () => {
-      const setup = new Setup(setupName);
-      nock.admin(setup, 'status', 'admin');
+  TESTS.forEach(({
+    env,
+    fixture,
+    setup,
+    mockRequests,
+  }) => {
+    it(`Bulk publish plugin hidden on empty selection in ${env}`, async () => {
+      nock.admin(setup, {
+        route: 'status',
+        type: 'admin',
+      });
       const { plugins } = await new SidekickTest({
         browser,
         page,
@@ -75,20 +90,22 @@ describe('Test bulk preview plugin', () => {
         loadModule: true,
       }).run();
       assert.ok(
-        plugins.find((p) => p.id === 'bulk-preview' && p.classes.includes('hlx-sk-hidden')),
+        plugins.find((p) => p.id === 'bulk-publish' && p.classes.includes('hlx-sk-hidden')),
         `Plugin not hidden on empty selection in ${env}`,
       );
     }).timeout(IT_DEFAULT_TIMEOUT);
 
-    it(`Bulk preview plugin shows notification when triggered with empty selection in ${env}`, async () => {
-      const setup = new Setup(setupName);
-      nock.admin(setup, 'status', 'admin');
+    it(`Bulk publish plugin shows notification when triggered with empty selection in ${env}`, async () => {
+      nock.admin(setup, {
+        route: 'status',
+        type: 'admin',
+      });
       const { notification } = await new SidekickTest({
         browser,
         page,
         fixture,
         url: setup.getUrl('edit', 'admin'),
-        plugin: 'bulk-preview',
+        plugin: 'bulk-publish',
         pluginSleep: 1000,
         pre: (p) => p.evaluate(() => {
           // user deselects file
@@ -99,11 +116,18 @@ describe('Test bulk preview plugin', () => {
       assert.strictEqual(notification.message, 'No file selected', `Empty text not shown in ${env}`);
     }).timeout(IT_DEFAULT_TIMEOUT);
 
-    it(`Bulk preview plugin previews existing selection in ${env}`, async () => {
-      const setup = new Setup(setupName);
+    it(`Bulk publish plugin publishes existing selection in ${env}`, async () => {
+      mockRequests(nock);
       const { owner, repo, ref } = setup.sidekickConfig;
-      nock.admin(setup, 'status', 'admin');
-      nock.admin(setup, 'preview', 'html', 'post');
+      nock.admin(setup, {
+        route: 'status',
+        type: 'admin',
+      });
+      nock.admin(setup, {
+        route: 'preview',
+        type: 'html',
+        method: 'post',
+      });
       const { requestsMade, checkPageResult: size } = await new SidekickTest({
         browser,
         page,
@@ -111,7 +135,7 @@ describe('Test bulk preview plugin', () => {
         sidekickConfig: setup.sidekickConfig,
         configJson: setup.configJson,
         url: setup.getUrl('edit', 'admin'),
-        plugin: 'bulk-preview',
+        plugin: 'bulk-publish',
         pluginSleep: 1000,
         loadModule: true,
         acceptDialogs: true,
@@ -129,15 +153,23 @@ describe('Test bulk preview plugin', () => {
       assert.strictEqual(size, 1, `Wrong selection size displayed in ${env}`);
       const updateReq = requestsMade
         .filter((r) => r.method === 'POST')
-        .find((r) => r.url === `https://admin.hlx.page/preview/${owner}/${repo}/${ref}/documents/file.pdf`);
-      assert.ok(updateReq, `Preview URL not updated in ${env}`);
+        .find((r) => r.url === `https://admin.hlx.page/live/${owner}/${repo}/${ref}/documents/file.pdf`);
+      assert.ok(updateReq, `Publish URL not updated in ${env}`);
     }).timeout(IT_DEFAULT_TIMEOUT);
 
-    it(`Bulk preview plugin previews user selection in ${env} and copies preview URLs to clipboard`, async () => {
-      const setup = new Setup(setupName);
+    it(`Bulk publish plugin publishes user selection in ${env} and copies publish URLs to clipboard`, async () => {
+      mockRequests(nock);
       const { owner, repo, ref } = setup.sidekickConfig;
-      nock.admin(setup, 'status', 'admin');
-      nock.admin(setup, 'preview', 'html', 'post');
+      nock.admin(setup, {
+        route: 'status',
+        type: 'admin',
+      });
+      nock.admin(setup, {
+        route: 'preview',
+        type: 'html',
+        method: 'post',
+        persist: true,
+      });
       const { requestsMade, checkPageResult: clipboardText } = await new SidekickTest({
         browser,
         page,
@@ -145,7 +177,7 @@ describe('Test bulk preview plugin', () => {
         sidekickConfig: setup.sidekickConfig,
         configJson: setup.configJson,
         url: setup.getUrl('edit', 'admin'),
-        plugin: 'bulk-preview',
+        plugin: 'bulk-publish',
         pluginSleep: 1000,
         post: (p) => p.evaluate(() => {
           // user selects more files
@@ -176,9 +208,9 @@ describe('Test bulk preview plugin', () => {
       assert.deepEqual(
         updateReqs,
         [
-          `https://admin.hlx.page/preview/${owner}/${repo}/${ref}/documents/file.pdf`,
-          `https://admin.hlx.page/preview/${owner}/${repo}/${ref}/documents/document${env === 'gdrive' ? '.docx' : ''}`,
-          `https://admin.hlx.page/preview/${owner}/${repo}/${ref}/documents/spreadsheet${env === 'gdrive' ? '.xlsx' : ''}`,
+          `https://admin.hlx.page/live/${owner}/${repo}/${ref}/documents/file.pdf`,
+          `https://admin.hlx.page/live/${owner}/${repo}/${ref}/documents/document${env === 'gdrive' ? '.docx' : ''}`,
+          `https://admin.hlx.page/live/${owner}/${repo}/${ref}/documents/spreadsheet${env === 'gdrive' ? '.xlsx' : ''}`,
         ],
         `User selection not recognized in ${env}`,
       );
@@ -186,16 +218,25 @@ describe('Test bulk preview plugin', () => {
     }).timeout(IT_DEFAULT_TIMEOUT);
   });
 
-  it('Bulk preview plugin handles error response', async () => {
-    const setup = new Setup('blog');
-    nock.admin(setup, 'status', 'admin');
-    nock.admin(setup, 'preview', 'html', 'post', [404]);
+  it('Bulk publish plugin handles error response', async () => {
+    TESTS[0].mockRequests(nock);
+    const { setup } = TESTS[0];
+    nock.admin(setup, {
+      route: 'status',
+      type: 'admin',
+    });
+    nock.admin(setup, {
+      route: 'preview',
+      type: 'html',
+      method: 'post',
+      status: [404],
+    });
     const { notification } = await new SidekickTest({
       browser,
       page,
       fixture: SHAREPOINT_FIXTURE,
       url: setup.getUrl('edit', 'admin'),
-      plugin: 'bulk-preview',
+      plugin: 'bulk-publish',
       pluginSleep: 1000,
       loadModule: true,
       acceptDialogs: true,
@@ -206,16 +247,26 @@ describe('Test bulk preview plugin', () => {
     );
   }).timeout(IT_DEFAULT_TIMEOUT);
 
-  it('Bulk preview plugin handles partial error response', async () => {
-    const setup = new Setup('blog');
-    nock.admin(setup, 'status', 'admin');
-    nock.admin(setup, 'preview', 'html', 'post', [200, 404]);
+  it('Bulk publish plugin handles partial error response', async () => {
+    TESTS[0].mockRequests(nock);
+    const { setup } = TESTS[0];
+    nock.admin(setup, {
+      route: 'status',
+      type: 'admin',
+    });
+    nock.admin(setup, {
+      route: 'preview',
+      type: 'html',
+      method: 'post',
+      status: [200, 404],
+      persist: true,
+    });
     const { notification } = await new SidekickTest({
       browser,
       page,
       fixture: SHAREPOINT_FIXTURE,
       url: setup.getUrl('edit', 'admin'),
-      plugin: 'bulk-preview',
+      plugin: 'bulk-publish',
       pluginSleep: 1000,
       pre: (p) => p.evaluate(() => {
         // select another file

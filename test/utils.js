@@ -697,15 +697,20 @@ function Nock() {
 
   nocker.admin = (
     /** @type Setup */ setup,
-    route = 'status',
-    type = 'html',
-    method = 'get',
-    status = [200],
-  ) => nocker(`https://admin.hlx.page/${route}/`)
-    .persist()[method](/.*/).reply(() => {
-      const resp = setup.apiResponse(type);
-      return [status.length === 1 ? status[0] : status.shift(), resp];
-    });
+    {
+      route = 'status',
+      type = 'html',
+      method = 'get',
+      status = [200],
+      persist = false,
+    } = {},
+  ) => {
+    const n = nocker(`https://admin.hlx.page/${route}/`);
+    if (persist) {
+      n.persist();
+    }
+    return n[method](/.*/).reply(() => [status.length === 1 ? status[0] : status.shift(), setup.apiResponse(type)]);
+  };
 
   nocker.edit = () => nocker('https://adobe.sharepoint.com')
     .get('/:w:/r/sites/TheBlog/_layouts/15/Doc.aspx?sourcedoc=%7BE8EC80CB-24C3-4B95-B082-C51FD8BC8760%7D&file=bla.docx&action=default&mobileredirect=true')
