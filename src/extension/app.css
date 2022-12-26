@@ -1105,10 +1105,6 @@
   content: "$1 of $2 files previewed...";
 }
 
-.hlx-sk .bulk-info .hlx-sk-bulk-result-preview-items-success::before {
-  content: "$1 files successfully previewed.";
-}
-
 .hlx-sk .bulk-info .hlx-sk-bulk-result-preview-item-success::before {
   content: "1 file successfully previewed.";
 }
