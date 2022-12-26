@@ -35,6 +35,87 @@ const TESTS = [{
   fixture: GDRIVE_FIXTURE,
 }];
 
+describe('Test bulk info plugin', () => {
+  /** @type TestBrowser */
+  let browser;
+
+  before(async function before() {
+    this.timeout(10000);
+    browser = await TestBrowser.create();
+  });
+
+  after(async () => browser.close());
+
+  let page;
+  let nock;
+
+  beforeEach(async () => {
+    page = await browser.openPage();
+    nock = new Nock();
+  });
+
+  afterEach(async () => {
+    await browser.closeAllPages();
+    nock.done();
+  });
+
+  it('Bulk info plugin displays size of election', async () => {
+    const { setup } = TESTS[0];
+    nock.admin(setup, {
+      route: 'status',
+      type: 'admin',
+    });
+    const { checkPageResult: size } = await new SidekickTest({
+      browser,
+      page,
+      fixture: SHAREPOINT_FIXTURE,
+      url: setup.getUrl('edit', 'admin'),
+      loadModule: true,
+      checkPage: (p) => p.evaluate(() => {
+        // get displayed selection size
+        const info = window.hlx.sidekick.shadowRoot.getElementById('hlx-sk-bulk-info');
+        const num = +(window.getComputedStyle(info, ':before')
+          .getPropertyValue('content')
+          .replaceAll('"', '')
+          .split(' ')
+          .shift());
+        return Number.isNaN(num) ? 0 : num;
+      }),
+    }).run();
+    assert.strictEqual(size, 1, 'Wrong selection size displayed');
+  }).timeout(IT_DEFAULT_TIMEOUT);
+
+  it('Bulk info plugin refetches status after navigation', async () => {
+    const { setup } = TESTS[0];
+    nock.admin(setup, {
+      route: 'status',
+      type: 'admin',
+      persist: true,
+    });
+    const { requestsMade } = await new SidekickTest({
+      browser,
+      page,
+      fixture: SHAREPOINT_FIXTURE,
+      url: setup.getUrl('edit', 'admin'),
+      post: (p) => p.evaluate((url) => {
+        document.getElementById('sidekick_test_location').value = `${url}&navigated=true`;
+      }, setup.getUrl('edit', 'admin')),
+      checkPage: (p) => p.evaluate(() => new Promise((resolve) => {
+        // wait a bit
+        setTimeout(resolve, 1000);
+      })),
+      loadModule: true,
+    }).run();
+    const statusReqs = requestsMade
+      .filter((r) => r.url.startsWith('https://admin.hlx.page/status/'))
+      .map((r) => r.url);
+    assert.ok(
+      statusReqs.length === 2,
+      'Did not refetch status after navigation',
+    );
+  }).timeout(IT_DEFAULT_TIMEOUT);
+});
+
 describe('Test bulk preview plugin', () => {
   /** @type TestBrowser */
   let browser;
@@ -114,7 +195,7 @@ describe('Test bulk preview plugin', () => {
         method: 'post',
         persist: true,
       });
-      const { requestsMade, checkPageResult: size } = await new SidekickTest({
+      const { requestsMade } = await new SidekickTest({
         browser,
         page,
         fixture,
@@ -124,18 +205,7 @@ describe('Test bulk preview plugin', () => {
         plugin: 'bulk-preview',
         loadModule: true,
         acceptDialogs: true,
-        checkPage: (p) => p.evaluate(() => {
-          // get displayed selection size
-          const info = window.hlx.sidekick.shadowRoot.getElementById('hlx-sk-bulk-info');
-          const num = +(window.getComputedStyle(info, ':before')
-            .getPropertyValue('content')
-            .replaceAll('"', '')
-            .split(' ')
-            .shift());
-          return Number.isNaN(num) ? 0 : num;
-        }),
       }).run();
-      assert.strictEqual(size, 1, `Wrong selection size displayed in ${env}`);
       const updateReq = requestsMade
         .filter((r) => r.method === 'POST')
         .find((r) => r.url === `https://admin.hlx.page/preview/${owner}/${repo}/${ref}/documents/file.pdf`);

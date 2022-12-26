@@ -127,7 +127,7 @@ describe('Test bulk publish plugin', () => {
         type: 'html',
         method: 'post',
       });
-      const { requestsMade, checkPageResult: size } = await new SidekickTest({
+      const { requestsMade } = await new SidekickTest({
         browser,
         page,
         fixture,
@@ -137,18 +137,7 @@ describe('Test bulk publish plugin', () => {
         plugin: 'bulk-publish',
         loadModule: true,
         acceptDialogs: true,
-        checkPage: (p) => p.evaluate(() => {
-          // get displayed selection size
-          const info = window.hlx.sidekick.shadowRoot.getElementById('hlx-sk-bulk-info');
-          const num = +(window.getComputedStyle(info, ':before')
-            .getPropertyValue('content')
-            .replaceAll('"', '')
-            .split(' ')
-            .shift());
-          return Number.isNaN(num) ? 0 : num;
-        }),
       }).run();
-      assert.strictEqual(size, 1, `Wrong selection size displayed in ${env}`);
       const updateReq = requestsMade
         .filter((r) => r.method === 'POST')
         .find((r) => r.url === `https://admin.hlx.page/live/${owner}/${repo}/${ref}/documents/file.pdf`);
