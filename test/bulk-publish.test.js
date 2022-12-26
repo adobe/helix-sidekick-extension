@@ -175,10 +175,9 @@ describe('Test bulk publish plugin', () => {
         sidekickConfig: setup.sidekickConfig,
         configJson: setup.configJson,
         url: setup.getUrl('edit', 'admin'),
-        sleep: 1000,
         plugin: 'bulk-publish',
         pluginSleep: 1000,
-        post: (p) => p.evaluate(() => {
+        pre: (p) => p.evaluate(() => {
           // user selects more files
           document.getElementById('file-word').setAttribute('aria-selected', 'true');
           document.getElementById('file-excel').setAttribute('aria-selected', 'true');
