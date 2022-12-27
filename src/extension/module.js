@@ -1240,13 +1240,11 @@
         if (sel.length > 1) {
           label.textContent = getI18nText(label).replace('$1', sel.length);
         }
-        if (sel.length === 0) {
-          sk.get('bulk-preview').classList.add('hlx-sk-hidden');
-          sk.get('bulk-publish').classList.add('hlx-sk-hidden');
-        } else {
-          sk.get('bulk-preview').classList.remove('hlx-sk-hidden');
-          sk.get('bulk-publish').classList.remove('hlx-sk-hidden');
-        }
+        // update buttons
+        ['preview', 'publish', 'copy-urls'].forEach((action) => {
+          sk.get(`bulk-${action}`).classList[sel.length === 0 ? 'add' : 'remove']('hlx-sk-hidden');
+        });
+        sk.get('bulk-copy-urls').classList[sel.length === 1 ? 'add' : 'remove']('single');
       };
 
       const getBulkText = ([num, total], type, action, mod) => {
@@ -1467,6 +1465,59 @@
               }
             },
             isEnabled: (s) => s.isAuthorized('live', 'write') && s.status.webPath,
+          },
+        });
+
+        // bulk copy urls
+        sk.add({
+          id: 'bulk-copy-urls',
+          condition: (sidekick) => sidekick.isAdmin(),
+          button: {
+            isDropdown: true,
+          },
+        });
+        sk.add({
+          id: 'bulk-copy-preview-urls',
+          container: 'bulk-copy-urls',
+          condition: (sidekick) => sidekick.isAdmin(),
+          button: {
+            action: async () => {
+              const confirmText = getBulkText([bulkSelection.length], 'confirm');
+              if (bulkSelection.length === 0) {
+                sk.showModal(confirmText);
+              } else {
+                sk.showWait();
+                const { config, status } = sk;
+                const host = config.innerHost;
+                const urls = bulkSelection.map((item) => `https://${host}${toWebPath(status.webPath, item.path)}`);
+                navigator.clipboard.writeText(urls.join('\n'));
+                sk.showModal({
+                  css: `bulk-copied-url${urls.length !== 1 ? 's' : ''}`,
+                });
+              }
+            },
+          },
+        });
+        sk.add({
+          id: 'bulk-copy-publish-urls',
+          container: 'bulk-copy-urls',
+          condition: (sidekick) => sidekick.isAdmin(),
+          button: {
+            action: async () => {
+              const confirmText = getBulkText([bulkSelection.length], 'confirm');
+              if (bulkSelection.length === 0) {
+                sk.showModal(confirmText);
+              } else {
+                sk.showWait();
+                const { config, status } = sk;
+                const host = config.host || config.outerHost;
+                const urls = bulkSelection.map((item) => `https://${host}${toWebPath(status.webPath, item.path)}`);
+                navigator.clipboard.writeText(urls.join('\n'));
+                sk.showModal({
+                  css: `bulk-copied-url${urls.length !== 1 ? 's' : ''}`,
+                });
+              }
+            },
           },
         });
 

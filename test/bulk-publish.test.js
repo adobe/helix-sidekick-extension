@@ -67,54 +67,56 @@ describe('Test bulk publish plugin', () => {
     nock.done();
   });
 
+  it('Bulk publish plugin hidden on empty selection', async () => {
+    const { setup } = TESTS[0];
+    nock.admin(setup, {
+      route: 'status',
+      type: 'admin',
+    });
+    const { plugins } = await new SidekickTest({
+      browser,
+      page,
+      fixture: TESTS[0].fixture,
+      url: setup.getUrl('edit', 'admin'),
+      pre: (p) => p.evaluate(() => {
+        // user deselects file
+        document.getElementById('file-pdf').setAttribute('aria-selected', 'false');
+      }),
+      loadModule: true,
+    }).run();
+    assert.ok(
+      plugins.find((p) => p.id === 'bulk-publish' && p.classes.includes('hlx-sk-hidden')),
+      'Plugin not hidden on empty selection',
+    );
+  }).timeout(IT_DEFAULT_TIMEOUT);
+
+  it('Bulk publish plugin shows notification when triggered with empty selection', async () => {
+    const { setup } = TESTS[0];
+    nock.admin(setup, {
+      route: 'status',
+      type: 'admin',
+    });
+    const { notification } = await new SidekickTest({
+      browser,
+      page,
+      fixture: TESTS[0].fixture,
+      url: setup.getUrl('edit', 'admin'),
+      plugin: 'bulk-publish',
+      pre: (p) => p.evaluate(() => {
+        // user deselects file
+        document.getElementById('file-pdf').setAttribute('aria-selected', 'false');
+      }),
+      loadModule: true,
+    }).run();
+    assert.strictEqual(notification.message, 'No file selected', 'Empty text not shown');
+  }).timeout(IT_DEFAULT_TIMEOUT);
+
   TESTS.forEach(({
     env,
     fixture,
     setup,
     mockRequests,
   }) => {
-    it(`Bulk publish plugin hidden on empty selection in ${env}`, async () => {
-      nock.admin(setup, {
-        route: 'status',
-        type: 'admin',
-      });
-      const { plugins } = await new SidekickTest({
-        browser,
-        page,
-        fixture,
-        url: setup.getUrl('edit', 'admin'),
-        pre: (p) => p.evaluate(() => {
-          // user deselects file
-          document.getElementById('file-pdf').setAttribute('aria-selected', 'false');
-        }),
-        loadModule: true,
-      }).run();
-      assert.ok(
-        plugins.find((p) => p.id === 'bulk-publish' && p.classes.includes('hlx-sk-hidden')),
-        `Plugin not hidden on empty selection in ${env}`,
-      );
-    }).timeout(IT_DEFAULT_TIMEOUT);
-
-    it(`Bulk publish plugin shows notification when triggered with empty selection in ${env}`, async () => {
-      nock.admin(setup, {
-        route: 'status',
-        type: 'admin',
-      });
-      const { notification } = await new SidekickTest({
-        browser,
-        page,
-        fixture,
-        url: setup.getUrl('edit', 'admin'),
-        plugin: 'bulk-publish',
-        pre: (p) => p.evaluate(() => {
-          // user deselects file
-          document.getElementById('file-pdf').setAttribute('aria-selected', 'false');
-        }),
-        loadModule: true,
-      }).run();
-      assert.strictEqual(notification.message, 'No file selected', `Empty text not shown in ${env}`);
-    }).timeout(IT_DEFAULT_TIMEOUT);
-
     it(`Bulk publish plugin publishes existing selection in ${env}`, async () => {
       mockRequests(nock);
       const { owner, repo, ref } = setup.sidekickConfig;

@@ -1068,12 +1068,38 @@
   content: "Sign out failed. Please try again later.";
 }
 
+.hlx-sk .bulk-copy-urls.single > button::before,
 .hlx-sk-overlay .modal .hlx-sk-bulk-copy-url::before {
-  content: "Copy link";
+  content: "Copy URL";
 }
 
+.hlx-sk .bulk-copy-urls > button::before,
 .hlx-sk-overlay .modal .hlx-sk-bulk-copy-urls::before {
-  content: "Copy links";
+  content: "Copy URLs";
+}
+
+.hlx-sk .bulk-copy-preview-urls button::before {
+  content: "Copy Preview URLs";
+}
+
+.hlx-sk .single .bulk-copy-preview-urls button::before {
+  content: "Copy Preview URL";
+}
+
+.hlx-sk .bulk-copy-publish-urls button::before {
+  content: "Copy Publish URLs";
+}
+
+.hlx-sk .single .bulk-copy-publish-urls button::before {
+  content: "Copy Publish URL";
+}
+
+.hlx-sk-overlay .modal.bulk-copied-url::before {
+  content: "URL copied to clipboard.";
+}
+
+.hlx-sk-overlay .modal.bulk-copied-urls::before {
+  content: "URLs copied to clipboard.";
 }
 
 #hlx-sk-bulk-info:empty::before {

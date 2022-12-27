@@ -232,12 +232,38 @@
   content: "Abmeldung fehlgeschlagen. Bitte lade diesen Browser-Tab erneut oder versuche es später noch einmal.";
 }
 
+.hlx-sk .bulk-copy-urls.single > button::before,
 .hlx-sk-overlay .modal .hlx-sk-bulk-copy-url::before {
-  content: "Link kopieren";
+  content: "URL kopieren";
 }
 
+.hlx-sk .bulk-copy-urls > button::before,
 .hlx-sk-overlay .modal .hlx-sk-bulk-copy-urls::before {
-  content: "Links kopieren";
+  content: "URLs kopieren";
+}
+
+.hlx-sk .bulk-copy-preview-urls button::before {
+  content: "Vorschau-URLs kopieren";
+}
+
+.hlx-sk .single .bulk-copy-preview-urls button::before {
+  content: "Vorschau-URL kopieren";
+}
+
+.hlx-sk .bulk-copy-publish-urls button::before {
+  content: "Publizierte URLs kopieren";
+}
+
+.hlx-sk .single .bulk-copy-publish-urls button::before {
+  content: "Publizierte URL kopieren";
+}
+
+.hlx-sk-overlay .modal.bulk-copied-url::before {
+  content: "URL in die Zwischenablage kopiert.";
+}
+
+.hlx-sk-overlay .modal.bulk-copied-urls::before {
+  content: "URLs in die Zwischenablage kopiert.";
 }
 
 #hlx-sk-bulk-info:empty::before {

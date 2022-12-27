@@ -35,87 +35,6 @@ const TESTS = [{
   fixture: GDRIVE_FIXTURE,
 }];
 
-describe('Test bulk info plugin', () => {
-  /** @type TestBrowser */
-  let browser;
-
-  before(async function before() {
-    this.timeout(10000);
-    browser = await TestBrowser.create();
-  });
-
-  after(async () => browser.close());
-
-  let page;
-  let nock;
-
-  beforeEach(async () => {
-    page = await browser.openPage();
-    nock = new Nock();
-  });
-
-  afterEach(async () => {
-    await browser.closeAllPages();
-    nock.done();
-  });
-
-  it('Bulk info plugin displays size of election', async () => {
-    const { setup } = TESTS[0];
-    nock.admin(setup, {
-      route: 'status',
-      type: 'admin',
-    });
-    const { checkPageResult: size } = await new SidekickTest({
-      browser,
-      page,
-      fixture: SHAREPOINT_FIXTURE,
-      url: setup.getUrl('edit', 'admin'),
-      loadModule: true,
-      checkPage: (p) => p.evaluate(() => {
-        // get displayed selection size
-        const info = window.hlx.sidekick.shadowRoot.getElementById('hlx-sk-bulk-info');
-        const num = +(window.getComputedStyle(info, ':before')
-          .getPropertyValue('content')
-          .replaceAll('"', '')
-          .split(' ')
-          .shift());
-        return Number.isNaN(num) ? 0 : num;
-      }),
-    }).run();
-    assert.strictEqual(size, 1, 'Wrong selection size displayed');
-  }).timeout(IT_DEFAULT_TIMEOUT);
-
-  it('Bulk info plugin refetches status after navigation', async () => {
-    const { setup } = TESTS[0];
-    nock.admin(setup, {
-      route: 'status',
-      type: 'admin',
-      persist: true,
-    });
-    const { requestsMade } = await new SidekickTest({
-      browser,
-      page,
-      fixture: SHAREPOINT_FIXTURE,
-      url: setup.getUrl('edit', 'admin'),
-      post: (p) => p.evaluate((url) => {
-        document.getElementById('sidekick_test_location').value = `${url}&navigated=true`;
-      }, setup.getUrl('edit', 'admin')),
-      checkPage: (p) => p.evaluate(() => new Promise((resolve) => {
-        // wait a bit
-        setTimeout(resolve, 1000);
-      })),
-      loadModule: true,
-    }).run();
-    const statusReqs = requestsMade
-      .filter((r) => r.url.startsWith('https://admin.hlx.page/status/'))
-      .map((r) => r.url);
-    assert.ok(
-      statusReqs.length === 2,
-      'Did not refetch status after navigation',
-    );
-  }).timeout(IT_DEFAULT_TIMEOUT);
-});
-
 describe('Test bulk preview plugin', () => {
   /** @type TestBrowser */
   let browser;
@@ -140,49 +59,51 @@ describe('Test bulk preview plugin', () => {
     nock.done();
   });
 
+  it('Bulk preview plugin hidden on empty selection', async () => {
+    const { setup } = TESTS[0];
+    nock.admin(setup, {
+      route: 'status',
+      type: 'admin',
+    });
+    const { plugins } = await new SidekickTest({
+      browser,
+      page,
+      fixture: TESTS[0].fixture,
+      url: setup.getUrl('edit', 'admin'),
+      pre: (p) => p.evaluate(() => {
+        // user deselects file
+        document.getElementById('file-pdf').setAttribute('aria-selected', 'false');
+      }),
+      loadModule: true,
+    }).run();
+    assert.ok(
+      plugins.find((p) => p.id === 'bulk-preview' && p.classes.includes('hlx-sk-hidden')),
+      'Plugin not hidden on empty selection',
+    );
+  }).timeout(IT_DEFAULT_TIMEOUT);
+
+  it('Bulk preview plugin shows notification when triggered with empty selection', async () => {
+    const { setup } = TESTS[0];
+    nock.admin(setup, {
+      route: 'status',
+      type: 'admin',
+    });
+    const { notification } = await new SidekickTest({
+      browser,
+      page,
+      fixture: TESTS[0].fixture,
+      url: setup.getUrl('edit', 'admin'),
+      plugin: 'bulk-preview',
+      pre: (p) => p.evaluate(() => {
+        // user deselects file
+        document.getElementById('file-pdf').setAttribute('aria-selected', 'false');
+      }),
+      loadModule: true,
+    }).run();
+    assert.strictEqual(notification.message, 'No file selected', 'Empty text not shown');
+  }).timeout(IT_DEFAULT_TIMEOUT);
+
   TESTS.forEach(({ env, fixture, setup }) => {
-    it(`Bulk preview plugin hidden on empty selection in ${env}`, async () => {
-      nock.admin(setup, {
-        route: 'status',
-        type: 'admin',
-      });
-      const { plugins } = await new SidekickTest({
-        browser,
-        page,
-        fixture,
-        url: setup.getUrl('edit', 'admin'),
-        pre: (p) => p.evaluate(() => {
-          // user deselects file
-          document.getElementById('file-pdf').setAttribute('aria-selected', 'false');
-        }),
-        loadModule: true,
-      }).run();
-      assert.ok(
-        plugins.find((p) => p.id === 'bulk-preview' && p.classes.includes('hlx-sk-hidden')),
-        `Plugin not hidden on empty selection in ${env}`,
-      );
-    }).timeout(IT_DEFAULT_TIMEOUT);
-
-    it(`Bulk preview plugin shows notification when triggered with empty selection in ${env}`, async () => {
-      nock.admin(setup, {
-        route: 'status',
-        type: 'admin',
-      });
-      const { notification } = await new SidekickTest({
-        browser,
-        page,
-        fixture,
-        url: setup.getUrl('edit', 'admin'),
-        plugin: 'bulk-preview',
-        pre: (p) => p.evaluate(() => {
-          // user deselects file
-          document.getElementById('file-pdf').setAttribute('aria-selected', 'false');
-        }),
-        loadModule: true,
-      }).run();
-      assert.strictEqual(notification.message, 'No file selected', `Empty text not shown in ${env}`);
-    }).timeout(IT_DEFAULT_TIMEOUT);
-
     it(`Bulk preview plugin previews existing selection in ${env}`, async () => {
       const { owner, repo, ref } = setup.sidekickConfig;
       nock.admin(setup, {
