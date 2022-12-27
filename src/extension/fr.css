@@ -248,12 +248,20 @@
   content: "Copy Preview URL";
 }
 
-.hlx-sk .bulk-copy-publish-urls button::before {
-  content: "Copy Publish URLs";
+.hlx-sk .bulk-copy-live-urls button::before {
+  content: "Copy Live URLs";
 }
 
-.hlx-sk .single .bulk-copy-publish-urls button::before {
-  content: "Copy Publish URL";
+.hlx-sk .single .bulk-copy-live-urls button::before {
+  content: "Copy Live URL";
+}
+
+.hlx-sk .bulk-copy-prod-urls button::before {
+  content: "Copy Production URLs";
+}
+
+.hlx-sk .single .bulk-copy-prod-urls button::before {
+  content: "Copy Production URL";
 }
 
 .hlx-sk-overlay .modal.bulk-copied-url::before {

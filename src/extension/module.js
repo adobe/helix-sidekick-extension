@@ -1476,49 +1476,47 @@
             isDropdown: true,
           },
         });
-        sk.add({
-          id: 'bulk-copy-preview-urls',
-          container: 'bulk-copy-urls',
+        [{
+          env: 'preview',
+          hostProperty: 'innerHost',
           condition: (sidekick) => sidekick.isAdmin(),
-          button: {
-            action: async () => {
-              const confirmText = getBulkText([bulkSelection.length], 'confirm');
-              if (bulkSelection.length === 0) {
-                sk.showModal(confirmText);
-              } else {
-                sk.showWait();
-                const { config, status } = sk;
-                const host = config.innerHost;
-                const urls = bulkSelection.map((item) => `https://${host}${toWebPath(status.webPath, item.path)}`);
-                navigator.clipboard.writeText(urls.join('\n'));
-                sk.showModal({
-                  css: `bulk-copied-url${urls.length !== 1 ? 's' : ''}`,
-                });
-              }
-            },
-          },
-        });
-        sk.add({
-          id: 'bulk-copy-publish-urls',
-          container: 'bulk-copy-urls',
+        }, {
+          env: 'live',
+          hostProperty: 'outerHost',
           condition: (sidekick) => sidekick.isAdmin(),
-          button: {
-            action: async () => {
-              const confirmText = getBulkText([bulkSelection.length], 'confirm');
-              if (bulkSelection.length === 0) {
-                sk.showModal(confirmText);
-              } else {
-                sk.showWait();
-                const { config, status } = sk;
-                const host = config.host || config.outerHost;
-                const urls = bulkSelection.map((item) => `https://${host}${toWebPath(status.webPath, item.path)}`);
-                navigator.clipboard.writeText(urls.join('\n'));
-                sk.showModal({
-                  css: `bulk-copied-url${urls.length !== 1 ? 's' : ''}`,
-                });
-              }
+          advanced: (sidekick) => !!sidekick.config.host,
+        }, {
+          env: 'prod',
+          hostProperty: 'host',
+          condition: (sidekick) => sidekick.isAdmin() && sidekick.config.host,
+        }].forEach(({
+          env,
+          hostProperty,
+          condition,
+          advanced = () => false,
+        }) => {
+          sk.add({
+            id: `bulk-copy-${env}-urls`,
+            container: 'bulk-copy-urls',
+            condition,
+            advanced,
+            button: {
+              action: async () => {
+                const emptyText = getBulkText([bulkSelection.length], 'confirm');
+                if (bulkSelection.length === 0) {
+                  sk.showModal(emptyText);
+                } else {
+                  sk.showWait();
+                  const { config, status } = sk;
+                  const urls = bulkSelection.map((item) => `https://${config[hostProperty]}${toWebPath(status.webPath, item.path)}`);
+                  navigator.clipboard.writeText(urls.join('\n'));
+                  sk.showModal({
+                    css: `bulk-copied-url${urls.length !== 1 ? 's' : ''}`,
+                  });
+                }
+              },
             },
-          },
+          });
         });
 
         updateBulkInfo();

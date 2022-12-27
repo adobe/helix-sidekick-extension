@@ -139,6 +139,27 @@ describe('Test bulk copy URLs plugin', () => {
     assert.strictEqual(notification.message, 'No file selected', 'Empty text not shown');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
+  it('Bulk copy live URLs plugin hidden with production host', async () => {
+    const { setup } = TESTS[0];
+    nock.admin(setup, {
+      route: 'status',
+      type: 'admin',
+    });
+    const { plugins } = await new SidekickTest({
+      browser,
+      page,
+      sidekickConfig: setup.sidekickConfig,
+      configJson: setup.configJson,
+      fixture: TESTS[0].fixture,
+      url: setup.getUrl('edit', 'admin'),
+      loadModule: true,
+    }).run();
+    assert.ok(
+      plugins.find((p) => p.id === 'bulk-copy-live-urls' && p.classes.includes('hlx-sk-advanced-only')),
+      'Plugin not hidden with production host',
+    );
+  }).timeout(IT_DEFAULT_TIMEOUT);
+
   TESTS.forEach(({ env, fixture, setup }) => {
     it(`Bulk copy preview URLs plugin copies preview URLs for existing selection to clipboard in ${env}`, async () => {
       const { owner, repo, ref } = setup.sidekickConfig;
@@ -209,7 +230,38 @@ describe('Test bulk copy URLs plugin', () => {
       );
     }).timeout(IT_DEFAULT_TIMEOUT);
 
-    it(`Bulk copy publish URLs plugin copies publish URLs for existing selection to clipboard in ${env}`, async () => {
+    it(`Bulk copy live URLs plugin copies live URLs for existing selection to clipboard in ${env}`, async () => {
+      const { owner, repo, ref } = setup.sidekickConfig;
+      nock.admin(setup, {
+        route: 'status',
+        type: 'admin',
+      });
+      const { checkPageResult: clipboardText } = await new SidekickTest({
+        browser,
+        page,
+        fixture,
+        sidekickConfig: setup.sidekickConfig,
+        configJson: '{}',
+        url: setup.getUrl('edit', 'admin'),
+        plugin: 'bulk-copy-live-urls',
+        pluginSleep: 500,
+        post: (p) => p.evaluate(() => {
+          window.hlx.clipboardText = 'dummy';
+          window.navigator.clipboard.writeText = (text) => {
+            window.hlx.clipboardText = text;
+          };
+        }),
+        checkPage: (p) => p.evaluate(() => window.hlx.clipboardText),
+        loadModule: true,
+      }).run();
+      assert.strictEqual(
+        clipboardText,
+        `https://${ref}--${repo}--${owner}.hlx.live/documents/file.pdf`,
+        `URL not copied to clipboard in ${env}`,
+      );
+    }).timeout(IT_DEFAULT_TIMEOUT);
+
+    it(`Bulk copy prod URLs plugin copies production URLs for existing selection to clipboard in ${env}`, async () => {
       const { host } = JSON.parse(setup.configJson);
       nock.admin(setup, {
         route: 'status',
@@ -222,7 +274,7 @@ describe('Test bulk copy URLs plugin', () => {
         sidekickConfig: setup.sidekickConfig,
         configJson: setup.configJson,
         url: setup.getUrl('edit', 'admin'),
-        plugin: 'bulk-copy-publish-urls',
+        plugin: 'bulk-copy-prod-urls',
         pluginSleep: 500,
         post: (p) => p.evaluate(() => {
           window.hlx.clipboardText = 'dummy';
@@ -237,46 +289,6 @@ describe('Test bulk copy URLs plugin', () => {
         clipboardText,
         `https://${host}/documents/file.pdf`,
         `URL not copied to clipboard in ${env}`,
-      );
-    }).timeout(IT_DEFAULT_TIMEOUT);
-
-    it(`Bulk copy publish URLs plugin copies publish URLs for user selection to clipboard in ${env}`, async () => {
-      const { host } = JSON.parse(setup.configJson);
-      nock.admin(setup, {
-        route: 'status',
-        type: 'admin',
-      });
-      const { checkPageResult: clipboardText } = await new SidekickTest({
-        browser,
-        page,
-        fixture,
-        sidekickConfig: setup.sidekickConfig,
-        configJson: setup.configJson,
-        url: setup.getUrl('edit', 'admin'),
-        plugin: 'bulk-copy-publish-urls',
-        pluginSleep: 500,
-        pre: (p) => p.evaluate(() => {
-          // user selects more files
-          document.getElementById('file-word').setAttribute('aria-selected', 'true');
-          document.getElementById('file-excel').setAttribute('aria-selected', 'true');
-        }),
-        post: (p) => p.evaluate(() => {
-          window.hlx.clipboardText = 'dummy';
-          window.navigator.clipboard.writeText = (text) => {
-            window.hlx.clipboardText = text;
-          };
-        }),
-        checkPage: (p) => p.evaluate(() => window.hlx.clipboardText),
-        loadModule: true,
-      }).run();
-      assert.deepStrictEqual(
-        clipboardText.split('\n'),
-        [
-          `https://${host}/documents/file.pdf`,
-          `https://${host}/documents/document${env === 'gdrive' ? '.docx' : ''}`,
-          `https://${host}/documents/spreadsheet${env === 'gdrive' ? '.xlsx' : ''}`,
-        ],
-        `URLs not copied to clipboard in ${env}`,
       );
     }).timeout(IT_DEFAULT_TIMEOUT);
   });

@@ -250,12 +250,20 @@
   content: "Vorschau-URL kopieren";
 }
 
-.hlx-sk .bulk-copy-publish-urls button::before {
-  content: "Publizierte URLs kopieren";
+.hlx-sk .bulk-copy-live-urls button::before {
+  content: "Live-URLs kopieren";
 }
 
-.hlx-sk .single .bulk-copy-publish-urls button::before {
-  content: "Publizierte URL kopieren";
+.hlx-sk .single .bulk-copy-live-urls button::before {
+  content: "Live-URL kopieren";
+}
+
+.hlx-sk .bulk-copy-prod-urls button::before {
+  content: "Produktions-URLs kopieren";
+}
+
+.hlx-sk .single .bulk-copy-prod-urls button::before {
+  content: "Produktions-URL kopieren";
 }
 
 .hlx-sk-overlay .modal.bulk-copied-url::before {
