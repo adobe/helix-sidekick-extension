@@ -53,7 +53,8 @@ describe('Test editor preview plugin', () => {
       .post('/preview/adobe/blog/main/en/topics/bla')
       .reply(201);
     nock('https://main--blog--adobe.hlx.page')
-      .get('/en/topics/bla')
+      .persist()
+      .get(/.*/)
       .reply(200, 'blog adobe...');
     const { requestsMade } = await new SidekickTest({
       browser,
@@ -91,7 +92,7 @@ describe('Test editor preview plugin', () => {
       .reply(200, setup.apiResponse());
     nock('https://main--blog--adobe.hlx.page')
       .persist()
-      .get('/en/topics/bla')
+      .get(/.*/)
       .reply(200, 'blog adobe...');
     const { requestsMade } = await new SidekickTest({
       browser,
