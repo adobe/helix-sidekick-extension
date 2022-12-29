@@ -699,9 +699,8 @@ describe('Test sidekick', () => {
           checkPage: (p) => p.evaluate(() => window.hlx.sidekick.get('page-info')
             .innerText),
         }).run();
-        assert.strictEqual(
-          checkPageResult,
-          'Jun 18, 2021, 11:57 AM\nJun 18, 2021, 11:57 AM\nJun 18, 2021, 11:57 AM',
+        assert.ok(
+          checkPageResult.includes('Jun 18, 2021'),
           'Dates not displayed by info plugin',
         );
       }).timeout(IT_DEFAULT_TIMEOUT);
