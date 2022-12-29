@@ -211,7 +211,8 @@ describe('Test sidekick', () => {
       it('Loads config and plugins from project config', async () => {
         nock.admin(new Setup('blog'));
         nock('https://www.hlx.live')
-          .get('/')
+          .persist()
+          .get(/.*/)
           .reply(200, 'some content...');
 
         const test = new SidekickTest({
@@ -245,10 +246,10 @@ describe('Test sidekick', () => {
         const pluginUrl = 'https://www.hlx.live/';
         const expectedReferrerParam = '?referrer=https%3A%2F%2Fmain--blog--adobe.hlx.page%2Fen%2Ftopics%2Fbla';
         const expectedPopupUrl = `${pluginUrl}${expectedReferrerParam}`;
-        const mockUrl = `/${expectedReferrerParam}`;
 
         nock('https://www.hlx.live')
-          .get(mockUrl)
+          .persist()
+          .get(/.*/)
           .reply(200, 'some content...');
 
         nock.admin(new Setup('blog'));
@@ -279,10 +280,10 @@ describe('Test sidekick', () => {
         const pluginUrl = 'https://www.hlx.live/';
         const expectedInfoParam = '?ref=main&repo=blog&owner=adobe';
         const expectedPopupUrl = `${pluginUrl}${expectedInfoParam}`;
-        const mockUrl = `/${expectedInfoParam}`;
 
         nock('https://www.hlx.live')
-          .get(mockUrl)
+          .persist()
+          .get(/.*/)
           .reply(200, 'some content...');
 
         nock.admin(new Setup('blog'));
@@ -311,7 +312,8 @@ describe('Test sidekick', () => {
 
       it('Plugin shows palette', async () => {
         nock('https://www.hlx.live')
-          .get('/')
+          .persist()
+          .get(/.*/)
           .reply(200, 'some content...');
 
         nock.admin(new Setup('blog'));
@@ -684,25 +686,22 @@ describe('Test sidekick', () => {
         nock.admin(new Setup('blog'));
         nock('https://admin.hlx.page')
           .get('/status/adobe/blog/main/en/topics/bla?editUrl=auto')
-          .reply(200)
-          .get('/status/adobe/blog/main/en/topics/bla?editUrl=auto')
+          .twice()
           .reply(200);
         const { checkPageResult } = await new SidekickTest({
           browser,
           page,
           loadModule,
           plugin: 'info',
-          post: (p) => p.evaluate(() => window.hlx.sidekick
-            .shadowRoot
-            .querySelector('.hlx-sk .info.plugin .dropdown-toggle')
+          post: (p) => p.evaluate(() => window.hlx.sidekick.get('info')
+            .querySelector('.dropdown-toggle')
             .click()),
-          checkPage: (p) => p.evaluate(() => window.hlx.sidekick
-            .shadowRoot
-            .querySelector('.hlx-sk')
+          checkPage: (p) => p.evaluate(() => window.hlx.sidekick.get('page-info')
             .innerText),
         }).run();
-        assert.ok(
-          checkPageResult === 'Jun 18, 2021, 5:57 AM\nJun 18, 2021, 5:57 AM\nJun 18, 2021, 5:57 AM',
+        assert.strictEqual(
+          checkPageResult,
+          'Jun 18, 2021, 11:57 AM\nJun 18, 2021, 11:57 AM\nJun 18, 2021, 11:57 AM',
           'Dates not displayed by info plugin',
         );
       }).timeout(IT_DEFAULT_TIMEOUT);
