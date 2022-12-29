@@ -238,15 +238,19 @@
   content: "Abmeldung fehlgeschlagen. Bitte lade diesen Browser-Tab erneut oder versuche es später noch einmal.";
 }
 
-.hlx-sk .modified-dates .edit-date::before {
+.hlx-sk .feature-container .info > button::before {
+  content: "Information";
+}
+
+.hlx-sk .feature-container .info .page-info .edit-date::before {
   content: "Bearbeitet: ";
 }
 
-.hlx-sk .modified-dates .preview-date::before {
+.hlx-sk .feature-container .info .page-info .preview-date::before {
   content: "Vorschau: ";
 }
 
-.hlx-sk .modified-dates .publish-date::before {
+.hlx-sk .feature-container .info .page-info .publish-date::before {
   content: "Publiziert: ";
 }
 

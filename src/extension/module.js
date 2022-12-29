@@ -1597,7 +1597,7 @@
     const isYesterday = yesterday.toDateString() === date.toDateString();
     const isThisYear = today.getFullYear() === date.getFullYear();
 
-    if (seconds < 5) {
+    if (seconds < 30) {
       return '<span class="now">';
     } else if (seconds < 120) {
       return `${seconds} <span class="seconds-ago">`;
@@ -2004,8 +2004,8 @@
           class: 'feature-container',
         },
       });
-
-      this.infoButton = appendTag(
+      // info button
+      appendTag(
         this.featureContainer,
         createDropdown(this, {
           id: 'info',
@@ -2022,13 +2022,12 @@
             elements: [{
               tag: 'div',
               attrs: {
-                class: 'info-button',
+                class: 'info-icon',
               },
             }],
           },
         }),
       );
-
       // user button
       this.userMenu = appendTag(
         this.featureContainer,
