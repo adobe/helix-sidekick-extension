@@ -54,12 +54,8 @@ describe('Test sidekick login', () => {
       browser,
       page,
       waitPopup: 2000,
-      // suppress extension hint
-      pre: (p) => p.evaluate(() => window.localStorage.setItem('hlxSidekickExtensionHint', Date.now() + 31536000000)),
-      post: async (p) => {
-        const btn = await p.waitForFunction(() => window.hlx.sidekick.shadowRoot.querySelector('.hlx-sk .user div.user-login button'));
-        await btn.click();
-      },
+      plugin: 'user-login',
+      loadModule: true,
     });
 
     nock('https://admin.hlx.page')
@@ -112,13 +108,9 @@ describe('Test sidekick login', () => {
     const test = new SidekickTest({
       browser,
       page,
+      plugin: 'user-login',
       waitPopup: 2000,
-      // suppress extension hint
-      pre: (p) => p.evaluate(() => window.localStorage.setItem('hlxSidekickExtensionHint', Date.now() + 31536000000)),
-      post: async (p) => {
-        const btn = await p.waitForFunction(() => window.hlx.sidekick.shadowRoot.querySelector('.hlx-sk .user div.user-login button'));
-        await btn.click();
-      },
+      loadModule: true,
     });
 
     nock('https://admin.hlx.page')

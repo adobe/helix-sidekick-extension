@@ -1475,7 +1475,7 @@
   function checkUserState(sk) {
     const toggle = sk.get('user').firstElementChild;
     toggle.removeAttribute('disabled');
-    const updateUserPicture = async (picture) => {
+    const updateUserPicture = async (picture, name) => {
       toggle.querySelectorAll('.user-picture').forEach((img) => img.remove());
       if (picture) {
         if (picture.startsWith('https://admin.hlx.page/')) {
@@ -1493,17 +1493,20 @@
           attrs: {
             class: 'user-picture',
             src: picture,
+            title: name,
           },
         });
       } else {
+        toggle.querySelector('.user-picture')?.remove();
         toggle.querySelector('.user-icon').classList.remove('user-icon-hidden');
       }
     };
     const { profile } = sk.status;
     if (profile) {
       const { name, email, picture } = profile;
-      toggle.title = name;
-      updateUserPicture(picture);
+      updateUserPicture(picture, name);
+      sk.remove('user-login');
+
       const info = sk.get('user-info');
       if (!info) {
         sk.add({
@@ -1541,7 +1544,7 @@
         info.querySelector('.profile-name').textContent = name;
         info.querySelector('.profile-email').textContent = email;
       }
-      // logout
+      // switch user
       sk.add({
         container: 'user',
         id: 'user-switch',
@@ -1559,19 +1562,27 @@
           action: () => logout(sk),
         },
       });
+      // clean up on logout
+      sk.addEventListener('loggedout', () => {
+        sk.remove('user-info');
+        sk.remove('user-switch');
+        sk.remove('user-logout');
+      });
     } else {
       updateUserPicture();
-      if (!sk.get('user-login')) {
-        // login
-        sk.add({
-          container: 'user',
-          id: 'user-login',
-          condition: (sidekick) => !sidekick.status.profile || !sidekick.isAuthenticated(),
-          button: {
-            action: () => login(sk),
-          },
-        });
-      }
+      // login
+      sk.add({
+        container: 'user',
+        id: 'user-login',
+        condition: (sidekick) => !sidekick.status.profile || !sidekick.isAuthenticated(),
+        button: {
+          action: () => login(sk),
+        },
+      });
+      // clean up on login
+      sk.addEventListener('loggedin', () => {
+        sk.remove('user-login');
+      });
       if (!sk.status.loggedOut && !sk.isAuthenticated()) {
         // // encourage login
         toggle.click();
