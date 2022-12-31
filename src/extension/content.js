@@ -33,7 +33,11 @@
           // find config matches
           log.debug('content.js: found matches', matches.length);
           if (matches.length === 0) {
-            // no config matches, do nothing
+            // no config matches
+            if (window.hlx.sidekick) {
+              window.hlx.sidekick.replaceWith(''); // remove() doesn't work for custom element
+              delete window.hlx.sidekick;
+            }
             return;
           }
           if (matches.length === 1) {
@@ -66,7 +70,7 @@
     };
 
     log.debug('content.js: waiting for config matches...');
-    chrome.runtime.onMessage.addListener(({ projectMatches }, { tab }) => {
+    chrome.runtime.onMessage.addListener(({ projectMatches = [] }, { tab }) => {
       // make sure message is from extension
       if (!tab) {
         window.hlx.projectMatches = projectMatches;

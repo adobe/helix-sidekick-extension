@@ -897,7 +897,22 @@ describe('Test sidekick', () => {
         nock.admin(new Setup('blog'));
         nock('https://main--blog--adobe.hlx.page')
           .get('/en/bla.json')
-          .reply(200, '{}');
+          .reply(200, JSON.stringify({
+            total: 13,
+            offset: 0,
+            limit: 1,
+            data: [
+              {
+                date: 44917,
+                path: '/en/publish/2022/12/22/test',
+                title: 'Test post',
+                author: 'Adobe',
+                tags: '["Foo","Bar","Digital Transformation"]',
+                robots: '0',
+                lastModified: '1671668578',
+              },
+            ],
+          }));
         const { checkPageResult } = await new SidekickTest({
           browser,
           page,

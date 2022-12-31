@@ -38,6 +38,7 @@
   --hlx-sk-button-disabled-hover-bg: transparent;
   --hlx-sk-button-badge: #F15B3A;
   --hlx-sk-button-badge-hover: #FFC40E;
+  --hlx-sk-label-font-size: 14px;
   --hlx-sk-dropdown-container-bg: rgba(224, 224, 224, .9);
   --hlx-sk-dropdown-container-bg-solid: rgb(224, 224, 224);
   --hlx-sk-modal-overlay-bg: rgba(0,0,0, 0.5);
@@ -182,6 +183,12 @@
 .hlx-sk .plugin-container.loading::before,
 .hlx-sk .plugin-container:empty::before {
   line-height: 28px;
+}
+
+.hlx-sk .plugin span {
+  display: inline-block;
+  margin: 7px 8px 0 0;
+  font-size: var(--hlx-sk-label-font-size);
 }
 
 .hlx-sk .feature-container {
@@ -575,6 +582,22 @@
   color: var(--hlx-sk-modal-color);
 }
 
+.hlx-sk-overlay .level-0 button,
+.hlx-sk-overlay .level-1 button {
+  border-color: var(--hlx-sk-modal-color);
+  color: var(--hlx-sk-modal-color);
+}
+
+.hlx-sk-overlay .level-0 button:hover {
+  background-color: var(--hlx-sk-modal-color);
+  color: var(--hlx-sk-modal-bg-0);
+}
+
+.hlx-sk-overlay .level-1 button:hover {
+  background-color: var(--hlx-sk-modal-color);
+  color: var(--hlx-sk-modal-bg-1);
+}
+
 .hlx-sk-overlay .modal.help {
   margin-top: 15px;
   position: absolute;
@@ -838,6 +861,10 @@
   height: 100%;
 }
 
+.hlx-sk span.hlx-sk-placeholder {
+  display: none;
+}
+
 @media(max-width:600px) {
   .hlx-sk {
     background-image: none;
@@ -898,6 +925,7 @@
 }
 
 .hlx-sk .feature-container .close::before,
+.hlx-sk-overlay .hlx-sk-bulk-close::before,
 .hlx-sk-overlay .help-close button::before,
 .hlx-sk-palette .close::before {
   content: "Close";
@@ -922,7 +950,8 @@
 
 .hlx-sk .env.is-preview .dropdown-toggle::before,
 .hlx-sk .env .preview button::before,
-.hlx-sk .edit-preview button::before {
+.hlx-sk .edit-preview button::before,
+.hlx-sk .bulk-preview button::before {
   content: "Preview";
 }
 
@@ -944,7 +973,8 @@
   content: "Delete";
 }
 
-.hlx-sk .publish button::before {
+.hlx-sk .publish button::before,
+.hlx-sk .bulk-publish button::before {
   content: "Publish";
 }
 
@@ -1152,4 +1182,131 @@
 
 .hlx-sk .feature-container .info .page-info > div:empty::after {
   content: "Never";
+}
+
+.hlx-sk .bulk-copy-urls.single > button::before,
+.hlx-sk-overlay .modal .hlx-sk-bulk-copy-url::before {
+  content: "Copy URL";
+}
+
+.hlx-sk .bulk-copy-urls > button::before,
+.hlx-sk-overlay .modal .hlx-sk-bulk-copy-urls::before {
+  content: "Copy URLs";
+}
+
+.hlx-sk .bulk-copy-preview-urls button::before {
+  content: "Copy Preview URLs";
+}
+
+.hlx-sk .single .bulk-copy-preview-urls button::before {
+  content: "Copy Preview URL";
+}
+
+.hlx-sk .bulk-copy-live-urls button::before {
+  content: "Copy Live URLs";
+}
+
+.hlx-sk .single .bulk-copy-live-urls button::before {
+  content: "Copy Live URL";
+}
+
+.hlx-sk .bulk-copy-prod-urls button::before {
+  content: "Copy Production URLs";
+}
+
+.hlx-sk .single .bulk-copy-prod-urls button::before {
+  content: "Copy Production URL";
+}
+
+.hlx-sk-overlay .modal.bulk-copied-url::before {
+  content: "URL copied to clipboard.";
+}
+
+.hlx-sk-overlay .modal.bulk-copied-urls::before {
+  content: "URLs copied to clipboard.";
+}
+
+#hlx-sk-bulk-info:empty::before {
+  content: "Select files below";
+}
+
+#hlx-sk-bulk-info.selected-item::before {
+  content: "1 file selected";
+}
+
+#hlx-sk-bulk-info.selected-items::before {
+  content: "$1 files selected";
+  display: none;
+}
+
+.hlx-sk .bulk-info .hlx-sk-bulk-confirm:empty::before {
+  content: "No file selected";
+}
+
+.hlx-sk .bulk-info .hlx-sk-bulk-confirm-preview-item::before {
+  content: "Are you sure you want to preview 1 file?";
+}
+
+.hlx-sk .bulk-info .hlx-sk-bulk-confirm-preview-items::before {
+  content: "Are you sure you want to preview $1 files?";
+}
+
+.hlx-sk .bulk-info .hlx-sk-bulk-progress-preview-items::before {
+  content: "$1 of $2 files previewed...";
+}
+
+.hlx-sk .bulk-info .hlx-sk-bulk-result-preview-item-success::before {
+  content: "1 file successfully previewed.";
+}
+
+.hlx-sk .bulk-info .hlx-sk-bulk-result-preview-items-success::before {
+  content: "$1 files successfully previewed.";
+}
+
+.hlx-sk .bulk-info .hlx-sk-bulk-result-preview-item-failure::before {
+  content: "Failed to preview 1 file:";
+}
+
+.hlx-sk .bulk-info .hlx-sk-bulk-result-preview-items-failure::before {
+  content: "Failed to preview $1 files:";
+}
+
+.hlx-sk .bulk-info .hlx-sk-bulk-result-preview-item-error-no-docx::before {
+  content: "Microsoft Word document, convert to Google Docs first";
+}
+
+.hlx-sk .bulk-info .hlx-sk-bulk-result-preview-item-error-no-xlsx::before {
+  content: "Microsoft Excel document, convert to Google Sheets first";
+}
+
+.hlx-sk .bulk-info .hlx-sk-bulk-confirm-publish-item::before {
+  content: "Are you sure you want to publish 1 file?";
+}
+
+.hlx-sk .bulk-info .hlx-sk-bulk-confirm-publish-items::before {
+  content: "Are you sure you want to publish $1 files?";
+}
+
+.hlx-sk .bulk-info .hlx-sk-bulk-progress-publish-items::before {
+  content: "$1 of $2 files published...";
+}
+
+.hlx-sk .bulk-info .hlx-sk-bulk-result-publish-item-success::before {
+  content: "1 file successfully published.";
+}
+
+.hlx-sk .bulk-info .hlx-sk-bulk-result-publish-items-success::before {
+  content: "$1 files successfully published.";
+}
+
+.hlx-sk .bulk-info .hlx-sk-bulk-result-publish-item-failure::before {
+  content: "Failed to publish 1 file:";
+}
+
+.hlx-sk .bulk-info .hlx-sk-bulk-result-publish-items-failure::before {
+  content: "Failed to publish $1 files:";
+}
+
+.hlx-sk .bulk-info .hlx-sk-bulk-result-publish-item-error-no-source::before {
+  content: "File must be previewed first";
 }

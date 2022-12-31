@@ -17,6 +17,7 @@ const { fetch } = require('@adobe/fetch').h1();
 const nock = require('nock');
 const puppeteer = require('puppeteer');
 const pti = require('puppeteer-to-istanbul');
+const mime = require('mime');
 const { fileURLToPath } = require('url');
 const { promises: fs } = require('fs');
 const { CDPBrowser } = require('../node_modules/puppeteer/node_modules/puppeteer-core/lib/cjs/puppeteer/common/Browser.js');
@@ -48,25 +49,45 @@ const SETUPS = {
     configJs: 'window.hlx.initSidekick({host:"pages.adobe.com","hlx3":true});',
     configJson: '{"host":"pages.adobe.com"}',
     api: {
-      status: {
-        html: {
-          webPath: '/creativecloud/en/test',
-          resourcePath: '/creativecloud/en/test.md',
-          live: {
-            url: 'https://main--pages--adobe.hlx.live/creativecloud/en/test',
-            status: 200,
-            lastModified: 'Fri, 18 Jun 2021 09:57:50 GMT',
-          },
-          preview: {
-            url: 'https://main--pages--adobe.hlx.page/creativecloud/en/test',
-            status: 200,
-            lastModified: 'Fri, 18 Jun 2021 09:57:42 GMT',
-          },
-          edit: {
-            url: 'https://docs.google.com/document/d/2E1PNphAhTZAZrDjevM0BX7CZr7KjomuBO6xE1TUo9NU/edit',
-            status: 200,
-            lastModified: 'Fri, 18 Jun 2021 09:55:03 GMT',
-          },
+      html: {
+        webPath: '/creativecloud/en/test',
+        resourcePath: '/creativecloud/en/test.md',
+        live: {
+          url: 'https://main--pages--adobe.hlx.live/creativecloud/en/test',
+          status: 200,
+          lastModified: 'Fri, 18 Jun 2021 09:57:50 GMT',
+        },
+        preview: {
+          url: 'https://main--pages--adobe.hlx.page/creativecloud/en/test',
+          status: 200,
+          lastModified: 'Fri, 18 Jun 2021 09:57:42 GMT',
+        },
+        edit: {
+          url: 'https://docs.google.com/document/d/2E1PNphAhTZAZrDjevM0BX7CZr7KjomuBO6xE1TUo9NU/edit',
+          status: 200,
+          lastModified: 'Fri, 18 Jun 2021 09:55:03 GMT',
+        },
+      },
+      admin: {
+        webPath: '/documents',
+        resourcePath: '/documents',
+        edit: {
+          url: 'https://drive.google.com/drive/folders/7gpVvMWaxoXxVvtq0LLbbMyF6_H_IB6th',
+          status: 200,
+        },
+        preview: {
+          permissions: [
+            'read',
+            'write',
+            'delete',
+          ],
+        },
+        live: {
+          permissions: [
+            'read',
+            'write',
+            'delete',
+          ],
         },
       },
     },
@@ -84,85 +105,105 @@ const SETUPS = {
     configJs: 'window.hlx.initSidekick({host:"blog.adobe.com"});',
     configJson: '{"host":"blog.adobe.com"}',
     api: {
-      status: {
-        html: {
-          webPath: '/en/topics/bla',
-          resourcePath: '/en/topics/bla.md',
-          live: {
-            url: 'https://main--blog--adobe.hlx.live/en/topics/bla',
-            status: 200,
-            lastModified: 'Fri, 18 Jun 2021 09:57:02 GMT',
-            permisions: [
-              'read',
-              'write',
-              'delete',
-            ],
-          },
-          preview: {
-            url: 'https://main--blog--adobe.hlx.page/en/topics/bla',
-            status: 200,
-            lastModified: 'Fri, 18 Jun 2021 09:57:01 GMT',
-            permisions: [
-              'read',
-              'write',
-              'delete',
-            ],
-          },
-          edit: {
-            url: 'https://adobe.sharepoint.com/:w:/r/sites/TheBlog/_layouts/15/Doc.aspx?sourcedoc=%7BE8EC80CB-24C3-4B95-B082-C51FD8BC8760%7D&file=bla.docx&action=default&mobileredirect=true',
-            lastModified: 'Fri, 18 Jun 2021 09:57:00 GMT',
-          },
-          profile: {
-            email: 'jane@foo.bar',
-            name: 'Jane Smith',
-            picture: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 216 216'><defs><style>.cls-1{fill:%23f15a3a;}.cls-2{fill:%23c71f3d;}.cls-3{fill:%23ffc40c;}</style></defs><circle class='cls-1' cx='22.5' cy='108' r='22.5'/><circle class='cls-1' cx='193.5' cy='108' r='22.5'/><circle class='cls-2' cx='63' cy='27' r='27'/><circle class='cls-3' cx='162' cy='27' r='18'/><circle class='cls-2' cx='162' cy='189' r='27'/><circle class='cls-3' cx='63' cy='189' r='18'/></svg>",
-            roles: [
-              'publish',
-            ],
-          },
+      html: {
+        webPath: '/en/topics/bla',
+        resourcePath: '/en/topics/bla.md',
+        live: {
+          url: 'https://main--blog--adobe.hlx.live/en/topics/bla',
+          status: 200,
+          lastModified: 'Fri, 18 Jun 2021 09:57:02 GMT',
+          permisions: [
+            'read',
+            'write',
+            'delete',
+          ],
         },
-        json: {
-          webPath: '/en/bla.json',
-          resourcePath: '/en/bla.json',
-          live: {
-            url: 'https://main--blog--adobe.hlx.live/en/bla.json',
-            status: 200,
-            lastModified: 'Tue, 09 Nov 2021 14:17:35 GMT',
-          },
-          preview: {
-            url: 'https://main--blog--adobe.hlx.page/en/bla.json',
-            status: 200,
-            lastModified: 'Tue, 09 Nov 2021 14:17:27 GMT',
-          },
-          edit: {
-            url: '"https://adobe.sharepoint.com/sites/TheBlog/_layouts/15/Doc.aspx?sourcedoc=%7BDB0B15EE-5CCD-4509-97E3-81D80C7F53FC%7D&file=bla.xlsx&action=default&mobileredirect=true',
-            lastModified: 'Tue, 09 Nov 2021 14:17:20 GMT',
-          },
+        preview: {
+          url: 'https://main--blog--adobe.hlx.page/en/topics/bla',
+          status: 200,
+          lastModified: 'Fri, 18 Jun 2021 09:57:01 GMT',
+          permisions: [
+            'read',
+            'write',
+            'delete',
+          ],
         },
-        xml: {
-          webPath: '/en/bla.xml',
-          resourcePath: '/en/bla.xml',
-          live: {
-            url: 'https://main--blog--adobe.hlx.live/en/bla.xml',
-            status: 200,
-            lastModified: 'Tue, 09 Nov 2021 14:17:35 GMT',
-          },
-          preview: {
-            url: 'https://main--blog--adobe.hlx.page/en/bla.xml',
-            status: 200,
-            lastModified: 'Tue, 09 Nov 2021 14:17:27 GMT',
-          },
-          edit: {
-            url: 'https://raw.githubusercontent.com/adobe/blog/main/en/bla.xml',
-            lastModified: 'Tue, 09 Nov 2021 14:17:13 GMT',
-          },
-          source: {
-            status: 200,
-            contentType: 'application/xml',
-            lastModified: 'Thu, 09 Dec 2021 08:01:27 GMT',
-            contentLength: 208,
-            sourceLocation: 'https://raw.githubusercontent.com/adobe/blog/main/en/bla.xml',
-          },
+        edit: {
+          url: 'https://adobe.sharepoint.com/:w:/r/sites/TheBlog/_layouts/15/Doc.aspx?sourcedoc=%7BE8EC80CB-24C3-4B95-B082-C51FD8BC8760%7D&file=bla.docx&action=default&mobileredirect=true',
+          lastModified: 'Fri, 18 Jun 2021 09:57:00 GMT',
+        },
+        profile: {
+          email: 'jane@foo.bar',
+          name: 'Jane Smith',
+          picture: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 216 216'><defs><style>.cls-1{fill:%23f15a3a;}.cls-2{fill:%23c71f3d;}.cls-3{fill:%23ffc40c;}</style></defs><circle class='cls-1' cx='22.5' cy='108' r='22.5'/><circle class='cls-1' cx='193.5' cy='108' r='22.5'/><circle class='cls-2' cx='63' cy='27' r='27'/><circle class='cls-3' cx='162' cy='27' r='18'/><circle class='cls-2' cx='162' cy='189' r='27'/><circle class='cls-3' cx='63' cy='189' r='18'/></svg>",
+          roles: [
+            'publish',
+          ],
+        },
+      },
+      json: {
+        webPath: '/en/bla.json',
+        resourcePath: '/en/bla.json',
+        live: {
+          url: 'https://main--blog--adobe.hlx.live/en/bla.json',
+          status: 200,
+          lastModified: 'Tue, 09 Nov 2021 14:17:35 GMT',
+        },
+        preview: {
+          url: 'https://main--blog--adobe.hlx.page/en/bla.json',
+          status: 200,
+          lastModified: 'Tue, 09 Nov 2021 14:17:27 GMT',
+        },
+        edit: {
+          url: '"https://adobe.sharepoint.com/sites/TheBlog/_layouts/15/Doc.aspx?sourcedoc=%7BDB0B15EE-5CCD-4509-97E3-81D80C7F53FC%7D&file=bla.xlsx&action=default&mobileredirect=true',
+          lastModified: 'Tue, 09 Nov 2021 14:17:20 GMT',
+        },
+      },
+      xml: {
+        webPath: '/en/bla.xml',
+        resourcePath: '/en/bla.xml',
+        live: {
+          url: 'https://main--blog--adobe.hlx.live/en/bla.xml',
+          status: 200,
+          lastModified: 'Tue, 09 Nov 2021 14:17:35 GMT',
+        },
+        preview: {
+          url: 'https://main--blog--adobe.hlx.page/en/bla.xml',
+          status: 200,
+          lastModified: 'Tue, 09 Nov 2021 14:17:27 GMT',
+        },
+        edit: {
+          url: 'https://raw.githubusercontent.com/adobe/blog/main/en/bla.xml',
+          lastModified: 'Tue, 09 Nov 2021 14:17:13 GMT',
+        },
+        source: {
+          status: 200,
+          contentType: 'application/xml',
+          lastModified: 'Thu, 09 Dec 2021 08:01:27 GMT',
+          contentLength: 208,
+          sourceLocation: 'https://raw.githubusercontent.com/adobe/blog/main/en/bla.xml',
+        },
+      },
+      admin: {
+        webPath: '/documents',
+        resourcePath: '/documents',
+        edit: {
+          url: 'https://adobe.sharepoint.com/sites/TheBlog/Shared%20Documents/Forms/AllItems.aspx?FolderCTID=0x0120004CC488DA1EFC304590C46DF3BE1EECC6&id=%2Fsites%2FTheBlog%2FShared%20Documents%2Fdocuments&viewid=91a3c9e8%2D58bf%2D47ea%2D8ea9%2De039dd257d40',
+          status: 200,
+        },
+        preview: {
+          permissions: [
+            'read',
+            'write',
+            'delete',
+          ],
+        },
+        live: {
+          permissions: [
+            'read',
+            'write',
+            'delete',
+          ],
         },
       },
     },
@@ -222,21 +263,20 @@ class Setup {
    * @returns {string} The URL
    */
   getUrl(env = 'preview', type = 'html') {
-    return this.apiResponse('status', type)[env].url;
+    return this.apiResponse(type)[env].url;
   }
 
   /**
    * Returns the API response for a given API and content type.
-   * @param {string} api=status The API
    * @param {string} type=html The content type (html, xml or json)
    * @returns {Object} The API response
    */
-  apiResponse(api = 'status', type = 'html') {
-    return this._setup.api[api][type];
+  apiResponse(type = 'html') {
+    return this._setup.api[type];
   }
 }
 
-const toResp = (resp) => {
+const toResp = (resp, path) => {
   if (typeof resp === 'object' && resp.status) {
     return resp;
   } else {
@@ -244,6 +284,10 @@ const toResp = (resp) => {
       status: resp ? 200 : 404,
       // eslint-disable-next-line no-nested-ternary
       body: resp ? (typeof resp === 'object' ? JSON.stringify(resp) : resp) : '',
+      headers: [{
+        name: 'content-type',
+        value: path ? mime.getType(path) : 'application/octet-stream',
+      }],
     };
   }
 };
@@ -492,7 +536,7 @@ class TestBrowser {
               // eslint-disable-next-line no-console
               console.log('[pup] loading', request.url);
             }
-            res = toResp(await fs.readFile(fileURLToPath(request.url), 'utf-8'));
+            res = toResp(await fs.readFile(fileURLToPath(request.url), 'utf-8'), request.url);
           }
 
           // if no response, proxy the request so it can be nocked
@@ -586,13 +630,13 @@ class TestBrowser {
   }
 
   async close() {
-    if (!DEBUG) {
+    if (!(DEBUG || process.env.HLX_SK_TEST_DEBUG)) {
       await this.browser.close();
     }
   }
 
   async closeAllPages() {
-    if (!DEBUG) {
+    if (!(DEBUG || process.env.HLX_SK_TEST_DEBUG)) {
       await Promise.all((await this.browser.pages()).map(async (page) => {
         const url = page.url();
         if (url.startsWith('file:///')) {
@@ -651,12 +695,22 @@ function Nock() {
     }
   };
 
-  nocker.admin = (/** @type Setup */ setup, route, type) => nocker(`https://admin.hlx.page/${route}/`)
-    .get(/.*/)
-    .reply(() => {
-      const resp = setup.apiResponse(route, type);
-      return [200, resp];
-    });
+  nocker.admin = (
+    /** @type Setup */ setup,
+    {
+      route = 'status',
+      type = 'html',
+      method = 'get',
+      status = [200],
+      persist = false,
+    } = {},
+  ) => {
+    const n = nocker(`https://admin.hlx.page/${route}/`);
+    if (persist) {
+      n.persist();
+    }
+    return n[method](/.*/).reply(() => [status.length === 1 ? status[0] : status.shift(), setup.apiResponse(type)]);
+  };
 
   nocker.edit = () => nocker('https://adobe.sharepoint.com')
     .get('/:w:/r/sites/TheBlog/_layouts/15/Doc.aspx?sourcedoc=%7BE8EC80CB-24C3-4B95-B082-C51FD8BC8760%7D&file=bla.docx&action=default&mobileredirect=true')
