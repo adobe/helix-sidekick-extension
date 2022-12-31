@@ -541,7 +541,7 @@
    * @returns {HTMLElement} The dropdown
    */
   function createDropdown(sk, config) {
-    const { id = '', button = {} } = config;
+    const { id = '', button = {}, lstnrs = {} } = config;
     const dropdown = createTag({
       tag: 'div',
       attrs: {
@@ -569,6 +569,9 @@
             container.style.marginLeft = `-${cWidth - tWidth}px`;
           }
           evt.stopPropagation();
+          if (lstnrs.click) {
+            lstnrs.click(evt);
+          }
         },
       },
     });
@@ -1591,6 +1594,108 @@
     }
   }
 
+  function getTimeAgo(dateParam) {
+    if (!dateParam) {
+      return ' --- ';
+    }
+    const date = typeof dateParam === 'object' ? dateParam : new Date(dateParam);
+
+    const today = new Date();
+    const yesterday = new Date(today - 86400000); // 86400000 = ms in a day
+    const seconds = Math.round((today - date) / 1000);
+    const minutes = Math.round(seconds / 60);
+    const isToday = today.toDateString() === date.toDateString();
+    const isYesterday = yesterday.toDateString() === date.toDateString();
+    const isThisYear = today.getFullYear() === date.getFullYear();
+
+    if (seconds < 30) {
+      return '<span class="now">';
+    } else if (seconds < 120) {
+      return `${seconds} <span class="seconds-ago">`;
+    } else if (minutes < 60) {
+      return `${minutes} <span class="minutes-ago">`;
+    } else if (isToday) {
+      return `<span class="today"> ${date.toLocaleTimeString([], { timeStyle: 'short' })}`;
+    } else if (isYesterday) {
+      return `<span class="yesterday"> ${date.toLocaleTimeString([], { timeStyle: 'short' })}`;
+    } else if (isThisYear) {
+      return date.toLocaleString([], {
+        month: 'short',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: 'numeric',
+      });
+    }
+
+    return date.toLocaleString([], {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: 'numeric',
+    });
+  }
+
+  function updateModifiedDates(sk) {
+    const infoPlugin = sk.get('info');
+    if (!infoPlugin) {
+      return;
+    }
+
+    const editEl = infoPlugin.querySelector('.edit-date');
+    const previewEl = infoPlugin.querySelector('.preview-date');
+    const publishEl = infoPlugin.querySelector('.publish-date');
+
+    const { status } = sk;
+    const editLastMod = (status.edit && status.edit.lastModified) || null;
+    const previewLastMod = (status.preview && status.preview.lastModified) || null;
+    const liveLastMod = (status.live && status.live.lastModified) || null;
+
+    editEl.innerHTML = getTimeAgo(editLastMod);
+    previewEl.innerHTML = getTimeAgo(previewLastMod);
+    publishEl.innerHTML = getTimeAgo(liveLastMod);
+  }
+
+  /**
+   * Checks info menu.
+   * @private
+   * @param {Sidekick} sk The sidekick
+   */
+  function enableInfoBtn(sk) {
+    const info = sk.get('page-info');
+    if (!info) {
+      const toggle = sk.get('info').firstElementChild;
+      toggle.removeAttribute('disabled');
+
+      sk.add({
+        id: 'page-info',
+        container: 'info',
+        condition: () => true,
+        elements: [
+          {
+            tag: 'div',
+            attrs: {
+              class: 'edit-date',
+            },
+          },
+          {
+            tag: 'div',
+            attrs: {
+              class: 'preview-date',
+            },
+          },
+          {
+            tag: 'div',
+            attrs: {
+              class: 'publish-date',
+            },
+          },
+        ],
+      });
+    }
+    updateModifiedDates(sk);
+  }
+
   /**
    * Registers a plugin for re-evaluation if it should be shown or hidden,
    * and if its button should be enabled or disabled.
@@ -1886,6 +1991,7 @@
         checkUserState(this);
         checkPlugins(this);
         checkLastModified(this);
+        enableInfoBtn(this);
       });
       this.addEventListener('shown', async () => {
         await showSpecialView(this);
@@ -1909,6 +2015,30 @@
           class: 'feature-container',
         },
       });
+      // info button
+      appendTag(
+        this.featureContainer,
+        createDropdown(this, {
+          id: 'info',
+          lstnrs: {
+            click: () => {
+              this.fetchStatus();
+              updateModifiedDates(this);
+            },
+          },
+          button: {
+            attrs: {
+              disabled: '',
+            },
+            elements: [{
+              tag: 'div',
+              attrs: {
+                class: 'info-icon',
+              },
+            }],
+          },
+        }),
+      );
       // user button
       this.userMenu = appendTag(
         this.featureContainer,

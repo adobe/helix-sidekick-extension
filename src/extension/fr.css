@@ -237,3 +237,39 @@
 .hlx-sk-overlay .modal.modal-logout-error::before {
   content: "La déconnexion a échoué. Veuillez essayer plus tard.";
 }
+
+.hlx-sk .feature-container .info > button::before {
+  content: "Information";
+}
+
+.hlx-sk .feature-container .info .page-info .edit-date::before {
+  content: "Édité: ";
+}
+
+.hlx-sk .feature-container .info .page-info .preview-date::before {
+  content: "Aperçu: ";
+}
+
+.hlx-sk .feature-container .info .page-info .publish-date::before {
+  content: "Publié: ";
+}
+
+.hlx-sk .feature-container .info .page-info .now::before {
+  content: "Maintenant";
+}
+
+.hlx-sk .feature-container .info .page-info .seconds-ago::before {
+  content: " secondes dupui";
+}
+
+.hlx-sk .feature-container .info .page-info .minutes-ago::before {
+  content: " minutes depuis";
+}
+
+.hlx-sk .feature-container .info .page-info .today::before {
+  content: "Aujourd'hui à ";
+}
+
+.hlx-sk .feature-container .info .page-info .yesterday::before {
+  content: "Hier à ";
+}

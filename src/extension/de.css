@@ -237,3 +237,39 @@
 .hlx-sk-overlay .modal.modal-logout-error::before {
   content: "Abmeldung fehlgeschlagen. Bitte lade diesen Browser-Tab erneut oder versuche es später noch einmal.";
 }
+
+.hlx-sk .feature-container .info > button::before {
+  content: "Information";
+}
+
+.hlx-sk .feature-container .info .page-info .edit-date::before {
+  content: "Bearbeitet: ";
+}
+
+.hlx-sk .feature-container .info .page-info .preview-date::before {
+  content: "Vorschau: ";
+}
+
+.hlx-sk .feature-container .info .page-info .publish-date::before {
+  content: "Publiziert: ";
+}
+
+.hlx-sk .feature-container .info .page-info .now::before {
+  content: "Jetzt";
+}
+
+.hlx-sk .feature-container .info .page-info .seconds-ago::before {
+  content: " Sekunden zuvor";
+}
+
+.hlx-sk .feature-container .info .page-info .minutes-ago::before {
+  content: " Minuten zuvor";
+}
+
+.hlx-sk .feature-container .info .page-info .today::before {
+  content: "Heute um ";
+}
+
+.hlx-sk .feature-container .info .page-info .yesterday::before {
+  content: "Gestern um ";
+}
