@@ -2009,38 +2009,40 @@
    * @param {Sidekick} sk The sidekick
    */
   function enableInfoBtn(sk) {
-    const info = sk.get('page-info');
-    if (!info) {
-      const toggle = sk.get('info').firstElementChild;
-      toggle.removeAttribute('disabled');
+    if (!sk.isAdmin()) {
+      const info = sk.get('page-info');
+      if (!info) {
+        const toggle = sk.get('info').firstElementChild;
+        toggle.removeAttribute('disabled');
 
-      sk.add({
-        id: 'page-info',
-        container: 'info',
-        condition: () => true,
-        elements: [
-          {
-            tag: 'div',
-            attrs: {
-              class: 'edit-date',
+        sk.add({
+          id: 'page-info',
+          container: 'info',
+          condition: () => true,
+          elements: [
+            {
+              tag: 'div',
+              attrs: {
+                class: 'edit-date',
+              },
             },
-          },
-          {
-            tag: 'div',
-            attrs: {
-              class: 'preview-date',
+            {
+              tag: 'div',
+              attrs: {
+                class: 'preview-date',
+              },
             },
-          },
-          {
-            tag: 'div',
-            attrs: {
-              class: 'publish-date',
+            {
+              tag: 'div',
+              attrs: {
+                class: 'publish-date',
+              },
             },
-          },
-        ],
-      });
+          ],
+        });
+      }
+      updateModifiedDates(sk);
     }
-    updateModifiedDates(sk);
   }
 
   /**
