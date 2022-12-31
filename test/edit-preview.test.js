@@ -182,6 +182,6 @@ describe('Test editor preview plugin', () => {
       waitPopup: 2000,
     }).run();
     assert.ok(!popupOpened, 'Unexpected popup opened');
-    assert.ok(notification.className.includes('modal-preview-not-gdoc'), `Unexpected notification classes: ${notification.className}`);
+    assert.ok(notification.className.includes('modal-preview-not-gsheet-ms-excel'), `Unexpected notification classes: ${notification.className}`);
   }).timeout(IT_DEFAULT_TIMEOUT);
 });

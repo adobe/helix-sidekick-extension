@@ -73,7 +73,7 @@ describe('Test sidekick', () => {
         assert.strictEqual(innerHost, 'main--blog--adobe.hlx.page', `Unexpected innerHost: ${innerHost}`);
         assert.strictEqual(outerHost, 'main--blog--adobe.hlx.live', `Unexpected outerHost: ${innerHost}`);
         // check plugins
-        assert.strictEqual(plugins.length, 12, `Wrong number of plugins: ${plugins.length}`);
+        assert.strictEqual(plugins.length, 14, `Wrong number of plugins: ${plugins.length}`);
       }).timeout(IT_DEFAULT_TIMEOUT);
 
       it('Handles errors fetching status from admin API', async () => {
@@ -211,7 +211,8 @@ describe('Test sidekick', () => {
       it('Loads config and plugins from project config', async () => {
         nock.admin(new Setup('blog'));
         nock('https://www.hlx.live')
-          .get('/')
+          .persist()
+          .get(/.*/)
           .reply(200, 'some content...');
 
         const test = new SidekickTest({
@@ -245,10 +246,10 @@ describe('Test sidekick', () => {
         const pluginUrl = 'https://www.hlx.live/';
         const expectedReferrerParam = '?referrer=https%3A%2F%2Fmain--blog--adobe.hlx.page%2Fen%2Ftopics%2Fbla';
         const expectedPopupUrl = `${pluginUrl}${expectedReferrerParam}`;
-        const mockUrl = `/${expectedReferrerParam}`;
 
         nock('https://www.hlx.live')
-          .get(mockUrl)
+          .persist()
+          .get(/.*/)
           .reply(200, 'some content...');
 
         nock.admin(new Setup('blog'));
@@ -279,10 +280,10 @@ describe('Test sidekick', () => {
         const pluginUrl = 'https://www.hlx.live/';
         const expectedInfoParam = '?ref=main&repo=blog&owner=adobe';
         const expectedPopupUrl = `${pluginUrl}${expectedInfoParam}`;
-        const mockUrl = `/${expectedInfoParam}`;
 
         nock('https://www.hlx.live')
-          .get(mockUrl)
+          .persist()
+          .get(/.*/)
           .reply(200, 'some content...');
 
         nock.admin(new Setup('blog'));
@@ -311,7 +312,8 @@ describe('Test sidekick', () => {
 
       it('Plugin shows palette', async () => {
         nock('https://www.hlx.live')
-          .get('/')
+          .persist()
+          .get(/.*/)
           .reply(200, 'some content...');
 
         nock.admin(new Setup('blog'));
@@ -677,6 +679,30 @@ describe('Test sidekick', () => {
             .click()),
         }).run();
         assert.ok(notification.className.includes('modal-share-success'), 'Did not copy sharing URL to clipboard');
+      }).timeout(IT_DEFAULT_TIMEOUT);
+
+      it('Displays page modified info on info button click', async () => {
+        // const { checkPageResult, plugins } = await new SidekickTest({
+        nock.admin(new Setup('blog'));
+        nock('https://admin.hlx.page')
+          .get('/status/adobe/blog/main/en/topics/bla?editUrl=auto')
+          .twice()
+          .reply(200);
+        const { checkPageResult } = await new SidekickTest({
+          browser,
+          page,
+          loadModule,
+          plugin: 'info',
+          post: (p) => p.evaluate(() => window.hlx.sidekick.get('info')
+            .querySelector('.dropdown-toggle')
+            .click()),
+          checkPage: (p) => p.evaluate(() => window.hlx.sidekick.get('page-info')
+            .innerText),
+        }).run();
+        assert.ok(
+          checkPageResult.includes('Jun 18, 2021'),
+          'Dates not displayed by info plugin',
+        );
       }).timeout(IT_DEFAULT_TIMEOUT);
 
       it('Detects edit environment correctly', async () => {

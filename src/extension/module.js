@@ -552,7 +552,7 @@
    * @returns {HTMLElement} The dropdown
    */
   function createDropdown(sk, config) {
-    const { id = '', button = {} } = config;
+    const { id = '', button = {}, lstnrs = {} } = config;
     const dropdown = createTag({
       tag: 'div',
       attrs: {
@@ -580,6 +580,9 @@
             container.style.marginLeft = `-${cWidth - tWidth}px`;
           }
           evt.stopPropagation();
+          if (lstnrs.click) {
+            lstnrs.click(evt);
+          }
         },
       },
     });
@@ -979,15 +982,30 @@
             sk.showModal({
               css: `modal-preview-onedrive${mac}`,
             });
-          } else if (status.edit.sourceLocation?.startsWith('gdrive:')
-            && status.edit.contentType !== 'application/vnd.google-apps.document'
-            && status.edit.contentType !== 'application/vnd.google-apps.spreadsheet') {
-            sk.showModal({
-              css: 'modal-preview-not-gdoc',
-              sticky: true,
-              level: 0,
-            });
-            return;
+          } else if (status.edit.sourceLocation?.startsWith('gdrive:')) {
+            const { contentType } = status.edit;
+
+            const isGoogleDocMime = contentType === 'application/vnd.google-apps.document';
+            const isGoogleSheetMime = contentType === 'application/vnd.google-apps.spreadsheet';
+            const neitherGdocOrGSheet = !isGoogleDocMime || !isGoogleSheetMime;
+
+            if (neitherGdocOrGSheet) {
+              const isMsDocMime = contentType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+              const isMsExcelSheet = contentType === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+              let css = 'modal-preview-not-gdoc-generic'; // show generic message by default
+              if (isMsDocMime) {
+                css = 'modal-preview-not-gdoc-ms-word';
+              } else if (isMsExcelSheet) {
+                css = 'modal-preview-not-gsheet-ms-excel';
+              }
+              sk.showModal({
+                css,
+                sticky: true,
+                level: 0,
+              });
+
+              return;
+            }
           } else {
             sk.showWait();
           }
@@ -1807,7 +1825,7 @@
   function checkUserState(sk) {
     const toggle = sk.get('user').firstElementChild;
     toggle.removeAttribute('disabled');
-    const updateUserPicture = async (picture) => {
+    const updateUserPicture = async (picture, name) => {
       toggle.querySelectorAll('.user-picture').forEach((img) => img.remove());
       if (picture) {
         if (picture.startsWith('https://admin.hlx.page/')) {
@@ -1825,17 +1843,20 @@
           attrs: {
             class: 'user-picture',
             src: picture,
+            title: name,
           },
         });
       } else {
+        toggle.querySelector('.user-picture')?.remove();
         toggle.querySelector('.user-icon').classList.remove('user-icon-hidden');
       }
     };
     const { profile } = sk.status;
     if (profile) {
       const { name, email, picture } = profile;
-      toggle.title = name;
-      updateUserPicture(picture);
+      updateUserPicture(picture, name);
+      sk.remove('user-login');
+
       const info = sk.get('user-info');
       if (!info) {
         sk.add({
@@ -1873,7 +1894,7 @@
         info.querySelector('.profile-name').textContent = name;
         info.querySelector('.profile-email').textContent = email;
       }
-      // logout
+      // switch user
       sk.add({
         container: 'user',
         id: 'user-switch',
@@ -1891,25 +1912,135 @@
           action: () => logout(sk),
         },
       });
+      // clean up on logout
+      sk.addEventListener('loggedout', () => {
+        sk.remove('user-info');
+        sk.remove('user-switch');
+        sk.remove('user-logout');
+      });
     } else {
       updateUserPicture();
-      if (!sk.get('user-login')) {
-        // login
-        sk.add({
-          container: 'user',
-          id: 'user-login',
-          condition: (sidekick) => !sidekick.status.profile || !sidekick.isAuthenticated(),
-          button: {
-            action: () => login(sk),
-          },
-        });
-      }
+      // login
+      sk.add({
+        container: 'user',
+        id: 'user-login',
+        condition: (sidekick) => !sidekick.status.profile || !sidekick.isAuthenticated(),
+        button: {
+          action: () => login(sk),
+        },
+      });
+      // clean up on login
+      sk.addEventListener('loggedin', () => {
+        sk.remove('user-login');
+      });
       if (!sk.status.loggedOut && !sk.isAuthenticated()) {
         // // encourage login
         toggle.click();
         toggle.nextElementSibling.classList.add('highlight');
       }
     }
+  }
+
+  function getTimeAgo(dateParam) {
+    if (!dateParam) {
+      return '';
+    }
+    const date = typeof dateParam === 'object' ? dateParam : new Date(dateParam);
+
+    const today = new Date();
+    const yesterday = new Date(today - 86400000); // 86400000 = ms in a day
+    const seconds = Math.round((today - date) / 1000);
+    const minutes = Math.round(seconds / 60);
+    const isToday = today.toDateString() === date.toDateString();
+    const isYesterday = yesterday.toDateString() === date.toDateString();
+    const isThisYear = today.getFullYear() === date.getFullYear();
+
+    if (seconds < 30) {
+      return '<span class="now">';
+    } else if (seconds < 120) {
+      return `${seconds} <span class="seconds-ago">`;
+    } else if (minutes < 60) {
+      return `${minutes} <span class="minutes-ago">`;
+    } else if (isToday) {
+      return `<span class="today"> ${date.toLocaleTimeString([], { timeStyle: 'short' })}`;
+    } else if (isYesterday) {
+      return `<span class="yesterday"> ${date.toLocaleTimeString([], { timeStyle: 'short' })}`;
+    } else if (isThisYear) {
+      return date.toLocaleString([], {
+        month: 'short',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: 'numeric',
+      });
+    }
+
+    return date.toLocaleString([], {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: 'numeric',
+    });
+  }
+
+  function updateModifiedDates(sk) {
+    const infoPlugin = sk.get('info');
+    if (!infoPlugin) {
+      return;
+    }
+
+    const editEl = infoPlugin.querySelector('.edit-date');
+    const previewEl = infoPlugin.querySelector('.preview-date');
+    const publishEl = infoPlugin.querySelector('.publish-date');
+
+    const { status } = sk;
+    const editLastMod = (status.edit && status.edit.lastModified) || null;
+    const previewLastMod = (status.preview && status.preview.lastModified) || null;
+    const liveLastMod = (status.live && status.live.lastModified) || null;
+
+    editEl.innerHTML = getTimeAgo(editLastMod);
+    previewEl.innerHTML = getTimeAgo(previewLastMod);
+    publishEl.innerHTML = getTimeAgo(liveLastMod);
+  }
+
+  /**
+   * Checks info menu.
+   * @private
+   * @param {Sidekick} sk The sidekick
+   */
+  function enableInfoBtn(sk) {
+    const info = sk.get('page-info');
+    if (!info) {
+      const toggle = sk.get('info').firstElementChild;
+      toggle.removeAttribute('disabled');
+
+      sk.add({
+        id: 'page-info',
+        container: 'info',
+        condition: () => true,
+        elements: [
+          {
+            tag: 'div',
+            attrs: {
+              class: 'edit-date',
+            },
+          },
+          {
+            tag: 'div',
+            attrs: {
+              class: 'preview-date',
+            },
+          },
+          {
+            tag: 'div',
+            attrs: {
+              class: 'publish-date',
+            },
+          },
+        ],
+      });
+    }
+    updateModifiedDates(sk);
   }
 
   /**
@@ -2211,6 +2342,7 @@
         checkUserState(this);
         checkPlugins(this);
         checkLastModified(this);
+        enableInfoBtn(this);
       });
       this.addEventListener('shown', async () => {
         await showSpecialView(this);
@@ -2234,6 +2366,30 @@
           class: 'feature-container',
         },
       });
+      // info button
+      appendTag(
+        this.featureContainer,
+        createDropdown(this, {
+          id: 'info',
+          lstnrs: {
+            click: () => {
+              this.fetchStatus();
+              updateModifiedDates(this);
+            },
+          },
+          button: {
+            attrs: {
+              disabled: '',
+            },
+            elements: [{
+              tag: 'div',
+              attrs: {
+                class: 'info-icon',
+              },
+            }],
+          },
+        }),
+      );
       // user button
       this.userMenu = appendTag(
         this.featureContainer,

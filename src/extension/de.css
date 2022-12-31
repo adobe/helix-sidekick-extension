@@ -176,8 +176,16 @@
   content: "Vorschau-Generierung fehlgeschlagen. Bitte versuche es später noch einmal.";
 }
 
-.hlx-sk-overlay .modal.modal-preview-not-gdoc::before {
+.hlx-sk-overlay .modal.modal-preview-not-gdoc-generic::before {
   content: "Vorschau-Generierung fehlgeschlagen. Muss ein Google-Dokument oder eine Tabelle sein.";
+}
+
+.hlx-sk-overlay .modal.modal-preview-not-gdoc-ms-doc::before {
+  content: "Dies ist ein Microsoft Word-Dokument. Bitte in Google-Dokument umwandeln: Datei > Als Google-Dokument speichern";
+}
+
+.hlx-sk-overlay .modal.modal-preview-not-gsheet-ms-excel::before {
+  content: "Dies ist ein Microsoft Excel-Dokument. Bitte in Google-Tabelle umwandeln: Datei > Als Google-Tabelle speichern";
 }
 
 .hlx-sk-overlay .modal.modal-reload-failure::before {
@@ -230,6 +238,46 @@
 
 .hlx-sk-overlay .modal.modal-logout-error::before {
   content: "Abmeldung fehlgeschlagen. Bitte lade diesen Browser-Tab erneut oder versuche es später noch einmal.";
+}
+
+.hlx-sk .feature-container .info > button::before {
+  content: "Information";
+}
+
+.hlx-sk .feature-container .info .page-info .edit-date::before {
+  content: "Bearbeitet: ";
+}
+
+.hlx-sk .feature-container .info .page-info .preview-date::before {
+  content: "Vorschau: ";
+}
+
+.hlx-sk .feature-container .info .page-info .publish-date::before {
+  content: "Publiziert: ";
+}
+
+.hlx-sk .feature-container .info .page-info .now::before {
+  content: "Jetzt";
+}
+
+.hlx-sk .feature-container .info .page-info .seconds-ago::before {
+  content: " Sekunden zuvor";
+}
+
+.hlx-sk .feature-container .info .page-info .minutes-ago::before {
+  content: " Minuten zuvor";
+}
+
+.hlx-sk .feature-container .info .page-info .today::before {
+  content: "Heute um ";
+}
+
+.hlx-sk .feature-container .info .page-info .yesterday::before {
+  content: "Gestern um ";
+}
+
+.hlx-sk .feature-container .info .page-info > div:empty::after {
+  content: "Nie";
 }
 
 .hlx-sk .bulk-copy-urls.single > button::before,

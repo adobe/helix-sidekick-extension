@@ -1,3 +1,12 @@
+## [6.6.1](https://github.com/adobe/helix-sidekick-extension/compare/v6.6.0...v6.6.1) (2022-12-29)
+
+
+### Bug Fixes
+
+* add project not shown with fresh config ([bddea28](https://github.com/adobe/helix-sidekick-extension/commit/bddea2815439fa703acc0fd80139aa530934e8a5))
+* test ([b91486a](https://github.com/adobe/helix-sidekick-extension/commit/b91486a7816767f4a869ec95e0537e5e57c853fb))
+* ui glitch on options page ([9f002d2](https://github.com/adobe/helix-sidekick-extension/commit/9f002d23f878b7bbd027929fc3bb1a36cc024d64))
+
 # [6.6.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.5.0...v6.6.0) (2022-12-07)
 
 
