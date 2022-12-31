@@ -157,7 +157,6 @@ export async function getState(cb) {
 export async function getProjectMatches(configs, tabUrl) {
   const {
     host: checkHost,
-    pathname: checkPath,
   } = new URL(tabUrl);
   // exclude disabled configs
   configs = configs.filter((cfg) => !cfg.disabled);
@@ -174,7 +173,7 @@ export async function getProjectMatches(configs, tabUrl) {
   });
   if (matches.length === 0
     && (/(docs|drive)\.google\.com$/.test(checkHost) // gdrive
-    || /^\/:(.):\//.test(checkPath))) { // sharepoint
+      || /^[a-z-]+\.sharepoint\.com$/.test(checkHost))) { // sharepoint
     let results = [];
     // check cache
     log.debug('discovery cache', DISCOVERY_CACHE);
