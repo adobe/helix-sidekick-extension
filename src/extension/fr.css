@@ -273,3 +273,7 @@
 .hlx-sk .feature-container .info .page-info .yesterday::before {
   content: "Hier à ";
 }
+
+.hlx-sk .feature-container .info .page-info > div:empty::after {
+  content: "Jamais";
+}

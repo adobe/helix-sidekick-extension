@@ -223,7 +223,7 @@
 .hlx-sk .feature-container .info .page-info > div::before {
   position: absolute;
   font-weight: bold;
-  left: 0;
+  left: 2px;
 }
 
 .hlx-sk .feature-container .user .dropdown-toggle {
@@ -1148,4 +1148,8 @@
 
 .hlx-sk .feature-container .info .page-info .yesterday::before {
   content: "Yesterday at ";
+}
+
+.hlx-sk .feature-container .info .page-info > div:empty::after {
+  content: "Never";
 }

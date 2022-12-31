@@ -1596,7 +1596,7 @@
 
   function getTimeAgo(dateParam) {
     if (!dateParam) {
-      return ' --- ';
+      return '';
     }
     const date = typeof dateParam === 'object' ? dateParam : new Date(dateParam);
 
