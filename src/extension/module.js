@@ -987,7 +987,7 @@
 
             const isGoogleDocMime = contentType === 'application/vnd.google-apps.document';
             const isGoogleSheetMime = contentType === 'application/vnd.google-apps.spreadsheet';
-            const neitherGdocOrGSheet = !isGoogleDocMime || !isGoogleSheetMime;
+            const neitherGdocOrGSheet = !isGoogleDocMime && !isGoogleSheetMime;
 
             if (neitherGdocOrGSheet) {
               const isMsDocMime = contentType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
