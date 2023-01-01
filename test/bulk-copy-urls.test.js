@@ -160,6 +160,37 @@ describe('Test bulk copy URLs plugin', () => {
     );
   }).timeout(IT_DEFAULT_TIMEOUT);
 
+  it('Bulk copy preview URLs plugin prevents duplicate slashes in path if root folder', async () => {
+    const { setup } = TESTS[0];
+    nock('https://admin.hlx.page/status')
+      .get(/.*/)
+      .reply(200, {
+        ...setup.apiResponse('admin'),
+        webPath: '/', // root folder
+      });
+    const { checkPageResult: clipboardText } = await new SidekickTest({
+      browser,
+      page,
+      fixture: TESTS[0].fixture,
+      sidekickConfig: setup.sidekickConfig,
+      url: setup.getUrl('edit', 'admin'),
+      plugin: 'bulk-copy-preview-urls',
+      pluginSleep: 500,
+      post: (p) => p.evaluate(() => {
+        window.hlx.clipboardText = 'dummy';
+        window.navigator.clipboard.writeText = (text) => {
+          window.hlx.clipboardText = text;
+        };
+      }),
+      checkPage: (p) => p.evaluate(() => window.hlx.clipboardText),
+      loadModule: true,
+    }).run();
+    assert.ok(
+      !new URL(clipboardText).pathname.startsWith('//'),
+      `Preview URL contains duplicate slashes in path: ${clipboardText}`,
+    );
+  });
+
   TESTS.forEach(({ env, fixture, setup }) => {
     it(`Bulk copy preview URLs plugin copies preview URLs for existing selection to clipboard in ${env}`, async () => {
       const { owner, repo, ref } = setup.sidekickConfig;

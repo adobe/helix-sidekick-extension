@@ -1220,6 +1220,9 @@
 
       const toWebPath = (folder, name) => {
         const nameParts = name.split('.');
+        if (folder === '/') {
+          folder = '';
+        }
         const [file] = nameParts;
         let [, ext] = nameParts;
         if (isSharePoint(sk.location) && ['docx', 'xlsx'].includes(ext)) {
