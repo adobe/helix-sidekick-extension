@@ -1,3 +1,10 @@
+## [6.7.1](https://github.com/adobe/helix-sidekick-extension/compare/v6.7.0...v6.7.1) (2023-01-01)
+
+
+### Bug Fixes
+
+* bool that determines if mime type is neither a doc or a sheet ([dd7ece5](https://github.com/adobe/helix-sidekick-extension/commit/dd7ece5d18d25a88aa821eaea1e0c97c974623bd))
+
 # [6.7.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.6.1...v6.7.0) (2022-12-31)
 
 
