@@ -682,12 +682,10 @@ describe('Test sidekick', () => {
       }).timeout(IT_DEFAULT_TIMEOUT);
 
       it('Displays page modified info on info button click', async () => {
-        // const { checkPageResult, plugins } = await new SidekickTest({
-        nock.admin(new Setup('blog'));
-        nock('https://admin.hlx.page')
-          .get('/status/adobe/blog/main/en/topics/bla?editUrl=auto')
-          .twice()
-          .reply(200);
+        nock.admin(new Setup('blog'), {
+          route: 'status',
+          persist: true,
+        });
         const { checkPageResult } = await new SidekickTest({
           browser,
           page,
