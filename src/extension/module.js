@@ -1218,13 +1218,21 @@
       const isSharePoint = (location) => location.host.match(/\w+\.sharepoint.com/)
         && location.pathname.endsWith('/Forms/AllItems.aspx');
 
-      const toWebPath = (folder, name) => {
-        const nameParts = name.split('.');
+      const toWebPath = (folder, item) => {
+        const { path, type } = item;
+        const nameParts = path.split('.');
+        if (folder === '/') {
+          folder = '';
+        }
         const [file] = nameParts;
         let [, ext] = nameParts;
-        if (isSharePoint(sk.location) && ['docx', 'xlsx'].includes(ext)) {
-          // omit docx and xlsx extension on sharepoint
+        if (isSharePoint(sk.location) && ext === 'docx') {
+          // omit docx extension on sharepoint
           ext = '';
+        }
+        if (type === 'xlsx' || type.includes('vnd.google-apps.spreadsheet')) {
+          // use json extension for spreadsheets
+          ext = 'json';
         }
         return `${folder}/${file.toLowerCase().replace(/[^0-9a-z]/gi, '-')}${ext ? `.${ext}` : ''}`;
       };
@@ -1333,7 +1341,7 @@
               } else if (window.confirm(confirmText)) {
                 sk.showWait();
                 const { status } = sk;
-                const sel = bulkSelection.map((item) => toWebPath(status.webPath, item.path));
+                const sel = bulkSelection.map((item) => toWebPath(status.webPath, item));
                 const results = [];
                 const total = sel.length;
                 const { processQueue } = await import('./lib/process-queue.js');
@@ -1414,7 +1422,7 @@
               } else if (window.confirm(confirmText)) {
                 sk.showWait();
                 const { status } = sk;
-                const sel = bulkSelection.map((item) => toWebPath(status.webPath, item.path));
+                const sel = bulkSelection.map((item) => toWebPath(status.webPath, item));
                 const results = [];
                 const total = sel.length;
                 const { processQueue } = await import('./lib/process-queue.js');
@@ -1526,7 +1534,7 @@
                 } else {
                   sk.showWait();
                   const { config, status } = sk;
-                  const urls = bulkSelection.map((item) => `https://${config[hostProperty]}${toWebPath(status.webPath, item.path)}`);
+                  const urls = bulkSelection.map((item) => `https://${config[hostProperty]}${toWebPath(status.webPath, item)}`);
                   navigator.clipboard.writeText(urls.join('\n'));
                   sk.showModal({
                     css: `bulk-copied-url${urls.length !== 1 ? 's' : ''}`,
