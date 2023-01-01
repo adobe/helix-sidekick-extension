@@ -1,3 +1,11 @@
+## [6.7.2](https://github.com/adobe/helix-sidekick-extension/compare/v6.7.1...v6.7.2) (2023-01-01)
+
+
+### Bug Fixes
+
+* double slash in url if root folder ([c1c2df7](https://github.com/adobe/helix-sidekick-extension/commit/c1c2df71ceef462b92f67cffeece736c909648f7))
+* use json extension for spreadsheets ([81f8b8e](https://github.com/adobe/helix-sidekick-extension/commit/81f8b8ea033eec7b082883747bf52ab6727d4355))
+
 ## [6.7.1](https://github.com/adobe/helix-sidekick-extension/compare/v6.7.0...v6.7.1) (2023-01-01)
 
 
