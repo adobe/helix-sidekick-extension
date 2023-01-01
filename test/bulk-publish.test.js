@@ -200,7 +200,7 @@ describe('Test bulk publish plugin', () => {
         [
           `https://admin.hlx.page/live/${owner}/${repo}/${ref}/documents/file.pdf`,
           `https://admin.hlx.page/live/${owner}/${repo}/${ref}/documents/document${env === 'gdrive' ? '.docx' : ''}`,
-          `https://admin.hlx.page/live/${owner}/${repo}/${ref}/documents/spreadsheet${env === 'gdrive' ? '.xlsx' : ''}`,
+          `https://admin.hlx.page/live/${owner}/${repo}/${ref}/documents/spreadsheet${env === 'gdrive' ? '.xlsx' : '.json'}`,
         ],
         `User selection not recognized in ${env}`,
       );

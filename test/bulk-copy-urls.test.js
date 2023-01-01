@@ -191,6 +191,40 @@ describe('Test bulk copy URLs plugin', () => {
     );
   });
 
+  it('Bulk copy preview URLs plugin uses json extension for spreadsheet', async () => {
+    const { setup } = TESTS[1];
+    nock.admin(setup, {
+      route: 'status',
+      type: 'admin',
+    });
+    const { checkPageResult: clipboardText } = await new SidekickTest({
+      browser,
+      page,
+      fixture: TESTS[1].fixture,
+      sidekickConfig: setup.sidekickConfig,
+      url: setup.getUrl('edit', 'admin'),
+      plugin: 'bulk-copy-preview-urls',
+      pluginSleep: 500,
+      pre: (p) => p.evaluate(() => {
+        // select spreadsheet
+        document.getElementById('file-pdf').setAttribute('aria-selected', 'false');
+        document.getElementById('file-gsheet').setAttribute('aria-selected', 'true');
+      }),
+      post: (p) => p.evaluate(() => {
+        window.hlx.clipboardText = 'dummy';
+        window.navigator.clipboard.writeText = (text) => {
+          window.hlx.clipboardText = text;
+        };
+      }),
+      checkPage: (p) => p.evaluate(() => window.hlx.clipboardText),
+      loadModule: true,
+    }).run();
+    assert.ok(
+      clipboardText.endsWith('.json'),
+      `Preview URL does not have json extension: ${clipboardText}`,
+    );
+  });
+
   TESTS.forEach(({ env, fixture, setup }) => {
     it(`Bulk copy preview URLs plugin copies preview URLs for existing selection to clipboard in ${env}`, async () => {
       const { owner, repo, ref } = setup.sidekickConfig;
@@ -255,7 +289,7 @@ describe('Test bulk copy URLs plugin', () => {
         [
           `https://${ref}--${repo}--${owner}.hlx.page/documents/file.pdf`,
           `https://${ref}--${repo}--${owner}.hlx.page/documents/document${env === 'gdrive' ? '.docx' : ''}`,
-          `https://${ref}--${repo}--${owner}.hlx.page/documents/spreadsheet${env === 'gdrive' ? '.xlsx' : ''}`,
+          `https://${ref}--${repo}--${owner}.hlx.page/documents/spreadsheet${env === 'gdrive' ? '.xlsx' : '.json'}`,
         ],
         `URLs not copied to clipboard in ${env}`,
       );
