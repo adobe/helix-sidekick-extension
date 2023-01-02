@@ -27,7 +27,7 @@ jobs:
           cp src/extension/fr.css _target/tools/sidekick/
           cp -r src/extension/view _target/tools/sidekick/
           cp docs/config.schema.json _target/tools/sidekick/
-          mkdir _target/tools/sidekick/lib
+          mkdir -p _target/tools/sidekick/lib
           cp src/extension/lib/process-queue.js _target/tools/sidekick/lib/
       - name: Create branch commit and pull request in target repo
         uses: peter-evans/create-pull-request@v4
