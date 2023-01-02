@@ -33,6 +33,8 @@ jobs:
           cp ../src/extension/fr.css tools/sidekick/
           cp -r ../src/extension/view tools/sidekick/
           cp ../docs/config.schema.json tools/sidekick/
+          mkdir tools/sidekick/lib
+          cp ../src/extension/lib/process-queue.js tools/sidekick/lib/
           git add tools/sidekick/*
           if [ "`git status -s`" != "" ]; then
             echo Changes: `git status -s`
