@@ -1,3 +1,11 @@
+## [6.7.3](https://github.com/adobe/helix-sidekick-extension/compare/v6.7.2...v6.7.3) (2023-01-02)
+
+
+### Bug Fixes
+
+* bulk operations broken  in bookmarklet ([5ad1e7f](https://github.com/adobe/helix-sidekick-extension/commit/5ad1e7f2a66f9df28a33e82b5e421777b7d1b617))
+* release script ([dbae6c3](https://github.com/adobe/helix-sidekick-extension/commit/dbae6c32dae783aac445ca2e6e423da5acb7692e))
+
 ## [6.7.2](https://github.com/adobe/helix-sidekick-extension/compare/v6.7.1...v6.7.2) (2023-01-01)
 
 
