@@ -1,3 +1,10 @@
+## [6.7.4](https://github.com/adobe/helix-sidekick-extension/compare/v6.7.3...v6.7.4) (2023-01-03)
+
+
+### Bug Fixes
+
+* **bookmarklet:** relative import prohibited ([5c4e269](https://github.com/adobe/helix-sidekick-extension/commit/5c4e2690812c0fda850751e7c4a6f291e528d853))
+
 ## [6.7.3](https://github.com/adobe/helix-sidekick-extension/compare/v6.7.2...v6.7.3) (2023-01-02)
 
 
