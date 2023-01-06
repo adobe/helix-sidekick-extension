@@ -17,9 +17,12 @@
     "http://localhost:3000/*",
     "https://*/*"
   ],
-  "background": {
+  "__chrome__background": {
     "service_worker": "background.js",
     "type": "module"
+  },
+  "__safari__background": {
+    "page": "background.html"
   },
   "externally_connectable": {
     "matches": [
