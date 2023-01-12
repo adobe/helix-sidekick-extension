@@ -1,8 +1,8 @@
 version: 2.1
 executors:
-  node14:
+  node18:
     docker:
-      - image: cimg/node:14.21
+      - image: cimg/node:18.2
 
 orbs:
   browser-tools: circleci/browser-tools@1.4.0
@@ -31,7 +31,7 @@ commands:
 
 jobs:
   build:
-    executor: node14
+    executor: node18
     steps:
       - setup
       - run: mkdir junit
@@ -50,7 +50,7 @@ jobs:
       - store_artifacts:
           path: junit
   semantic-release:
-    executor: node14
+    executor: node18
     steps:
       - add_ssh_keys:
           fingerprints:
