@@ -10,3 +10,5 @@ junit
 logs
 test-results.xml
 tmp
+*/xcuserdata/*
+*/xcshareddata/*
