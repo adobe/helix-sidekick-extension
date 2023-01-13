@@ -22,7 +22,8 @@
     "type": "module"
   },
   "__safari__background": {
-    "page": "background.html"
+    "page": "background.html",
+    "persistent": false
   },
   "externally_connectable": {
     "matches": [
