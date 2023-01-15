@@ -5,4 +5,6 @@
 #
 
 cd ../..
-node ./build/build.js safari
+pwd
+echo `which node`
+`which node` ./build/build.js safari
