@@ -1,3 +1,10 @@
+## [6.7.5](https://github.com/adobe/helix-sidekick-extension/compare/v6.7.4...v6.7.5) (2023-01-15)
+
+
+### Bug Fixes
+
+* page info dropdown misaligned on mobile ([2d80401](https://github.com/adobe/helix-sidekick-extension/commit/2d80401e8252133ee76bbafcb365866d7c5eac5f))
+
 ## [6.7.4](https://github.com/adobe/helix-sidekick-extension/compare/v6.7.3...v6.7.4) (2023-01-03)
 
 
