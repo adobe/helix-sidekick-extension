@@ -114,6 +114,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		C60EFF3D297468370031C7AD /* ci_pre_xcodebuild.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = ci_pre_xcodebuild.sh; sourceTree = "<group>"; };
 		C6D4D20529687068002248E8 /* module.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = module.js; sourceTree = "<group>"; };
 		C6D4D208296871BD002248E8 /* background.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = background.html; sourceTree = "<group>"; };
 		C6FFCF7A2968641700F1393C /* Base */ = {isa = PBXFileReference; lastKnownFileType = text.html; name = Base; path = ../Base.lproj/Main.html; sourceTree = "<group>"; };
@@ -191,9 +192,18 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		C62EF4CE2974620000C32FC0 /* ci_scripts */ = {
+			isa = PBXGroup;
+			children = (
+				C60EFF3D297468370031C7AD /* ci_pre_xcodebuild.sh */,
+			);
+			path = ci_scripts;
+			sourceTree = "<group>";
+		};
 		C6FFCF722968641700F1393C = {
 			isa = PBXGroup;
 			children = (
+				C62EF4CE2974620000C32FC0 /* ci_scripts */,
 				C6FFCF772968641700F1393C /* Shared (App) */,
 				C6FFCF802968641900F1393C /* Shared (Extension) */,
 				C6FFCF882968641900F1393C /* iOS (App) */,
