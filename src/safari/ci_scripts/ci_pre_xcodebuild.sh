@@ -4,7 +4,7 @@
 #  helix-sidekick-extension
 #
 
-cd ../..
+cd ../../..
 pwd
 echo `which node`
 `which node` ./build/build.js safari
