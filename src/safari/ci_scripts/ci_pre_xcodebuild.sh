@@ -5,4 +5,4 @@
 #
 
 cd ../..
-npm run build:safari
+node ./build/build.js safari
