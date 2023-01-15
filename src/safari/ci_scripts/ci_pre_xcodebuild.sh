@@ -6,4 +6,5 @@
 
 cd ../../..
 brew install node
-node ./build/build.js safari
+npm install
+npm run build:safari
