@@ -57,6 +57,7 @@
     "puppeteer": "19.5.2",
     "puppeteer-to-istanbul": "1.4.0",
     "semantic-release": "19.0.5",
+    "semantic-release-react-native": "1.8.0",
     "shelljs": "0.8.5",
     "sinon": "15.0.1"
   },
