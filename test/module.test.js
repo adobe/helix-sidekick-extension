@@ -703,6 +703,60 @@ describe('Test sidekick', () => {
         );
       }).timeout(IT_DEFAULT_TIMEOUT);
 
+      it('Closes open dropdown when clicking icon', async () => {
+        nock.admin(new Setup('blog'), {
+          route: 'status',
+          persist: true,
+        });
+        const { checkPageResult } = await new SidekickTest({
+          browser,
+          page,
+          loadModule,
+          plugin: 'info',
+          post: (p) => p.evaluate(() => {
+            window.hlx.sidekick.get('info')
+              .querySelector('.dropdown-toggle')
+              .click();
+          }),
+          checkPage: (p) => p.evaluate(async () => {
+            window.hlx.sidekick.get('info')
+              .querySelector('.dropdown-toggle')
+              .click();
+            // verify dropdown is open
+            const isOpen = window.hlx.sidekick.get('info').classList.contains('dropdown-expanded');
+
+            /**
+             * Promise based setTimeout that can be await'd
+             * @param {int} timeOut time out in milliseconds
+             * @param {*} cb Callback function to call when time elapses
+             * @returns
+             */
+            const delay = (timeOut, cb) => new Promise((resolve) => {
+              setTimeout(() => {
+                resolve((cb && cb()) || null);
+              }, timeOut);
+            });
+            await delay(50);
+
+            if (!isOpen) return 'Menu did not open';
+
+            window.hlx.sidekick.get('info')
+              .querySelector('.dropdown-toggle')
+              .click();
+
+            await delay(50);
+            if (!window.hlx.sidekick.get('info').classList.contains('dropdown-expanded')) {
+              return 'Menu closed as expected';
+            }
+            return 'Menu did not close';
+          }),
+        }).run();
+        assert.ok(
+          checkPageResult === 'Menu closed as expected',
+          checkPageResult,
+        );
+      }).timeout(IT_DEFAULT_TIMEOUT);
+
       it('Detects edit environment correctly', async () => {
         nock.admin(new Setup('blog'));
         const test = new SidekickTest({
