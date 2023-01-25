@@ -49,6 +49,7 @@
   --hlx-sk-modal-help-color: white;
   --hlx-sk-modal-help-dropdown-container-bg: #1473e6be;
   --hlx-sk-modal-font-size: 1.25rem;
+  --hlx-sk-modal-input-invalid: #e60016;
   --hlx-sk-special-view-button-color: rgba(0,0,0, 0.5);
   --hlx-sk-special-view-table-border: rgba(0,0,0, 0.5);
   --hlx-sk-palette-title-bg: rgba(0 0 0 / 10%);
@@ -152,22 +153,23 @@
   background-color: var(--hlx-sk-button-disabled-hover-bg);
 }
 
-.hlx-sk .update button {
+.hlx-sk .update {
   position: relative;
 }
 
-.hlx-sk .update button::after {
+.hlx-sk .update::after {
   content: " ";
   height: 5px;
   width: 5px;
   background-color: var(--hlx-sk-button-badge);
   border-radius: 50%;
-  top: 2px;
-  right: 2px;
+  top: 3px;
+  right: 11px;
   position: absolute;
+
 }
 
-.hlx-sk .update button:hover::after {
+.hlx-sk .update:hover::after {
   background-color: var(--hlx-sk-button-badge-hover);
 }
 
@@ -578,6 +580,27 @@
   word-break: break-all;
 }
 
+.hlx-sk-overlay .modal input {
+  font-family: var(--hlx-sk-font-family);
+  font-size: var(--hlx-sk-modal-font-size);
+}
+
+.hlx-sk-overlay .modal input:invalid {
+  color: var(--hlx-sk-modal-input-invalid);
+}
+
+.hlx-sk-overlay .modal .modal-text-small {
+  font-size: 60%;
+}
+
+.hlx-sk-overlay .modal.modal-publish-later p:nth-child(1) {
+  margin-bottom: 0;
+}
+
+.hlx-sk-overlay .modal.modal-publish-later p:nth-child(2) {
+  margin: 0;
+}
+
 .hlx-sk-overlay .level-0 {
   background-color: var(--hlx-sk-modal-bg-0);
   color: var(--hlx-sk-modal-color);
@@ -982,6 +1005,32 @@
 .hlx-sk .publish button::before,
 .hlx-sk .bulk-publish button::before {
   content: "Publish";
+}
+
+.hlx-sk .publish-later button::before {
+  content: "Publish later";
+}
+
+.hlx-sk-overlay .modal-publish-later p:first-child::before {
+  content: "Pick a date and time:";
+  display: block;
+  margin-bottom: 1em;
+}
+
+.hlx-sk-overlay .modal-publish-later p:nth-child(2) span::before {
+  content: "Your timezone: ";
+}
+
+.hlx-sk .publish-later button::before {
+  content: "Publish later";
+}
+
+.hlx-sk-overlay .modal .modal-ok::before {
+  content: "OK";
+}
+
+.hlx-sk-overlay .modal .modal-cancel::before {
+  content: "Cancel";
 }
 
 .hlx-sk .unpublish button::before {

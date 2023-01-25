@@ -570,6 +570,17 @@
       },
       lstnrs: {
         click: (evt) => {
+          if (button.action === 'function') {
+            // split button dropdown:
+            // click on button text -> exec button action
+            // click on arrow -> toggle dropdown
+            const { offsetX, target } = evt;
+            const { left, right } = target.getBoundingClientRect();
+            if (offsetX <= right - left - 32) {
+              button.action(evt, sk);
+              return;
+            }
+          }
           if (dropdown.classList.contains('dropdown-expanded')) {
             dropdown.classList.remove('dropdown-expanded');
             return;
@@ -1125,10 +1136,22 @@
    * @param {Sidekick} sk The sidekick
    */
   function addPublishPlugin(sk) {
+    const pad = (num) => `${num < 10 ? '0' : ''}${num}`;
+    const toLocalDateTime = (d) => {
+      const year = d.getFullYear();
+      const month = pad(d.getMonth() + 1);
+      const day = pad(d.getDate());
+      const hours = pad(d.getHours());
+      const minutes = pad(d.getMinutes());
+      return `${year}-${month}-${day}T${hours}:${minutes}`;
+    };
+
+    // publish
     sk.add({
       id: 'publish',
       condition: (sidekick) => sidekick.isProject() && sk.isContent(),
       button: {
+        isDropdown: true,
         action: async (evt) => {
           const { config, location } = sk;
           const path = location.pathname;
@@ -1162,6 +1185,85 @@
         },
         isEnabled: (sidekick) => sidekick.isAuthorized('live', 'write') && sidekick.status.edit
           && sidekick.status.edit.url, // enable only if edit url exists
+      },
+    });
+
+    // publish later
+    sk.add({
+      id: 'publish-later',
+      condition: (sidekick) => sidekick.isProject() && sk.isContent(),
+      container: 'publish',
+      button: {
+        action: () => {
+          const d = new Date();
+          d.setMinutes(d.getMinutes() + 5);
+          d.setMinutes(60); // jump to next full hour 5 minutes from now
+          const value = toLocalDateTime(d);
+          const { timeZone } = Intl.DateTimeFormat().resolvedOptions();
+          const offset = new Date().getTimezoneOffset();
+          const buttonGroup = createTag({
+            tag: 'span',
+          });
+          appendTag(buttonGroup, createTag({
+            tag: 'button',
+            attrs: {
+              class: 'modal-ok',
+            },
+            lstnrs: {
+              click: ({ target }) => {
+                const { location } = sk;
+                const { value: localDateString } = target
+                  .closest('.modal')
+                  .querySelector('input[type="datetime-local"]');
+                const publishDate = new Date(localDateString).toUTCString();
+                // todo: check date validity and schedule publishing
+                console.log('publish', location.pathname, 'at', publishDate);
+                sk.hideModal();
+              },
+            },
+          }));
+          appendTag(buttonGroup, createTag({
+            tag: 'button',
+            attrs: {
+              class: 'modal-cancel',
+            },
+            lstnrs: {
+              click: () => {
+                sk.hideModal();
+              },
+            },
+          }));
+          sk.showModal(
+            [
+              createTag({
+                tag: 'input',
+                attrs: {
+                  type: 'datetime-local',
+                  value,
+                },
+                lstnrs: {
+                  change: ({ target }) => {
+                    const min = toLocalDateTime(new Date());
+                    target.setAttribute('min', min);
+                  },
+                },
+              }),
+              createTag({
+                tag: 'span',
+                attrs: {
+                  class: 'modal-text-small',
+                },
+                text: `${timeZone} (UTC${offset <= 0 ? '+' : ''}${offset / -60})`,
+              }),
+              buttonGroup,
+            ],
+            true,
+          );
+          // eslint-disable-next-line no-underscore-dangle
+          const modal = sk._modal;
+          modal.addEventListener('click', (e) => e.stopPropagation());
+          modal.classList.add('modal-publish-later');
+        },
       },
     });
   }
