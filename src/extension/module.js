@@ -570,7 +570,7 @@
       },
       lstnrs: {
         click: (evt) => {
-          if (button.action === 'function') {
+          if (typeof button.action === 'function') {
             // split button dropdown:
             // click on button text -> exec button action
             // click on arrow -> toggle dropdown
