@@ -102,16 +102,41 @@ async function getProxyUrl({ id, url: tabUrl }) {
 }
 
 /**
+ * Tries to guess if the current tab is a Franklin site.
+ * @param {Object} The tab
+ * @returns {Promise<Boolean>} True if the provided tab is a Franklin site
+ */
+async function guessIfFranklinSite({ id }) {
+  return new Promise((resolve) => {
+    chrome.scripting.executeScript({
+      target: { tabId: id },
+      func: () => {
+        const isFranklinSite = document.head.querySelectorAll('script[src*="scripts.js"]').length > 0
+          && document.head.querySelectorAll('link[href*="styles.css"]').length > 0
+          && document.body.querySelector('main > div.section') !== null;
+        chrome.runtime.sendMessage({ isFranklinSite });
+      },
+    });
+    // listen for response message from tab
+    const listener = ({ isFranklinSite }) => {
+      chrome.runtime.onMessage.removeListener(listener);
+      resolve(isFranklinSite);
+    };
+    chrome.runtime.onMessage.addListener(listener);
+  });
+}
+
+/**
  * Enables or disables context menu items for a tab.
- * @param {string} tabUrl The URL of the tab
+ * @param {Object} tab The tab
  * @param {Object[]} configs The existing configurations
  */
-async function checkContextMenu(tabUrl, configs = []) {
+async function checkContextMenu({ url: tabUrl, id }, configs = []) {
   if (chrome.contextMenus) {
     // clear context menu
     chrome.contextMenus.removeAll(() => {
       // check if add project is applicable
-      if (configs && configs.length > 0 && !checkLastError()) {
+      if (configs && !checkLastError()) {
         const { giturl } = getConfigFromTabUrl(tabUrl);
         if (giturl) {
           const { owner, repo } = getGitHubSettings(giturl);
@@ -135,6 +160,12 @@ async function checkContextMenu(tabUrl, configs = []) {
               ],
             });
           }
+        }
+      }
+
+      // add the open view doc context menu item only if the current tab is a Franklin site (guess)
+      guessIfFranklinSite({ id }).then((isFranklinSite) => {
+        if (isFranklinSite) {
           chrome.contextMenus.create({
             id: 'openViewDocSource',
             title: i18n('open_view_doc_source'),
@@ -143,7 +174,7 @@ async function checkContextMenu(tabUrl, configs = []) {
             ],
           });
         }
-      }
+      });
     });
   }
 }
@@ -165,7 +196,7 @@ function checkTab(id) {
         checkUrl = await getProxyUrl(tab);
       }
       if (tab.active) {
-        checkContextMenu(tab.url, projects);
+        checkContextMenu(tab, projects);
       }
       if (new URL(checkUrl).pathname === SHARE_PREFIX) {
         log.debug('share url detected, inject install helper');
@@ -179,24 +210,21 @@ function checkTab(id) {
           log.error('error instrumenting generator page', id, e);
         }
       }
-      const matches = getProjectMatches(projects, checkUrl);
+      const matches = await getProjectMatches(projects, checkUrl);
       log.debug('checking', id, checkUrl, matches);
-      const allowed = matches.length > 0;
-      if (allowed) {
-        try {
-          // execute content script
-          chrome.scripting.executeScript({
-            target: { tabId: id },
-            files: ['./content.js'],
-          }, () => {
-            // send config matches to tab
-            chrome.tabs.sendMessage(id, {
-              projectMatches: matches,
-            });
+      try {
+        // execute content script
+        chrome.scripting.executeScript({
+          target: { tabId: id },
+          files: ['./content.js'],
+        }, () => {
+          // send config matches to tab
+          chrome.tabs.sendMessage(id, {
+            projectMatches: matches,
           });
-        } catch (e) {
-          log.error('error enabling extension', id, e);
-        }
+        });
+      } catch (e) {
+        log.error('error enabling extension', id, e);
       }
     });
   });
@@ -263,24 +291,32 @@ async function updateHelpContent() {
 }
 
 /**
- * Checks if the view source popp needs to be openeded, and opens it if necessary.
+ * Open the view document source popup
+ * @param {String} id The tab id
+ */
+function openViewDocSource(id) {
+  chrome.windows.create({
+    url: chrome.runtime.getURL(`/view-doc-source/index.html?tabId=${id}`),
+    type: 'popup',
+    width: 740,
+  });
+}
+
+/**
+ * Checks if the view document source popup needs to be openeded, and opens it if necessary.
  * @param {*} id The tab ID
  */
-function checkViewSource(id) {
+function checkViewDocSource(id) {
   chrome.tabs.get(id, (tab = {}) => {
-    if (!tab.url) return;
+    if (!tab.url || !tab.active) return;
     try {
       const u = new URL(tab.url);
       const vds = u.searchParams.get('view-doc-source');
       if (vds && vds === 'true') {
-        chrome.windows.create({
-          url: chrome.runtime.getURL(`/view-doc-source/index.html?tabId=${id}`),
-          type: 'popup',
-          width: 740,
-        });
+        openViewDocSource(id);
       }
     } catch (e) {
-      log.warn('error checking view source', e);
+      log.warn(`Error checking view source for url: ${tab.url}`, e);
     }
   });
 }
@@ -332,7 +368,7 @@ function checkViewSource(id) {
         }
       }
     },
-    openViewDocSource: async ({ id }) => checkViewSource(id),
+    openViewDocSource: async ({ id }) => openViewDocSource(id),
   };
 
   if (chrome.contextMenus) {
@@ -353,7 +389,7 @@ function checkViewSource(id) {
     // wait until the tab is done loading
     if (info.status === 'complete') {
       checkTab(id);
-      checkViewSource(id);
+      checkViewDocSource(id, true);
     }
   });
 

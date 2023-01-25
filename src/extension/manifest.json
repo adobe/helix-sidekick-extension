@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "__MSG_title__",
-  "version": "6.3.2",
+  "version": "6.7.5",
   "author": "Adobe",
   "homepage_url": "https://www.hlx.live/tools/sidekick/",
   "default_locale": "en",
@@ -17,9 +17,13 @@
     "http://localhost:3000/*",
     "https://*/*"
   ],
-  "background": {
+  "__chrome__background": {
     "service_worker": "background.js",
     "type": "module"
+  },
+  "__safari__background": {
+    "page": "background.html",
+    "persistent": false
   },
   "externally_connectable": {
     "matches": [
@@ -33,8 +37,9 @@
         "de.css",
         "configpicker.js",
         "fr.css",
-        "lib/polyfills.min.js",
         "lib/js-yaml.min.js",
+        "lib/polyfills.min.js",
+        "lib/process-queue.js",
         "module.js",
         "sidekick.js",
         "utils.js",

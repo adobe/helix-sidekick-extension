@@ -11,3 +11,5 @@ logs
 test-results.xml
 tmp
 src/extension/lib/md2html.lib.js*
+**/xcuserdata/*
+**/xcshareddata/*

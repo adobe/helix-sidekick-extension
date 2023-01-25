@@ -53,7 +53,8 @@ describe('Test editor preview plugin', () => {
       .post('/preview/adobe/blog/main/en/topics/bla')
       .reply(201);
     nock('https://main--blog--adobe.hlx.page')
-      .get('/en/topics/bla')
+      .persist()
+      .get(/.*/)
       .reply(200, 'blog adobe...');
     const { requestsMade } = await new SidekickTest({
       browser,
@@ -90,7 +91,8 @@ describe('Test editor preview plugin', () => {
       .get('/status/adobe/blog/main?editUrl=https%3A%2F%2Fadobe.sharepoint.com%2F%3Ax%3A%2Fr%2Fsites%2FTheBlog%2F_layouts%2F15%2FDoc.aspx%3Fsourcedoc%3D%257BE8EC80CB-24C3-4B95-B082-C51FD8BC8760%257D%26file%3Dbla.docx%26action%3Ddefault%26mobileredirect%3Dtrue')
       .reply(200, setup.apiResponse());
     nock('https://main--blog--adobe.hlx.page')
-      .get('/en/topics/bla')
+      .persist()
+      .get(/.*/)
       .reply(200, 'blog adobe...');
     const { requestsMade } = await new SidekickTest({
       browser,
@@ -180,6 +182,6 @@ describe('Test editor preview plugin', () => {
       waitPopup: 2000,
     }).run();
     assert.ok(!popupOpened, 'Unexpected popup opened');
-    assert.ok(notification.className.includes('modal-preview-not-gdoc'), `Unexpected notification classes: ${notification.className}`);
+    assert.ok(notification.className.includes('modal-preview-not-gsheet-ms-excel'), `Unexpected notification classes: ${notification.className}`);
   }).timeout(IT_DEFAULT_TIMEOUT);
 });

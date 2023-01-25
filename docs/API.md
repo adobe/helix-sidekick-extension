@@ -54,7 +54,7 @@ The sidekick provides helper tools for authors.
 
 * [Sidekick](#Sidekick) ⇐ <code>HTMLElement</code>
     * [new Sidekick(cfg)](#new_Sidekick_new)
-    * [.fetchStatus()](#Sidekick+fetchStatus) ⇒ [<code>Sidekick</code>](#Sidekick)
+    * [.fetchStatus(refreshLocation)](#Sidekick+fetchStatus) ⇒ [<code>Sidekick</code>](#Sidekick)
     * [.loadContext(cfg)](#Sidekick+loadContext) ⇒ [<code>Sidekick</code>](#Sidekick)
     * [.checkPushDownContent()](#Sidekick+checkPushDownContent) ⇒ [<code>Sidekick</code>](#Sidekick)
     * [.show()](#Sidekick+show) ⇒ [<code>Sidekick</code>](#Sidekick)
@@ -113,12 +113,17 @@ Creates a new sidekick.
 
 <a name="Sidekick+fetchStatus"></a>
 
-### sidekick.fetchStatus() ⇒ [<code>Sidekick</code>](#Sidekick)
+### sidekick.fetchStatus(refreshLocation) ⇒ [<code>Sidekick</code>](#Sidekick)
 Fetches the status for the current resource.
 
 **Kind**: instance method of [<code>Sidekick</code>](#Sidekick)  
 **Returns**: [<code>Sidekick</code>](#Sidekick) - The sidekick  
 **Emits**: [<code>statusfetched</code>](#Sidekick+event_statusfetched)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| refreshLocation | <code>boolean</code> | Refresh the sidekick's location (optional) |
+
 <a name="Sidekick+loadContext"></a>
 
 ### sidekick.loadContext(cfg) ⇒ [<code>Sidekick</code>](#Sidekick)
@@ -534,12 +539,14 @@ The plugin configuration.
 | title | <code>string</code> |  | The button text |
 | titleI18n | <code>Object</code> | <code>{}</code> | A map of translated button texts |
 | url | <code>string</code> |  | The URL to open when the button is clicked |
+| passConfig | <code>boolean</code> |  | Append additional sk info to the url as query parameters:                          ref, repo, owner, host, project |
+| passReferrer | <code>boolean</code> |  | Append the referrer URL as a query param on new URL button click |
 | event | <code>string</code> |  | The name of a custom event to fire when the button is clicked.                      Note: Plugin events get a custom: prefix, e.g. "foo" becomes "custom:foo". |
 | containerId | <code>string</code> |  | The ID of a dropdown to add this plugin to (optional) |
 | isContainer | <code>boolean</code> |  | Determines whether to turn this plugin into a dropdown |
 | isPalette | <code>boolean</code> |  | Determines whether a URL is opened in a palette instead of a new tab |
 | paletteRect | <code>string</code> |  | The dimensions and position of a palette (optional) |
-| environments | <code>Array.&lt;string&gt;</code> |  | Specifies when to show this plugin (edit, preview, live, or prod) |
+| environments | <code>Array.&lt;string&gt;</code> |  | Specifies when to show this plugin                               (admin, edit, preview, live, prod) |
 | excludePaths | <code>Array.&lt;string&gt;</code> |  | Exclude the plugin from these paths (glob patterns supported) |
 | includePaths | <code>Array.&lt;string&gt;</code> |  | Include the plugin on these paths (glob patterns supported) |
 

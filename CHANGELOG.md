@@ -1,3 +1,106 @@
+## [6.7.5](https://github.com/adobe/helix-sidekick-extension/compare/v6.7.4...v6.7.5) (2023-01-15)
+
+
+### Bug Fixes
+
+* page info dropdown misaligned on mobile ([2d80401](https://github.com/adobe/helix-sidekick-extension/commit/2d80401e8252133ee76bbafcb365866d7c5eac5f))
+
+## [6.7.4](https://github.com/adobe/helix-sidekick-extension/compare/v6.7.3...v6.7.4) (2023-01-03)
+
+
+### Bug Fixes
+
+* **bookmarklet:** relative import prohibited ([5c4e269](https://github.com/adobe/helix-sidekick-extension/commit/5c4e2690812c0fda850751e7c4a6f291e528d853))
+
+## [6.7.3](https://github.com/adobe/helix-sidekick-extension/compare/v6.7.2...v6.7.3) (2023-01-02)
+
+
+### Bug Fixes
+
+* bulk operations broken  in bookmarklet ([5ad1e7f](https://github.com/adobe/helix-sidekick-extension/commit/5ad1e7f2a66f9df28a33e82b5e421777b7d1b617))
+* release script ([dbae6c3](https://github.com/adobe/helix-sidekick-extension/commit/dbae6c32dae783aac445ca2e6e423da5acb7692e))
+
+## [6.7.2](https://github.com/adobe/helix-sidekick-extension/compare/v6.7.1...v6.7.2) (2023-01-01)
+
+
+### Bug Fixes
+
+* double slash in url if root folder ([c1c2df7](https://github.com/adobe/helix-sidekick-extension/commit/c1c2df71ceef462b92f67cffeece736c909648f7))
+* use json extension for spreadsheets ([81f8b8e](https://github.com/adobe/helix-sidekick-extension/commit/81f8b8ea033eec7b082883747bf52ab6727d4355))
+
+## [6.7.1](https://github.com/adobe/helix-sidekick-extension/compare/v6.7.0...v6.7.1) (2023-01-01)
+
+
+### Bug Fixes
+
+* bool that determines if mime type is neither a doc or a sheet ([dd7ece5](https://github.com/adobe/helix-sidekick-extension/commit/dd7ece5d18d25a88aa821eaea1e0c97c974623bd))
+
+# [6.7.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.6.1...v6.7.0) (2022-12-31)
+
+
+### Bug Fixes
+
+* add selection publish ([5cda069](https://github.com/adobe/helix-sidekick-extension/commit/5cda0694e2d5358b2ddc7ba13136bbc53d2609f8))
+* bulk-publish test ([d427704](https://github.com/adobe/helix-sidekick-extension/commit/d427704564c283f62da115f0661900c4daa5840d))
+* getSelection for onedrive ([05da003](https://github.com/adobe/helix-sidekick-extension/commit/05da003a17793b66a4fb84627ce9162e3bdd95ac))
+* harmonize messages ([fd85d51](https://github.com/adobe/helix-sidekick-extension/commit/fd85d51f1fcf31587a536b918917b187d16c12a7))
+* missing paths ([d52ad02](https://github.com/adobe/helix-sidekick-extension/commit/d52ad02833b8d9b74bb97bfe3ce01b1739b69f60))
+* refresh status if location was changed ([2a105e3](https://github.com/adobe/helix-sidekick-extension/commit/2a105e35e1e458421280c26b14c56b411f27d9d3))
+* show consistent messages ([a1e9c19](https://github.com/adobe/helix-sidekick-extension/commit/a1e9c194b0f3fe611cfc9c842a09523c1c7a610c))
+* test ([40de96f](https://github.com/adobe/helix-sidekick-extension/commit/40de96f169d7622fb52e069ccf8b40932a709e37))
+* tests ([4c921e3](https://github.com/adobe/helix-sidekick-extension/commit/4c921e384aec207dbcee3de0849989ce308aa903))
+* tests ([d29b545](https://github.com/adobe/helix-sidekick-extension/commit/d29b5456632b7c3114c1ac224b811c3ec2140b28))
+* tests ([7723209](https://github.com/adobe/helix-sidekick-extension/commit/77232096c2b3d6d9ff2162d704d517983daf8346))
+* toggle sk when navigating admin folders ([fd50e71](https://github.com/adobe/helix-sidekick-extension/commit/fd50e714c611b0cf4df1f8ffd64ddef11ad8f064))
+* update location before fetching status ([a4d0b99](https://github.com/adobe/helix-sidekick-extension/commit/a4d0b996c5dd1b163f54ad9b6f4ecb95bd866984))
+* user drodown cleanup after logout ([49c3bf4](https://github.com/adobe/helix-sidekick-extension/commit/49c3bf49920c204c3694a44a080c4778cd7236d4))
+
+
+### Features
+
+* bulk copy preview, live and prod urls ([cf9b715](https://github.com/adobe/helix-sidekick-extension/commit/cf9b715d258ee154553320219fce3d55bf072d2e))
+* bulk copy urls ([2f1f690](https://github.com/adobe/helix-sidekick-extension/commit/2f1f69030016ccb50afe20c751dfc9ad294e09a2))
+* bulk preview ([ab1552c](https://github.com/adobe/helix-sidekick-extension/commit/ab1552ca8437484ed4a9e448883235b075d637b0))
+* bulk preview in gdrive ([cbc8c67](https://github.com/adobe/helix-sidekick-extension/commit/cbc8c67de9aee86fb98abc3e8708b87b5775713f))
+* info button for last modified times ([2942c38](https://github.com/adobe/helix-sidekick-extension/commit/2942c38d6d8856eaf7c4b6082868a0653963e3d8)), closes [#179](https://github.com/adobe/helix-sidekick-extension/issues/179)
+* parallel execution ([30972cb](https://github.com/adobe/helix-sidekick-extension/commit/30972cb55f72c075c37f2e3230c9e6a9663dfcef))
+* throttle, progress update and nicer error messages ([f3fcde4](https://github.com/adobe/helix-sidekick-extension/commit/f3fcde4faa8b1f13243ff6f8f682e75c9f342a05))
+
+## [6.6.1](https://github.com/adobe/helix-sidekick-extension/compare/v6.6.0...v6.6.1) (2022-12-29)
+
+
+### Bug Fixes
+
+* add project not shown with fresh config ([bddea28](https://github.com/adobe/helix-sidekick-extension/commit/bddea2815439fa703acc0fd80139aa530934e8a5))
+* test ([b91486a](https://github.com/adobe/helix-sidekick-extension/commit/b91486a7816767f4a869ec95e0537e5e57c853fb))
+* ui glitch on options page ([9f002d2](https://github.com/adobe/helix-sidekick-extension/commit/9f002d23f878b7bbd027929fc3bb1a36cc024d64))
+
+# [6.6.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.5.0...v6.6.0) (2022-12-07)
+
+
+### Bug Fixes
+
+* remove trailing slash ([#197](https://github.com/adobe/helix-sidekick-extension/issues/197)) ([a8c8ee4](https://github.com/adobe/helix-sidekick-extension/commit/a8c8ee4990367893dfb991f6a0280c1a64029f66))
+
+
+### Features
+
+* view doc source only for active tab ([#198](https://github.com/adobe/helix-sidekick-extension/issues/198)) ([23026a7](https://github.com/adobe/helix-sidekick-extension/commit/23026a7b76d08c15cd64935605c50f82d48fc1fb))
+
+# [6.5.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.4.0...v6.5.0) (2022-12-05)
+
+
+### Features
+
+* improved config matching algorithm ([076a37b](https://github.com/adobe/helix-sidekick-extension/commit/076a37bd2cfcf03ca7673864004367b2fe072d9d))
+
+# [6.4.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.3.2...v6.4.0) (2022-11-28)
+
+
+### Features
+
+* show the View Document Source context menu item if site is a Franklin site ([#188](https://github.com/adobe/helix-sidekick-extension/issues/188)) ([126ba50](https://github.com/adobe/helix-sidekick-extension/commit/126ba50a7765b550c0b08e1fe246191e256cc6b7))
+
 ## [6.3.2](https://github.com/adobe/helix-sidekick-extension/compare/v6.3.1...v6.3.2) (2022-11-22)
 
 

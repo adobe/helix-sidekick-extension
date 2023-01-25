@@ -4,8 +4,13 @@
     "text",
     "text-summary"
   ],
+  "exclude": [
+    "**/lib/*.js",
+    "**/*.css*",
+    "test"
+  ],
   "check-coverage": true,
-  "lines": 69,
+  "lines": 73,
   "branches": 100,
-  "statements": 69
+  "statements": 73
 }

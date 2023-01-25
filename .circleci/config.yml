@@ -1,37 +1,27 @@
 version: 2.1
 executors:
-  node14:
+  node18:
     docker:
-      - image: cimg/node:14.21
+      - image: cimg/node:18.2
 
 orbs:
-  browser-tools: circleci/browser-tools@1.4.0
+  browser-tools: circleci/browser-tools@1.4.1
   codecov: codecov/codecov@3.2.4
 
 commands:
   setup:
     steps:
       - checkout
-      - restore_cache:
-          keys:
-            - v1-dependencies-{{ arch }}-{{ checksum "package-lock.json" }}
-      - run:
-          name: install latest npm
-          command: npm -g install npm
       - run:
           name: Installing Dependencies
           command: npm ci
-      - save_cache:
-          paths:
-            - node_modules
-          key: v1-dependencies-{{ arch }}-{{ checksum "package-lock.json" }}
       - run:
           name: prepare test git user
           command: git config --global user.email "circleci@example.com" && git config --global user.name "CircleCi Build"
 
 jobs:
   build:
-    executor: node14
+    executor: node18
     steps:
       - setup
       - run: mkdir junit
@@ -50,7 +40,7 @@ jobs:
       - store_artifacts:
           path: junit
   semantic-release:
-    executor: node14
+    executor: node18
     steps:
       - add_ssh_keys:
           fingerprints:
