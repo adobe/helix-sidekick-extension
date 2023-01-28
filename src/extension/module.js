@@ -1201,40 +1201,8 @@
           const value = toLocalDateTime(d);
           const { timeZone } = Intl.DateTimeFormat().resolvedOptions();
           const offset = new Date().getTimezoneOffset();
-          const buttonGroup = createTag({
-            tag: 'span',
-          });
-          appendTag(buttonGroup, createTag({
-            tag: 'button',
-            attrs: {
-              class: 'modal-ok',
-            },
-            lstnrs: {
-              click: ({ target }) => {
-                const { location } = sk;
-                const { value: localDateString } = target
-                  .closest('.modal')
-                  .querySelector('input[type="datetime-local"]');
-                const publishDate = new Date(localDateString).toUTCString();
-                // todo: check date validity and schedule publishing
-                console.log('publish', location.pathname, 'at', publishDate);
-                sk.hideModal();
-              },
-            },
-          }));
-          appendTag(buttonGroup, createTag({
-            tag: 'button',
-            attrs: {
-              class: 'modal-cancel',
-            },
-            lstnrs: {
-              click: () => {
-                sk.hideModal();
-              },
-            },
-          }));
-          sk.showModal(
-            [
+          sk.showDialog({
+            message: [
               createTag({
                 tag: 'input',
                 attrs: {
@@ -1255,14 +1223,16 @@
                 },
                 text: `${timeZone} (UTC${offset <= 0 ? '+' : ''}${offset / -60})`,
               }),
-              buttonGroup,
             ],
-            true,
-          );
-          // eslint-disable-next-line no-underscore-dangle
-          const modal = sk._modal;
-          modal.addEventListener('click', (e) => e.stopPropagation());
-          modal.classList.add('modal-publish-later');
+            okHandler: (dialog) => {
+              const { location } = sk;
+              const { value: localDateString } = dialog
+                .querySelector('input[type="datetime-local"]');
+              const publishDate = new Date(localDateString).toUTCString();
+              // todo: check date validity and schedule publishing
+              console.log('publish', location.pathname, 'at', publishDate);
+            },
+          }).classList.add('dialog-publish-later');
         },
       },
     });
@@ -3093,6 +3063,75 @@
         delete this._modalCallback;
       }
       return this;
+    }
+
+    /**
+     * Displays a dialog.
+     * @param {object|string|string[]} cfg The message (object or lines)
+     * @param {string|HTMLElement[]} cfg.message The message
+     * @param {Function} cfg.okHandler The function to call when the dialog's OK button is pressed
+     * @param {boolean} cfg.cancel=true <code>false</code> if dialog should not be cancelable
+     * @param {string} css The CSS class to add
+     * @fires Sidekick#dialogshown
+     * @returns {HTMLDivElement} The dialog
+     */
+    showDialog({
+      message = '',
+      okHandler = () => {},
+      cancel = true,
+      css,
+    }) {
+      if (typeof message === 'string') {
+        message = [
+          createTag({
+            tag: 'span',
+            text: message,
+          }),
+        ];
+      }
+      const buttonGroup = createTag({
+        tag: 'span',
+      });
+      appendTag(buttonGroup, createTag({
+        tag: 'button',
+        attrs: {
+          class: 'dialog-ok',
+        },
+        lstnrs: {
+          click: () => {
+            okHandler(this._modal);
+            this.hideModal();
+          },
+        },
+      }));
+      if (cancel) {
+        appendTag(buttonGroup, createTag({
+          tag: 'button',
+          attrs: {
+            class: 'dialog-cancel',
+          },
+          lstnrs: {
+            click: () => {
+              this.hideModal();
+            },
+          },
+        }));
+      }
+      this.showModal(
+        [
+          ...message,
+          buttonGroup,
+        ],
+        true,
+      );
+      // eslint-disable-next-line no-underscore-dangle
+      const dialog = this._modal;
+      dialog.classList.add('dialog');
+      if (css) {
+        dialog.classList.add(css);
+      }
+      dialog.addEventListener('click', (e) => e.stopPropagation());
+      return dialog;
     }
 
     /**
