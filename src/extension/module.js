@@ -1137,6 +1137,7 @@
    */
   function addPublishPlugin(sk) {
     const pad = (num) => `${num < 10 ? '0' : ''}${num}`;
+
     const toLocalDateTime = (d) => {
       const year = d.getFullYear();
       const month = pad(d.getMonth() + 1);
@@ -1144,6 +1145,17 @@
       const hours = pad(d.getHours());
       const minutes = pad(d.getMinutes());
       return `${year}-${month}-${day}T${hours}:${minutes}`;
+    };
+
+    const updateMinMaxDate = (input) => {
+      const d = new Date();
+      d.setMinutes(d.getMinutes() + 5);
+      const minValue = toLocalDateTime(d);
+      d.setMonth(d.getMonth() + 6);
+      const maxValue = toLocalDateTime(d);
+
+      input.setAttribute('min', minValue);
+      input.setAttribute('max', maxValue);
     };
 
     // publish
@@ -1210,10 +1222,8 @@
                   value,
                 },
                 lstnrs: {
-                  change: ({ target }) => {
-                    const min = toLocalDateTime(new Date());
-                    target.setAttribute('min', min);
-                  },
+                  change: ({ target }) => updateMinMaxDate(target),
+                  focus: ({ target }) => updateMinMaxDate(target),
                 },
               }),
               createTag({
@@ -1224,13 +1234,37 @@
                 text: `${timeZone} (UTC${offset <= 0 ? '+' : ''}${offset / -60})`,
               }),
             ],
-            okHandler: (dialog) => {
+            okHandler: async (dialog) => {
               const { location } = sk;
+              const path = location.pathname;
               const { value: localDateString } = dialog
                 .querySelector('input[type="datetime-local"]');
-              const publishDate = new Date(localDateString).toUTCString();
-              // todo: check date validity and schedule publishing
-              console.log('publish', location.pathname, 'at', publishDate);
+              const publishDate = new Date(localDateString);
+              const publishMS = publishDate.valueOf();
+              const now = new Date();
+              const minMs = now.setMinutes(now.getMinutes() + 5);
+              if (publishMS <= minMs) {
+                sk.showModal({
+                  css: 'modal-publish-later-error-invalid-date',
+                  level: 1,
+                });
+                return;
+              }
+              sk.showWait();
+              const resp = await sk.publish(path, new Date(publishDate.toUTCString()).valueOf());
+              if (resp.ok) {
+                sk.showModal({
+                  css: 'modal-publish-later-success',
+                  message: publishDate.toUTCString(),
+                });
+              } else {
+                console.error(resp);
+                sk.showModal({
+                  css: 'modal-publish-failure',
+                  message: (resp && resp.headers.get('x-error')) || '',
+                  level: 0,
+                });
+              }
             },
           }).classList.add('dialog-publish-later');
         },
@@ -3077,7 +3111,7 @@
      */
     showDialog({
       message = '',
-      okHandler = () => {},
+      okHandler = () => this.hideModal,
       cancel = true,
       css,
     }) {
@@ -3098,10 +3132,7 @@
           class: 'dialog-ok',
         },
         lstnrs: {
-          click: () => {
-            okHandler(this._modal);
-            this.hideModal();
-          },
+          click: () => okHandler(this._modal),
         },
       }));
       if (cancel) {
@@ -3444,10 +3475,11 @@
     /**
      * Publishes the page at the specified path if <pre>config.host</pre> is defined.
      * @param {string} path The path of the page to publish
+     * @param {number} date An optional UTC date and time in milliseconds for scheduled publishing
      * @fires Sidekick#published
      * @returns {Response} The response object
      */
-    async publish(path) {
+    async publish(path, date) {
       const { config, location } = this;
 
       // publish content only
@@ -3457,10 +3489,15 @@
 
       const purgeURL = new URL(path, this.isEditor() ? `https://${config.innerHost}/` : location.href);
       console.log(`publishing ${purgeURL.pathname}`);
+
+      const adminURL = getAdminUrl(config, 'live', purgeURL.pathname);
+      if (date) {
+        adminURL.searchParams.set('date', date);
+      }
       let resp = {};
       try {
         resp = await fetch(
-          getAdminUrl(config, 'live', purgeURL.pathname),
+          adminURL,
           {
             method: 'POST',
             ...getAdminFetchOptions(this.config),

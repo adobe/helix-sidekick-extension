@@ -597,6 +597,10 @@
   margin-bottom: 0;
 }
 
+.hlx-sk-overlay .dialog-publish-later input {
+  width: 200px;
+}
+
 .hlx-sk-overlay .dialog-publish-later p:nth-child(2) {
   margin: 0;
 }
@@ -1021,16 +1025,20 @@
   content: "Your timezone: ";
 }
 
-.hlx-sk .publish-later button::before {
-  content: "Publish later";
-}
-
 .hlx-sk-overlay .dialog .dialog-ok::before {
   content: "OK";
 }
 
 .hlx-sk-overlay .dialog .dialog-cancel::before {
   content: "Cancel";
+}
+
+.hlx-sk-overlay .modal.modal-publish-later-success::before {
+  content: "Publication scheduled: "
+}
+
+.hlx-sk-overlay .modal.modal-publish-later-error-invalid-date::before {
+  content: "Select a date between 5 minutes and 6 months in the future."
 }
 
 .hlx-sk .unpublish button::before {
