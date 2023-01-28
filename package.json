@@ -54,7 +54,7 @@
     "mocha": "10.2.0",
     "nock": "13.3.0",
     "nyc": "15.1.0",
-    "puppeteer": "19.5.2",
+    "puppeteer": "19.6.2",
     "puppeteer-to-istanbul": "1.4.0",
     "semantic-release": "19.0.5",
     "semantic-release-react-native": "1.8.0",
