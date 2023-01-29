@@ -175,4 +175,85 @@ describe('Test publish plugin', () => {
       'Publish plugin without update class',
     );
   }).timeout(IT_DEFAULT_TIMEOUT);
+
+  it('Publish plugin click on arrow expands dropdown', async () => {
+    const { checkPageResult: publishClassName } = await new SidekickTest({
+      browser,
+      page,
+      loadModule: true,
+      checkPage: (p) => p.evaluate(async () => {
+        const publishPlugin = window.hlx.sidekick.root
+          .querySelector('.plugin-container .publish');
+        const publishButton = publishPlugin
+          .querySelector(':scope > button');
+        const rect = publishButton.getBoundingClientRect();
+        const evt = new MouseEvent('click', {
+          clientX: Math.round(rect.right - 10),
+          clientY: Math.round(rect.y + 10),
+        });
+        publishButton.dispatchEvent(evt);
+        return publishPlugin.className;
+      }),
+    }).run();
+    assert.ok(publishClassName.includes('dropdown-expanded'), 'Publish dropdown not exapnded');
+  }).timeout(IT_DEFAULT_TIMEOUT);
+
+  it('Publish later plugin uses live API with date parameter', async () => {
+    nock.admin(new Setup('blog'));
+    nock('https://admin.hlx.page')
+      .post(/\/live\/.*/)
+      .reply(200);
+    const { requestsMade } = await new SidekickTest({
+      browser,
+      page,
+      plugin: 'publish-later',
+      pluginSleep: 1000,
+      loadModule: true,
+      checkPage: (p) => p.evaluate(async () => {
+        // click ok button and wait 1s
+        const ok = window.hlx.sidekick.shadowRoot.querySelector('.dialog button.dialog-ok');
+        ok.click();
+        await new Promise((resolve) => {
+          setTimeout(resolve, 1000);
+        });
+      }),
+    }).run();
+    const publishReq = requestsMade.find((r) => r.method === 'POST');
+    assert.ok(
+      publishReq
+        && publishReq.url.startsWith('https://admin.hlx.page/live/')
+        && publishReq.url.includes('?date='),
+      'Live API not called with date parameter',
+    );
+  }).timeout(IT_DEFAULT_TIMEOUT);
+
+  it('Publish later plugin checks date range', async () => {
+    nock.admin(new Setup('blog'));
+    const { checkPageResult: errorMsg } = await new SidekickTest({
+      browser,
+      page,
+      plugin: 'publish-later',
+      pluginSleep: 1000,
+      loadModule: true,
+      checkPage: (p) => p.evaluate(async () => {
+        const pad = (num) => `${num < 10 ? '0' : ''}${num}`;
+        const toLocalDateTime = (d) => {
+          const year = d.getFullYear();
+          const month = pad(d.getMonth() + 1);
+          const day = pad(d.getDate());
+          const hours = pad(d.getHours());
+          const minutes = pad(d.getMinutes());
+          return `${year}-${month}-${day}T${hours}:${minutes}`;
+        };
+        // set invalid date, click ok button, wait 0.5s and return notification
+        const date = window.hlx.sidekick.shadowRoot.querySelector('.dialog input');
+        date.value = toLocalDateTime(new Date()); // date too early
+        const ok = window.hlx.sidekick.shadowRoot.querySelector('.dialog button.dialog-ok');
+        ok.click();
+        const modal = window.hlx.sidekick.shadowRoot.querySelector('.modal');
+        return modal && modal.className.includes('error-invalid-date');
+      }),
+    }).run();
+    assert.ok(errorMsg, 'Date range not checked');
+  }).timeout(IT_DEFAULT_TIMEOUT);
 });

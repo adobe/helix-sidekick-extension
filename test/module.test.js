@@ -73,7 +73,7 @@ describe('Test sidekick', () => {
         assert.strictEqual(innerHost, 'main--blog--adobe.hlx.page', `Unexpected innerHost: ${innerHost}`);
         assert.strictEqual(outerHost, 'main--blog--adobe.hlx.live', `Unexpected outerHost: ${innerHost}`);
         // check plugins
-        assert.strictEqual(plugins.length, 14, `Wrong number of plugins: ${plugins.length}`);
+        assert.strictEqual(plugins.length, 15, `Wrong number of plugins: ${plugins.length}`);
       }).timeout(IT_DEFAULT_TIMEOUT);
 
       it('Handles errors fetching status from admin API', async () => {
@@ -667,8 +667,8 @@ describe('Test sidekick', () => {
         assert.ok(eventsFired.hidden, 'Event hidden not fired');
       }).timeout(IT_DEFAULT_TIMEOUT);
 
-      it('Copies sharing URL to clipboard on share button click', async () => {
-        nock.admin(new Setup('blog'));
+      it('Uses navigator.share() or copies sharing URL to clipboard on share button click', async () => {
+        nock.admin(new Setup('blog'), { persist: true });
         const { notification } = await new SidekickTest({
           browser,
           page,
@@ -679,6 +679,23 @@ describe('Test sidekick', () => {
             .click()),
         }).run();
         assert.ok(notification.className.includes('modal-share-success'), 'Did not copy sharing URL to clipboard');
+        const { checkPageResult: navigatorShareUsed } = await new SidekickTest({
+          browser,
+          page,
+          loadModule,
+          post: (p) => p.evaluate(() => {
+            // mock navigator.share()
+            window.navigator.share = () => {
+              window.hlx.sidekickUsedNavigatorShare = true;
+            };
+            window.hlx.sidekick
+              .shadowRoot
+              .querySelector('.hlx-sk button.share')
+              .click();
+          }),
+          checkPage: (p) => p.evaluate(() => window.hlx.sidekickUsedNavigatorShare),
+        }).run();
+        assert.ok(navigatorShareUsed, 'Did not use navigator.share()');
       }).timeout(IT_DEFAULT_TIMEOUT);
 
       it('Displays page modified info on info button click', async () => {
@@ -736,7 +753,7 @@ describe('Test sidekick', () => {
                 resolve((cb && cb()) || null);
               }, timeOut);
             });
-            await delay(50);
+            await delay(500);
 
             if (!isOpen) return 'Menu did not open';
 
@@ -744,7 +761,7 @@ describe('Test sidekick', () => {
               .querySelector('.dropdown-toggle')
               .click();
 
-            await delay(50);
+            await delay(500);
             if (!window.hlx.sidekick.get('info').classList.contains('dropdown-expanded')) {
               return 'Menu closed as expected';
             }
