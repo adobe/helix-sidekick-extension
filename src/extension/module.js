@@ -2764,7 +2764,7 @@
           if (typeof plugin.callback === 'function') {
             plugin.callback(this, $plugin);
           }
-          return $plugin;
+          return registerPlugin(this, plugin, $plugin);
         }
         // add plugin
         $plugin = appendTag($pluginContainer, getPluginCfg(plugin), $before);
