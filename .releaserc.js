@@ -6,6 +6,8 @@ module.exports = {
       'versionStrategy': {
         'ios': { 'buildNumber': 'semantic' },
       },
+      'iosPath': 'src/safari',
+      'skipAndroid': true,
     }],
     ['@semantic-release/changelog', {
       'changelogFile': 'CHANGELOG.md',
