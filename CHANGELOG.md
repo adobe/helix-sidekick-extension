@@ -1,3 +1,10 @@
+## [6.7.6](https://github.com/adobe/helix-sidekick-extension/compare/v6.7.5...v6.7.6) (2023-02-08)
+
+
+### Bug Fixes
+
+* 404 status error on new documents ([01ea94e](https://github.com/adobe/helix-sidekick-extension/commit/01ea94e2689a23ff0b75382fae31e280ce36205e))
+
 ## [6.7.5](https://github.com/adobe/helix-sidekick-extension/compare/v6.7.4...v6.7.5) (2023-01-15)
 
 
