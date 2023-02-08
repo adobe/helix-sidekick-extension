@@ -774,6 +774,11 @@ describe('Test sidekick', () => {
         const { checkPageResult: standardSharepointUrl } = await test.run('https://adobe.sharepoint.com/:w:/r/sites/TheBlog/_layouts/15/Doc.aspx?sourcedoc=%7BE8EC80CB-24C3-4B95-B082-C51FD8BC8760%7D&file=bla.docx&action=default&mobileredirect=true');
         assert.ok(standardSharepointUrl, 'Did not detect standard sharepoint URL');
 
+        // check again with sharepoint url for new documents
+        nock.admin(new Setup('blog'));
+        const { checkPageResult: newDocSharepointUrl } = await test.run('https://adobe.sharepoint.com/:w:/r/sites/TheBlog/_layouts/15/doc.aspx?sourcedoc=%7Bac6f726e-9293-433d-b825-18bc487816b6%7D&action=edit&cid=04035fad-1161-4f85-9654-ee42e52a20fb');
+        assert.ok(newDocSharepointUrl, 'Did not detect sharepoint URL for new document');
+
         // check again with custom sharepoint url as mountpoint
         test.sidekickConfig.mountpoint = 'https://foo.custom/sites/foo/Shared%20Documents/root1';
         nock.admin(new Setup('blog'));
