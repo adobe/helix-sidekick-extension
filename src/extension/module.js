@@ -534,6 +534,15 @@
   }
 
   /**
+   * Listener to expand a dropdown when toggle button is clicked.
+   * @private
+   */
+  function expandDropdown(sk, dropdown) {
+    collapseDropdowns(sk);
+    dropdown.classList.add('dropdown-expanded');
+  }
+
+  /**
    * Creates a dropdown as a container for other plugins.
    * @private
    * @param {Sidekick} sk The sidekick
@@ -556,6 +565,22 @@
         class: 'dropdown-toggle',
       },
       lstnrs: {
+        keyup: (evt) => {
+          const { key } = evt;
+          if (key === 'ArrowUp' || key === 'ArrowDown') {
+            evt.preventDefault();
+          }
+          if (key === 'ArrowDown') {
+            evt.stopPropagation();
+            expandDropdown(sk, dropdown);
+            const firstButton = dropdown.querySelector('.dropdown-container button');
+            if (firstButton) firstButton.focus();
+          } else if (key === 'Escape') {
+            collapseDropdowns(sk);
+            evt.stopPropagation();
+            dropdown.focus();
+          }
+        },
         click: (evt) => {
           if (typeof button.action === 'function') {
             // split button dropdown:
@@ -573,8 +598,7 @@
             return;
           }
 
-          collapseDropdowns(sk);
-          dropdown.classList.add('dropdown-expanded');
+          expandDropdown(sk, dropdown);
           const {
             lastElementChild: container,
           } = dropdown;
@@ -2543,7 +2567,12 @@
       this.loadCSS();
       checkForIssues(this);
 
-      // collapse dropdowns when document is clicked
+      // collapse dropdowns when document is clicked or ESC is pressed
+      document.addEventListener('keyup', ({ key }) => {
+        if (key === 'Escape') {
+          collapseDropdowns(this);
+        }
+      });
       document.addEventListener('click', () => collapseDropdowns(this));
     }
 
