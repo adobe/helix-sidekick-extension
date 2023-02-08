@@ -316,7 +316,7 @@ function checkViewDocSource(id) {
         openViewDocSource(id);
       }
     } catch (e) {
-      log.warn(`Error checking view source for url: ${tab.url}`, e);
+      log.warn(`Error checking view document source for url: ${tab.url}`, e);
     }
   });
 }
