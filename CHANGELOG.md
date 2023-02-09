@@ -1,3 +1,10 @@
+## [6.7.7](https://github.com/adobe/helix-sidekick-extension/compare/v6.7.6...v6.7.7) (2023-02-09)
+
+
+### Bug Fixes
+
+* **view-doc-source:** missing image when root path is not '/' ([e397653](https://github.com/adobe/helix-sidekick-extension/commit/e397653b1aa6da861d7f62afe58443d07799cc0f))
+
 ## [6.7.6](https://github.com/adobe/helix-sidekick-extension/compare/v6.7.5...v6.7.6) (2023-02-08)
 
 
