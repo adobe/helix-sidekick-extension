@@ -225,7 +225,7 @@
   "open_view_doc_source": {
     "message": "Quelldokument anzeigen"
   },
-  "open_project_url": {
+  "open_preview": {
     "message": "Vorschau öffnen"
   }
 }

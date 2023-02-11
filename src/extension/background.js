@@ -161,8 +161,8 @@ async function checkContextMenu({ url: tabUrl, id }, configs = []) {
             });
             // open preview
             chrome.contextMenus.create({
-              id: 'openPreviewBranch',
-              title: i18n('open_project_url'),
+              id: 'openPreview',
+              title: i18n('open_preview'),
               contexts: [
                 'action',
               ],
@@ -377,7 +377,7 @@ function checkViewDocSource(id) {
       }
     },
     openViewDocSource: async ({ id }) => openViewDocSource(id),
-    openPreviewBranch: ({ url }) => {
+    openPreview: ({ url }) => {
       const { owner, repo, ref = 'main' } = getGitHubSettings(url);
       if (owner && repo) {
         chrome.tabs.create({
