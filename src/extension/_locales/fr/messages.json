@@ -70,7 +70,7 @@
   },
   "config_shareurl_placeholder": {
     "message": "URL de partage: https://www.hlx.live/sidekick..."
-  }, 
+  },
   "config_shareurl_share_title": {
     "message": "Configuration du Sidekick pour $1"
   },
@@ -224,5 +224,8 @@
   },
   "open_view_doc_source": {
     "message": "Voir le document source"
+  },
+  "open_project_url": {
+    "message": "Ouvrir l'aperçu"
   }
 }
