@@ -563,22 +563,26 @@
       attrs: {
         ...(button.attrs || {}),
         class: 'dropdown-toggle',
+        'aria-haspopup': 'listbox',
       },
       lstnrs: {
         keyup: (evt) => {
           const { key } = evt;
-          if (key === 'ArrowUp' || key === 'ArrowDown') {
+          if (key === ' ') {
             evt.preventDefault();
-          }
-          if (key === 'ArrowDown') {
             evt.stopPropagation();
+            if (dropdown.classList.contains('dropdown-expanded')) {
+              collapseDropdowns(sk);
+              toggle.focus();
+              return;
+            }
             expandDropdown(sk, dropdown);
-            const firstButton = dropdown.querySelector('.dropdown-container button');
-            if (firstButton) firstButton.focus();
-          } else if (key === 'Escape') {
-            collapseDropdowns(sk);
-            evt.stopPropagation();
-            dropdown.focus();
+            const firstButton = [...dropdown
+              .querySelectorAll('.dropdown-container button')]
+              .filter((btn) => btn.offsetParent)[0];
+            if (firstButton) {
+              firstButton.focus();
+            }
           }
         },
         click: (evt) => {
@@ -594,8 +598,8 @@
             }
           }
           if (dropdown.classList.contains('dropdown-expanded')) {
-            dropdown.classList.remove('dropdown-expanded');
-            return;
+            collapseDropdowns(sk);
+            toggle.focus();
           }
 
           expandDropdown(sk, dropdown);
@@ -623,6 +627,7 @@
       tag: 'div',
       attrs: {
         class: 'dropdown-container',
+        role: 'listbox',
       },
     });
     return dropdown;
@@ -1224,7 +1229,7 @@
           const value = toLocalDateTime(d);
           const { timeZone } = Intl.DateTimeFormat().resolvedOptions();
           const offset = new Date().getTimezoneOffset();
-          sk.showDialog({
+          const dialog = sk.showDialog({
             message: [
               createTag({
                 tag: 'input',
@@ -1245,10 +1250,10 @@
                 text: `${timeZone} (UTC${offset <= 0 ? '+' : ''}${offset / -60})`,
               }),
             ],
-            okHandler: async (dialog) => {
+            okHandler: async (dlg) => {
               const { location } = sk;
               const path = location.pathname;
-              const { value: localDateString } = dialog
+              const { value: localDateString } = dlg
                 .querySelector('input[type="datetime-local"]');
               const publishDate = new Date(localDateString);
               const publishMS = publishDate.valueOf();
@@ -1277,7 +1282,9 @@
                 });
               }
             },
-          }).classList.add('dialog-publish-later');
+          });
+          dialog.classList.add('dialog-publish-later');
+          dialog.querySelector('input, select, textarea')?.focus();
         },
       },
     });
@@ -2571,9 +2578,12 @@
       document.addEventListener('keyup', ({ key }) => {
         if (key === 'Escape') {
           collapseDropdowns(this);
+          this.hideModal();
         }
       });
-      document.addEventListener('click', () => collapseDropdowns(this));
+      this.addEventListener('click', () => {
+        collapseDropdowns(this);
+      });
     }
 
     /**
