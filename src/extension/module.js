@@ -2326,7 +2326,6 @@
     } catch (e) {
       console.error(`failed to fetch dictionary from ${dictPath}`);
     }
-    console.log(`dictionary fetched from ${dictPath}`);
     return dict;
   }
 
