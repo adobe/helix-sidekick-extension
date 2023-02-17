@@ -415,7 +415,6 @@ class SidekickTest extends EventEmitter {
             'unpublished',
             'deleted',
             'cssloaded',
-            'langloaded',
             'pluginsloaded',
             ...checkEvents,
           ].forEach((eventType) => {

@@ -33,6 +33,7 @@
   "web_accessible_resources": [
     {
       "resources": [
+        "_locales/*",
         "app.css",
         "de.css",
         "configpicker.js",
