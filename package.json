@@ -31,7 +31,7 @@
   },
   "homepage": "https://github.com/adobe/helix-sidekick-extension#readme",
   "devDependencies": {
-    "@adobe/fetch": "3.6.1",
+    "@adobe/fetch": "4.0.4",
     "@adobe/eslint-config-helix": "2.0.2",
     "@babel/eslint-parser": "7.19.1",
     "@esm-bundle/chai": "4.3.4-fix.0",
