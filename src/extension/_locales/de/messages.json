@@ -14,6 +14,273 @@
   "docs": {
     "message": "https://www.hlx.live/docs/sidekick"
   },
+  "plugins_loading": {
+    "message": "Loading actions..."
+  },
+  "plugins_empty": {
+    "message": "No actions found for this page"
+  },
+  "anonymous": {
+    "message": "Anonymous"
+  },
+  "user_login": {
+    "message": "Sign in"
+  },
+  "user_switch": {
+    "message": "Switch user"
+  },
+  "user_logout": {
+    "message": "Sign out"
+  },
+  "share_description": {
+    "message": "Share your Sidekick"
+  },
+  "close": {
+    "message": "Close"
+  },
+  "info": {
+    "message": "Information"
+  },
+  "edit_date": {
+    "message": "Edited: "
+  },
+  "preview_date": {
+    "message": "Previewed: "
+  },
+  "publish_date": {
+    "message": "Published: "
+  },
+  "now": {
+    "message": "Now"
+  },
+  "seconds_ago": {
+    "message": "$1 seconds ago"
+  },
+  "minutes_ago": {
+    "message": "$1 minutes ago"
+  },
+  "today_at": {
+    "message": "Today at $1"
+  },
+  "yesterday_at": {
+    "message": "Yesterday at $1"
+  },
+  "never": {
+    "message": "Never"
+  },
+  "switch_view": {
+    "message": "View"
+  },
+  "development": {
+    "message": "Development"
+  },
+  "preview": {
+    "message": "Preview"
+  },
+  "preview_config_success": {
+    "message": "Configuration successfully activated."
+  },
+  "preview_onedrive": {
+    "message": "Pro tip: Press Ctrl + S before previewing to see the latest changes immediately..."
+  },
+  "preview_onedrive_mac": {
+    "message": "Pro tip: Press ⌘ + S before previewing to see the latest changes immediately..."
+  },
+  "live": {
+    "message": "Live"
+  },
+  "production": {
+    "message": "Production"
+  },
+  "edit": {
+    "message": "Edit"
+  },
+  "reload": {
+    "message": "Reload"
+  },
+  "reload_failure": {
+    "message": "Reloading failed. Please try again later."
+  },
+  "delete": {
+    "message": "Delete"
+  },
+  "delete_failure": {
+    "message": "Deletion failed. Please try again later."
+  },
+  "publish": {
+    "message": "Publish"
+  },
+  "publish_failure": {
+    "message": "Publication failed. Please try again later."
+  },
+  "unpublish": {
+    "message": "Unpublish"
+  },
+  "unpublish_failure": {
+    "message": "Unpublication failed. Please try again later."
+  },
+  "bulk_selection_empty": {
+    "message": "Select files below"
+  },
+  "bulk_selection_single": {
+    "message": "1 file selected"
+  },
+  "bulk_selection_multiple": {
+    "message": "$1 files selected"
+  },
+  "bulk_confirm_empty": {
+    "message": "No file selected"
+  },
+  "bulk_confirm_preview_single": {
+    "message": "Are you sure you want to preview 1 file?"
+  },
+  "bulk_confirm_preview_multiple": {
+    "message": "Are you sure you want to preview $1 files?"
+  },
+  "bulk_progress_preview_multiple": {
+    "message": "$1 of $2 files previewed..."
+  },
+  "bulk_result_preview_single_success": {
+    "message": "1 file successfully previewed."
+  },
+  "bulk_result_preview_multiple_success": {
+    "message": "$1 files successfully previewed."
+  },
+  "bulk_result_preview_single_failure": {
+    "message": "Failed to preview 1 file:"
+  },
+  "bulk_result_preview_multiple_failure": {
+    "message": "Failed to preview $1 files:"
+  },
+  "bulk_result_preview_single_error_no_docx": {
+    "message": "Microsoft Word document, convert to Google Docs first"
+  },
+  "bulk_result_preview_single_error_no_xlsx": {
+    "message": "Microsoft Excel document, convert to Google Sheets first"
+  },
+  "bulk_confirm_publish_single": {
+    "message": "Are you sure you want to publish 1 file?"
+  },
+  "bulk_confirm_publish_multiple": {
+    "message": "Are you sure you want to publish $1 files?"
+  },
+  "bulk_progress_publish_multiple": {
+    "message": "$1 of $2 files published..."
+  },
+  "bulk_result_publish_single_success": {
+    "message": "1 file successfully published."
+  },
+  "bulk_result_publish_multiple_success": {
+    "message": "$1 files successfully published."
+  },
+  "bulk_result_publish_single_failure": {
+    "message": "Failed to publish 1 file:"
+  },
+  "bulk_result_publish_multiple_failure": {
+    "message": "Failed to publish $1 files:"
+  },
+  "bulk_result_publish_single_error_no_source": {
+    "message": "File must be previewed first"
+  },
+  "copy_url": {
+    "message": "Copy URL"
+  },
+  "copy_urls": {
+    "message": "Copy URLs"
+  },
+  "copy_preview_url": {
+    "message": "Copy Preview URL"
+  },
+  "copy_preview_urls": {
+    "message": "Copy Preview URLs"
+  },
+  "copy_live_url": {
+    "message": "Copy Live URL"
+  },
+  "copy_live_urls": {
+    "message": "Copy Live URLs"
+  },
+  "copy_prod_url": {
+    "message": "Copy Production URL"
+  },
+  "copy_prod_urls": {
+    "message": "Copy Production URLs"
+  },
+  "copied_url": {
+    "message": "URL copied to clipboard."
+  },
+  "copied_urls": {
+    "message": "URLs copied to clipboard."
+  },
+  "error_status_404_document": {
+    "message": "404 Not found: Check your Sidekick configuration and make sure Franklin has access to this document."
+  },
+  "error_status_404_content": {
+    "message": "404 Not found: Check your Sidekick configuration or URL."
+  },
+  "error_status_500": {
+    "message": "500 Internal server error: Failed to fetch the page status. Please try again later."
+  },
+  "error_status_502": {
+    "message": "502 Bad gateway: Failed to fetch the page status. Please try again later."
+  },
+  "error_status_504": {
+    "message": "504 Gateway timeout: Failed to fetch the page status. Please try again later."
+  },
+  "error_status_invalid": {
+    "message": "Invalid server response. Check your Sidekick configuration or URL."
+  },
+  "error_login_timeout": {
+    "message": "Sign in timed out. Please try again later."
+  },
+  "error_login_aborted": {
+    "message": "Sign in aborted."
+  },
+  "error_logout_error": {
+    "message": "Sign out failed. Please try again later."
+  },
+  "error_config_failure": {
+    "message": "Failed to activate configuration: "
+  },
+  "error_preview_failure": {
+    "message": "Previewing failed. Please try again later."
+  },
+  "error_preview_not_gdoc_generic": {
+    "message": "Previewing failed. Must be Google document or spreadsheet."
+  },
+  "error_preview_not_gdoc_ms_word": {
+    "message": "This is a Microsoft Word document. Please convert it to Google Docs: File > Save as Google Docs"
+  },
+  "error_preview_not_gsheet_ms_excel": {
+    "message": "This is a Microsoft Excel document. Please convert it to Google Sheets: File > Save as Google Sheets'"
+  },
+  "please_wait": {
+    "message": "Please wait..."
+  },
+  "json_view_description": {
+    "message": "User-friendly data rendition."
+  },
+  "help_acknowledge": {
+    "message": "Got it!"
+  },
+  "help_close_dismiss": {
+    "message": "Show help topic again later"
+  },
+  "help_close_acknowledge": {
+    "message": "Don't show help topic again"
+  },
+  "help_close_opt_out": {
+    "message": "Never show any help topics"
+  },
+  "help_previous": {
+    "message": "Previous tip"
+  },
+  "help_current": {
+    "message": "This tip"
+  },
+  "help_next": {
+    "message": "Next tip"
+  },
   "save": {
     "message": "Speichern"
   },
@@ -70,7 +337,7 @@
   },
   "config_shareurl_placeholder": {
     "message": "Teilen-URL: https://www.hlx.page/tools/sidekick/..."
-  }, 
+  },
   "config_shareurl_share_title": {
     "message": "Sidekick-Konfiguration für $1"
   },
