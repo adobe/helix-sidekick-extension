@@ -15,271 +15,271 @@
     "message": "https://www.hlx.live/docs/sidekick"
   },
   "plugins_loading": {
-    "message": "Loading actions..."
+    "message": "Funktionen werden geladen..."
   },
   "plugins_empty": {
-    "message": "No actions found for this page"
+    "message": "Keine Funktionen für diese Seite gefunden"
   },
   "anonymous": {
-    "message": "Anonymous"
+    "message": "Anonymer Benutzer"
   },
   "user_login": {
-    "message": "Sign in"
+    "message": "Anmelden"
   },
   "user_switch": {
-    "message": "Switch user"
+    "message": "Benutzer wechseln"
   },
   "user_logout": {
-    "message": "Sign out"
+    "message": "Abmelden"
   },
   "share_description": {
-    "message": "Share your Sidekick"
+    "message": "Sidekick teilen"
   },
   "close": {
-    "message": "Close"
+    "message": "Schliessen"
   },
   "info": {
     "message": "Information"
   },
   "edit_date": {
-    "message": "Edited: "
+    "message": "Bearbeitet: "
   },
   "preview_date": {
-    "message": "Previewed: "
+    "message": "Vorschau: "
   },
   "publish_date": {
-    "message": "Published: "
+    "message": "Publiziert: "
   },
   "now": {
-    "message": "Now"
+    "message": "Jetzt"
   },
   "seconds_ago": {
-    "message": "$1 seconds ago"
+    "message": "Vor $1 Sekunden"
   },
   "minutes_ago": {
-    "message": "$1 minutes ago"
+    "message": "Vor $1 Minuten"
   },
   "today_at": {
-    "message": "Today at $1"
+    "message": "Heute um $1"
   },
   "yesterday_at": {
-    "message": "Yesterday at $1"
+    "message": "Gestern um $1"
   },
   "never": {
-    "message": "Never"
+    "message": "Nie"
   },
   "switch_view": {
-    "message": "View"
+    "message": "Ansicht"
   },
   "development": {
-    "message": "Development"
+    "message": "Entwicklung"
   },
   "preview": {
-    "message": "Preview"
+    "message": "Publizieren"
   },
   "preview_config_success": {
-    "message": "Configuration successfully activated."
+    "message": "Konfiguration erfolgreich aktiviert."
   },
   "preview_onedrive": {
-    "message": "Pro tip: Press Ctrl + S before previewing to see the latest changes immediately..."
+    "message": "Expertenhinweis: Drücke vor der Vorschau Control + S, um immer die neusten Änderungen zu sehen..."
   },
   "preview_onedrive_mac": {
-    "message": "Pro tip: Press ⌘ + S before previewing to see the latest changes immediately..."
+    "message": "Expertenhinweis: Drücke vor der Vorschau Command + S, um immer die neusten Änderungen zu sehen..."
   },
   "live": {
     "message": "Live"
   },
   "production": {
-    "message": "Production"
+    "message": "Produktion"
   },
   "edit": {
-    "message": "Edit"
+    "message": "Bearbeiten"
   },
   "reload": {
-    "message": "Reload"
+    "message": "Aktualisieren"
   },
   "reload_failure": {
-    "message": "Reloading failed. Please try again later."
+    "message": "Aktualisierung fehlgeschlagen. Bitte versuche es später noch einmal."
   },
   "delete": {
-    "message": "Delete"
+    "message": "Löschen"
   },
   "delete_failure": {
-    "message": "Deletion failed. Please try again later."
+    "message": "Löschen fehlgeschlagen. Bitte versuche es später noch einmal."
   },
   "publish": {
-    "message": "Publish"
+    "message": "Publizieren"
   },
   "publish_failure": {
-    "message": "Publication failed. Please try again later."
+    "message": "Publizieren fehlgeschlagen. Bitte versuche es später noch einmal."
   },
   "unpublish": {
-    "message": "Unpublish"
+    "message": "Depublizieren"
   },
   "unpublish_failure": {
-    "message": "Unpublication failed. Please try again later."
+    "message": "Depublizieren fehlgeschlagen. Bitte versuche es später noch einmal."
   },
   "bulk_selection_empty": {
-    "message": "Select files below"
+    "message": "Dateien unten auswählen"
   },
   "bulk_selection_single": {
-    "message": "1 file selected"
+    "message": "1 Datei ausgewählt"
   },
   "bulk_selection_multiple": {
-    "message": "$1 files selected"
+    "message": "$1 Dateien ausgewählt"
   },
   "bulk_confirm_empty": {
-    "message": "No file selected"
+    "message": "Keine Datei ausgewählt"
   },
   "bulk_confirm_preview_single": {
-    "message": "Are you sure you want to preview 1 file?"
+    "message": "Möchtest du wirklich die Vorschau für 1 Datei generieren?"
   },
   "bulk_confirm_preview_multiple": {
-    "message": "Are you sure you want to preview $1 files?"
+    "message": "Möchtest du wirklich die Vorschau für $1 Dateien generieren?"
   },
   "bulk_progress_preview_multiple": {
-    "message": "$1 of $2 files previewed..."
+    "message": "Vorschau für $1 von $2 Dateien generiert..."
   },
   "bulk_result_preview_single_success": {
-    "message": "1 file successfully previewed."
+    "message": "Vorschau für 1 Datei erfolgreich generiert."
   },
   "bulk_result_preview_multiple_success": {
-    "message": "$1 files successfully previewed."
+    "message": "Vorschau für $1 Dateien erfolgreich generiert."
   },
   "bulk_result_preview_single_failure": {
-    "message": "Failed to preview 1 file:"
+    "message": "Vorschau-Generierung für 1 Datei fehlgeschlagen:"
   },
   "bulk_result_preview_multiple_failure": {
-    "message": "Failed to preview $1 files:"
+    "message": "Vorschau-Generierung für $1 Dateien fehlgeschlagen:"
   },
   "bulk_result_preview_single_error_no_docx": {
-    "message": "Microsoft Word document, convert to Google Docs first"
+    "message": "Microsoft Word-Dokument, zuerst in Google Docs umwandeln"
   },
   "bulk_result_preview_single_error_no_xlsx": {
-    "message": "Microsoft Excel document, convert to Google Sheets first"
+    "message": "Microsoft Excel-Dokument, zuerst in Google Sheets umwandeln"
   },
   "bulk_confirm_publish_single": {
-    "message": "Are you sure you want to publish 1 file?"
+    "message": "Möchtest du wirklich 1 Datei publizieren?"
   },
   "bulk_confirm_publish_multiple": {
-    "message": "Are you sure you want to publish $1 files?"
+    "message": "Möchtest du wirklich $1 Dateien publizieren?"
   },
   "bulk_progress_publish_multiple": {
-    "message": "$1 of $2 files published..."
+    "message": "$1 von $2 Dateien publiziert..."
   },
   "bulk_result_publish_single_success": {
-    "message": "1 file successfully published."
+    "message": "1 Datei erfolgreich publiziert."
   },
   "bulk_result_publish_multiple_success": {
-    "message": "$1 files successfully published."
+    "message": "$1 Dateien erfolgreich publiziert."
   },
   "bulk_result_publish_single_failure": {
-    "message": "Failed to publish 1 file:"
+    "message": "Publizieren von 1 Datei fehlgeschlagen:"
   },
   "bulk_result_publish_multiple_failure": {
-    "message": "Failed to publish $1 files:"
+    "message": "Publizieren von $1 Dateien fehlgeschlagen:"
   },
   "bulk_result_publish_single_error_no_source": {
-    "message": "File must be previewed first"
+    "message": "Für diese Datei muss zuerst Vorschau generiert werden"
   },
   "copy_url": {
-    "message": "Copy URL"
+    "message": "URL kopieren"
   },
   "copy_urls": {
-    "message": "Copy URLs"
+    "message": "URLs kopieren"
   },
   "copy_preview_url": {
-    "message": "Copy Preview URL"
+    "message": "Vorschau-URL kopieren"
   },
   "copy_preview_urls": {
-    "message": "Copy Preview URLs"
+    "message": "Vorschau-URLs kopieren"
   },
   "copy_live_url": {
-    "message": "Copy Live URL"
+    "message": "Live-URL kopieren"
   },
   "copy_live_urls": {
-    "message": "Copy Live URLs"
+    "message": "Live-URLs kopieren"
   },
   "copy_prod_url": {
-    "message": "Copy Production URL"
+    "message": "Produktions-URL kopieren"
   },
   "copy_prod_urls": {
-    "message": "Copy Production URLs"
+    "message": "Produktions-URLs kopieren"
   },
   "copied_url": {
-    "message": "URL copied to clipboard."
+    "message": "URL in die Zwischenablage kopiert."
   },
   "copied_urls": {
-    "message": "URLs copied to clipboard."
+    "message": "URLs in die Zwischenablage kopiert."
   },
   "error_status_404_document": {
-    "message": "404 Not found: Check your Sidekick configuration and make sure Franklin has access to this document."
+    "message": "404 Nicht gefunden: Prüfe deine Sidekick-Konfiguration und stelle sicher, dass Franklin Zugriff auf dieses Dokument hat."
   },
   "error_status_404_content": {
-    "message": "404 Not found: Check your Sidekick configuration or URL."
+    "message": "404 Nicht gefunden: Prüfe deine Sidekick-Konfiguration oder URL."
   },
   "error_status_500": {
-    "message": "500 Internal server error: Failed to fetch the page status. Please try again later."
+    "message": "500 Interner Serverfehler: Statusabfrage fehlgeschlagen. Bitte versuche es später noch einmal."
   },
   "error_status_502": {
-    "message": "502 Bad gateway: Failed to fetch the page status. Please try again later."
+    "message": "502 Fehlerhaftes Gateway: Statusabfrage fehlgeschlagen. Bitte versuche es später noch einmal."
   },
   "error_status_504": {
-    "message": "504 Gateway timeout: Failed to fetch the page status. Please try again later."
+    "message": "504 Gateway-Timeout: Statusabfrage fehlgeschlagen. Bitte versuche es später noch einmal."
   },
   "error_status_invalid": {
-    "message": "Invalid server response. Check your Sidekick configuration or URL."
+    "message": "Ungültige Serverantwort. Prüfe deine Sidekick-Konfiguration oder URL."
   },
   "error_login_timeout": {
-    "message": "Sign in timed out. Please try again later."
+    "message": "Zeitüberschreitung bei der Anmeldung. Bitte versuche es später noch einmal."
   },
   "error_login_aborted": {
-    "message": "Sign in aborted."
+    "message": "Anmeldungsvorgang abgebrochen."
   },
   "error_logout_error": {
-    "message": "Sign out failed. Please try again later."
+    "message": "Abmeldung fehlgeschlagen. Bitte lade diesen Browser-Tab erneut oder versuche es später noch einmal."
   },
   "error_config_failure": {
-    "message": "Failed to activate configuration: "
+    "message": "Aktivierung der Konfiguration fehlgeschlagen: "
   },
   "error_preview_failure": {
-    "message": "Previewing failed. Please try again later."
+    "message": "Vorschau-Generierung fehlgeschlagen. Bitte versuche es später noch einmal."
   },
   "error_preview_not_gdoc_generic": {
-    "message": "Previewing failed. Must be Google document or spreadsheet."
+    "message": "Vorschau-Generierung fehlgeschlagen. Muss ein Google-Dokument oder eine Tabelle sein."
   },
   "error_preview_not_gdoc_ms_word": {
-    "message": "This is a Microsoft Word document. Please convert it to Google Docs: File > Save as Google Docs"
+    "message": "Dies ist ein Microsoft Word-Dokument. Bitte in Google-Dokument umwandeln: Datei > Als as Google-Dokument speichern"
   },
   "error_preview_not_gsheet_ms_excel": {
-    "message": "This is a Microsoft Excel document. Please convert it to Google Sheets: File > Save as Google Sheets'"
+    "message": "Dies ist ein Microsoft Excel-Dokument. Bitte in Google-Tabelle umwandeln: Datei > Als Google-Tabelle speichern"
   },
   "please_wait": {
-    "message": "Please wait..."
+    "message": "Bitte warten..."
   },
   "json_view_description": {
-    "message": "User-friendly data rendition."
+    "message": "Benutzerfreundliche Datenanzeige."
   },
   "help_acknowledge": {
-    "message": "Got it!"
+    "message": "Alles klar!"
   },
   "help_close_dismiss": {
-    "message": "Show help topic again later"
+    "message": "Hilfethema später anzeigen"
   },
   "help_close_acknowledge": {
-    "message": "Don't show help topic again"
+    "message": "Hilfethema nicht mehr anzeigen"
   },
   "help_close_opt_out": {
-    "message": "Never show any help topics"
+    "message": "Gar keine Hilfethemen anzeigen"
   },
   "help_previous": {
-    "message": "Previous tip"
+    "message": "Vorheriger Tipp"
   },
   "help_current": {
-    "message": "This tip"
+    "message": "Dieser Tipp"
   },
   "help_next": {
-    "message": "Next tip"
+    "message": "Nächster Tipp"
   },
   "save": {
     "message": "Speichern"
@@ -306,7 +306,7 @@
     "message": "Produktion"
   },
   "config_project_innerhost": {
-    "message": "Vorschau"
+    "message": "Publizieren"
   },
   "config_project_mountpoints": {
     "message": "Inhalt"
