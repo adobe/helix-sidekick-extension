@@ -1264,9 +1264,10 @@
         });
         // update copy url button texts based on selection size
         ['', 'preview', 'live', 'prod'].forEach((env) => {
-          const i18nKey = `copy_${env}${env ? '_' : ''}url${sel.length === 1 ? '' : 's'}`;
-          sk.get(`bulk-copy-${env}${env ? '-' : ''}urls`)
-            .querySelector('button').textContent = i18n(sk, i18nKey);
+          const text = i18n(sk, `copy_${env}${env ? '_' : ''}url${sel.length === 1 ? '' : 's'}`);
+          const button = sk.get(`bulk-copy-${env}${env ? '-' : ''}urls`).querySelector('button');
+          button.textContent = text;
+          button.title = text;
         });
       };
 
