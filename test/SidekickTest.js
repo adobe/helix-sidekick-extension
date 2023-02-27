@@ -289,6 +289,14 @@ class SidekickTest extends EventEmitter {
           } catch (e) {
             throw new Error('failed to load local module.js');
           }
+        } else if (url === 'https://www.hlx.live/tools/sidekick/_locales/en/messages.json') {
+          try {
+            // return local module.js
+            const module = await fs.readFile(`${__dirname}/../src/extension/_locales/en/messages.json`, 'utf-8');
+            return toResp(module);
+          } catch (e) {
+            throw new Error('failed to load local messages.json');
+          }
         } else {
           return null;
         }
