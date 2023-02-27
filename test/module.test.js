@@ -66,6 +66,7 @@ describe('Test sidekick', () => {
           browser,
           page,
           loadModule,
+          sleep: 500,
           setup: 'blog',
         }).run();
         const { plugins, sidekick: { config: { innerHost, outerHost } } } = result;
