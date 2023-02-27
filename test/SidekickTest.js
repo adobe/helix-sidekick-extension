@@ -281,22 +281,23 @@ class SidekickTest extends EventEmitter {
         } else if (url.endsWith('/tools/sidekick/config.js')) {
           configLoaded = url;
           return toResp(configJs);
-        } else if (url === 'https://www.hlx.live/tools/sidekick/module.js') {
+        } else if (url.startsWith('https://www.hlx.live/tools/sidekick/')) {
+          // return local source file
+          const { pathname, search } = new URL(url);
+          if (pathname === '/tools/sidekick/' && search) {
+            // share url
+            return toResp('Share URL', 'foo.html');
+          }
+          const path = `${__dirname}/../src/extension/${pathname.split('/').slice(3).join('/')}`;
           try {
-            // return local module.js
-            const module = await fs.readFile(`${__dirname}/../src/extension/module.js`, 'utf-8');
-            return toResp(module);
+            const file = await fs.readFile(path, 'utf-8');
+            return toResp(file, pathname);
           } catch (e) {
             throw new Error('failed to load local module.js');
           }
-        } else if (url === 'https://www.hlx.live/tools/sidekick/_locales/en/messages.json') {
-          try {
-            // return local module.js
-            const module = await fs.readFile(`${__dirname}/../src/extension/_locales/en/messages.json`, 'utf-8');
-            return toResp(module);
-          } catch (e) {
-            throw new Error('failed to load local messages.json');
-          }
+        } else if (url.startsWith('https://www.hlx.live/')) {
+          // dummy content for anything else on www.hlx.live
+          return toResp('', url);
         } else {
           return null;
         }
@@ -356,7 +357,7 @@ class SidekickTest extends EventEmitter {
             const s = document.createElement('script');
             s.id = 'hlx-sk-app';
             s.src = '../../src/bookmarklet/app.js';
-            skCfg.scriptUrl = s.src;
+            skCfg.scriptRoot = 'https://www.hlx.live/tools/sidekick';
             s.dataset.config = JSON.stringify(skCfg);
             if (document.head.querySelector('script#hlx-sk-app')) {
               document.head.querySelector('script#hlx-sk-app').replaceWith(s);
@@ -368,7 +369,7 @@ class SidekickTest extends EventEmitter {
             moduleScript.id = 'hlx-sk-module';
             moduleScript.src = '../../src/extension/module.js';
             moduleScript.addEventListener('load', async () => {
-              skCfg.scriptUrl = moduleScript.src;
+              skCfg.scriptUrl = 'https://www.hlx.live/tools/sidekick/module.js';
               window.hlx.sidekickConfig = skCfg;
               const {
                 owner,
