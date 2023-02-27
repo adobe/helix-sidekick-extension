@@ -348,6 +348,7 @@
       pushDownSelector,
       specialViews,
       scriptUrl = 'https://www.hlx.live/tools/sidekick/module.js',
+      scriptRoot = scriptUrl.split('/').filter((_, i, arr) => i < arr.length - 1).join('/'),
     } = config;
     const innerPrefix = owner && repo ? `${ref}--${repo}--${owner}` : null;
     const publicHost = host && host.startsWith('http') ? new URL(host).host : host;
@@ -377,8 +378,6 @@
         `html, iframe#WebApplicationFrame${pushDownSelector ? `, ${pushDownSelector}` : ''}`,
       ).forEach((elem) => pushDownElements.push(elem));
     }
-    // script root url
-    const scriptRoot = scriptUrl.split('/').filter((_, i, arr) => i < arr.length - 1).join('/');
     // default views
     const defaultSpecialViews = [
       {
@@ -523,7 +522,7 @@
    * @returns {string} The string in the user's language
    */
   function i18n(sk, key) {
-    return sk.dict[key] || '';
+    return sk.dict ? (sk.dict[key] || '') : '';
   }
 
   /**
@@ -949,7 +948,7 @@
               } else if (status.webPath.startsWith('/.helix/') && resp.error) {
                 // show detail message only in config update mode
                 sk.showModal({
-                  message: `${i18n(sk, 'error_config_failure')}: ${resp.error}`,
+                  message: `${i18n(sk, 'error_config_failure')}${resp.error}`,
                   sticky: true,
                   level: 0,
                 });
@@ -1813,7 +1812,7 @@
    * @param {Sidekick} sk The sidekick
    */
   function checkUserState(sk) {
-    const toggle = sk.get('user').firstElementChild;
+    const toggle = sk.userMenu.firstElementChild;
     toggle.removeAttribute('disabled');
     const updateUserPicture = async (picture, name) => {
       toggle.querySelectorAll('.user-picture').forEach((img) => img.remove());
@@ -2462,6 +2461,8 @@
         addUnpublishPlugin(this);
         addCustomPlugins(this);
         addBulkPlugins(this);
+        // fetch status
+        this.fetchStatus();
       }, { once: true });
       this.addEventListener('statusfetched', () => {
         checkUserState(this);
@@ -2481,7 +2482,6 @@
       this.plugins = [];
 
       this.loadContext(cfg);
-      this.fetchStatus();
       this.loadCSS();
       checkForIssues(this);
 
@@ -2549,9 +2549,10 @@
         })
         .then((json) => Object.assign(this.status, json))
         .then((json) => fireEvent(this, 'statusfetched', json))
-        .catch((e) => {
-          this.status.error = e.message;
+        .catch(({ message }) => {
+          this.status.error = message;
           const modal = {
+            message: message.startsWith('error_') ? i18n(this, message) : message,
             sticky: true,
             level: 0,
             callback: () => {
@@ -2563,13 +2564,6 @@
               }
             },
           };
-          if (e.message.startsWith('error_')) {
-            // use error message as i18n key
-            modal.message = i18n(this, e.message);
-          } else {
-            // add error message as text
-            modal.message = e.message;
-          }
           this.showModal(modal);
         });
       return this;
