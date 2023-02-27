@@ -63,6 +63,7 @@ describe('Test editor preview plugin', () => {
       plugin: 'edit-preview',
       waitPopup: 2000,
       waitNavigation: 'https://main--blog--adobe.hlx.page/en/topics/bla',
+      loadModule: true,
     }).run();
     const updateReq = requestsMade
       .filter((r) => r.method === 'POST')
@@ -100,6 +101,7 @@ describe('Test editor preview plugin', () => {
       url: 'https://adobe.sharepoint.com/:x:/r/sites/TheBlog/_layouts/15/Doc.aspx?sourcedoc=%7BE8EC80CB-24C3-4B95-B082-C51FD8BC8760%7D&file=bla.docx&action=default&mobileredirect=true',
       plugin: 'edit-preview',
       waitNavigation: 'https://main--blog--adobe.hlx.page/en/topics/bla',
+      loadModule: true,
     }).run();
     const statusReqs = requestsMade
       .filter((r) => r.method === 'GET' && r.url.startsWith('https://admin.hlx.page/status/'));
@@ -124,9 +126,14 @@ describe('Test editor preview plugin', () => {
       type: 'json',
       plugin: 'edit-preview',
       waitNavigation: 'https://main--blog--adobe.hlx.page/.helix/config.json',
+      loadModule: true,
     }).run();
     assert.ok(!popupOpened, 'Unexpected popup opened');
-    assert.ok(notification.className.includes('modal-config-success'), `Unexpected notification classes: ${notification.className}`);
+    assert.strictEqual(
+      notification.message,
+      'Configuration successfully activated.',
+      `Unexpected notification message: ${notification.message}`,
+    );
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Editor preview plugin shows /.helix/* error message from server', async () => {
@@ -146,9 +153,14 @@ describe('Test editor preview plugin', () => {
       type: 'json',
       plugin: 'edit-preview',
       waitNavigation: 'https://main--blog--adobe.hlx.page/.helix/test.json',
+      loadModule: true,
     }).run();
     assert.ok(!popupOpened, 'Unexpected popup opened');
-    assert.strictEqual(notification.message, 'foo', `Unexpected notification message: ${notification.message}`);
+    assert.strictEqual(
+      notification.message,
+      'Failed to activate configuration: foo',
+      `Unexpected notification message: ${notification.message}`,
+    );
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Editor preview plugin shows update indicator if edit is newer than preview', async () => {
@@ -180,8 +192,12 @@ describe('Test editor preview plugin', () => {
       url: 'https://docs.google.com/document/d/2E1PNphAhTZAZrDjevM0BX7CZr7KjomuBO6xE1TUo9NU/edit',
       plugin: 'edit-preview',
       waitPopup: 2000,
+      loadModule: true,
     }).run();
     assert.ok(!popupOpened, 'Unexpected popup opened');
-    assert.ok(notification.className.includes('modal-preview-not-gsheet-ms-excel'), `Unexpected notification classes: ${notification.className}`);
+    assert.ok(
+      notification.message.includes('Microsoft Excel'),
+      `Unexpected notification message: ${notification.message}`,
+    );
   }).timeout(IT_DEFAULT_TIMEOUT);
 });
