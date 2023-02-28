@@ -36,7 +36,7 @@
     "message": "Sidekick teilen"
   },
   "close": {
-    "message": "Schliessen"
+    "message": "Schließen"
   },
   "info": {
     "message": "Information"
@@ -467,7 +467,7 @@
     "message": "Inhalte runterdrücken statt überlappen"
   },
   "push_down_content_description": {
-    "message": "Beachte: Abhängig von der Struktur der Site kann für eine erwartungsgemässe Funktionsweise projektspezifische Konfiguration nötig sein."
+    "message": "Beachte: Abhängig von der Struktur der Site kann für eine erwartungsgemäße Funktionsweise projektspezifische Konfiguration nötig sein."
   },
   "help_opt_out": {
     "message": "Keine Hilfe anzeigen"
