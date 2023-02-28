@@ -713,18 +713,7 @@ describe('Test sidekick', () => {
           page,
           loadModule,
           plugin: 'info',
-          post: (p) => p.evaluate(() => {
-            window.hlx.sidekick.get('info')
-              .querySelector('.dropdown-toggle')
-              .click();
-          }),
           checkPage: (p) => p.evaluate(async () => {
-            window.hlx.sidekick.get('info')
-              .querySelector('.dropdown-toggle')
-              .click();
-            // verify dropdown is open
-            const isOpen = window.hlx.sidekick.get('info').classList.contains('dropdown-expanded');
-
             /**
              * Promise based setTimeout that can be await'd
              * @param {int} timeOut time out in milliseconds
@@ -736,8 +725,9 @@ describe('Test sidekick', () => {
                 resolve((cb && cb()) || null);
               }, timeOut);
             });
-            await delay(50);
 
+            // verify dropdown is open
+            const isOpen = window.hlx.sidekick.get('info').classList.contains('dropdown-expanded');
             if (!isOpen) return 'Menu did not open';
 
             window.hlx.sidekick.get('info')
