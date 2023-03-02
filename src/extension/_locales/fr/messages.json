@@ -491,5 +491,8 @@
   },
   "open_view_doc_source": {
     "message": "Voir le document source"
+  },
+  "open_preview": {
+    "message": "Ouvrir l'aperçu"
   }
 }

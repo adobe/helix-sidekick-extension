@@ -492,5 +492,9 @@
   },
   "open_view_doc_source": {
     "message": "View document source"
+  },
+  "open_preview": {
+    "message": "Open preview",
+    "description": "Opens the preview URL for a given GitHub branch"
   }
 }
