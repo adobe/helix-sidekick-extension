@@ -54,7 +54,7 @@
     "nyc": "15.1.0",
     "puppeteer": "19.7.2",
     "puppeteer-to-istanbul": "1.4.0",
-    "semantic-release": "19.0.5",
+    "semantic-release": "20.1.1",
     "semantic-release-react-native": "1.8.0",
     "shelljs": "0.8.5",
     "sinon": "15.0.1"
