@@ -724,7 +724,6 @@ describe('Test sidekick', () => {
 
             // verify dropdown is open
             const isOpen = window.hlx.sidekick.get('info').classList.contains('dropdown-expanded');
-
             if (!isOpen) return 'Menu did not open';
 
             window.hlx.sidekick.get('info')
@@ -967,6 +966,20 @@ describe('Test sidekick', () => {
             .querySelector('.hlx-sk-special-view')),
         }).run();
         assert.ok(checkPageResult, 'Did not show data view for JSON file');
+      }).timeout(IT_DEFAULT_TIMEOUT);
+
+      it('Suppresses special view for /helix-env.json', async () => {
+        nock.admin(new Setup('blog'));
+        const { checkPageResult } = await new SidekickTest({
+          browser,
+          page,
+          loadModule,
+          url: 'https://main--blog--adobe.hlx.page/helix-env.json',
+          checkPage: (p) => p.evaluate(() => !window.hlx.sidekick
+            .shadowRoot
+            .querySelector('.hlx-sk-special-view')),
+        }).run();
+        assert.ok(checkPageResult, 'Did not suppress data view for JSON file');
       }).timeout(IT_DEFAULT_TIMEOUT);
 
       it('Shows help content', async () => {

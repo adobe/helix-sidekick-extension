@@ -253,6 +253,15 @@
   };
 
   /**
+   * Array of restricted paths with limited sidekick functionality.
+   * @private
+   * @type {string[]}
+   */
+  const RESTRICTED_PATHS = [
+    '/helix-env.json',
+  ];
+
+  /**
    * The URL of the development environment.
    * @see {@link https://github.com/adobe/helix-cli|Franklin CLI}).
    * @private
@@ -391,7 +400,9 @@
       : defaultSpecialViews;
     // find view based on path
     const { pathname } = location;
-    const specialView = allSpecialViews.find(({ path }) => globToRegExp(path).test(pathname));
+    const specialView = allSpecialViews.find(({
+      path,
+    }) => !RESTRICTED_PATHS.includes(pathname) && globToRegExp(path).test(pathname));
 
     return {
       ...config,
@@ -1061,7 +1072,8 @@
       id: 'delete',
       condition: (sidekick) => sidekick.isAuthorized('preview', 'delete') && sidekick.isProject()
         && (!sidekick.status.edit || !sidekick.status.edit.url) // show only if no edit url and
-        && (sidekick.status.preview && sidekick.status.preview.status !== 404), // preview exists
+        && (sidekick.status.preview && sidekick.status.preview.status !== 404) // preview exists
+        && !RESTRICTED_PATHS.includes(sidekick.location.pathname),
       button: {
         text: i18n(sk, 'delete'),
         action: async () => {
@@ -1157,7 +1169,7 @@
       condition: (sidekick) => sidekick.isAuthorized('live', 'delete') && sidekick.isProject()
         && (!sidekick.status.edit || !sidekick.status.edit.url) // show only if no edit url and
         && sidekick.status.live && sidekick.status.live.lastModified // published
-        && sk.isContent(),
+        && sk.isContent() && !RESTRICTED_PATHS.includes(sidekick.location.pathname),
       button: {
         text: i18n(sk, 'unpublish'),
         action: async () => {
