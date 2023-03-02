@@ -42,6 +42,7 @@ const SETUPS = {
   },
   pages: {
     sidekickConfig: {
+      project: 'Pages',
       owner: 'adobe',
       repo: 'pages',
       ref: 'main',
@@ -97,6 +98,7 @@ const SETUPS = {
   },
   blog: {
     sidekickConfig: {
+      project: 'Blog',
       owner: 'adobe',
       repo: 'blog',
       ref: 'main',

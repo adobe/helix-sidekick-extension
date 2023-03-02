@@ -72,10 +72,9 @@ describe('Test bulk copy URLs plugin', () => {
       url: setup.getUrl('edit', 'admin'),
       checkPage: (p) => p.evaluate(async () => {
         const retrieveButtonText = (texts = []) => {
-          const button = window.hlx.sidekick.get('bulk-copy-urls')
-            .querySelector('button');
-          const text = window.getComputedStyle(button, ':before')
-            .getPropertyValue('content').replaceAll('"', '');
+          const plugin = window.hlx.sidekick.get('bulk-copy-urls');
+          const button = plugin.querySelector(':scope > button');
+          const text = button.textContent;
           texts.push(text);
           return texts;
         };

@@ -65,7 +65,7 @@ describe('Test bulk info plugin', () => {
       route: 'status',
       type: 'admin',
     });
-    const { checkPageResult: size } = await new SidekickTest({
+    const { checkPageResult: sizeCheck } = await new SidekickTest({
       browser,
       page,
       fixture: SHAREPOINT_FIXTURE,
@@ -74,15 +74,13 @@ describe('Test bulk info plugin', () => {
       checkPage: (p) => p.evaluate(() => {
         // get displayed selection size
         const info = window.hlx.sidekick.shadowRoot.getElementById('hlx-sk-bulk-info');
-        const num = +(window.getComputedStyle(info, ':before')
-          .getPropertyValue('content')
-          .replaceAll('"', '')
+        const num = +(info.textContent
           .split(' ')
           .shift());
-        return Number.isNaN(num) ? 0 : num;
+        return Number.isNaN(num) ? false : num === 1;
       }),
     }).run();
-    assert.strictEqual(size, 1, 'Wrong selection size displayed');
+    assert.ok(sizeCheck, 'Wrong selection size displayed');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Bulk info plugin refetches status after navigation', async () => {

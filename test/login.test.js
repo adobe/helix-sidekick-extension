@@ -109,7 +109,7 @@ describe('Test sidekick login', () => {
       browser,
       page,
       plugin: 'user-login',
-      waitPopup: 2000,
+      pluginSleep: 2000,
       loadModule: true,
     });
 
@@ -132,7 +132,7 @@ describe('Test sidekick login', () => {
 
     // wait for 'aborted' modal
     try {
-      await page.waitForFunction(() => window.hlx.sidekick.shadowRoot.querySelector('.hlx-sk-overlay .modal.modal-login-aborted'), {
+      await page.waitForFunction(() => window.hlx.sidekick.shadowRoot.querySelector('.hlx-sk-overlay .modal'), {
         timeout: 2000,
       });
     } catch (e) {
