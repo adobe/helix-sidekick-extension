@@ -23,8 +23,7 @@ jobs:
           cp src/bookmarklet/app.js _target/tools/sidekick/
           cp src/extension/module.js _target/tools/sidekick/
           cp src/extension/app.css _target/tools/sidekick/
-          cp src/extension/de.css _target/tools/sidekick/
-          cp src/extension/fr.css _target/tools/sidekick/
+          cp -r src/extension/_locales _target/tools/sidekick/
           cp -r src/extension/view _target/tools/sidekick/
           cp docs/config.schema.json _target/tools/sidekick/
           mkdir -p _target/tools/sidekick/lib
