@@ -617,7 +617,7 @@ describe('Test sidekick', () => {
           browser,
           page,
           loadModule,
-          sleep: 500,
+          pluginSleep: 500,
           post: (p) => p.evaluate(() => {
             window.hlx.sidekick.showModal({ message: 'Sticky', sticky: true });
             window.hlx.sidekick.hideModal();
