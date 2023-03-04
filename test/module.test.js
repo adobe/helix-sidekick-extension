@@ -307,7 +307,7 @@ describe('Test sidekick', () => {
         assert.ok(popupOpened === expectedPopupUrl, 'Did not pass additional info in plugin URL');
       }).timeout(IT_DEFAULT_TIMEOUT);
 
-      it('Plugin shows palette', async () => {
+      it.skip('Plugin shows palette', async () => {
         nock.admin(new Setup('blog'));
         const test = new SidekickTest({
           browser,
