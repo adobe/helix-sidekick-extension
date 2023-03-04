@@ -10,7 +10,7 @@
     "test"
   ],
   "check-coverage": true,
-  "lines": 72.5,
+  "lines": 74,
   "branches": 100,
-  "statements": 72.5
+  "statements": 74
 }

@@ -307,8 +307,11 @@ describe('Test sidekick', () => {
         assert.ok(popupOpened === expectedPopupUrl, 'Did not pass additional info in plugin URL');
       }).timeout(IT_DEFAULT_TIMEOUT);
 
-      it.skip('Plugin shows palette', async () => {
+      it('Plugin shows palette', async () => {
         nock.admin(new Setup('blog'));
+        nock('https://www.adobe.com')
+          .get(/.*/)
+          .reply(200, 'some content');
         const test = new SidekickTest({
           browser,
           page,
@@ -614,6 +617,7 @@ describe('Test sidekick', () => {
           browser,
           page,
           loadModule,
+          sleep: 500,
           post: (p) => p.evaluate(() => {
             window.hlx.sidekick.showModal({ message: 'Sticky', sticky: true });
             window.hlx.sidekick.hideModal();
