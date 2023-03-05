@@ -625,13 +625,18 @@ describe('Test sidekick', () => {
           browser,
           page,
           loadModule,
-          post: (p) => p.evaluate(() => {
+          post: (p) => p.evaluate(async () => {
             window.hlx.sidekick.showModal({ message: 'Sticky', sticky: true });
+            await new Promise((resolve) => {
+              setTimeout(resolve, 50);
+            });
             window.hlx.sidekick.hideModal();
           }),
         }).run();
         assert.strictEqual(notification.message, null, 'Did not hide sticky modal');
+      }).timeout(IT_DEFAULT_TIMEOUT);
 
+      it('Hides notifications on overlay click', async () => {
         // hides sticky modal on overlay click
         nock.admin(new Setup('blog'));
         nock.admin(new Setup('blog'));
