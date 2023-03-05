@@ -10,8 +10,6 @@
  * governing permissions and limitations under the License.
  */
 
-'use strict';
-
 export const MANIFEST = chrome.runtime.getManifest();
 
 export const SHARE_PREFIX = '/tools/sidekick/';

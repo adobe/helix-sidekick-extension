@@ -10,8 +10,6 @@
  * governing permissions and limitations under the License.
  */
 
-'use strict';
-
 import {
   GH_URL,
   SHARE_PREFIX,

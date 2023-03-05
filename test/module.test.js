@@ -11,18 +11,12 @@
  */
 /* eslint-env mocha */
 
-'use strict';
+import assert from 'assert';
+import {
+  checkEventFired, IT_DEFAULT_TIMEOUT, Nock, Setup, TestBrowser,
+} from './utils.js';
 
-const assert = require('assert');
-
-const {
-  IT_DEFAULT_TIMEOUT,
-  Nock,
-  checkEventFired,
-  TestBrowser,
-  Setup,
-} = require('./utils.js');
-const { SidekickTest } = require('./SidekickTest.js');
+import { SidekickTest } from './SidekickTest.js';
 
 describe('Test sidekick', () => {
   for (const loadModule of [true, false]) {
@@ -307,33 +301,50 @@ describe('Test sidekick', () => {
         assert.ok(popupOpened === expectedPopupUrl, 'Did not pass additional info in plugin URL');
       }).timeout(IT_DEFAULT_TIMEOUT);
 
-      it.skip('Plugin shows palette', async () => {
+      it('Plugin shows palette', async () => {
         nock.admin(new Setup('blog'));
+        nock('https://www.adobe.com/')
+          .get('/')
+          .reply(200, 'foo');
         const test = new SidekickTest({
           browser,
           page,
           loadModule,
-          configJson: `{
-        "host": "blog.adobe.com",
-        "plugins": [{
-          "id": "bar",
-          "title": "Bar",
-          "url": "https://www.adobe.com/",
-          "isPalette": true
-        }]
-      }`,
+          configJson: JSON.stringify({
+            host: 'blog.adobe.com',
+            plugins: [{
+              id: 'bar',
+              title: 'Bar',
+              url: 'https://www.adobe.com/',
+              isPalette: true,
+            }],
+          }),
           plugin: 'bar',
-          pluginSleep: 2000,
+          pluginSleep: 50,
         });
         const {
           configLoaded,
           plugins,
         } = await test.run();
-        const palette = await page.evaluate(() => window.hlx.sidekick.shadowRoot
-          .querySelector('.hlx-sk-palette'));
+        const palette = await page.evaluate(() => {
+          const $p = window.hlx.sidekick.shadowRoot.querySelector('.hlx-sk-palette');
+          if (!$p) {
+            return null;
+          }
+          const title = $p.querySelector('.palette-title')?.innerHTML;
+          const content = $p.querySelector('.palette-content').innerHTML;
+          return {
+            title,
+            content,
+          };
+        });
         assert.ok(configLoaded, 'Did not load project config');
         assert.ok(plugins.find((p) => p.id === 'bar'), 'Did not load plugins from project');
         assert.ok(palette, 'Did not show palette');
+        assert.deepStrictEqual(palette, {
+          title: 'Bar<button title="Close" class="close" tabindex="0"></button>',
+          content: '<iframe src="https://www.adobe.com/" allow="clipboard-write"></iframe>',
+        });
       }).timeout(IT_DEFAULT_TIMEOUT);
 
       it('Plugin fires custom event', async () => {
@@ -614,13 +625,18 @@ describe('Test sidekick', () => {
           browser,
           page,
           loadModule,
-          post: (p) => p.evaluate(() => {
+          post: (p) => p.evaluate(async () => {
             window.hlx.sidekick.showModal({ message: 'Sticky', sticky: true });
+            await new Promise((resolve) => {
+              setTimeout(resolve, 50);
+            });
             window.hlx.sidekick.hideModal();
           }),
         }).run();
         assert.strictEqual(notification.message, null, 'Did not hide sticky modal');
+      }).timeout(IT_DEFAULT_TIMEOUT);
 
+      it('Hides notifications on overlay click', async () => {
         // hides sticky modal on overlay click
         nock.admin(new Setup('blog'));
         nock.admin(new Setup('blog'));
@@ -628,10 +644,13 @@ describe('Test sidekick', () => {
           browser,
           page,
           loadModule,
-          checkPage: (p) => p.evaluate(() => {
+          checkPage: (p) => p.evaluate(async () => {
             window.hlx.sidekick.showModal({ message: 'Sticky', sticky: true });
             const overlay = window.hlx.sidekick.shadowRoot.querySelector('.hlx-sk-overlay');
             overlay.click();
+            await new Promise((resolve) => {
+              setTimeout(resolve, 50);
+            });
             document.body.innerHTML += overlay.className;
             return overlay.className.includes('hlx-sk-hidden');
           }),
@@ -699,7 +718,7 @@ describe('Test sidekick', () => {
         );
       }).timeout(IT_DEFAULT_TIMEOUT);
 
-      it('Closes open dropdown when clicking icon', async () => {
+      it('Closes open info dropdown when clicking icon', async () => {
         nock.admin(new Setup('blog'), {
           route: 'status',
           persist: true,
@@ -710,31 +729,23 @@ describe('Test sidekick', () => {
           loadModule,
           plugin: 'info',
           checkPage: (p) => p.evaluate(async () => {
-            /**
-             * Promise based setTimeout that can be await'd
-             * @param {int} timeOut time out in milliseconds
-             * @param {*} cb Callback function to call when time elapses
-             * @returns
-             */
-            const delay = (timeOut, cb) => new Promise((resolve) => {
-              setTimeout(() => {
-                resolve((cb && cb()) || null);
-              }, timeOut);
+            const sleep = async (delay) => new Promise((resolve) => {
+              setTimeout(resolve, delay);
             });
-
-            // verify dropdown is open
-            const isOpen = window.hlx.sidekick.get('info').classList.contains('dropdown-expanded');
-            if (!isOpen) return 'Menu did not open';
+            const isOpen = () => window.hlx.sidekick.get('info').classList.contains('dropdown-expanded');
+            if (!isOpen()) {
+              return 'Menu did not open';
+            }
 
             window.hlx.sidekick.get('info')
               .querySelector('.dropdown-toggle')
               .click();
 
-            await delay(50);
-            if (!window.hlx.sidekick.get('info').classList.contains('dropdown-expanded')) {
-              return 'Menu closed as expected';
+            await sleep(50);
+            if (isOpen()) {
+              return 'Menu did not close';
             }
-            return 'Menu did not close';
+            return 'Menu closed as expected';
           }),
         }).run();
         assert.ok(

@@ -2,9 +2,10 @@
   "name": "@adobe/helix-sidekick-extension",
   "version": "6.8.1",
   "description": "Franklin Sidekick Extension",
+  "type": "module",
   "scripts": {
-    "lint": "./node_modules/.bin/eslint .",
-    "test:mocha": "nyc mocha",
+    "lint": "eslint .",
+    "test:mocha": "c8 mocha",
     "test:wtr": "wtr \"./test/unit/*.test.js\" \"./test/extension/*.test.js\" \"./test/view-doc-source/*.test.js\"",
     "test:wtr:watch": "npm run test:wtr -- --watch",
     "test": "npm run test:mocha && npm run test:wtr",
@@ -30,8 +31,13 @@
     "url": "https://github.com/adobe/helix-sidekick-extension/issues"
   },
   "homepage": "https://github.com/adobe/helix-sidekick-extension#readme",
+  "mocha": {
+    "require": [
+      "test/setup-env.js"
+    ]
+  },
   "devDependencies": {
-    "@adobe/fetch": "3.6.1",
+    "@adobe/fetch": "4.0.4",
     "@adobe/eslint-config-helix": "2.0.2",
     "@babel/eslint-parser": "7.19.1",
     "@esm-bundle/chai": "4.3.4-fix.0",
@@ -42,8 +48,9 @@
     "@web/test-runner-commands": "0.6.5",
     "ajv": "8.12.0",
     "archiver": "5.3.1",
+    "c8": "7.12.0",
     "codecov": "3.8.3",
-    "eslint": "8.34.0",
+    "eslint": "8.35.0",
     "express": "4.18.2",
     "husky": "8.0.3",
     "jsdoc-to-markdown": "8.0.0",
@@ -51,8 +58,8 @@
     "mime": "3.0.0",
     "mocha": "10.2.0",
     "nock": "13.3.0",
-    "nyc": "15.1.0",
     "puppeteer": "19.7.2",
+    "puppeteer-core": "19.7.2",
     "puppeteer-to-istanbul": "1.4.0",
     "semantic-release": "20.1.1",
     "semantic-release-react-native": "1.8.0",
