@@ -11,18 +11,12 @@
  */
 /* eslint-env mocha */
 
-'use strict';
+import assert from 'assert';
+import {
+  DEBUG, IT_DEFAULT_TIMEOUT, Nock, sleep, TestBrowser,
+} from './utils.js';
 
-const assert = require('assert');
-
-const {
-  IT_DEFAULT_TIMEOUT,
-  Nock,
-  sleep,
-  DEBUG,
-  TestBrowser,
-} = require('./utils.js');
-const { SidekickTest } = require('./SidekickTest.js');
+import { SidekickTest } from './SidekickTest.js';
 
 describe('Test sidekick login', () => {
   /** @type TestBrowser */

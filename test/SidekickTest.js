@@ -11,23 +11,18 @@
  */
 /* eslint-env mocha */
 
-'use strict';
+import { EventEmitter } from 'events';
 
-const { EventEmitter } = require('events');
-const fs = require('fs').promises;
-
-const {
-  DEBUG_LOGS,
-  Setup,
+import { promises as fs } from 'fs';
+import {
   assertPlugin,
-  execPlugin,
   checkEventFired,
+  DEBUG_LOGS,
+  execPlugin, getNotification, getPlugins,
+  Setup,
   sleep,
-  toResp,
-  getPlugins,
-  getNotification,
-  waitFor,
-} = require('./utils.js');
+  toResp, waitFor,
+} from './utils.js';
 
 /**
  * @typedef {Object} Page
@@ -130,7 +125,7 @@ const {
 /**
  * The sidekick test runner.
  */
-class SidekickTest extends EventEmitter {
+export class SidekickTest extends EventEmitter {
   /**
    * Creates a new {@code SidekickTest} instance.
    * @param {SidekickTest~Options} o The options
@@ -325,7 +320,7 @@ class SidekickTest extends EventEmitter {
 
       // open fixture and run test
       this.page
-        .goto(`file://${__dirname}/fixtures/${this.fixture}`, { waitUntil: 'load' })
+        .goto(`file://${__testdir}/fixtures/${this.fixture}`, { waitUntil: 'load' })
         .then(() => this.pre(this.page))
         .then(() => this.page.evaluate(async (
           testLocation,
@@ -492,7 +487,3 @@ class SidekickTest extends EventEmitter {
     };
   }
 }
-
-module.exports = {
-  SidekickTest,
-};

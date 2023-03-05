@@ -9,25 +9,12 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { resolve } from 'path';
+import { fileURLToPath } from 'url';
 
-import express from 'express';
+// eslint-disable-next-line no-console
+console.log('Forcing HTTP/1.1 for @adobe/fetch');
+process.env.HELIX_FETCH_FORCE_HTTP1 = 'true';
 
-const debugServer = express();
-const title = 'Franklin Sidekick Debug Server';
-const port = 3001;
-
-debugServer.get('/', (_, res) => {
-  res.redirect(301, '/debug/index.html')
-});
-
-debugServer.use(express.static('.', {
-  index: false,
-  redirect: false,
-  setHeaders: (res) => res.set('access-control-allow-origin', '*'),
-}));
-
-debugServer.listen(port, () => {
-  console.log(`${title} started at http://localhost:${port}/`);
-  console.log('Open the above link in a browser for instructions.');
-  console.log('Press Ctrl + C to stop server...');
-});
+// eslint-disable-next-line no-underscore-dangle
+global.__testdir = resolve(fileURLToPath(import.meta.url), '..');

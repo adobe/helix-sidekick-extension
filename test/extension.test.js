@@ -12,11 +12,9 @@
 /* eslint-env mocha */
 /* eslint-disable no-console */
 
-const assert = require('assert');
-const puppeteer = require('puppeteer');
-const {
-  IT_DEFAULT_TIMEOUT,
-} = require('./utils.js');
+import assert from 'assert';
+import puppeteer from 'puppeteer';
+import { IT_DEFAULT_TIMEOUT } from './utils.js';
 
 describe.skip('Test sidekick extension', () => {
   let browser;

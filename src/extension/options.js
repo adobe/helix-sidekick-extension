@@ -11,8 +11,6 @@
  */
 /* eslint-disable no-use-before-define */
 
-'use strict';
-
 import {
   MANIFEST,
   getState,

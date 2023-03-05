@@ -11,17 +11,12 @@
  */
 /* eslint-env mocha */
 
-'use strict';
+import assert from 'assert';
+import {
+  DEBUG, Nock, Setup, TestBrowser,
+} from './utils.js';
 
-const assert = require('assert');
-
-const {
-  DEBUG,
-  Nock,
-  TestBrowser,
-  Setup,
-} = require('./utils.js');
-const { SidekickTest } = require('./SidekickTest.js');
+import { SidekickTest } from './SidekickTest.js';
 
 /**
  * Specific tests for behaviour that only exists in the bookmarklet. All other tests are covered

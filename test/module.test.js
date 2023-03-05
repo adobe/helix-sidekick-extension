@@ -11,18 +11,12 @@
  */
 /* eslint-env mocha */
 
-'use strict';
+import assert from 'assert';
+import {
+  checkEventFired, IT_DEFAULT_TIMEOUT, Nock, Setup, TestBrowser,
+} from './utils.js';
 
-const assert = require('assert');
-
-const {
-  IT_DEFAULT_TIMEOUT,
-  Nock,
-  checkEventFired,
-  TestBrowser,
-  Setup,
-} = require('./utils.js');
-const { SidekickTest } = require('./SidekickTest.js');
+import { SidekickTest } from './SidekickTest.js';
 
 describe('Test sidekick', () => {
   for (const loadModule of [true, false]) {
@@ -703,7 +697,7 @@ describe('Test sidekick', () => {
         );
       }).timeout(IT_DEFAULT_TIMEOUT);
 
-      it('Closes open dropdown when clicking icon', async () => {
+      it('Closes open info dropdown when clicking icon', async () => {
         nock.admin(new Setup('blog'), {
           route: 'status',
           persist: true,
@@ -713,42 +707,24 @@ describe('Test sidekick', () => {
           page,
           loadModule,
           plugin: 'info',
-          post: (p) => p.evaluate(() => {
-            window.hlx.sidekick.get('info')
-              .querySelector('.dropdown-toggle')
-              .click();
-          }),
           checkPage: (p) => p.evaluate(async () => {
-            window.hlx.sidekick.get('info')
-              .querySelector('.dropdown-toggle')
-              .click();
-            // verify dropdown is open
-            const isOpen = window.hlx.sidekick.get('info').classList.contains('dropdown-expanded');
-
-            /**
-             * Promise based setTimeout that can be await'd
-             * @param {int} timeOut time out in milliseconds
-             * @param {*} cb Callback function to call when time elapses
-             * @returns
-             */
-            const delay = (timeOut, cb) => new Promise((resolve) => {
-              setTimeout(() => {
-                resolve((cb && cb()) || null);
-              }, timeOut);
+            const sleep = async (delay) => new Promise((resolve) => {
+              setTimeout(resolve, delay);
             });
-            await delay(50);
-
-            if (!isOpen) return 'Menu did not open';
+            const isOpen = () => window.hlx.sidekick.get('info').classList.contains('dropdown-expanded');
+            if (!isOpen()) {
+              return 'Menu did not open';
+            }
 
             window.hlx.sidekick.get('info')
               .querySelector('.dropdown-toggle')
               .click();
 
-            await delay(50);
-            if (!window.hlx.sidekick.get('info').classList.contains('dropdown-expanded')) {
-              return 'Menu closed as expected';
+            await sleep(50);
+            if (isOpen()) {
+              return 'Menu did not close';
             }
-            return 'Menu did not close';
+            return 'Menu closed as expected';
           }),
         }).run();
         assert.ok(

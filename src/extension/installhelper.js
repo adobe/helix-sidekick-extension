@@ -10,8 +10,6 @@
  * governing permissions and limitations under the License.
  */
 
-'use strict';
-
 (async () => {
   // ensure hlx namespace
   window.hlx = window.hlx || {};

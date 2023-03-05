@@ -11,8 +11,6 @@
  */
 /* eslint-disable no-console, import/no-unresolved */
 
-'use strict';
-
 import {} from './lib/polyfills.min.js';
 
 import {

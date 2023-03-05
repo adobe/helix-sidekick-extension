@@ -11,22 +11,24 @@
  */
 /* eslint-disable max-classes-per-file */
 /* eslint-env mocha */
-const v8 = require('node:v8');
-const assert = require('assert');
-const { fetch } = require('@adobe/fetch').h1();
-const nock = require('nock');
-const puppeteer = require('puppeteer');
-const pti = require('puppeteer-to-istanbul');
-const mime = require('mime');
-const { fileURLToPath } = require('url');
-const { promises: fs } = require('fs');
-const { CDPBrowser } = require('../node_modules/puppeteer/node_modules/puppeteer-core/lib/cjs/puppeteer/common/Browser.js');
+import v8 from 'node:v8';
+import assert from 'assert';
+import { h1 } from '@adobe/fetch';
+import nock from 'nock';
+import puppeteer from 'puppeteer';
+import { CDPBrowser } from 'puppeteer-core';
+import pti from 'puppeteer-to-istanbul';
+import mime from 'mime';
+import { fileURLToPath } from 'url';
+import { promises as fs } from 'fs';
+
+const { fetch } = h1();
 
 // set debug to true to see browser window and debug output
-const DEBUG = false;
-const DEBUG_LOGS = false;
+export const DEBUG = false;
+export const DEBUG_LOGS = false;
 
-const IT_DEFAULT_TIMEOUT = 60000;
+export const IT_DEFAULT_TIMEOUT = 60000;
 
 const SETUPS = {
   none: {
@@ -218,7 +220,7 @@ const SETUPS = {
 /**
  * The sidekick test setup.
  */
-class Setup {
+export class Setup {
   /**
    * Creates a new test setup.
    * @param {string} name The name of the setup to use
@@ -276,7 +278,7 @@ class Setup {
   }
 }
 
-const toResp = (resp, path) => {
+export const toResp = (resp, path) => {
   if (typeof resp === 'object' && resp.status) {
     return resp;
   } else {
@@ -297,7 +299,7 @@ const toResp = (resp, path) => {
  * @param {Page} page
  * @returns {Promise<object>}
  */
-const getPlugins = async (page) => page.evaluate(
+export const getPlugins = async (page) => page.evaluate(
   () => [...window.hlx.sidekick.shadowRoot.querySelectorAll('div.plugin')]
     .map((plugin) => ({
       id: plugin.classList.item(0),
@@ -317,7 +319,7 @@ const getPlugins = async (page) => page.evaluate(
  * @param {string} id
  * @returns {Promise<*>}
  */
-const getPlugin = async (page, id) => getPlugins(page)
+export const getPlugin = async (page, id) => getPlugins(page)
   .then((plugins) => plugins.find((plugin) => plugin.id === id));
 
 /**
@@ -326,7 +328,7 @@ const getPlugin = async (page, id) => getPlugins(page)
  * @param {string} pluginId
  * @returns {Promise<void>}
  */
-const assertPlugin = async (page, pluginId) => {
+export const assertPlugin = async (page, pluginId) => {
   if (!pluginId) return;
   const pluginIds = typeof pluginId === 'string' ? [pluginId] : pluginId;
   const plugins = await getPlugins(page);
@@ -340,7 +342,7 @@ const assertPlugin = async (page, pluginId) => {
  * @param {number} [timeout=5000]
  * @returns {Promise<*>}
  */
-const waitForEvent = async (page, type) => page.waitForFunction('window.hlx.sidekick')
+export const waitForEvent = async (page, type) => page.waitForFunction('window.hlx.sidekick')
   .then(() => page.evaluate((evtType) => {
     window.hlx.sidekickEvents = {};
     const eventTypes = Array.isArray(evtType) ? evtType : [evtType];
@@ -360,7 +362,7 @@ const waitForEvent = async (page, type) => page.waitForFunction('window.hlx.side
  * @param {number} timeout
  * @returns {Promise<*>}
  */
-async function waitFor(test, timeout) {
+export async function waitFor(test, timeout) {
   const direct = await test();
   if (direct || !timeout) {
     return direct;
@@ -394,7 +396,7 @@ const getFiredEvents = async (page) => page.evaluate(() => window.hlx.sidekickEv
  * @param {string} type
  * @returns {Promise<boolean>}
  */
-const checkEventFired = async (page, type) => {
+export const checkEventFired = async (page, type) => {
   if (!type) return true;
   const firedEvents = await getFiredEvents(page);
   const eventTypes = Array.isArray(type) ? type : [type];
@@ -411,7 +413,7 @@ const checkEventFired = async (page, type) => {
  * @param {string} id
  * @returns {Promise<void>}
  */
-const execPlugin = async (page, id) => {
+export const execPlugin = async (page, id) => {
   if (!id) {
     return;
   }
@@ -429,7 +431,7 @@ const execPlugin = async (page, id) => {
  * @param {string} id
  * @returns {Promise<*>}
  */
-const clickButton = async (page, id) => page.evaluate((buttonId) => window.hlx.sidekick
+export const clickButton = async (page, id) => page.evaluate((buttonId) => window.hlx.sidekick
   .shadowRoot.querySelector(`.hlx-sk button.${buttonId}`).click(), id);
 
 /**
@@ -437,7 +439,7 @@ const clickButton = async (page, id) => page.evaluate((buttonId) => window.hlx.s
  * @param {Page} page
  * @returns {Promise<*>}
  */
-const getNotification = async (page) => page.evaluate(() => {
+export const getNotification = async (page) => page.evaluate(() => {
   const modal = window.hlx.sidekick.shadowRoot.querySelector('.hlx-sk-overlay .modal');
   const message = modal ? modal.textContent : null;
   const className = modal ? modal.className : null;
@@ -447,7 +449,7 @@ const getNotification = async (page) => page.evaluate(() => {
   };
 });
 
-const sleep = async (delay = 1000) => new Promise((resolve) => {
+export const sleep = async (delay = 1000) => new Promise((resolve) => {
   setTimeout(resolve, delay);
 });
 
@@ -457,7 +459,7 @@ const sleep = async (delay = 1000) => new Promise((resolve) => {
  *
  * so we need to create our own abstraction for network interception.
  */
-class TestBrowser {
+export class TestBrowser {
   constructor(browser) {
     this.browser = browser;
     // track frames to detect navigation requests
@@ -658,7 +660,7 @@ class TestBrowser {
   }
 }
 
-function Nock() {
+export function Nock() {
   const scopes = {};
 
   let unmatched;
@@ -720,23 +722,3 @@ function Nock() {
 
   return nocker;
 }
-
-module.exports = {
-  IT_DEFAULT_TIMEOUT,
-  DEBUG_LOGS,
-  DEBUG,
-  Setup,
-  toResp,
-  getPlugins,
-  getPlugin,
-  assertPlugin,
-  waitForEvent,
-  waitFor,
-  checkEventFired,
-  execPlugin,
-  clickButton,
-  getNotification,
-  sleep,
-  TestBrowser,
-  Nock,
-};
