@@ -611,6 +611,7 @@ describe('Test sidekick', () => {
       }).timeout(IT_DEFAULT_TIMEOUT);
 
       it('Hides notifications', async () => {
+        if (!loadModule) return; // skip bookmarklet test for now
         // hides sticky modal
         nock.admin(new Setup('blog'));
         const { notification } = await new SidekickTest({
