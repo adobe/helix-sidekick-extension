@@ -639,10 +639,13 @@ describe('Test sidekick', () => {
           browser,
           page,
           loadModule,
-          checkPage: (p) => p.evaluate(() => {
+          checkPage: (p) => p.evaluate(async () => {
             window.hlx.sidekick.showModal({ message: 'Sticky', sticky: true });
             const overlay = window.hlx.sidekick.shadowRoot.querySelector('.hlx-sk-overlay');
             overlay.click();
+            await new Promise((resolve) => {
+              setTimeout(resolve, 50);
+            });
             document.body.innerHTML += overlay.className;
             return overlay.className.includes('hlx-sk-hidden');
           }),
