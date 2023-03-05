@@ -60,6 +60,7 @@ describe('Test sidekick', () => {
           browser,
           page,
           loadModule,
+          sleep: 500,
           setup: 'blog',
         }).run();
         const { plugins, sidekick: { config: { innerHost, outerHost } } } = result;
@@ -89,22 +90,20 @@ describe('Test sidekick', () => {
           loadModule,
           checkPage: (p) => p.evaluate(() => {
             // click overlay and return sidekick reference
-            const modal = window.hlx.sidekick.shadowRoot.querySelector('.hlx-sk-overlay .modal');
-            const { className } = modal;
-            modal.parentElement.click();
-            return [className, window.hlx.sidekick];
+            window.hlx.sidekick.shadowRoot.querySelector('.hlx-sk-overlay').click();
+            return window.hlx.sidekick;
           }),
         });
         while (errors.length) {
-          const error = errors.shift();
+          const { status } = errors.shift();
           // eslint-disable-next-line no-await-in-loop
-          const { checkPageResult } = await test.run();
-          const [className, sidekick] = checkPageResult;
+          const { notification, checkPageResult } = await test.run();
+          const sidekick = checkPageResult;
           assert.ok(
-            className.includes(error.status),
-            `Expected ${error.status} in className, but got ${className}`,
+            notification.message.includes(status),
+            `Expected ${status} in message, but got ${notification.message}`,
           );
-          assert.strictEqual(sidekick, null, 'Did not delete sidekick');
+          assert.strictEqual(sidekick, undefined, 'Did not delete sidekick');
         }
       }).timeout(IT_DEFAULT_TIMEOUT);
 
@@ -204,8 +203,7 @@ describe('Test sidekick', () => {
 
       it('Loads config and plugins from project config', async () => {
         nock.admin(new Setup('blog'));
-        nock('https://www.hlx.live')
-          .persist()
+        nock('https://www.adobe.com')
           .get(/.*/)
           .reply(200, 'some content...');
 
@@ -214,15 +212,16 @@ describe('Test sidekick', () => {
           page,
           loadModule,
           configJson: `{
-        "host": "blog.adobe.com",
-        "plugins": [{
-          "id": "bar",
-          "title": "Bar",
-          "url": "https://www.hlx.live/"
-        }]
-      }`,
+          "host": "blog.adobe.com",
+          "plugins": [{
+            "id": "bar",
+            "title": "Bar",
+            "url": "https://www.adobe.com/"
+          }]
+          }`,
+          sleep: 1000,
           plugin: 'bar',
-          pluginSleep: 2000,
+          pluginSleep: 1000,
         });
         const {
           configLoaded,
@@ -232,17 +231,16 @@ describe('Test sidekick', () => {
         } = await test.run();
         assert.ok(configLoaded, 'Did not load project config');
         assert.ok(plugins.find((p) => p.id === 'bar'), 'Did not load plugins from project');
-        assert.ok(popupOpened === 'https://www.hlx.live/', 'Did not open plugin URL');
+        assert.ok(popupOpened === 'https://www.adobe.com/', 'Did not open plugin URL');
         assert.strictEqual(host, 'blog.adobe.com', 'Did not load config from project');
       }).timeout(IT_DEFAULT_TIMEOUT);
 
       it('Plugin passes referrer in url', async () => {
-        const pluginUrl = 'https://www.hlx.live/';
+        const pluginUrl = 'https://www.adobe.com/';
         const expectedReferrerParam = '?referrer=https%3A%2F%2Fmain--blog--adobe.hlx.page%2Fen%2Ftopics%2Fbla';
         const expectedPopupUrl = `${pluginUrl}${expectedReferrerParam}`;
 
-        nock('https://www.hlx.live')
-          .persist()
+        nock('https://www.adobe.com')
           .get(/.*/)
           .reply(200, 'some content...');
 
@@ -271,12 +269,11 @@ describe('Test sidekick', () => {
       }).timeout(IT_DEFAULT_TIMEOUT);
 
       it('Plugin passes config info into url using passConfig', async () => {
-        const pluginUrl = 'https://www.hlx.live/';
-        const expectedInfoParam = '?ref=main&repo=blog&owner=adobe';
+        const pluginUrl = 'https://www.adobe.com/';
+        const expectedInfoParam = '?ref=main&repo=blog&owner=adobe&project=Blog';
         const expectedPopupUrl = `${pluginUrl}${expectedInfoParam}`;
 
-        nock('https://www.hlx.live')
-          .persist()
+        nock('https://www.adobe.com')
           .get(/.*/)
           .reply(200, 'some content...');
 
@@ -305,37 +302,49 @@ describe('Test sidekick', () => {
       }).timeout(IT_DEFAULT_TIMEOUT);
 
       it('Plugin shows palette', async () => {
-        nock('https://www.hlx.live')
-          .persist()
-          .get(/.*/)
-          .reply(200, 'some content...');
-
         nock.admin(new Setup('blog'));
+        nock('https://www.adobe.com/')
+          .get('/')
+          .reply(200, 'foo');
         const test = new SidekickTest({
           browser,
           page,
           loadModule,
-          configJson: `{
-        "host": "blog.adobe.com",
-        "plugins": [{
-          "id": "bar",
-          "title": "Bar",
-          "url": "https://www.hlx.live/",
-          "isPalette": true
-        }]
-      }`,
+          configJson: JSON.stringify({
+            host: 'blog.adobe.com',
+            plugins: [{
+              id: 'bar',
+              title: 'Bar',
+              url: 'https://www.adobe.com/',
+              isPalette: true,
+            }],
+          }),
           plugin: 'bar',
-          pluginSleep: 2000,
+          pluginSleep: 50,
         });
         const {
           configLoaded,
           plugins,
         } = await test.run();
-        const palette = await page.evaluate(() => window.hlx.sidekick.shadowRoot
-          .querySelector('.hlx-sk-palette'));
+        const palette = await page.evaluate(() => {
+          const $p = window.hlx.sidekick.shadowRoot.querySelector('.hlx-sk-palette');
+          if (!$p) {
+            return null;
+          }
+          const title = $p.querySelector('.palette-title')?.innerHTML;
+          const content = $p.querySelector('.palette-content').innerHTML;
+          return {
+            title,
+            content,
+          };
+        });
         assert.ok(configLoaded, 'Did not load project config');
         assert.ok(plugins.find((p) => p.id === 'bar'), 'Did not load plugins from project');
         assert.ok(palette, 'Did not show palette');
+        assert.deepStrictEqual(palette, {
+          title: 'Bar<button title="Close" class="close" tabindex="0"></button>',
+          content: '<iframe src="https://www.adobe.com/" allow="clipboard-write"></iframe>',
+        });
       }).timeout(IT_DEFAULT_TIMEOUT);
 
       it('Plugin fires custom event', async () => {
@@ -672,7 +681,11 @@ describe('Test sidekick', () => {
             .querySelector('.hlx-sk button.share')
             .click()),
         }).run();
-        assert.ok(notification.className.includes('modal-share-success'), 'Did not copy sharing URL to clipboard');
+        assert.strictEqual(
+          notification.message,
+          'Sharing URL for Blog copied to clipboard',
+          'Did not copy sharing URL to clipboard',
+        );
       }).timeout(IT_DEFAULT_TIMEOUT);
 
       it('Displays page modified info on info button click', async () => {
@@ -958,11 +971,26 @@ describe('Test sidekick', () => {
         assert.ok(checkPageResult, 'Did not show data view for JSON file');
       }).timeout(IT_DEFAULT_TIMEOUT);
 
+      it('Suppresses special view for /helix-env.json', async () => {
+        nock.admin(new Setup('blog'));
+        const { checkPageResult } = await new SidekickTest({
+          browser,
+          page,
+          loadModule,
+          url: 'https://main--blog--adobe.hlx.page/helix-env.json',
+          checkPage: (p) => p.evaluate(() => !window.hlx.sidekick
+            .shadowRoot
+            .querySelector('.hlx-sk-special-view')),
+        }).run();
+        assert.ok(checkPageResult, 'Did not suppress data view for JSON file');
+      }).timeout(IT_DEFAULT_TIMEOUT);
+
       it('Shows help content', async () => {
         const { notification } = await new SidekickTest({
           browser,
           page,
           loadModule,
+          sleep: 1000,
           post: (p) => p.evaluate(() => {
             window.hlx.sidekick.showHelp({
               id: 'test',
@@ -975,10 +1003,8 @@ describe('Test sidekick', () => {
               ],
             });
           }),
-          // eslint-disable-next-line no-underscore-dangle
-          checkPage: (p) => p.evaluate(() => window.hlx.sidekick._modal.classList.toString()),
         }).run();
-        assert.strictEqual(notification.message, 'Lorem ipsum dolor sit amet', `Did not show the expected message: ${notification.message}`);
+        assert.strictEqual(notification.message, 'Lorem ipsum dolor sit ametGot it!', `Did not show the expected message: ${notification.message}`);
         assert.strictEqual(notification.className, 'modal help bottom-right', `Did not have the expected CSS classes: ${notification.className}`);
       }).timeout(IT_DEFAULT_TIMEOUT);
 

@@ -13,7 +13,7 @@
 
 import assert from 'assert';
 import {
-  DEBUG, Nock, Setup, TestBrowser,
+  Nock, Setup, TestBrowser,
 } from './utils.js';
 
 import { SidekickTest } from './SidekickTest.js';
@@ -60,10 +60,6 @@ describe('Test sidekick bookmarklet only', () => {
 
   it('Extension hint opens share URL and writes local storage', async () => {
     nock.admin(new Setup('blog'));
-    nock('https://www.hlx.live')
-      .get('/tools/sidekick/?giturl=https%3A%2F%2Fgithub.com%2Fadobe%2Fblog%2Ftree%2Fmain')
-      .times(DEBUG ? 2 : 1) // when dev-tools are enabled, browser makes 2 requests.
-      .reply(200, 'Share URL');
 
     const { popupOpened } = await new SidekickTest({
       browser,
@@ -87,10 +83,6 @@ describe('Test sidekick bookmarklet only', () => {
 
   it('Extension hint opens share URL', async () => {
     nock.admin(new Setup('blog'));
-    nock('https://www.hlx.live')
-      .get('/tools/sidekick/?giturl=https%3A%2F%2Fgithub.com%2Fadobe%2Fblog%2Ftree%2Fmain')
-      .times(DEBUG ? 2 : 1) // when dev-tools are enabled, browser makes 2 requests.
-      .reply(200, 'Share URL');
 
     const { popupOpened } = await new SidekickTest({
       browser,

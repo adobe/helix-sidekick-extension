@@ -17,4 +17,6 @@ console.log('Forcing HTTP/1.1 for @adobe/fetch');
 process.env.HELIX_FETCH_FORCE_HTTP1 = 'true';
 
 // eslint-disable-next-line no-underscore-dangle
+global.__rootdir = resolve(fileURLToPath(import.meta.url), '..', '..');
+// eslint-disable-next-line no-underscore-dangle
 global.__testdir = resolve(fileURLToPath(import.meta.url), '..');

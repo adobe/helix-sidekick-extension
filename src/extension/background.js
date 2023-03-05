@@ -157,6 +157,14 @@ async function checkContextMenu({ url: tabUrl, id }, configs = []) {
                 'action',
               ],
             });
+            // open preview
+            chrome.contextMenus.create({
+              id: 'openPreview',
+              title: i18n('open_preview'),
+              contexts: [
+                'action',
+              ],
+            });
           }
         }
       }
@@ -367,6 +375,14 @@ function checkViewDocSource(id) {
       }
     },
     openViewDocSource: async ({ id }) => openViewDocSource(id),
+    openPreview: ({ url }) => {
+      const { owner, repo, ref = 'main' } = getGitHubSettings(url);
+      if (owner && repo) {
+        chrome.tabs.create({
+          url: `https://${ref}--${repo}--${owner}.hlx.page/`,
+        });
+      }
+    },
   };
 
   if (chrome.contextMenus) {

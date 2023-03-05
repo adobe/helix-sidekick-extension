@@ -1,3 +1,18 @@
+## [6.8.1](https://github.com/adobe/helix-sidekick-extension/compare/v6.8.0...v6.8.1) (2023-03-04)
+
+
+### Bug Fixes
+
+* pass sk instance to i18n ([8ba6778](https://github.com/adobe/helix-sidekick-extension/commit/8ba6778d0fe1d9530a8a01c4727db655f9e71801))
+
+# [6.8.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.7.7...v6.8.0) (2023-03-03)
+
+
+### Features
+
+* disable special view on /helix-env.json ([9854055](https://github.com/adobe/helix-sidekick-extension/commit/98540557916c7f4a18b8c76ac6fb70bb44bdd871))
+* open preview from github ([36df39c](https://github.com/adobe/helix-sidekick-extension/commit/36df39c406eac88ef09f92b47e2519648c2a8c22))
+
 ## [6.7.7](https://github.com/adobe/helix-sidekick-extension/compare/v6.7.6...v6.7.7) (2023-02-09)
 
 

@@ -1,6 +1,6 @@
 {
   "name": "@adobe/helix-sidekick-extension",
-  "version": "6.7.7",
+  "version": "6.8.1",
   "description": "Franklin Sidekick Extension",
   "type": "module",
   "scripts": {
