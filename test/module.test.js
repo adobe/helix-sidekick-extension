@@ -638,7 +638,7 @@ describe('Test sidekick', () => {
 
       it('Hides notifications on overlay click', async () => {
         // hides sticky modal on overlay click
-        nock.admin(new Setup('blog'));
+        nock.admin(new Setup('blog'), { persist: true });
         const { checkPageResult } = await new SidekickTest({
           browser,
           page,
@@ -648,7 +648,7 @@ describe('Test sidekick', () => {
             const overlay = window.hlx.sidekick.shadowRoot.querySelector('.hlx-sk-overlay');
             overlay.click();
             await new Promise((resolve) => {
-              setTimeout(resolve, 50);
+              setTimeout(resolve, 1000);
             });
             document.body.innerHTML += overlay.className;
             return overlay.className.includes('hlx-sk-hidden');
