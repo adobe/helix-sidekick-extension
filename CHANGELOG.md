@@ -1,3 +1,10 @@
+## [6.8.2](https://github.com/adobe/helix-sidekick-extension/compare/v6.8.1...v6.8.2) (2023-03-06)
+
+
+### Bug Fixes
+
+* language fallback failing ([6cc5f2c](https://github.com/adobe/helix-sidekick-extension/commit/6cc5f2c71c4518f53e344b28ec8964efac0dae8a))
+
 ## [6.8.1](https://github.com/adobe/helix-sidekick-extension/compare/v6.8.0...v6.8.1) (2023-03-04)
 
 
