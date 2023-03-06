@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "lint": "eslint .",
-    "test:mocha": "c8 mocha",
+    "test:mocha": "c8 mocha --reporter xunit --reporter-options output=./junit/test-results.xml",
     "test:wtr": "wtr \"./test/unit/*.test.js\" \"./test/extension/*.test.js\" \"./test/view-doc-source/*.test.js\"",
     "test:wtr:watch": "npm run test:wtr -- --watch",
     "test": "npm run test:mocha && npm run test:wtr",
