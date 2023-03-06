@@ -3050,9 +3050,6 @@
      * @returns {Sidekick} The sidekick
      */
     showHelp(topic, step = 0) {
-      if (!this.isAuthenticated()) {
-        return this;
-      }
       const { id, steps } = topic;
       // contextualize and consolidate help steps
       const cSteps = steps.filter(({ selector }) => {
