@@ -639,7 +639,6 @@ describe('Test sidekick', () => {
       it('Hides notifications on overlay click', async () => {
         // hides sticky modal on overlay click
         nock.admin(new Setup('blog'));
-        nock.admin(new Setup('blog'));
         const { checkPageResult } = await new SidekickTest({
           browser,
           page,
