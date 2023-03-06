@@ -2891,7 +2891,8 @@
      * else <code>false</code>
      */
     isAuthenticated() {
-      return !!this.status?.profile;
+      const { status } = this.status;
+      return status && status !== 401;
     }
 
     /**
