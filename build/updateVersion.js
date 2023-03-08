@@ -11,8 +11,8 @@
  */
 /* eslint-disable no-console, import/no-extraneous-dependencies */
 
-const fs = require('fs-extra');
-const shell = require('shelljs');
+import fs from 'fs-extra';
+import shell from 'shelljs';
 
 const manifest = './src/extension/manifest.json';
 

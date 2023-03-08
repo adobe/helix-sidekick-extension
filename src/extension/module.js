@@ -11,8 +11,6 @@
  */
 /* eslint-disable no-console, no-alert */
 
-'use strict';
-
 (() => {
   /**
    * @typedef {Object} ElemConfig
@@ -1671,7 +1669,7 @@
                       appendTag(titleBar, {
                         tag: 'button',
                         attrs: {
-                          title: i18n(this, 'close'),
+                          title: i18n(sk, 'close'),
                           class: 'close',
                         },
                         lstnrs: {
