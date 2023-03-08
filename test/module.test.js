@@ -647,11 +647,22 @@ describe('Test sidekick', () => {
             window.hlx.sidekick.showModal({ message: 'Sticky', sticky: true });
             const overlay = window.hlx.sidekick.shadowRoot.querySelector('.hlx-sk-overlay');
             overlay.click();
-            await new Promise((resolve) => {
-              setTimeout(resolve, 1000);
+            const wait = () => new Promise((resolve) => {
+              setTimeout(resolve, 200);
             });
-            document.body.innerHTML += overlay.className;
-            return overlay.className.includes('hlx-sk-hidden');
+            let found;
+            let attempt = 0;
+            // try multiple times, as the overlay click might be differed
+            do {
+              found = overlay.className.includes('hlx-sk-hidden');
+              if (!found) {
+                attempt += 1;
+                // eslint-disable-next-line no-await-in-loop
+                await wait();
+              }
+            } while (attempt < 10 && !found);
+
+            return found;
           }),
         }).run();
         assert.ok(checkPageResult, 'Did not hide sticky modal on overlay click');
