@@ -1,9 +1,9 @@
 {
   "title": {
-    "message": "Franklin Sidekick"
+    "message": "AEM Sidekick"
   },
   "description": {
-    "message": "Franklin Sidekick allows authors in Franklin projects to easily preview and publish content."
+    "message": "AEM Sidekick allows authors in Franklin projects to easily preview and publish content."
   },
   "description_shortcut": {
     "message": "Toggle Sidekick"
@@ -456,7 +456,7 @@
     "message": "Caution: unexpected side effects!"
   },
   "admin_version": {
-    "message": "Use a specific Franklin Admin API version"
+    "message": "Use a specific Admin API version"
   },
   "admin_version_placeholder": {
     "message": "Admin Version: x.y.z"

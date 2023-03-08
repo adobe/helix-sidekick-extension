@@ -1,9 +1,9 @@
 {
   "title": {
-    "message": "Franklin Sidekick"
+    "message": "AEM Sidekick"
   },
   "description": {
-    "message": "Le Franklin Sidekick permet aux auteurs de simplement visualiser et publier leur contenu."
+    "message": "Le AEM Sidekick permet aux auteurs de simplement visualiser et publier leur contenu."
   },
   "description_shortcut": {
     "message": "Afficher/cacher le Sidekick"
@@ -455,7 +455,7 @@
     "message": "Attention: effets indésirables!"
   },
   "admin_version": {
-    "message": "Utiliser une version spécifique de l'API Franklin Admin"
+    "message": "Utiliser une version spécifique de l'API Admin"
   },
   "admin_version_placeholder": {
     "message": "Version de l'Admin: x.y.z"
