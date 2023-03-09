@@ -60,7 +60,7 @@ const copyHTMLToClipboard = (html) => {
 };
 
 /**
- * Converts the source HTML (~Franklin Pipeline output) to HTML friendly for edition.
+ * Converts the source HTML (~Pipeline output) to HTML friendly for edition.
  * While the header and footer are not needed (only the main is), the head is needed to
  * compute the metadata block.
  * @param {HTMLElement} main The source main element
@@ -85,7 +85,7 @@ const htmlSourceToEdition = (main, head, url) => {
 };
 
 /**
- * Converts the HTML friendly for edition to the source HTML (~Franklin Pipeline output)
+ * Converts the HTML friendly for edition to the source HTML (~Pipeline output)
  * @returns {String} The HTML content of the editor
  */
 const htmlEditionToSource = () => {

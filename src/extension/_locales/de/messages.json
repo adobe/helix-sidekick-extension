@@ -3,7 +3,7 @@
     "message": "AEM Sidekick"
   },
   "description": {
-    "message": "AEM Sidekick erlaubt es Autoren in Franklin-Projekten, Inhalte zu publizieren."
+    "message": "AEM Sidekick erlaubt es Autoren von AEM-Sites, Inhalte zu publizieren."
   },
   "description_shortcut": {
     "message": "Sidekick ein-/ausschalten"
@@ -213,7 +213,7 @@
     "message": "URLs in die Zwischenablage kopiert."
   },
   "error_status_404_document": {
-    "message": "404 Nicht gefunden: Prüfe deine Sidekick-Konfiguration und stelle sicher, dass Franklin Zugriff auf dieses Dokument hat."
+    "message": "404 Nicht gefunden: Prüfe deine Sidekick-Konfiguration und stelle sicher, dass Zugriff auf dieses Dokument gewährleistet ist."
   },
   "error_status_404_content": {
     "message": "404 Nicht gefunden: Prüfe deine Sidekick-Konfiguration oder URL."

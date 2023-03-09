@@ -1,6 +1,6 @@
-# Franklin Sidekick Extension
+# AEM Sidekick Extension
 
-> Browser extension for authoring Franklin projects
+> Browser extension for authoring AEM sites
 
 ## Status
 [![codecov](https://img.shields.io/codecov/c/github/adobe/helix-sidekick-extension.svg)](https://codecov.io/gh/adobe/helix-sidekick-extension)

@@ -261,7 +261,7 @@
 
   /**
    * The URL of the development environment.
-   * @see {@link https://github.com/adobe/helix-cli|Franklin CLI}).
+   * @see {@link https://github.com/adobe/helix-cli|AEM CLI}).
    * @private
    * @type {URL}
    */

@@ -213,7 +213,7 @@
     "message": "URLs copied to clipboard."
   },
   "error_status_404_document": {
-    "message": "404 Not found: Check your Sidekick configuration and make sure Franklin has access to this document."
+    "message": "404 Not found: Check your Sidekick configuration and make sure access to this document is granted."
   },
   "error_status_404_content": {
     "message": "404 Not found: Check your Sidekick configuration or URL."
