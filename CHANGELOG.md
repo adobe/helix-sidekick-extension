@@ -1,3 +1,10 @@
+## [6.8.3](https://github.com/adobe/helix-sidekick-extension/compare/v6.8.2...v6.8.3) (2023-03-09)
+
+
+### Bug Fixes
+
+* fix the isAuthenticated method ([#271](https://github.com/adobe/helix-sidekick-extension/issues/271)) ([80d592b](https://github.com/adobe/helix-sidekick-extension/commit/80d592be3f21562d2a3ac9633530da81057390b2))
+
 ## [6.8.2](https://github.com/adobe/helix-sidekick-extension/compare/v6.8.1...v6.8.2) (2023-03-06)
 
 
