@@ -6,9 +6,11 @@
   "scripts": {
     "lint": "eslint .",
     "test:mocha": "c8 mocha",
+    "test:mocha-ci": "c8 mocha --reporter xunit --reporter-options output=./junit/test-results.xml",
     "test:wtr": "wtr \"./test/unit/*.test.js\" \"./test/extension/*.test.js\" \"./test/view-doc-source/*.test.js\"",
     "test:wtr:watch": "npm run test:wtr -- --watch",
     "test": "npm run test:mocha && npm run test:wtr",
+    "test-ci": "npm run test:mocha-ci && npm run test:wtr",
     "test:watch": "npm run test -- --watch",
     "docs": "npx jsdoc2md -c .jsdoc.json --files './src/extension/module.js'  > docs/API.md",
     "start": "node ./debug/debug.js",
