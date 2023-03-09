@@ -652,7 +652,7 @@ describe('Test sidekick', () => {
             });
             let found;
             let attempt = 0;
-            // try multiple times, as the overlay click might be differed
+            // try multiple times, as the overlay click might be deferred
             do {
               found = overlay.className.includes('hlx-sk-hidden');
               if (!found) {
