@@ -1,3 +1,10 @@
+## [6.8.4](https://github.com/adobe/helix-sidekick-extension/compare/v6.8.3...v6.8.4) (2023-03-10)
+
+
+### Bug Fixes
+
+* sidekick always shows login option ([a22dd25](https://github.com/adobe/helix-sidekick-extension/commit/a22dd2547ac87daa4157bf5101c8e51e7cf4da55))
+
 ## [6.8.3](https://github.com/adobe/helix-sidekick-extension/compare/v6.8.2...v6.8.3) (2023-03-09)
 
 
