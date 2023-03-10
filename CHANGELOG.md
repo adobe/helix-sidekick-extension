@@ -1,3 +1,24 @@
+## [6.8.4](https://github.com/adobe/helix-sidekick-extension/compare/v6.8.3...v6.8.4) (2023-03-10)
+
+
+### Bug Fixes
+
+* sidekick always shows login option ([a22dd25](https://github.com/adobe/helix-sidekick-extension/commit/a22dd2547ac87daa4157bf5101c8e51e7cf4da55))
+
+## [6.8.3](https://github.com/adobe/helix-sidekick-extension/compare/v6.8.2...v6.8.3) (2023-03-09)
+
+
+### Bug Fixes
+
+* fix the isAuthenticated method ([#271](https://github.com/adobe/helix-sidekick-extension/issues/271)) ([80d592b](https://github.com/adobe/helix-sidekick-extension/commit/80d592be3f21562d2a3ac9633530da81057390b2))
+
+## [6.8.2](https://github.com/adobe/helix-sidekick-extension/compare/v6.8.1...v6.8.2) (2023-03-06)
+
+
+### Bug Fixes
+
+* language fallback failing ([6cc5f2c](https://github.com/adobe/helix-sidekick-extension/commit/6cc5f2c71c4518f53e344b28ec8964efac0dae8a))
+
 ## [6.8.1](https://github.com/adobe/helix-sidekick-extension/compare/v6.8.0...v6.8.1) (2023-03-04)
 
 

@@ -1936,7 +1936,7 @@
       sk.addEventListener('loggedin', () => {
         sk.remove('user-login');
       });
-      if (!sk.status.loggedOut && !sk.isAuthenticated()) {
+      if (!sk.status.loggedOut && sk.status.status === 401 && !sk.isAuthenticated()) {
         // // encourage login
         toggle.click();
         toggle.nextElementSibling.classList.add('highlight');
@@ -2592,9 +2592,8 @@
 
       // load dictionary based on user language
       const lang = this.config.lang || navigator.language.split('-')[0];
-      try {
-        this.dict = await fetchDict(this, lang);
-      } catch (e) {
+      this.dict = await fetchDict(this, lang);
+      if (!this.dict.title) {
         // unsupported language, default to english
         this.dict = await fetchDict(this, 'en');
       }
@@ -2892,8 +2891,7 @@
      * else <code>false</code>
      */
     isAuthenticated() {
-      const { status } = this.status;
-      return status !== 401;
+      return !!this.status?.profile;
     }
 
     /**
@@ -3052,9 +3050,6 @@
      * @returns {Sidekick} The sidekick
      */
     showHelp(topic, step = 0) {
-      if (!this.isAuthenticated()) {
-        return this;
-      }
       const { id, steps } = topic;
       // contextualize and consolidate help steps
       const cSteps = steps.filter(({ selector }) => {
