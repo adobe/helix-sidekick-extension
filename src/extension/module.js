@@ -1936,7 +1936,7 @@
       sk.addEventListener('loggedin', () => {
         sk.remove('user-login');
       });
-      if (!sk.status.loggedOut && !sk.isAuthenticated()) {
+      if (!sk.status.loggedOut && sk.status.status === 401 && !sk.isAuthenticated()) {
         // // encourage login
         toggle.click();
         toggle.nextElementSibling.classList.add('highlight');
