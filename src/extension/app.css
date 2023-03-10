@@ -33,7 +33,10 @@
   --hlx-sk-button-hover-bg: rgba(44, 44, 44, .04);
   --hlx-sk-button-hover-border: var(--hlx-sk-button-color);
   --hlx-sk-button-hover-color: var(--hlx-sk-button-color);
-  --hlx-sk-button-pressed-bg: rgba(44, 44, 44, .07);
+  --hlx-sk-button-focus-bg: rgba(44, 44, 44, .2);
+  --hlx-sk-button-focus-border: var(--hlx-sk-button-hover-border);
+  --hlx-sk-button-focus-color: var(--hlx-sk-button-hover-color);
+  --hlx-sk-button-pressed-bg: rgba(44, 44, 44, .1);
   --hlx-sk-button-pressed-color: #404040;
   --hlx-sk-button-border-radius: 6px;
   --hlx-sk-button-disabled-color: #909090;
@@ -142,12 +145,17 @@
 }
 
 .hlx-sk button:hover,
-.hlx-sk button:focus,
-.hlx-sk-overlay button:hover,
-.hlx-sk-overlay button:focus {
+.hlx-sk-overlay button:hover {
   background-color: var(--hlx-sk-button-hover-bg);
   border-color: var(--hlx-sk-button-hover-border);
   color: var(--hlx-sk-button-hover-color);
+}
+
+.hlx-sk button:focus,
+.hlx-sk-overlay button:focus {
+  background-color: var(--hlx-sk-button-focus-bg);
+  border-color: var(--hlx-sk-button-focus-border);
+  color: var(--hlx-sk-button-focus-color);
 }
 
 .hlx-sk button.pressed,
