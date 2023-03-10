@@ -621,7 +621,7 @@
         // define alignment
         const alignments = [
           'bottom-center',
-          'botttom-left',
+          'bottom-left',
           'bottom-right',
         ];
         let align = target === sk.root ? alignments[0] : alignments[1];

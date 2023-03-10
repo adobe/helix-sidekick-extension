@@ -1016,14 +1016,13 @@ describe('Test sidekick', () => {
                 {
                   message: 'Lorem ipsum dolor sit amet',
                   selector: '.env',
-                  align: 'bottom-right',
                 },
               ],
             });
           }),
         }).run();
         assert.strictEqual(notification.message, 'Lorem ipsum dolor sit ametGot it!', `Did not show the expected message: ${notification.message}`);
-        assert.strictEqual(notification.className, 'modal help bottom-right', `Did not have the expected CSS classes: ${notification.className}`);
+        assert.strictEqual(notification.className, 'modal help bottom-left', `Did not have the expected CSS classes: ${notification.className}`);
       }).timeout(IT_DEFAULT_TIMEOUT);
 
       it('Calls admin API with a specific version', async () => {
