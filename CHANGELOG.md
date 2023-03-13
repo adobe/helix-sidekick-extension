@@ -1,3 +1,16 @@
+# [6.9.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.8.5...v6.9.0) (2023-03-13)
+
+
+### Features
+
+* rebranding to AEM Sidekick ([831a8a6](https://github.com/adobe/helix-sidekick-extension/commit/831a8a6270f3d622a4a980745bd81263a993bf52))
+* rebranding to AEM Sidekick ([23d1c46](https://github.com/adobe/helix-sidekick-extension/commit/23d1c465b7c1e06c010d65631c0f5653788a966c))
+* rebranding to AEM Sidekick ([674394b](https://github.com/adobe/helix-sidekick-extension/commit/674394b172d93f4a10ddfe65509c56bdc5661c27))
+* safari extension rebranding ([dc44a4f](https://github.com/adobe/helix-sidekick-extension/commit/dc44a4f7ff1a35202b16ca2a8b89054939044058))
+* slight rebranding ([6cb08a4](https://github.com/adobe/helix-sidekick-extension/commit/6cb08a494c29520e057f84d14b63d5787762f97c))
+* use ec icon ([e63167d](https://github.com/adobe/helix-sidekick-extension/commit/e63167d617cfc5af1df1b77dbf5bbb98c6fb0582))
+* use ec icon ([6bed3f1](https://github.com/adobe/helix-sidekick-extension/commit/6bed3f1653e946b904b683ad7cbf7eab6e1f05d9))
+
 ## [6.8.5](https://github.com/adobe/helix-sidekick-extension/compare/v6.8.4...v6.8.5) (2023-03-13)
 
 
