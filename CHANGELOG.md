@@ -1,3 +1,10 @@
+## [6.8.5](https://github.com/adobe/helix-sidekick-extension/compare/v6.8.4...v6.8.5) (2023-03-13)
+
+
+### Bug Fixes
+
+* lower concurrency for bulk preview ([083cce9](https://github.com/adobe/helix-sidekick-extension/commit/083cce983f7c4c7253820e31524081ddc92464d6))
+
 ## [6.8.4](https://github.com/adobe/helix-sidekick-extension/compare/v6.8.3...v6.8.4) (2023-03-10)
 
 
