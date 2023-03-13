@@ -64,6 +64,7 @@ The sidekick provides helper tools for authors.
     * [.get(id)](#Sidekick+get) ⇒ <code>HTMLElement</code>
     * [.remove(id)](#Sidekick+remove) ⇒ [<code>Sidekick</code>](#Sidekick)
     * [.isEditor()](#Sidekick+isEditor) ⇒ <code>boolean</code>
+    * [.isAdmin()](#Sidekick+isAdmin) ⇒ <code>boolean</code>
     * [.isDev()](#Sidekick+isDev) ⇒ <code>boolean</code>
     * [.isInner()](#Sidekick+isInner) ⇒ <code>boolean</code>
     * [.isOuter()](#Sidekick+isOuter) ⇒ <code>boolean</code>
@@ -127,7 +128,8 @@ Fetches the status for the current resource.
 <a name="Sidekick+loadContext"></a>
 
 ### sidekick.loadContext(cfg) ⇒ [<code>Sidekick</code>](#Sidekick)
-Loads the sidekick configuration and retrieves the location of the current document.
+Loads the sidekick configuration and language dictionary,
+and retrieves the location of the current document.
 
 **Kind**: instance method of [<code>Sidekick</code>](#Sidekick)  
 **Returns**: [<code>Sidekick</code>](#Sidekick) - The sidekick  
@@ -211,6 +213,13 @@ Checks if the current location is an editor URL (SharePoint or Google Docs).
 
 **Kind**: instance method of [<code>Sidekick</code>](#Sidekick)  
 **Returns**: <code>boolean</code> - <code>true</code> if editor URL, else <code>false</code>  
+<a name="Sidekick+isAdmin"></a>
+
+### sidekick.isAdmin() ⇒ <code>boolean</code>
+Checks if the current location is an admin URL (SharePoint or Google Drive).
+
+**Kind**: instance method of [<code>Sidekick</code>](#Sidekick)  
+**Returns**: <code>boolean</code> - <code>true</code> if admin URL, else <code>false</code>  
 <a name="Sidekick+isDev"></a>
 
 ### sidekick.isDev() ⇒ <code>boolean</code>

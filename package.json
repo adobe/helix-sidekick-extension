@@ -1,7 +1,7 @@
 {
   "name": "@adobe/helix-sidekick-extension",
   "version": "6.8.5",
-  "description": "Franklin Sidekick Extension",
+  "description": "AEM Sidekick Extension",
   "type": "module",
   "scripts": {
     "lint": "eslint .",
