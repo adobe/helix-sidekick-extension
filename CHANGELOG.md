@@ -1,3 +1,10 @@
+## [6.9.1](https://github.com/adobe/helix-sidekick-extension/compare/v6.9.0...v6.9.1) (2023-03-14)
+
+
+### Bug Fixes
+
+* release (version rollback) ([8dd208d](https://github.com/adobe/helix-sidekick-extension/commit/8dd208de074e4ece81ca0fb9ce86d291ba23117d))
+
 ## [6.8.5](https://github.com/adobe/helix-sidekick-extension/compare/v6.8.4...v6.8.5) (2023-03-13)
 
 
