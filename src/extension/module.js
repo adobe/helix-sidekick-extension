@@ -755,6 +755,11 @@
       navigator.clipboard.writeText(shareUrl);
       sk.showModal(i18n(sk, 'config_shareurl_copied').replace('$1', config.project));
     }
+    // log telemetry
+    sampleRUM('sidekick:share', {
+      source: sk.location.href,
+      target: shareUrl,
+    });
   }
 
   /**
@@ -776,11 +781,15 @@
         },
       }));
       const userEvents = [
+        'shown',
+        'hidden',
         'updated',
         'published',
         'unpublished',
         'deleted',
         'envswitched',
+        'page-info',
+        'user',
         'loggedin',
         'loggedout',
         'helpnext',
@@ -1736,6 +1745,11 @@
                       } else {
                         palette.classList.remove('hlx-sk-hidden');
                         button.classList.add('pressed');
+                        // log telemetry
+                        sampleRUM('sidekick:paletteclosed', {
+                          source: sk.location.href,
+                          target: sk.status.webPath,
+                        });
                       }
                     };
                     if (!palette) {
@@ -2402,6 +2416,12 @@
             // ignore
           }
         }
+      });
+
+      // log telemetry
+      sampleRUM('sidekick:specialviewhidden', {
+        source: sk.location.href,
+        target: sk.status.webPath,
       });
     }
   }
