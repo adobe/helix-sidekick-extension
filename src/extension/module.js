@@ -791,9 +791,8 @@
       if (name.startsWith('custom:') || userEvents.includes(name)) {
         // log telemetry
         sampleRUM(`sidekick:${name}`, {
-          source: sk.location.href,
-          target: sk.status.webPath,
-          context: data || {},
+          source: data?.sourceUrl || sk.location.href,
+          target: data?.targetUrl || sk.status.webPath,
         });
       }
     } catch (e) {
