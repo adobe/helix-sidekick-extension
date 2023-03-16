@@ -1825,7 +1825,7 @@
     const loginUrl = getAdminUrl(
       sk.config,
       'login',
-      sk.isEditor() ? '' : sk.location.pathname,
+      sk.isProject() ? sk.location.pathname : '',
     );
     loginUrl.searchParams.set('loginRedirect', 'https://www.hlx.live/tools/sidekick/login-success');
     const extensionId = window.chrome?.runtime?.id;
@@ -1928,7 +1928,7 @@
     const toggle = sk.userMenu.firstElementChild;
     toggle.removeAttribute('disabled');
     const updateUserPicture = async (picture, name) => {
-      toggle.querySelectorAll('.user-picture').forEach((img) => img.remove());
+      toggle.querySelector('.user-picture')?.remove();
       if (picture) {
         if (picture.startsWith('https://admin.hlx.page/')) {
           // fetch the image with auth token
