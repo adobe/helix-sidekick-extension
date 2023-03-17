@@ -1300,29 +1300,29 @@
         return window.location.href !== sk.location.href;
       };
 
-      const doBulkPreview = async () => {
+      const doBulkOperation = async (operation, method, concurrency, host) => {
         const { config, status } = sk;
         const sel = bulkSelection.map((item) => toWebPath(status.webPath, item));
         const results = [];
         const total = sel.length;
         const { processQueue } = await import(`${config.scriptRoot}/lib/process-queue.js`);
         await processQueue(sel, async (file) => {
-          results.push(await sk.update(file));
+          results.push(await sk[method](file));
           if (total > 1) {
-            sk.showModal(getBulkText([results.length, total], 'progress', 'preview'), true);
+            sk.showModal(getBulkText([results.length, total], 'progress', operation), true);
           }
-        }, 2);
+        }, concurrency);
         const lines = [];
         const ok = results.filter((res) => res.ok);
+        console.log(ok);
         if (ok.length > 0) {
-          lines.push(getBulkText([ok.length], 'result', 'preview', 'success'));
+          lines.push(getBulkText([ok.length], 'result', operation, 'success'));
           lines.push(createTag({
             tag: 'button',
             text: i18n(sk, ok.length === 1 ? 'copy_url' : 'copy_urls'),
             lstnrs: {
               click: (evt) => {
                 evt.stopPropagation();
-                const host = config.innerHost;
                 navigator.clipboard.writeText(ok.map((item) => `https://${host}${item.path}`)
                   .join('\n'));
                 sk.hideModal();
@@ -1332,79 +1332,17 @@
         }
         const failed = results.filter((res) => !res.ok);
         if (failed.length > 0) {
-          const failureText = getBulkText([failed.length], 'result', 'preview', 'failure');
+          const failureText = getBulkText([failed.length], 'result', operation, 'failure');
           lines.push(failureText);
           lines.push(...failed.map((item) => {
             if (item.error.endsWith('docx with google not supported.')) {
-              item.error = getBulkText([1], 'result', 'preview', 'error_no_docx');
+              item.error = getBulkText([1], 'result', operation, 'error_no_docx');
             }
             if (item.error.endsWith('xlsx with google not supported.')) {
-              item.error = getBulkText([1], 'result', 'preview', 'error_no_xlsx');
+              item.error = getBulkText([1], 'result', operation, 'error_no_xlsx');
             }
-            return `${item.path.split('/').pop()}: ${item.error}`;
-          }));
-        }
-        lines.push(createTag({
-          tag: 'button',
-          text: i18n(sk, 'close'),
-        }));
-        let level = 2;
-        if (failed.length > 0) {
-          level = 1;
-          if (ok.length === 0) {
-            level = 0;
-          }
-        }
-        sk.showModal(
-          lines,
-          true,
-          level,
-        );
-      };
-
-      const doBulkPublish = async () => {
-        const { config, status } = sk;
-        const sel = bulkSelection.map((item) => toWebPath(status.webPath, item));
-        const results = [];
-        const total = sel.length;
-        const { processQueue } = await import(`${config.scriptRoot}/lib/process-queue.js`);
-        await processQueue(sel, async (file) => {
-          const resp = await sk.publish(file);
-          results.push({
-            ok: (resp.ok) || false,
-            status: (resp.status) || 0,
-            error: (resp.headers && resp.headers.get('x-error')) || '',
-            path: (resp.ok && resp.json && (await resp.json()).webPath) || file,
-          });
-          if (total > 1) {
-            sk.showModal(getBulkText([results.length, total], 'progress', 'publish'), true);
-          }
-        }, 40);
-        const lines = [];
-        const ok = results.filter((res) => res.ok);
-        if (ok.length > 0) {
-          lines.push(getBulkText([ok.length], 'result', 'publish', 'success'));
-          lines.push(createTag({
-            tag: 'button',
-            text: i18n(sk, ok.length === 1 ? 'copy_url' : 'copy_urls'),
-            lstnrs: {
-              click: (evt) => {
-                evt.stopPropagation();
-                const host = config.host || config.outerHost;
-                navigator.clipboard.writeText(ok.map((item) => `https://${host}${item.path}`)
-                  .join('\n'));
-                sk.hideModal();
-              },
-            },
-          }));
-        }
-        const failed = results.filter((res) => !res.ok);
-        if (failed.length > 0) {
-          const failureText = getBulkText([failed.length], 'result', 'publish', 'failure');
-          lines.push(failureText);
-          lines.push(...failed.map((item) => {
             if (item.error.includes('source does not exist')) {
-              item.error = getBulkText([1], 'result', 'publish', 'error_no_source');
+              item.error = getBulkText([1], 'result', operation, 'error_no_source');
             }
             return `${item.path.split('/').pop()}: ${item.error}`;
           }));
@@ -1468,11 +1406,11 @@
                 if (isChangedUrl()) {
                   // url changed, refetch status
                   sk.addEventListener('statusfetched', () => {
-                    doBulkPreview();
+                    doBulkOperation('preview', 'update', 2, sk.config.innerHost);
                   }, { once: true });
                   sk.fetchStatus(true);
                 } else {
-                  doBulkPreview();
+                  doBulkOperation('preview', 'update', 2, sk.config.innerHost);
                 }
               }
             },
@@ -1495,11 +1433,11 @@
                 if (isChangedUrl()) {
                   // url changed, refetch status
                   sk.addEventListener('statusfetched', () => {
-                    doBulkPublish();
+                    doBulkOperation('publish', 'publish', 40, sk.config.host || sk.config.outerHost);
                   }, { once: true });
                   sk.fetchStatus(true);
                 } else {
-                  doBulkPublish();
+                  doBulkOperation('publish', 'publish', 40, sk.config.host || sk.config.outerHost);
                 }
               }
             },
@@ -3396,6 +3334,8 @@
       } catch (e) {
         console.error('failed to publish', path, e);
       }
+      resp.path = path;
+      resp.error = (resp.headers && resp.headers.get('x-error')) || '';
       return resp;
     }
 
