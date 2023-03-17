@@ -77,34 +77,4 @@ describe('Test bulk info plugin', () => {
     }).run();
     assert.ok(sizeCheck, 'Wrong selection size displayed');
   }).timeout(IT_DEFAULT_TIMEOUT);
-
-  it('Bulk info plugin refetches status after navigation', async () => {
-    const { setup } = TESTS[0];
-    nock.admin(setup, {
-      route: 'status',
-      type: 'admin',
-      persist: true,
-    });
-    const { requestsMade } = await new SidekickTest({
-      browser,
-      page,
-      fixture: SHAREPOINT_FIXTURE,
-      url: setup.getUrl('edit', 'admin'),
-      post: (p) => p.evaluate((url) => {
-        document.getElementById('sidekick_test_location').value = `${url}&navigated=true`;
-      }, setup.getUrl('edit', 'admin')),
-      checkPage: (p) => p.evaluate(() => new Promise((resolve) => {
-        // wait a bit
-        setTimeout(resolve, 1000);
-      })),
-      loadModule: true,
-    }).run();
-    const statusReqs = requestsMade
-      .filter((r) => r.url.startsWith('https://admin.hlx.page/status/'))
-      .map((r) => r.url);
-    assert.ok(
-      statusReqs.length === 2,
-      'Did not refetch status after navigation',
-    );
-  }).timeout(IT_DEFAULT_TIMEOUT);
 });

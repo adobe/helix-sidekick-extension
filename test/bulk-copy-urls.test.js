@@ -350,5 +350,37 @@ describe('Test bulk copy URLs plugin', () => {
         `URL not copied to clipboard in ${env}`,
       );
     }).timeout(IT_DEFAULT_TIMEOUT);
+
+    it(`Bulk copy prod URLs plugin refetches status after navigation in ${env}`, async () => {
+      nock.admin(setup, {
+        route: 'status',
+        type: 'admin',
+        persist: true,
+      });
+      const { requestsMade } = await new SidekickTest({
+        browser,
+        page,
+        plugin: 'bulk-copy-prod-urls',
+        pluginSleep: 1000,
+        acceptDialogs: true,
+        fixture,
+        url: setup.getUrl('edit', 'admin'),
+        post: (p) => p.evaluate((url) => {
+          document.getElementById('sidekick_test_location').value = `${url}&navigated=true`;
+        }, setup.getUrl('edit', 'admin')),
+        checkPage: (p) => p.evaluate(() => new Promise((resolve) => {
+          // wait a bit
+          setTimeout(resolve, 1000);
+        })),
+        loadModule: true,
+      }).run();
+      const statusReqs = requestsMade
+        .filter((r) => r.url.startsWith('https://admin.hlx.page/status/'))
+        .map((r) => r.url);
+      assert.ok(
+        statusReqs.length === 2,
+        'Did not refetch status after navigation',
+      );
+    }).timeout(IT_DEFAULT_TIMEOUT);
   });
 });

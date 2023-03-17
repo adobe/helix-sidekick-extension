@@ -32,12 +32,13 @@ function getInnerHost(owner, repo, ref) {
 }
 
 function isValidGitHubURL(giturl) {
-  return giturl.startsWith('https://github.com')
+  return giturl.startsWith('https://github.com/')
     && Object.keys(getGitHubSettings(giturl)).length === 3;
 }
 
 function drawLink(url) {
   if (typeof url !== 'string') return '';
+  url = encodeURI(url);
   let href = url;
   let text = url;
   if (!url.startsWith('https://')) href = `https://${url}`;
@@ -65,7 +66,7 @@ function drawProjects() {
   <div>
     <h4>
       <input type="checkbox" ${disabled ? '' : 'checked'} title="${i18n(disabled ? 'config_project_enable' : 'config_project_disable')}">
-      ${project || 'Project'}
+      ${project ? project.replaceAll(/<\/?[^>]+(>|$)/gi, '') : 'Project'}
     </h4>
     <p><span class="property">${i18n('config_project_innerhost')}</span>${drawLink(innerHost)}</p>
     ${mountpoints.length

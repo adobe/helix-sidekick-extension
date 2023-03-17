@@ -1311,7 +1311,7 @@
     if (sk.isAdmin()) {
       let bulkSelection = [];
 
-      const isSharePoint = (location) => location.host.match(/\w+\.sharepoint.com/)
+      const isSharePoint = (location) => /\w+\.sharepoint.com$/.test(location.host)
         && location.pathname.endsWith('/Forms/AllItems.aspx');
 
       const toWebPath = (folder, item) => {
@@ -1398,6 +1398,78 @@
         return window.location.href !== sk.location.href;
       };
 
+      const doBulkOperation = async (operation, method, concurrency, host) => {
+        const { config, status } = sk;
+        const sel = bulkSelection.map((item) => toWebPath(status.webPath, item));
+        const results = [];
+        const total = sel.length;
+        const { processQueue } = await import(`${config.scriptRoot}/lib/process-queue.js`);
+        await processQueue(sel, async (file) => {
+          results.push(await sk[method](file));
+          if (total > 1) {
+            sk.showModal(getBulkText([results.length, total], 'progress', operation), true);
+          }
+        }, concurrency);
+        const lines = [];
+        const ok = results.filter((res) => res.ok);
+        console.log(ok);
+        if (ok.length > 0) {
+          lines.push(getBulkText([ok.length], 'result', operation, 'success'));
+          lines.push(createTag({
+            tag: 'button',
+            text: i18n(sk, ok.length === 1 ? 'copy_url' : 'copy_urls'),
+            lstnrs: {
+              click: (evt) => {
+                evt.stopPropagation();
+                navigator.clipboard.writeText(ok.map((item) => `https://${host}${item.path}`)
+                  .join('\n'));
+                sk.hideModal();
+              },
+            },
+          }));
+        }
+        const failed = results.filter((res) => !res.ok);
+        if (failed.length > 0) {
+          const failureText = getBulkText([failed.length], 'result', operation, 'failure');
+          lines.push(failureText);
+          lines.push(...failed.map((item) => {
+            if (item.error.endsWith('docx with google not supported.')) {
+              item.error = getBulkText([1], 'result', operation, 'error_no_docx');
+            }
+            if (item.error.endsWith('xlsx with google not supported.')) {
+              item.error = getBulkText([1], 'result', operation, 'error_no_xlsx');
+            }
+            if (item.error.includes('source does not exist')) {
+              item.error = getBulkText([1], 'result', operation, 'error_no_source');
+            }
+            return `${item.path.split('/').pop()}: ${item.error}`;
+          }));
+        }
+        lines.push(createTag({
+          tag: 'button',
+          text: i18n(sk, 'close'),
+        }));
+        let level = 2;
+        if (failed.length > 0) {
+          level = 1;
+          if (ok.length === 0) {
+            level = 0;
+          }
+        }
+        sk.showModal(
+          lines,
+          true,
+          level,
+        );
+      };
+
+      const doBulkCopyUrls = async (hostProperty) => {
+        const { config, status } = sk;
+        const urls = bulkSelection.map((item) => `https://${config[hostProperty]}${toWebPath(status.webPath, item)}`);
+        navigator.clipboard.writeText(urls.join('\n'));
+        sk.showModal(i18n(sk, `copied_url${urls.length !== 1 ? 's' : ''}`));
+      };
+
       sk.addEventListener('statusfetched', () => {
         // bulk info
         sk.add({
@@ -1411,17 +1483,8 @@
             },
           }],
           callback: () => {
-            let fetchingStatus = false;
             window.setInterval(() => {
               updateBulkInfo();
-              if (isChangedUrl() && !fetchingStatus) {
-                // url changed, refetch status
-                sk.addEventListener('statusfetched', () => {
-                  fetchingStatus = false;
-                }, { once: true });
-                sk.fetchStatus(true);
-                fetchingStatus = true;
-              }
             }, 500);
           },
         });
@@ -1438,65 +1501,15 @@
                 sk.showModal(confirmText);
               } else if (window.confirm(confirmText)) {
                 sk.showWait();
-                const { config, status } = sk;
-                const sel = bulkSelection.map((item) => toWebPath(status.webPath, item));
-                const results = [];
-                const total = sel.length;
-                const { processQueue } = await import(`${config.scriptRoot}/lib/process-queue.js`);
-                await processQueue(sel, async (file) => {
-                  results.push(await sk.update(file));
-                  if (total > 1) {
-                    sk.showModal(getBulkText([results.length, total], 'progress', 'preview'), true);
-                  }
-                }, 2);
-                const lines = [];
-                const ok = results.filter((res) => res.ok);
-                if (ok.length > 0) {
-                  lines.push(getBulkText([ok.length], 'result', 'preview', 'success'));
-                  lines.push(createTag({
-                    tag: 'button',
-                    text: i18n(sk, ok.length === 1 ? 'copy_url' : 'copy_urls'),
-                    lstnrs: {
-                      click: (evt) => {
-                        evt.stopPropagation();
-                        const host = config.innerHost;
-                        navigator.clipboard.writeText(ok.map((item) => `https://${host}${item.path}`)
-                          .join('\n'));
-                        sk.hideModal();
-                      },
-                    },
-                  }));
+                if (isChangedUrl()) {
+                  // url changed, refetch status
+                  sk.addEventListener('statusfetched', () => {
+                    doBulkOperation('preview', 'update', 2, sk.config.innerHost);
+                  }, { once: true });
+                  sk.fetchStatus(true);
+                } else {
+                  doBulkOperation('preview', 'update', 2, sk.config.innerHost);
                 }
-                const failed = results.filter((res) => !res.ok);
-                if (failed.length > 0) {
-                  const failureText = getBulkText([failed.length], 'result', 'preview', 'failure');
-                  lines.push(failureText);
-                  lines.push(...failed.map((item) => {
-                    if (item.error.endsWith('docx with google not supported.')) {
-                      item.error = getBulkText([1], 'result', 'preview', 'error_no_docx');
-                    }
-                    if (item.error.endsWith('xlsx with google not supported.')) {
-                      item.error = getBulkText([1], 'result', 'preview', 'error_no_xlsx');
-                    }
-                    return `${item.path.split('/').pop()}: ${item.error}`;
-                  }));
-                }
-                lines.push(createTag({
-                  tag: 'button',
-                  text: i18n(sk, 'close'),
-                }));
-                let level = 2;
-                if (failed.length > 0) {
-                  level = 1;
-                  if (ok.length === 0) {
-                    level = 0;
-                  }
-                }
-                sk.showModal(
-                  lines,
-                  true,
-                  level,
-                );
               }
             },
             isEnabled: (s) => s.isAuthorized('preview', 'write') && s.status.webPath,
@@ -1515,68 +1528,15 @@
                 sk.showModal(confirmText);
               } else if (window.confirm(confirmText)) {
                 sk.showWait();
-                const { config, status } = sk;
-                const sel = bulkSelection.map((item) => toWebPath(status.webPath, item));
-                const results = [];
-                const total = sel.length;
-                const { processQueue } = await import(`${config.scriptRoot}/lib/process-queue.js`);
-                await processQueue(sel, async (file) => {
-                  const resp = await sk.publish(file);
-                  results.push({
-                    ok: (resp.ok) || false,
-                    status: (resp.status) || 0,
-                    error: (resp.headers && resp.headers.get('x-error')) || '',
-                    path: (resp.ok && resp.json && (await resp.json()).webPath) || file,
-                  });
-                  if (total > 1) {
-                    sk.showModal(getBulkText([results.length, total], 'progress', 'publish'), true);
-                  }
-                }, 40);
-                const lines = [];
-                const ok = results.filter((res) => res.ok);
-                if (ok.length > 0) {
-                  lines.push(getBulkText([ok.length], 'result', 'publish', 'success'));
-                  lines.push(createTag({
-                    tag: 'button',
-                    text: i18n(sk, ok.length === 1 ? 'copy_url' : 'copy_urls'),
-                    lstnrs: {
-                      click: (evt) => {
-                        evt.stopPropagation();
-                        const host = config.host || config.outerHost;
-                        navigator.clipboard.writeText(ok.map((item) => `https://${host}${item.path}`)
-                          .join('\n'));
-                        sk.hideModal();
-                      },
-                    },
-                  }));
+                if (isChangedUrl()) {
+                  // url changed, refetch status
+                  sk.addEventListener('statusfetched', () => {
+                    doBulkOperation('publish', 'publish', 40, sk.config.host || sk.config.outerHost);
+                  }, { once: true });
+                  sk.fetchStatus(true);
+                } else {
+                  doBulkOperation('publish', 'publish', 40, sk.config.host || sk.config.outerHost);
                 }
-                const failed = results.filter((res) => !res.ok);
-                if (failed.length > 0) {
-                  const failureText = getBulkText([failed.length], 'result', 'publish', 'failure');
-                  lines.push(failureText);
-                  lines.push(...failed.map((item) => {
-                    if (item.error.includes('source does not exist')) {
-                      item.error = getBulkText([1], 'result', 'publish', 'error_no_source');
-                    }
-                    return `${item.path.split('/').pop()}: ${item.error}`;
-                  }));
-                }
-                lines.push(createTag({
-                  tag: 'button',
-                  text: i18n(sk, 'close'),
-                }));
-                let level = 2;
-                if (failed.length > 0) {
-                  level = 1;
-                  if (ok.length === 0) {
-                    level = 0;
-                  }
-                }
-                sk.showModal(
-                  lines,
-                  true,
-                  level,
-                );
               }
             },
             isEnabled: (s) => s.isAuthorized('live', 'write') && s.status.webPath,
@@ -1623,10 +1583,15 @@
                   sk.showModal(emptyText);
                 } else {
                   sk.showWait();
-                  const { config, status } = sk;
-                  const urls = bulkSelection.map((item) => `https://${config[hostProperty]}${toWebPath(status.webPath, item)}`);
-                  navigator.clipboard.writeText(urls.join('\n'));
-                  sk.showModal(i18n(sk, `copied_url${urls.length !== 1 ? 's' : ''}`));
+                  if (isChangedUrl()) {
+                    // url changed, refetch status
+                    sk.addEventListener('statusfetched', () => {
+                      doBulkCopyUrls(hostProperty);
+                    }, { once: true });
+                    sk.fetchStatus(true);
+                  } else {
+                    doBulkCopyUrls(hostProperty);
+                  }
                 }
               },
             },
@@ -2908,7 +2873,7 @@
     isEditor() {
       const { config, location } = this;
       const { host, pathname, search } = location;
-      return (/.*\.sharepoint\.com/.test(host)
+      return (/.*\.sharepoint\.com$/.test(host)
         && pathname.match(/\/_layouts\/15\/[\w]+.aspx$/)
         && search.includes('sourcedoc='))
         || location.host === 'docs.google.com'
@@ -2923,7 +2888,8 @@
     isAdmin() {
       const { location } = this;
       return (location.host === 'drive.google.com')
-        || (location.host.match(/\w+\.sharepoint.com/) && location.pathname.endsWith('/Forms/AllItems.aspx'));
+        || (/\w+\.sharepoint.com$/.test(location.host)
+        && location.pathname.endsWith('/Forms/AllItems.aspx'));
     }
 
     /**
@@ -3477,6 +3443,8 @@
       } catch (e) {
         console.error('failed to publish', path, e);
       }
+      resp.path = path;
+      resp.error = (resp.headers && resp.headers.get('x-error')) || '';
       return resp;
     }
 
