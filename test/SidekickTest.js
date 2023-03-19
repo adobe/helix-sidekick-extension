@@ -269,32 +269,35 @@ export class SidekickTest extends EventEmitter {
         }
       }
       if (url.startsWith('http')) {
-        requestsMade.push(reqObj);
-        if (url.endsWith('/tools/sidekick/config.json')) {
-          configLoaded = url;
-          return toResp(configJson);
-        } else if (url.endsWith('/tools/sidekick/config.js')) {
-          configLoaded = url;
-          return toResp(configJs);
-        } else if (url.startsWith('https://www.hlx.live/tools/sidekick/')) {
-          // return local source file
-          const { pathname, search } = new URL(url);
-          if (pathname === '/tools/sidekick/' && search) {
-            // share url
-            return toResp('Share URL', 'foo.html');
-          }
-          const path = `${__rootdir}/src/extension/${pathname.split('/').slice(3).join('/')}`;
-          try {
-            const file = await fs.readFile(path, 'utf-8');
-            return toResp(file, pathname);
-          } catch (e) {
-            throw new Error('failed to load local module.js');
-          }
-        } else if (url.startsWith('https://www.hlx.live/')) {
-          // dummy content for anything else on www.hlx.live
-          return toResp('', url);
+        if (url.startsWith('https://rum.hlx.page/')) {
+          // dummy response for rum requests
+          return toResp('');
         } else {
-          return null;
+          requestsMade.push(reqObj);
+          if (url.endsWith('/tools/sidekick/config.json')) {
+            configLoaded = url;
+            return toResp(configJson);
+          } else if (url.endsWith('/tools/sidekick/config.js')) {
+            configLoaded = url;
+            return toResp(configJs);
+          } else if (url.startsWith('https://www.hlx.live/tools/sidekick/')) {
+            // return local source file
+            const { pathname, search } = new URL(url);
+            if (pathname === '/tools/sidekick/' && search) {
+              // share url
+              return toResp('Share URL', 'foo.html');
+            }
+            const path = `${__rootdir}/src/extension/${pathname.split('/').slice(3).join('/')}`;
+            try {
+              const file = await fs.readFile(path, 'utf-8');
+              return toResp(file, pathname);
+            } catch (e) {
+              throw new Error('failed to load local module.js');
+            }
+          } else if (url.startsWith('https://www.hlx.live/')) {
+            // dummy content for anything else on www.hlx.live
+            return toResp('', url);
+          }
         }
       } else if (url.startsWith('file://') && url.indexOf('/bookmarklet/') > 0 && !url.endsWith('/app.js')) {
         // rewrite all `/bookmarklet/` requests (except app.js)

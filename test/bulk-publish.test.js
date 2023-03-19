@@ -265,4 +265,44 @@ describe('Test bulk publish plugin', () => {
       'Did not handle partial error',
     );
   }).timeout(IT_DEFAULT_TIMEOUT);
+
+  it('Bulk publish plugin refetches status after navigation', async () => {
+    TESTS[0].mockRequests(nock);
+    const { setup } = TESTS[0];
+    nock.admin(setup, {
+      route: 'status',
+      type: 'admin',
+      persist: true,
+    });
+    nock.admin(setup, {
+      route: 'live',
+      type: 'html',
+      method: 'post',
+      status: [200],
+    });
+    const { requestsMade } = await new SidekickTest({
+      browser,
+      page,
+      plugin: 'bulk-publish',
+      pluginSleep: 1000,
+      acceptDialogs: true,
+      fixture: SHAREPOINT_FIXTURE,
+      url: setup.getUrl('edit', 'admin'),
+      post: (p) => p.evaluate((url) => {
+        document.getElementById('sidekick_test_location').value = `${url}&navigated=true`;
+      }, setup.getUrl('edit', 'admin')),
+      checkPage: (p) => p.evaluate(() => new Promise((resolve) => {
+        // wait a bit
+        setTimeout(resolve, 1000);
+      })),
+      loadModule: true,
+    }).run();
+    const statusReqs = requestsMade
+      .filter((r) => r.url.startsWith('https://admin.hlx.page/status/'))
+      .map((r) => r.url);
+    assert.ok(
+      statusReqs.length === 2,
+      'Did not refetch status after navigation',
+    );
+  }).timeout(IT_DEFAULT_TIMEOUT);
 });
