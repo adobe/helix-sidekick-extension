@@ -1,3 +1,17 @@
+# [6.10.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.9.1...v6.10.0) (2023-03-19)
+
+
+### Bug Fixes
+
+* bulk operations can fail after navigation ([9b5fc91](https://github.com/adobe/helix-sidekick-extension/commit/9b5fc917a803cc695e9f6c6ce200aaf8177a2993))
+* login fails in admin env ([068d400](https://github.com/adobe/helix-sidekick-extension/commit/068d40035cfb8b076ecf7efb273d428ba761c91b))
+* potential insufficient hostname validation ([9bf489d](https://github.com/adobe/helix-sidekick-extension/commit/9bf489d93c04d03aedd63c029a7c80c4fc3c30e9))
+
+
+### Features
+
+* add telemetry ([df63ea6](https://github.com/adobe/helix-sidekick-extension/commit/df63ea61b6a79b804e5009c457f42b64120becfc))
+
 ## [6.9.1](https://github.com/adobe/helix-sidekick-extension/compare/v6.9.0...v6.9.1) (2023-03-14)
 
 
