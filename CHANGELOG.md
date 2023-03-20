@@ -1,3 +1,10 @@
+# [6.11.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.10.0...v6.11.0) (2023-03-20)
+
+
+### Features
+
+* safari extension icons and styling [skip ci] ([551d103](https://github.com/adobe/helix-sidekick-extension/commit/551d1031f7c6cd100f5b73835c2eb5bb70ef568f))
+
 # [6.10.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.9.1...v6.10.0) (2023-03-19)
 
 
