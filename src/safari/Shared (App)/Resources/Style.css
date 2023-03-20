@@ -59,3 +59,15 @@ body.state-off :is(.state-on, .state-unknown) {
 button {
     font-size: 1em;
 }
+
+img.logo {
+    margin: 0 auto;
+}
+
+img.platform-ios.logo {
+    margin-bottom: 2em;
+}
+
+ol {
+    text-align: left;
+}
