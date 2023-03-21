@@ -1,3 +1,10 @@
+## [6.11.1](https://github.com/adobe/helix-sidekick-extension/compare/v6.11.0...v6.11.1) (2023-03-21)
+
+
+### Bug Fixes
+
+* iOS display name and typo ([8bb7571](https://github.com/adobe/helix-sidekick-extension/commit/8bb75716f8f479a1719177f8c618f6f890984402))
+
 # [6.11.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.10.0...v6.11.0) (2023-03-20)
 
 
