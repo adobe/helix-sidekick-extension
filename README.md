@@ -102,7 +102,7 @@ If you want to test a config file before deploying it to your project:
 
 ## Deployment
 
-### Deploying the bookmarklet
+### Deploying the Bookmarklet
 The Sidekick bookmarklet gets staged automatically each time a pull request is merged into `main`.
 1. Go to [`helix-website` pull requests](https://github.com/adobe/helix-website/pulls)
 1. Click the _Sidekick Release Candidate_ PR
@@ -111,17 +111,19 @@ The Sidekick bookmarklet gets staged automatically each time a pull request is m
    `https://sidekick-rc-*--helix-website--adobe.hlx.page/tools/sidekick/`
 1. Once approved, merge the RC PR to deploy the changes into production
 
-### Deploying the Chrome extension
-The Chrome extension is built and uploaded automatically each time a pull request is merged into `main` and, once reviewed by Google, auto-published and pushed to users' browsers.
+### Deploying Chrome Extension
 
-#### CI setup
-The following environment variables are required to be set in the CircleCI project settings: `GOOGLE_APP_ID`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` and `GOOGLE_REFRESH_TOKEN`. See [here](https://circleci.com/blog/continuously-deploy-a-chrome-extension/) for detailed instructions how to obtain and generate them.
+The Chrome extension is [automatically built and uploaded](https://github.com/adobe/helix-sidekick-extension/blob/main/.releaserc.cjs#L28) to Chrome Web Store every time a pull request triggering a `semantic-release` is merged into `main`. Once reviewed by Google, it will be auto-published and pushed to end users' browsers.
 
-If you have to re-deploy manually or make changes to the store page, you can gain access to the Chrome Developer Dashboard by following [these instructions](https://adobe.sharepoint.com/sites/Adobe-GooglePartnership/SitePages/Publishing-Chrome-Browser-Plugins.aspx):
-1. Go to the [Chrome Developer Dashboard](https://chrome.google.com/webstore/devconsole/3b37cd65-9569-47a0-a13c-da1857a2c9dc)
-1. Switch to the _Adobe Inc._ publisher at the top right
-1. Click the _Sidekick_ item in the extension list
-1. Switch to _Package_
-1. Click _Upload new package_
-1. Upload `dist > chrome.zip`
-1. Click _Submit for review_
+The following environment variables are required in the CircleCI project settings: `GOOGLE_APP_ID`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` and `GOOGLE_REFRESH_TOKEN`. See [here](https://circleci.com/blog/continuously-deploy-a-chrome-extension/) for detailed instructions how to obtain and generate them.
+
+#### Chrome Developer Dashboard (Adobe only)
+As an Adobe developer, see https://wiki.corp.adobe.com/x/xJlMqQ for instructions how to get access to the Chrome Developer Dashboard and make changes to the Chrome Web Store listing.
+
+### Safari Extension
+
+The Safari Extension is built, signed and uploaded to App Store Connect automatically each time a pull request triggering a `semantic-release` is merged into `main`.
+
+An Xcode Cloud workflow is listening for changes made to the [change log file](./CHANGELOG.md) in the `main` branch.
+#### App Store Connect (Adobe only)
+As an Adobe developer, see https://wiki.corp.adobe.com/x/xJlMqQ for instructions how to get access to the App Store Connect and make new builds available via TestFlight and public release.
