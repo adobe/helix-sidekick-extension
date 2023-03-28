@@ -1,3 +1,10 @@
+# [6.12.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.11.1...v6.12.0) (2023-03-28)
+
+
+### Features
+
+* relax view doc source constraint ([#296](https://github.com/adobe/helix-sidekick-extension/issues/296)) ([04d40f1](https://github.com/adobe/helix-sidekick-extension/commit/04d40f14a5f7615b5d11b1fd71d303c7eea20e9f))
+
 ## [6.11.1](https://github.com/adobe/helix-sidekick-extension/compare/v6.11.0...v6.11.1) (2023-03-21)
 
 
