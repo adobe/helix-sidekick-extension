@@ -1,3 +1,10 @@
+## [6.12.1](https://github.com/adobe/helix-sidekick-extension/compare/v6.12.0...v6.12.1) (2023-03-28)
+
+
+### Bug Fixes
+
+* undefined date should say never ([1fdb096](https://github.com/adobe/helix-sidekick-extension/commit/1fdb09686556fb69be959b15c14580e20aa12e3b))
+
 # [6.12.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.11.1...v6.12.0) (2023-03-28)
 
 
