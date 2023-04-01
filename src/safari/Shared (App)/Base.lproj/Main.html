@@ -7,22 +7,47 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
 
     <link rel="stylesheet" href="../Style.css">
-    <script src="../Script.js" defer></script>
 </head>
 <body>
-    <img class="platform-ios logo" src="../Icon.png" width="128" height="128" alt="AEM Sidekick Icon">
-    <p class="platform-ios">
-        AEM Sidekick can be enabled or disabled in Settings:
-        <ol class="platform-ios">
-            <li>Open Settings app</li>
-            <li>Tap Safari, then Extensions</li>
-            <li>Toggle AEM Sidekick
-        </ol>
-    </p>
-    <img class="platform-mac logo" src="../Icon.png" width="64" height="64" alt="AEM Sidekick Icon">
-    <p class="platform-mac state-unknown">You can turn on AEM Sidekick in Safari Extensions preferences.</p>
-    <p class="platform-mac state-on">AEM Sidekick is currently enabled. You can turn it off in Safari Extensions preferences.</p>
-    <p class="platform-mac state-off">AEM Sidekick is currently disabled. You can turn it on in Safari Extensions preferences.</p>
-    <button class="platform-mac open-preferences">Quit and Open Safari Extensions Preferences…</button>
+    <textarea id="error" rows="5"></textarea>
+    <main>
+        <div class="section carousel-container platform-ios">
+            <div class="carousel-wrapper">
+                <!--div class="block carousel" id="tour">
+                    <div>
+                       <div></div>
+                     </div>
+                     <div>
+                       <div></div>
+                     </div>
+                     <div>
+                       <div></div>
+                       <div><span class="link accent" id="tour-end" role="button">Done</span></div>
+                     </div-->
+                </div>
+                <div id="tour-close"></div>
+            </div>
+        </div>
+        <div class="section">
+            <div class="default-content-wrapper">
+                <img class="platform-ios logo" src="../Icon.png" width="128" height="128" alt="AEM Sidekick Icon">
+                <p class="platform-ios">
+                    AEM Sidekick can be enabled or disabled in Settings:
+                    <ol class="platform-ios">
+                        <li>Open Settings app</li>
+                        <li>Tap Safari, then Extensions</li>
+                        <li>Toggle AEM Sidekick
+                    </ol>
+                    <span class="platform-ios link accent" id="tour-start" role="button">Take the Tour</span>
+                </p>
+                <img class="platform-mac logo" src="../Icon.png" width="64" height="64" alt="AEM Sidekick Icon">
+                <p class="platform-mac state-unknown">You can turn on AEM Sidekick in Safari Extensions preferences.</p>
+                <p class="platform-mac state-on">AEM Sidekick is currently enabled. You can turn it off in Safari Extensions preferences.</p>
+                <p class="platform-mac state-off">AEM Sidekick is currently disabled. You can turn it on in Safari Extensions preferences.</p>
+                <span class="platform-mac link accent" id="open-prefs" role="button">Open Safari Preferences</span>
+            </div>
+        </div>
+    </main>
+    <script src="../Script.js" defer></script>
 </body>
 </html>
