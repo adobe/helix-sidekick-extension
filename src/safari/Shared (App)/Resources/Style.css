@@ -8,6 +8,12 @@
     color-scheme: light dark;
     --text-color: black;
     --bg-color: white;
+    --button-text-color: #222;
+    --button-bg-color: transparent;
+    --button-border-color: var(--button-text-color);
+    --button-text-color-accent: white;
+    --button-bg-color-accent: #1473e6;
+    --button-border-color-accent: var(--button-bg-color-accent);
     --spacing: 20px;
 }
 
@@ -15,6 +21,7 @@
     :root {
         --text-color: white;
         --bg-color: black;
+        --button-text-color: var(--text-color);
     }
 }
 
@@ -67,13 +74,13 @@ body.state-off :is(.state-on, .state-unknown) {
 span.link {
     cursor: pointer;
     margin: var(--spacing);
-    color: #222;
+    color: var(--button-text-color);
     box-sizing: border-box;
-    background-color: transparent;
+    background-color: var(--button-bg-color);
     height: auto;
     min-height: 50px;
-    border: solid 2px #222;
-    border-radius: 25px;
+    border: solid 2px var(--button-border-color);
+    border-radius: 26px;
     padding: 13px 23px;
     font-size: 19px;
     font-weight: 700;
@@ -81,15 +88,15 @@ span.link {
 
 span.link.platform-mac {
     min-height: 32px;
-    border-radius: 16px;
+    border-radius: 17px;
     font-size: 14px;
     padding: 5px 14px;
 }
 
 span.link.accent {
-    color: white;
-    background-color: #1473e6;
-    border-color: #1473e6;
+    color: var(--button-text-color-accent);
+    background-color: var(--button-bg-color-accent);
+    border-color: var(--button-border-color-accent);
 }
 
 img.logo {
