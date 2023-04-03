@@ -1,3 +1,10 @@
+## [6.12.2](https://github.com/adobe/helix-sidekick-extension/compare/v6.12.1...v6.12.2) (2023-04-03)
+
+
+### Bug Fixes
+
+* **bulk:** special chars in folder or file names ([2beafbf](https://github.com/adobe/helix-sidekick-extension/commit/2beafbf38ccac57afd8883d8ee55d9f446e7167f))
+
 ## [6.12.1](https://github.com/adobe/helix-sidekick-extension/compare/v6.12.0...v6.12.1) (2023-03-28)
 
 
