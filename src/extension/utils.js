@@ -243,6 +243,44 @@ export function isValidShareURL(shareurl) {
   return Object.keys(getShareSettings(shareurl)).length > 1;
 }
 
+export async function setAdminAuthHeaderRule(project, index) {
+  if (!project) {
+    const projects = await getConfig('sync', 'hlxSidekickProjects');
+    // loop through all projects
+    projects.forEach(async (handle, i) => {
+      await setAdminAuthHeaderRule(await getConfig('sync', handle), i);
+    });
+    return;
+  }
+  const { owner, repo, authToken } = project;
+  const rules = await chrome.declarativeNetRequest.getSessionRules();
+  const removeRuleIds = rules.filter((r) => r.id === index).map((r) => r.id);
+  const options = {
+    removeRuleIds,
+  };
+  if (authToken) {
+    options.addRules = [{
+      id: index,
+      priority: 1,
+      action: {
+        type: 'modifyHeaders',
+        requestHeaders: [{
+          operation: 'set',
+          header: 'x-auth-token',
+          value: authToken,
+        }],
+      },
+      condition: {
+        regexFilter: `^https://admin.hlx.page/[a-z]+/${owner}/${repo}/.*`,
+        requestDomains: ['admin.hlx.page'],
+        requestMethods: ['get', 'post', 'delete'],
+        resourceTypes: ['xmlhttprequest'],
+      },
+    }];
+  }
+  await chrome.declarativeNetRequest.updateSessionRules(options);
+}
+
 async function getProjectConfig(owner, repo, ref = 'main') {
   const cfg = {};
   let res;
@@ -320,6 +358,9 @@ export async function setProject(project, cb) {
     await setConfig('sync', { hlxSidekickProjects: projects });
   }
   log.info('updated project', project);
+  // set admin auth header rule
+  await setAdminAuthHeaderRule(projects, project);
+
   if (typeof cb === 'function') {
     cb(project);
   }
@@ -346,6 +387,8 @@ export async function deleteProject(handle, cb) {
     const i = projects.indexOf(handle);
     if (i >= 0) {
       if (confirm(i18n('config_delete_confirm'))) {
+        // delete admin auth header rule
+        await setAdminAuthHeaderRule(projects, await getConfig('sync', handle));
         // delete the project entry
         await removeConfig('sync', handle);
         // remove project entry from index

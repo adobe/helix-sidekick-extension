@@ -10,9 +10,9 @@
   "permissions": [
     "activeTab",
     "contextMenus",
+    "declarativeNetRequest",
     "scripting",
-    "storage",
-    "webRequest"
+    "storage"
   ],
   "host_permissions": [
     "http://localhost:3000/*",
