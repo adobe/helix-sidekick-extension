@@ -73,4 +73,8 @@ export default {
       test: 'test',
     }),
   },
+  declarativeNetRequest: {
+    getSessionRules: async () => ([]),
+    updateSessionRules: async () => undefined,
+  },
 };
