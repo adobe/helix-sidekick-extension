@@ -254,10 +254,11 @@ export async function setAdminAuthHeaderRule(project, index) {
   }
   const { owner, repo, authToken } = project;
   const rules = await chrome.declarativeNetRequest.getSessionRules();
-  const removeRuleIds = rules.filter((r) => r.id === index).map((r) => r.id);
-  const options = {
-    removeRuleIds,
-  };
+  const options = {};
+  if (rules.find((r) => r.id === index)) {
+    // remove existing rule
+    options.removeRuleIds = [index];
+  }
   if (authToken) {
     options.addRules = [{
       id: index,
@@ -278,7 +279,10 @@ export async function setAdminAuthHeaderRule(project, index) {
       },
     }];
   }
-  await chrome.declarativeNetRequest.updateSessionRules(options);
+  if (Object.keys(options).length) {
+    await chrome.declarativeNetRequest.updateSessionRules(options);
+    log.debug(`setAdminAuthHeaderRule: rule set for ${owner}/${repo}`);
+  }
 }
 
 async function getProjectConfig(owner, repo, ref = 'main') {
