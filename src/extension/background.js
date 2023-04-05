@@ -117,8 +117,10 @@ async function guessIfFranklinSite({ id }) {
     });
     // listen for response message from tab
     const listener = ({ isFranklinSite }) => {
-      chrome.runtime.onMessage.removeListener(listener);
-      resolve(isFranklinSite);
+      if (typeof isFranklinSite === 'boolean') {
+        chrome.runtime.onMessage.removeListener(listener);
+        resolve(isFranklinSite);
+      }
     };
     chrome.runtime.onMessage.addListener(listener);
   });
@@ -428,6 +430,59 @@ function checkViewDocSource(id) {
       actions[actionFromTab](tab);
     }
   });
+
+  // listen for request to admin api and add auth to headers where needed
+  chrome.webRequest.onBeforeSendHeaders.addListener(
+    async (request) => {
+      const { url, method, requestHeaders } = request;
+      const { hostname, pathname } = new URL(url);
+      if (hostname !== 'admin.hlx.page' || !['GET', 'POST', 'DELETE'].includes(method)) {
+        log.debug(`onBeforeSendheaders: ignore request ${method} ${url}`);
+        return request;
+      }
+      // extract owner and repo from path
+      const match = /\/[a-z]+\/([A-Za-z0-9-_]+)\/([A-Za-z0-9-_]+)\//.exec(pathname);
+      if (!match || match.length < 3) {
+        log.debug(`onBeforeSendheaders: ignore, no owner/repo found in pathname ${pathname}`);
+        return request;
+      }
+      const [, owner, repo] = match;
+      const project = await getProject({ owner, repo });
+      if (!project) {
+        log.warn(`onBeforeSendheaders: ignore, no project found for ${owner}/${repo}`);
+        return request;
+      }
+      log.info('onBeforeSendHeaders: checking', url);
+
+      const authHeader = requestHeaders.find((h) => h.name === 'x-auth-token');
+      const { authToken } = project;
+      if (authToken) {
+        log.info(`onBeforeSendHeaders: setting x-auth-token header for ${owner}/${repo}`);
+        if (!authHeader) {
+          requestHeaders.push({
+            name: 'x-auth-token',
+            value: authToken,
+          });
+          log.debug(`onBeforeSendHeaders: x-auth-token header added for ${owner}/${repo}`);
+        } else {
+          authHeader.value = authToken;
+          log.debug(`onBeforeSendHeaders: x-auth-token header updated for ${owner}/${repo}`);
+        }
+      } else if (authHeader) {
+        log.info(`onBeforeSendHeaders: deleting x-auth-token header for ${owner}/${repo}`);
+        requestHeaders.splice(requestHeaders.findIndex(authHeader), 1);
+      } else {
+        log.info(`onBeforeSendHeaders: no x-auth-token header needed ${owner}/${repo}`);
+      }
+      console.log(request);
+      return request;
+    },
+    {
+      urls: ['https://admin.hlx.page/*'],
+      types: ['xmlhttprequest'],
+    },
+    ['requestHeaders'],
+  );
 })();
 
 // announce sidekick display state

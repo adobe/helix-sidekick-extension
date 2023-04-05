@@ -8,10 +8,11 @@
   "options_page": "options.html",
   "description": "__MSG_description__",
   "permissions": [
+    "activeTab",
     "contextMenus",
     "scripting",
     "storage",
-    "activeTab"
+    "webRequest"
   ],
   "host_permissions": [
     "http://localhost:3000/*",
