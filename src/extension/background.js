@@ -218,19 +218,21 @@ function checkTab(id) {
       }
       const matches = await getProjectMatches(projects, checkUrl);
       log.debug('checking', id, checkUrl, matches);
-      try {
-        // execute content script
-        chrome.scripting.executeScript({
-          target: { tabId: id },
-          files: ['./content.js'],
-        }, () => {
-          // send config matches to tab
-          chrome.tabs.sendMessage(id, {
-            projectMatches: matches,
+      if (matches.length > 0) {
+        try {
+          // execute content script
+          chrome.scripting.executeScript({
+            target: { tabId: id },
+            files: ['./content.js'],
+          }, () => {
+            // send config matches to tab
+            chrome.tabs.sendMessage(id, {
+              projectMatches: matches,
+            });
           });
-        });
-      } catch (e) {
-        log.error('error enabling extension', id, e);
+        } catch (e) {
+          log.error('error enabling extension', id, e);
+        }
       }
     });
   });
