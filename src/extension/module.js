@@ -632,16 +632,19 @@
       attrs: {
         ...(button.attrs || {}),
         class: 'dropdown-toggle',
+        'aria-expanded': false,
       },
       lstnrs: {
         click: (evt) => {
           if (dropdown.classList.contains('dropdown-expanded')) {
             dropdown.classList.remove('dropdown-expanded');
+            evt.target.setAttribute('aria-expanded', false);
             return;
           }
 
           collapseDropdowns(sk);
           dropdown.classList.add('dropdown-expanded');
+          evt.target.setAttribute('aria-expanded', true);
           const {
             lastElementChild: container,
           } = dropdown;
