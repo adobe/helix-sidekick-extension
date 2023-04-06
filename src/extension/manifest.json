@@ -48,8 +48,7 @@
         "view-doc-source/js/content.js"
       ],
       "matches": [
-        "https://*/*",
-        "http://localhost:3000/*"
+        "<all_urls>"
       ]
     }
   ],
