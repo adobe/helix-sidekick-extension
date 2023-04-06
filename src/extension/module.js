@@ -885,15 +885,12 @@
    * @param {object} config
    * @returns {object}
    */
-  function getAdminFetchOptions({ authToken }) {
+  function getAdminFetchOptions() {
     const opts = {
       cache: 'no-store',
       credentials: 'include',
       headers: {},
     };
-    if (authToken) {
-      opts.headers['x-auth-token'] = authToken;
-    }
     return opts;
   }
 
@@ -1807,7 +1804,13 @@
     const loginWindow = window.open(loginUrl.toString());
 
     async function checkLoggedIn() {
-      if ((await fetch(profileUrl.href, getAdminFetchOptions(sk.config))).ok) {
+      const opts = getAdminFetchOptions(sk.config);
+      if (sk.config.authToken) {
+        opts.headers = {
+          'x-auth-token': sk.config.authToken,
+        };
+      }
+      if ((await fetch(profileUrl.href, opts)).ok) {
         window.setTimeout(() => {
           if (!loginWindow.closed) {
             loginWindow.close();
