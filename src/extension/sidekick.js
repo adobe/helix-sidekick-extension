@@ -21,7 +21,6 @@ import {
   setConfig,
   setDisplay,
   i18n,
-  storeAuthToken,
 } from './utils.js';
 
 export default async function injectSidekick(config, display) {
@@ -108,7 +107,7 @@ export default async function injectSidekick(config, display) {
         sk.addEventListener('loggedout', async () => {
           // user clicked logout, delete the authToken from the config
           log.debug(`removing authToken from config ${owner}/${repo}`);
-          await storeAuthToken(owner, repo, '');
+          chrome.runtime.sendMessage({ deleteAuthToken: { owner, repo } });
         });
         const helpOptOut = await getConfig('sync', 'hlxSidekickHelpOptOut');
         if (!helpOptOut) {

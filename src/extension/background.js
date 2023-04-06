@@ -29,9 +29,7 @@ import {
   getGitHubSettings,
   setConfig,
   getConfig,
-  storeAuthToken,
   updateProjectConfigs,
-  setAdminAuthHeaderRule,
 } from './utils.js';
 
 /**
@@ -332,6 +330,66 @@ function checkViewDocSource(id) {
   });
 }
 
+async function updateAdminAuthHeaderRules() {
+  let id = 1;
+  const projects = await getConfig('sync', 'hlxSidekickProjects') || [];
+  projects.forEach(async (handle) => {
+    const project = await getConfig('sync', handle);
+    const {
+      owner,
+      repo,
+      authToken,
+    } = project;
+    const options = {
+      removeRuleIds: (await chrome.declarativeNetRequest.getSessionRules())
+        .map((rule) => rule.id),
+    };
+    if (authToken) {
+      options.addRules = [{
+        id,
+        priority: 1,
+        action: {
+          type: 'modifyHeaders',
+          requestHeaders: [{
+            operation: 'set',
+            header: 'x-auth-token',
+            value: authToken,
+          }],
+        },
+        condition: {
+          regexFilter: `^https://admin.hlx.page/[a-z]+/${owner}/${repo}/.*`,
+          requestDomains: ['admin.hlx.page'],
+          requestMethods: ['get', 'post', 'delete'],
+          resourceTypes: ['xmlhttprequest'],
+        },
+      }];
+      id += 1;
+    }
+    if (Object.keys(options).length) {
+      await chrome.declarativeNetRequest.updateSessionRules(options);
+      log.debug(`setAdminAuthHeaderRule: rule set for ${owner}/${repo}`);
+    }
+  });
+}
+
+async function storeAuthToken(owner, repo, token) {
+  // find config tab with owner/repo
+  const project = await getProject({ owner, repo });
+  if (project) {
+    if (token) {
+      project.authToken = token;
+    } else {
+      delete project.authToken;
+    }
+    await setProject(project);
+    log.debug(`updated auth token for ${owner}--${repo}`);
+  } else {
+    log.debug(`unable to update auth token for ${owner}--${repo}: no such config`);
+  }
+  // auth token changed, set/update admin auth header
+  updateAdminAuthHeaderRules();
+}
+
 /**
  * Adds the listeners for the extension.
  */
@@ -340,6 +398,7 @@ function checkViewDocSource(id) {
     log.info(`sidekick extension installed (${reason})`);
     await updateHelpContent();
     await updateProjectConfigs();
+    await updateAdminAuthHeaderRules();
   });
 
   // register message listener
@@ -434,10 +493,18 @@ function checkViewDocSource(id) {
     }
   });
 
-  // for each project, listen for admin api requests and add auth to headers where needed
-  setAdminAuthHeaderRule();
-  // for local debugging, add "declarativeNetRequestFeedback" to permissions in manifest.json
-  // and uncomment the following lines:
+  // listen for delete auth token calls from the content window
+  chrome.runtime.onMessage.addListener(async ({ deleteAuthToken }, { tab }) => {
+    // check if message contains project config and is sent from tab
+    if (tab && tab.id && typeof deleteAuthToken === 'object') {
+      const { owner, repo } = deleteAuthToken;
+      await storeAuthToken(owner, repo, '');
+    }
+  });
+
+  // for local debugging of header modification rules:
+  // 1. add "declarativeNetRequestFeedback" to permissions in manifest.json
+  // 2. uncomment the following 3 lines:
   // chrome.declarativeNetRequest.onRuleMatchedDebug.addListener(({ request, rule }) => {
   //   console.log('rule matched', request.method, request.url, rule.ruleId);
   // });

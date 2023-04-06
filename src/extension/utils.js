@@ -243,48 +243,6 @@ export function isValidShareURL(shareurl) {
   return Object.keys(getShareSettings(shareurl)).length > 1;
 }
 
-export async function setAdminAuthHeaderRule(project, index) {
-  if (!project) {
-    const projects = await getConfig('sync', 'hlxSidekickProjects');
-    // loop through all projects
-    projects.forEach(async (handle, i) => {
-      await setAdminAuthHeaderRule(await getConfig('sync', handle), i);
-    });
-    return;
-  }
-  const { owner, repo, authToken } = project;
-  const rules = await chrome.declarativeNetRequest.getSessionRules();
-  const options = {};
-  if (rules.find((r) => r.id === index)) {
-    // remove existing rule
-    options.removeRuleIds = [index];
-  }
-  if (authToken) {
-    options.addRules = [{
-      id: index,
-      priority: 1,
-      action: {
-        type: 'modifyHeaders',
-        requestHeaders: [{
-          operation: 'set',
-          header: 'x-auth-token',
-          value: authToken,
-        }],
-      },
-      condition: {
-        regexFilter: `^https://admin.hlx.page/[a-z]+/${owner}/${repo}/.*`,
-        requestDomains: ['admin.hlx.page'],
-        requestMethods: ['get', 'post', 'delete'],
-        resourceTypes: ['xmlhttprequest'],
-      },
-    }];
-  }
-  if (Object.keys(options).length) {
-    await chrome.declarativeNetRequest.updateSessionRules(options);
-    log.debug(`setAdminAuthHeaderRule: rule set for ${owner}/${repo}`);
-  }
-}
-
 async function getProjectConfig(owner, repo, ref = 'main') {
   const cfg = {};
   let res;
@@ -352,6 +310,7 @@ export async function getProject(project) {
 export async function setProject(project, cb) {
   const { owner, repo } = project;
   const handle = `${owner}/${repo}`;
+  // update project config
   await setConfig('sync', {
     [handle]: project,
   });
@@ -362,8 +321,6 @@ export async function setProject(project, cb) {
     await setConfig('sync', { hlxSidekickProjects: projects });
   }
   log.info('updated project', project);
-  // set admin auth header rule
-  await setAdminAuthHeaderRule(projects, project);
 
   if (typeof cb === 'function') {
     cb(project);
@@ -392,7 +349,8 @@ export async function deleteProject(handle, cb) {
     if (i >= 0) {
       if (confirm(i18n('config_delete_confirm'))) {
         // delete admin auth header rule
-        await setAdminAuthHeaderRule(projects, await getConfig('sync', handle));
+        const [owner, repo] = handle.split('/');
+        chrome.runtime.sendMessage({ deleteAuthToken: { owner, repo } });
         // delete the project entry
         await removeConfig('sync', handle);
         // remove project entry from index
@@ -425,22 +383,6 @@ export function toggleDisplay(cb) {
   getState(({ display }) => {
     setDisplay(!display, cb);
   });
-}
-
-export async function storeAuthToken(owner, repo, token) {
-  // find config tab with owner/repo
-  const project = await getProject({ owner, repo });
-  if (project) {
-    if (token) {
-      project.authToken = token;
-    } else {
-      delete project.authToken;
-    }
-    await setProject(project);
-    log.debug(`updated auth token for ${owner}--${repo}`);
-  } else {
-    log.warn(`unable to update auth token for ${owner}--${repo}: no such config`);
-  }
 }
 
 export async function updateProjectConfigs() {
