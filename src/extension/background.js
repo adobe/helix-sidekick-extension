@@ -219,7 +219,7 @@ function checkTab(id) {
       }
       const matches = await getProjectMatches(projects, checkUrl);
       log.debug('checking', id, checkUrl, matches);
-      if (matches) {
+      if (matches.length > 0) {
         try {
           // execute content script
           chrome.scripting.executeScript({
