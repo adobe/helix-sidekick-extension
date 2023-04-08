@@ -1344,11 +1344,17 @@
       const getBulkSelection = () => {
         const { location } = sk;
         if (isSharePoint(location)) {
+          const isGrid = (row) => !!row.querySelector('i[aria-label]');
           return [...document.querySelectorAll('#appRoot [role="presentation"] div[aria-selected="true"]')]
-            .filter((row) => !row.querySelector('img').getAttribute('src').endsWith('folder.svg'))
+            .filter((row) => !row.querySelector('img').getAttribute('src').includes('/foldericons/')
+              && !row.querySelector('img').getAttribute('src').endsWith('folder.svg'))
             .map((row) => ({
-              type: new URL(row.querySelector('img').getAttribute('src'), sk.location.href).pathname.split('/').slice(-1)[0].split('.')[0],
-              path: row.querySelector('button').textContent.trim(),
+              type: isGrid(row)
+                ? row.querySelector(':scope i[aria-label]')?.getAttribute('aria-label').trim()
+                : new URL(row.querySelector('img').getAttribute('src'), sk.location.href).pathname.split('/').slice(-1)[0].split('.')[0],
+              path: isGrid(row)
+                ? row.querySelector('div[data-automationid="name"]').textContent.trim()
+                : row.querySelector('button')?.textContent.trim(),
             }));
         } else {
           // gdrive
@@ -1356,7 +1362,8 @@
             .filter((row) => row.querySelector(':scope img'))
             .map((row) => ({
               type: new URL(row.querySelector('div > img').getAttribute('src'), sk.location.href).pathname.split('/').slice(-2).join('/'),
-              path: row.querySelector(':scope > div > div:nth-of-type(2)').textContent.trim(),
+              path: row.querySelector(':scope > div > div:nth-of-type(2)').textContent.trim() // list layout
+                || row.querySelector(':scope > div > div > div:nth-of-type(4)').textContent.trim(), // grid layout
             }));
         }
       };
