@@ -1457,9 +1457,6 @@
             if (item.error.includes('source does not exist')) {
               item.error = getBulkText([1], 'result', operation, 'error_no_source');
             }
-            if (item.status === 404 && /[^a-z0-9-]/.test(item.path)) {
-              item.error = getBulkText([1], 'result', operation, 'error_invalid_folder_name');
-            }
             return `${item.path.split('/').pop()}: ${item.error}`;
           }));
         }
