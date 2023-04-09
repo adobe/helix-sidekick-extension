@@ -1344,15 +1344,15 @@
       const getBulkSelection = () => {
         const { location } = sk;
         if (isSharePoint(location)) {
-          const isGrid = (row) => !!row.querySelector('i[aria-label]');
+          const isGrid = document.querySelector('div[class~="ms-TilesList"]');
           return [...document.querySelectorAll('#appRoot [role="presentation"] div[aria-selected="true"]')]
             .filter((row) => !row.querySelector('img').getAttribute('src').includes('/foldericons/')
               && !row.querySelector('img').getAttribute('src').endsWith('folder.svg'))
             .map((row) => ({
-              type: isGrid(row)
+              type: isGrid
                 ? row.querySelector(':scope i[aria-label]')?.getAttribute('aria-label').trim()
                 : new URL(row.querySelector('img').getAttribute('src'), sk.location.href).pathname.split('/').slice(-1)[0].split('.')[0],
-              path: isGrid(row)
+              path: isGrid
                 ? row.querySelector('div[data-automationid="name"]').textContent.trim()
                 : row.querySelector('button')?.textContent.trim(),
             }));
