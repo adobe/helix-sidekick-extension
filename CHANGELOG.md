@@ -1,3 +1,15 @@
+## [6.12.3](https://github.com/adobe/helix-sidekick-extension/compare/v6.12.2...v6.12.3) (2023-04-11)
+
+
+### Bug Fixes
+
+* bulk actions not working in grid view ([00c3f7a](https://github.com/adobe/helix-sidekick-extension/commit/00c3f7ad14f5e0aac943e9ebd11a31105f607625))
+* confusing error message on 404 ([48decc8](https://github.com/adobe/helix-sidekick-extension/commit/48decc802ac77c40bbc939635fe533378df67296))
+* dropdown accessibility ([d57dde0](https://github.com/adobe/helix-sidekick-extension/commit/d57dde03601a18a16fd1210b41d093912775f0fa))
+* only inject content script if config match ([b6fd3f9](https://github.com/adobe/helix-sidekick-extension/commit/b6fd3f970e5396bc006c7ce6e6e2e6a9e3c82bf8))
+* restrict  open preview to github urls ([e6d6fc4](https://github.com/adobe/helix-sidekick-extension/commit/e6d6fc4f829f13675a6de643ea450ab0a0663e92))
+* safari error on localhost urls ([2d07f3e](https://github.com/adobe/helix-sidekick-extension/commit/2d07f3e8600a4e4df640f43caf052883f671220d))
+
 ## [6.12.2](https://github.com/adobe/helix-sidekick-extension/compare/v6.12.1...v6.12.2) (2023-04-03)
 
 
