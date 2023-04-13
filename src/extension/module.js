@@ -1320,9 +1320,6 @@
       const toWebPath = (folder, item) => {
         const { path, type } = item;
         const nameParts = path.split('.');
-        if (folder === '/') {
-          folder = '';
-        }
         let [file, ext] = nameParts;
         if (isSharePoint(sk.location) && ext === 'docx') {
           // omit docx extension on sharepoint
@@ -1338,7 +1335,7 @@
           .replace(/[\u0300-\u036f]/g, '')
           .replace(/[^a-z0-9]+/g, '-')
           .replace(/^-|-$/g, '');
-        return `${folder}/${file}${ext ? `.${ext}` : ''}`;
+        return `${folder}${folder.endsWith('/') ? '' : '/'}${file}${ext ? `.${ext}` : ''}`;
       };
 
       const getBulkSelection = () => {
