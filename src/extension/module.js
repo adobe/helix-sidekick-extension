@@ -1046,6 +1046,7 @@
         text: i18n(sk, 'preview'),
         action: async (evt) => {
           const { status } = sk;
+          sk.showWait();
           const updatePreview = async (ranBefore) => {
             const resp = await sk.update();
             if (!resp.ok) {
@@ -1082,7 +1083,8 @@
             sk.switchEnv('preview', newTab(evt));
           };
           if (status.edit && status.edit.sourceLocation
-            && status.edit.sourceLocation.startsWith('onedrive:')) {
+            && status.edit.sourceLocation.startsWith('onedrive:')
+            && status.edit.contentType && status.edit.contentType.includes('word')) {
             // show ctrl/cmd + s hint on onedrive docs
             const mac = navigator.platform.toLowerCase().includes('mac') ? '_mac' : '';
             sk.showModal(i18n(sk, `preview_onedrive${mac}`));
@@ -1110,8 +1112,6 @@
 
               return;
             }
-          } else {
-            sk.showWait();
           }
           updatePreview();
         },
