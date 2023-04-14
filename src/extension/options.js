@@ -38,7 +38,7 @@ function isValidGitHubURL(giturl) {
 
 function drawLink(url) {
   if (typeof url !== 'string') return '';
-  url = encodeURI(url);
+  url = url.replaceAll(/<\/?[^>]+(>|$)/gi, '');
   let href = url;
   let text = url;
   if (!url.startsWith('https://')) href = `https://${url}`;
