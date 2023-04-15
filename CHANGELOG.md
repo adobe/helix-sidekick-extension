@@ -1,3 +1,11 @@
+## [6.12.4](https://github.com/adobe/helix-sidekick-extension/compare/v6.12.3...v6.12.4) (2023-04-15)
+
+
+### Bug Fixes
+
+* missing please wait message in gdrive ([c9896c2](https://github.com/adobe/helix-sidekick-extension/commit/c9896c296f891e187771ec0592ea3f7ab5b2178f))
+* **options:** double uri encoding ([b40f283](https://github.com/adobe/helix-sidekick-extension/commit/b40f283a53387586fd885ef5f8d0976fbbdf212c))
+
 ## [6.12.3](https://github.com/adobe/helix-sidekick-extension/compare/v6.12.2...v6.12.3) (2023-04-11)
 
 
