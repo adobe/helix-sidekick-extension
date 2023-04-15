@@ -36,15 +36,28 @@ function isValidGitHubURL(giturl) {
     && Object.keys(getGitHubSettings(giturl)).length === 3;
 }
 
+function sanitize(str) {
+  return str.replace(/[$<>"'`=]/g, '-');
+}
+
 function drawLink(url) {
-  if (typeof url !== 'string') return '';
-  url = encodeURI(url);
-  let href = url;
-  let text = url;
-  if (!url.startsWith('https://')) href = `https://${url}`;
-  if (url.includes('sharepoint')) text = 'SharePoint';
-  if (url.includes('drive.google.com')) text = 'Google Drive';
-  return `<a href="${href}/" title="${href}" target="_blank">${text}</a>`;
+  if (typeof url !== 'string') {
+    return '';
+  }
+  url = `https://${sanitize(url.startsWith('https://') ? url.substring(8) : url)}`;
+  try {
+    url = new URL(url); // check url
+  } catch (e) {
+    return ''; // not a valid url
+  }
+  if (!/^[a-z]+/.test(url.host)) {
+    return '';
+  }
+  const href = url.toString();
+  let text = url.hostname;
+  if (text.includes('sharepoint')) text = 'SharePoint';
+  if (text === 'drive.google.com') text = 'Google Drive';
+  return `<a href="${href}" title="${text}" target="_blank">${text}</a>`;
 }
 
 function drawProjects() {
@@ -66,7 +79,7 @@ function drawProjects() {
   <div>
     <h4>
       <input type="checkbox" ${disabled ? '' : 'checked'} title="${i18n(disabled ? 'config_project_enable' : 'config_project_disable')}">
-      ${project ? project.replaceAll(/<\/?[^>]+(>|$)/gi, '') : 'Project'}
+      ${project ? sanitize(project) : 'Project'}
     </h4>
     <p><span class="property">${i18n('config_project_innerhost')}</span>${drawLink(innerHost)}</p>
     ${mountpoints.length
