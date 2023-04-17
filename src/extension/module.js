@@ -107,7 +107,8 @@
    * @prop {string} outerHost The outer CDN's host name (optional)
    * @prop {string} host The production host name to publish content to (optional)
    * @prop {boolean} byocdn=false <pre>true</pre> if the production host is a 3rd party CDN
-   * @prop {boolean} devMode=false Loads configuration and plugins from the developmemt environment
+   * @prop {boolean} devMode=false Loads configuration and plugins from the development environment
+   * @prop {boolean} devOrigin=http://localhost:3000 URL of the local development environment
    * @prop {boolean} pushDown=false <pre>true</pre> to have the sidekick push down page content
    * @prop {string} pushDownSelector The CSS selector for absolute elements to also push down
    * @prop {ViewConfig[]} specialViews An array of custom {@link ViewConfig|view configurations}
@@ -258,14 +259,6 @@
   const RESTRICTED_PATHS = [
     '/helix-env.json',
   ];
-
-  /**
-   * The URL of the development environment.
-   * @see {@link https://github.com/adobe/helix-cli|AEM CLI}).
-   * @private
-   * @type {URL}
-   */
-  const DEV_URL = new URL('http://localhost:3000');
 
   /**
    * Log RUM for sidekick telemetry.
@@ -426,13 +419,18 @@
       scriptUrl = 'https://www.hlx.live/tools/sidekick/module.js',
       scriptRoot = scriptUrl.split('/').filter((_, i, arr) => i < arr.length - 1).join('/'),
     } = config;
+    let { devOrigin } = config;
+    if (!devOrigin) {
+      devOrigin = 'http://localhost:3000';
+    }
+    const devUrl = new URL(devOrigin);
     const innerPrefix = owner && repo ? `${ref}--${repo}--${owner}` : null;
     const publicHost = host && host.startsWith('http') ? new URL(host).host : host;
     let innerHost = 'hlx.page';
     if (!innerHost && scriptUrl) {
       // get hlx domain from script src (used for branch deployment testing)
       const scriptHost = new URL(scriptUrl).host;
-      if (scriptHost && scriptHost !== 'www.hlx.live' && !scriptHost.startsWith(DEV_URL.host)) {
+      if (scriptHost && scriptHost !== 'www.hlx.live' && !scriptHost.startsWith(devUrl.host)) {
         // keep only 1st and 2nd level domain
         innerHost = scriptHost.split('.')
           .reverse()
@@ -482,6 +480,7 @@
       pushDown,
       pushDownElements,
       specialView,
+      devUrl,
     };
   }
 
@@ -2909,10 +2908,10 @@
      * @returns {boolean} <code>true</code> if development URL, else <code>false</code>
      */
     isDev() {
-      const { location } = this;
+      const { config, location } = this;
       return [
         '', // for unit testing
-        DEV_URL.host, // for development and browser testing
+        config.devUrl.host, // for development and browser testing
       ].includes(location.host);
     }
 
@@ -3324,7 +3323,7 @@
         window.setTimeout(() => this.switchEnv(targetEnv, open), 1000);
         return this;
       }
-      const envOrigin = targetEnv === 'dev' ? DEV_URL.origin : `https://${config[hostType]}`;
+      const envOrigin = targetEnv === 'dev' ? config.devOrigin : `https://${config[hostType]}`;
       let envUrl = `${envOrigin}${status.webPath}`;
       if (!this.isEditor()) {
         envUrl += `${search}${hash}`;

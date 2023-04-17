@@ -276,6 +276,7 @@ export async function assembleProject({
   host,
   outerHost,
   devMode,
+  devOrigin,
   disabled,
 }) {
   const { owner, repo, ref } = getGitHubSettings(giturl);
@@ -293,6 +294,7 @@ export async function assembleProject({
     host,
     outerHost,
     devMode,
+    devOrigin,
     disabled,
     giturl,
     owner,

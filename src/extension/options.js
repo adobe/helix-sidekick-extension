@@ -173,6 +173,7 @@ function editProject(i) {
         project: document.querySelector('#edit-project').value,
         host: document.querySelector('#edit-host').value,
         devMode: document.querySelector('#edit-devMode').checked,
+        devOrigin: document.querySelector('#edit-devOrigin').value,
       };
       projects[i] = {
         ...project,

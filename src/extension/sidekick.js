@@ -43,6 +43,7 @@ export default async function injectSidekick(config, display) {
         'ref',
         'host',
         'devMode',
+        'devOrigin',
         'pushDown',
         'adminVersion',
         'authToken',
@@ -56,7 +57,7 @@ export default async function injectSidekick(config, display) {
 
     // look for custom config in project
     const {
-      owner, repo, ref, devMode, adminVersion,
+      owner, repo, ref, devMode, devOrigin, adminVersion,
     } = config;
     const configOrigin = devMode
       ? DEV_URL
@@ -73,6 +74,7 @@ export default async function injectSidekick(config, display) {
           repo,
           ref,
           devMode,
+          devOrigin,
           adminVersion,
         };
       }
