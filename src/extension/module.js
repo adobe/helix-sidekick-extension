@@ -300,14 +300,12 @@
       }
       const { weight, id } = window.hlx.rum;
       if (window.hlx && window.hlx.rum && window.hlx.rum.isSelected) {
-        const sendPing = (pdata = data) => {
+        const sendPing = () => {
           // eslint-disable-next-line object-curly-newline, max-len, no-use-before-define
           const body = JSON.stringify({ weight, id, referer: sk.location.href, generation: window.hlx.RUM_GENERATION, checkpoint, ...data });
           const url = `https://rum.hlx.page/.rum/${weight}`;
           // eslint-disable-next-line no-unused-expressions
           navigator.sendBeacon(url, body);
-          // eslint-disable-next-line no-console
-          console.debug(`ping:${checkpoint}`, pdata);
         };
         sampleRUM.cases = sampleRUM.cases || {
           cwv: () => sampleRUM.cwv(data) || true,
@@ -1423,7 +1421,6 @@
         }, concurrency);
         const lines = [];
         const ok = results.filter((res) => res.ok);
-        console.log(ok);
         if (ok.length > 0) {
           lines.push(getBulkText([ok.length], 'result', operation, 'success'));
           lines.push(createTag({
