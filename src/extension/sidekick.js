@@ -62,7 +62,9 @@ export default async function injectSidekick(config, display) {
       ? DEV_URL
       : `https://${ref}--${repo}--${owner}.hlx.live`;
     try {
-      const res = await fetch(`${configOrigin}/tools/sidekick/config.json`);
+      const res = await fetch(`${configOrigin}/tools/sidekick/config.json`, {
+        credentials: 'include',
+      });
       if (res.ok) {
         log.info('custom sidekick config found');
         curatedConfig = {
