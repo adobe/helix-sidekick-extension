@@ -1784,12 +1784,7 @@
    */
   function login(sk, selectAccount) {
     sk.showWait();
-    const loginUrl = getAdminUrl(
-      sk.config,
-      'login',
-      sk.isProject() ? sk.location.pathname : '',
-    );
-    loginUrl.searchParams.set('loginRedirect', 'https://www.hlx.live/tools/sidekick/login-success');
+    const loginUrl = getAdminUrl(sk.config, 'login');
     const extensionId = window.chrome?.runtime?.id;
     if (extensionId) {
       loginUrl.searchParams.set('extensionId', extensionId);
@@ -1797,19 +1792,11 @@
     if (selectAccount) {
       loginUrl.searchParams.set('selectAccount', true);
     }
-    const profileUrl = new URL('https://admin.hlx.page/profile');
-    if (sk.config.adminVersion) {
-      profileUrl.searchParams.append('hlx-admin-version', sk.config.adminVersion);
-    }
+    const profileUrl = getAdminUrl(sk.config, 'profile');
     const loginWindow = window.open(loginUrl.toString());
 
     async function checkLoggedIn() {
       const opts = getAdminFetchOptions(sk.config);
-      if (sk.config.authToken) {
-        opts.headers = {
-          'x-auth-token': sk.config.authToken,
-        };
-      }
       if ((await fetch(profileUrl.href, opts)).ok) {
         window.setTimeout(() => {
           if (!loginWindow.closed) {
@@ -1862,29 +1849,43 @@
    * @param {Sidekick} sk The sidekick
    */
   function logout(sk) {
-    const logoutUrl = new URL('https://admin.hlx.page/logout');
-    if (sk.config.adminVersion) {
-      logoutUrl.searchParams.append('hlx-admin-version', sk.config.adminVersion);
+    sk.showWait();
+    const logoutUrl = getAdminUrl(sk.config, 'logout');
+    const extensionId = window.chrome?.runtime?.id;
+    if (extensionId) {
+      logoutUrl.searchParams.set('extensionId', extensionId);
+    }
+    const logoutWindow = window.open(logoutUrl.toString());
+
+    async function checkLoggedOut() {
+      if (logoutWindow.closed) {
+        delete sk.status.profile;
+        delete sk.config.authToken;
+        sk.addEventListener('statusfetched', () => sk.hideModal(), { once: true });
+        sk.fetchStatus();
+        fireEvent(sk, 'loggedout');
+        return true;
+      }
+      return false;
     }
 
-    fetch(logoutUrl.href, {
-      ...getAdminFetchOptions(sk.config),
-    })
-      .then(() => {
-        delete sk.config.authToken;
-        sk.status = {
-          loggedOut: true,
-        };
-      })
-      .then(() => fireEvent(sk, 'loggedout'))
-      .then(() => sk.fetchStatus())
-      .catch((e) => {
-        console.error('logout failed', e);
+    let seconds = 0;
+    const logoutCheck = window.setInterval(async () => {
+      // give up after 2 minutes or window closed
+      if (seconds >= 120) {
+        window.clearInterval(logoutCheck);
+        logoutWindow.close();
         sk.showModal({
           message: i18n(sk, 'error_logout_error'),
-          level: 0,
+          sticky: true,
+          level: 1,
         });
-      });
+      }
+      seconds += 1;
+      if (await checkLoggedOut()) {
+        window.clearInterval(logoutCheck);
+      }
+    }, 1000);
   }
 
   /**
@@ -2634,7 +2635,10 @@
             throw new Error('error_status_invalid');
           }
         })
-        .then((json) => Object.assign(this.status, json))
+        .then((json) => {
+          this.status = json;
+          return json;
+        })
         .then((json) => fireEvent(this, 'statusfetched', json))
         .catch(({ message }) => {
           this.status.error = message;
