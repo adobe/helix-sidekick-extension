@@ -110,13 +110,10 @@ describe('Test sidekick login', () => {
     nock('https://admin.hlx.page')
       .get('/status/adobe/blog/main/en/topics/bla?editUrl=auto')
       .reply(401)
-      .get('/profile')
+      .get('/profile/adobe/blog/main')
       .times(2)
       .reply(401)
-      .get('/login/adobe/blog/main/en/topics/bla')
-      .query({
-        loginRedirect: 'https://www.hlx.live/tools/sidekick/login-success',
-      })
+      .get('/login/adobe/blog/main')
       .reply(200, 'not logged in!');
 
     const { popupTarget } = await test.run();
