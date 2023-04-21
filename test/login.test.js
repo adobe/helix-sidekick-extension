@@ -42,7 +42,7 @@ describe('Test sidekick login', () => {
     nock.done();
   });
 
-  it.only('Opens login window and logs in via auth-cookie', async () => {
+  it('Opens login window and logs in via auth-cookie', async () => {
     let loggedIn = false;
     const test = new SidekickTest({
       browser,
