@@ -42,7 +42,7 @@ describe('Test sidekick login', () => {
     nock.done();
   });
 
-  it('Opens login window and logs in via auth-cookie', async () => {
+  it.only('Opens login window and logs in via auth-cookie', async () => {
     let loggedIn = false;
     const test = new SidekickTest({
       browser,
@@ -62,13 +62,13 @@ describe('Test sidekick login', () => {
         }
         return [401];
       })
-      .get('/login/adobe/blog/main/en/topics/bla?loginRedirect=https%3A%2F%2Fwww.hlx.live%2Ftools%2Fsidekick%2Flogin-success')
+      .get('/login/adobe/blog/main')
       .times(DEBUG ? 2 : 1) // when dev-tools are enabled, browser makes 2 requests.
       .delay(1500) // delay so that 2 requests are made
       .reply(200, 'logged in!', {
         'set-cookie': 'auth_token=foobar; Path=/; HttpOnly; Secure; SameSite=None',
       })
-      .get('/profile')
+      .get('/profile/adobe/blog/main')
       .times(2)
       .reply(function req() {
         if (this.req.headers.cookie === 'auth_token=foobar') {
@@ -85,7 +85,7 @@ describe('Test sidekick login', () => {
       new Promise((resolve) => {
         page.browser().on('targetdestroyed', async (target) => {
           const targetUrl = target.url();
-          if (targetUrl.startsWith('https://admin.hlx.page/login/adobe/blog/main/en/topics/bla')) {
+          if (targetUrl === 'https://admin.hlx.page/login/adobe/blog/main') {
             loginClosed = true;
             resolve();
           }

@@ -45,14 +45,15 @@ describe('Test sidekick logout', () => {
   it('Logout removes auth token from config', async () => {
     nock.admin(new Setup('blog'));
     nock('https://admin.hlx.page')
-      .get('/logout')
-      .reply(200, {});
+      .get('/logout/adobe/blog/main')
+      .reply(200, '<html><script>setTimeout(() => self.close(), 500)</script></html>');
     nock.admin(new Setup('blog'));
+
     const test = new SidekickTest({
       browser,
       page,
       plugin: 'user-logout',
-      sleep: 2000,
+      pluginSleep: 2000,
       checkPage: async (p) => p.evaluate(() => window.hlx.sidekick.config),
     });
     test.sidekickConfig.authToken = 'foobar';
