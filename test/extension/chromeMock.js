@@ -51,6 +51,7 @@ export default {
     getManifest: async () => readFile({ path: '../../src/extension/manifest.json' }).then((mf) => JSON.parse(mf)),
     getURL: (path) => `chrome-extension://${ID}${path}`,
     lastError: null,
+    sendMessage: () => {},
   },
   storage: {
     sync: new StorageMock({
