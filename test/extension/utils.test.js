@@ -224,9 +224,10 @@ describe('Test extension utils', () => {
     })).to.be.true;
   });
 
-  it('deleteProject', async () => {
+  it('deleteProject', async (done) => {
     const spy = sandbox.spy(window.chrome.storage.sync, 'set');
     const deleted = await new Promise((resolve) => {
+      done();
       utils.deleteProject('test/add-project', resolve);
     });
     expect(deleted).to.be.true;
