@@ -1766,7 +1766,7 @@
                         tag: 'iframe',
                         attrs: {
                           src: target,
-                          allow: 'clipboard-write',
+                          allow: 'clipboard-write *',
                         },
                       });
                     }

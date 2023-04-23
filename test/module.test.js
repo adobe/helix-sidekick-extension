@@ -343,7 +343,7 @@ describe('Test sidekick', () => {
         assert.ok(palette, 'Did not show palette');
         assert.deepStrictEqual(palette, {
           title: 'Bar<button title="Close" class="close" tabindex="0"></button>',
-          content: '<iframe src="https://www.adobe.com/" allow="clipboard-write"></iframe>',
+          content: '<iframe src="https://www.adobe.com/" allow="clipboard-write *"></iframe>',
         });
       }).timeout(IT_DEFAULT_TIMEOUT);
 
