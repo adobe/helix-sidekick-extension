@@ -1,3 +1,10 @@
+## [6.12.5](https://github.com/adobe/helix-sidekick-extension/compare/v6.12.4...v6.12.5) (2023-04-24)
+
+
+### Bug Fixes
+
+* add wildcard to clipboard-write permissions ([18bc288](https://github.com/adobe/helix-sidekick-extension/commit/18bc2888e37c8aec04f4554e49f8f414833d5b49))
+
 ## [6.12.4](https://github.com/adobe/helix-sidekick-extension/compare/v6.12.3...v6.12.4) (2023-04-15)
 
 
