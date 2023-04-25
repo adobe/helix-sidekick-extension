@@ -1776,6 +1776,18 @@
     }
   }
 
+  async function checkProfileStatus(sk, status) {
+    const url = getAdminUrl(sk.config, 'profile');
+    const opts = getAdminFetchOptions(sk.config);
+    return fetch(url, opts)
+      .then((res) => res.json())
+      .then((json) => {
+        console.log(json);
+        return json.status === status;
+      })
+      .catch(() => false);
+  }
+
   /**
    * Logs the user in.
    * @private
@@ -1792,55 +1804,36 @@
     if (selectAccount) {
       loginUrl.searchParams.set('selectAccount', true);
     }
-    const profileUrl = getAdminUrl(sk.config, 'profile');
     const loginWindow = window.open(loginUrl.toString());
 
-    async function checkLoggedIn() {
-      const opts = getAdminFetchOptions(sk.config);
-      if ((await fetch(profileUrl.href, opts)).ok) {
-        window.setTimeout(() => {
-          if (!loginWindow.closed) {
-            loginWindow.close();
-          }
-        }, 500);
-        delete sk.status.status;
-        sk.addEventListener('statusfetched', () => sk.hideModal(), { once: true });
-        sk.fetchStatus();
-        fireEvent(sk, 'loggedin');
-        return true;
-      }
-      return false;
-    }
+    let attempts = 0;
 
-    let seconds = 0;
-    const loginCheck = window.setInterval(async () => {
-      // give up after 2 minutes or window closed
-      if (seconds >= 120 || loginWindow.closed) {
-        window.clearInterval(loginCheck);
-        loginWindow.close();
-        // last check
-        if (await checkLoggedIn()) {
+    async function checkLoggedIn() {
+      if (loginWindow.closed) {
+        attempts += 1;
+        // try 5 times after login window has been closed
+        if (await checkProfileStatus(sk, 200)) {
+          // logged in, stop checking
+          delete sk.status.status;
+          sk.addEventListener('statusfetched', () => sk.hideModal(), { once: true });
+          sk.fetchStatus();
+          fireEvent(sk, 'loggedin');
           return;
         }
-
-        if (seconds >= 120) {
+        if (attempts >= 5) {
+          // give up after 5 attempts
           sk.showModal({
             message: i18n(sk, 'error_login_timeout'),
             sticky: true,
             level: 1,
           });
-        } else {
-          sk.showModal({
-            messsage: i18n(sk, 'error_login_aborted'),
-          });
+          return;
         }
       }
-
-      seconds += 1;
-      if (await checkLoggedIn()) {
-        window.clearInterval(loginCheck);
-      }
-    }, 1000);
+      // try again after 1s
+      window.setTimeout(checkLoggedIn, 1000);
+    }
+    window.setTimeout(checkLoggedIn, 1000);
   }
 
   /**
@@ -1857,35 +1850,34 @@
     }
     const logoutWindow = window.open(logoutUrl.toString());
 
+    let attempts = 0;
+
     async function checkLoggedOut() {
       if (logoutWindow.closed) {
-        delete sk.status.profile;
-        delete sk.config.authToken;
-        sk.addEventListener('statusfetched', () => sk.hideModal(), { once: true });
-        sk.fetchStatus();
-        fireEvent(sk, 'loggedout');
-        return true;
+        attempts += 1;
+        // try 5 times after login window has been closed
+        if (await checkProfileStatus(sk, 401)) {
+          delete sk.status.profile;
+          delete sk.config.authToken;
+          sk.addEventListener('statusfetched', () => sk.hideModal(), { once: true });
+          sk.fetchStatus();
+          fireEvent(sk, 'loggedout');
+          return;
+        }
+        if (attempts >= 5) {
+          // give up after 5 attempts
+          sk.showModal({
+            message: i18n(sk, 'error_logout_error'),
+            sticky: true,
+            level: 1,
+          });
+          return;
+        }
       }
-      return false;
+      // try again after 1s
+      window.setTimeout(checkLoggedOut, 1000);
     }
-
-    let seconds = 0;
-    const logoutCheck = window.setInterval(async () => {
-      // give up after 2 minutes or window closed
-      if (seconds >= 120) {
-        window.clearInterval(logoutCheck);
-        logoutWindow.close();
-        sk.showModal({
-          message: i18n(sk, 'error_logout_error'),
-          sticky: true,
-          level: 1,
-        });
-      }
-      seconds += 1;
-      if (await checkLoggedOut()) {
-        window.clearInterval(logoutCheck);
-      }
-    }, 1000);
+    window.setTimeout(checkLoggedOut, 1000);
   }
 
   /**
