@@ -165,6 +165,7 @@ async function checkContextMenu({ url: tabUrl, id }, configs = []) {
               contexts: [
                 'action',
               ],
+              visible: tabUrl.startsWith(GH_URL),
             });
           }
         }

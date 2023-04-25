@@ -1,3 +1,37 @@
+## [6.12.5](https://github.com/adobe/helix-sidekick-extension/compare/v6.12.4...v6.12.5) (2023-04-24)
+
+
+### Bug Fixes
+
+* add wildcard to clipboard-write permissions ([18bc288](https://github.com/adobe/helix-sidekick-extension/commit/18bc2888e37c8aec04f4554e49f8f414833d5b49))
+
+## [6.12.4](https://github.com/adobe/helix-sidekick-extension/compare/v6.12.3...v6.12.4) (2023-04-15)
+
+
+### Bug Fixes
+
+* missing please wait message in gdrive ([c9896c2](https://github.com/adobe/helix-sidekick-extension/commit/c9896c296f891e187771ec0592ea3f7ab5b2178f))
+* **options:** double uri encoding ([b40f283](https://github.com/adobe/helix-sidekick-extension/commit/b40f283a53387586fd885ef5f8d0976fbbdf212c))
+
+## [6.12.3](https://github.com/adobe/helix-sidekick-extension/compare/v6.12.2...v6.12.3) (2023-04-11)
+
+
+### Bug Fixes
+
+* bulk actions not working in grid view ([00c3f7a](https://github.com/adobe/helix-sidekick-extension/commit/00c3f7ad14f5e0aac943e9ebd11a31105f607625))
+* confusing error message on 404 ([48decc8](https://github.com/adobe/helix-sidekick-extension/commit/48decc802ac77c40bbc939635fe533378df67296))
+* dropdown accessibility ([d57dde0](https://github.com/adobe/helix-sidekick-extension/commit/d57dde03601a18a16fd1210b41d093912775f0fa))
+* only inject content script if config match ([b6fd3f9](https://github.com/adobe/helix-sidekick-extension/commit/b6fd3f970e5396bc006c7ce6e6e2e6a9e3c82bf8))
+* restrict  open preview to github urls ([e6d6fc4](https://github.com/adobe/helix-sidekick-extension/commit/e6d6fc4f829f13675a6de643ea450ab0a0663e92))
+* safari error on localhost urls ([2d07f3e](https://github.com/adobe/helix-sidekick-extension/commit/2d07f3e8600a4e4df640f43caf052883f671220d))
+
+## [6.12.2](https://github.com/adobe/helix-sidekick-extension/compare/v6.12.1...v6.12.2) (2023-04-03)
+
+
+### Bug Fixes
+
+* **bulk:** special chars in folder or file names ([2beafbf](https://github.com/adobe/helix-sidekick-extension/commit/2beafbf38ccac57afd8883d8ee55d9f446e7167f))
+
 ## [6.12.1](https://github.com/adobe/helix-sidekick-extension/compare/v6.12.0...v6.12.1) (2023-03-28)
 
 

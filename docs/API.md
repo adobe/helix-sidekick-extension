@@ -555,7 +555,7 @@ The plugin configuration.
 | isContainer | <code>boolean</code> |  | Determines whether to turn this plugin into a dropdown |
 | isPalette | <code>boolean</code> |  | Determines whether a URL is opened in a palette instead of a new tab |
 | paletteRect | <code>string</code> |  | The dimensions and position of a palette (optional) |
-| environments | <code>Array.&lt;string&gt;</code> |  | Specifies when to show this plugin                               (admin, edit, preview, live, prod) |
+| environments | <code>Array.&lt;string&gt;</code> |  | Specifies when to show this plugin                               (admin, edit, dev, preview, live, prod) |
 | excludePaths | <code>Array.&lt;string&gt;</code> |  | Exclude the plugin from these paths (glob patterns supported) |
 | includePaths | <code>Array.&lt;string&gt;</code> |  | Include the plugin on these paths (glob patterns supported) |
 

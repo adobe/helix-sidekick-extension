@@ -69,7 +69,7 @@
    * @prop {boolean} isPalette Determines whether a URL is opened in a palette instead of a new tab
    * @prop {string} paletteRect The dimensions and position of a palette (optional)
    * @prop {string[]} environments Specifies when to show this plugin
-   *                               (admin, edit, preview, live, prod)
+   *                               (admin, edit, dev, preview, live, prod)
    * @prop {string[]} excludePaths Exclude the plugin from these paths (glob patterns supported)
    * @prop {string[]} includePaths Include the plugin on these paths (glob patterns supported)
    */
@@ -632,16 +632,19 @@
       attrs: {
         ...(button.attrs || {}),
         class: 'dropdown-toggle',
+        'aria-expanded': false,
       },
       lstnrs: {
         click: (evt) => {
           if (dropdown.classList.contains('dropdown-expanded')) {
             dropdown.classList.remove('dropdown-expanded');
+            evt.target.setAttribute('aria-expanded', false);
             return;
           }
 
           collapseDropdowns(sk);
           dropdown.classList.add('dropdown-expanded');
+          evt.target.setAttribute('aria-expanded', true);
           const {
             lastElementChild: container,
           } = dropdown;
@@ -1040,6 +1043,7 @@
         text: i18n(sk, 'preview'),
         action: async (evt) => {
           const { status } = sk;
+          sk.showWait();
           const updatePreview = async (ranBefore) => {
             const resp = await sk.update();
             if (!resp.ok) {
@@ -1076,7 +1080,8 @@
             sk.switchEnv('preview', newTab(evt));
           };
           if (status.edit && status.edit.sourceLocation
-            && status.edit.sourceLocation.startsWith('onedrive:')) {
+            && status.edit.sourceLocation.startsWith('onedrive:')
+            && status.edit.contentType && status.edit.contentType.includes('word')) {
             // show ctrl/cmd + s hint on onedrive docs
             const mac = navigator.platform.toLowerCase().includes('mac') ? '_mac' : '';
             sk.showModal(i18n(sk, `preview_onedrive${mac}`));
@@ -1104,8 +1109,6 @@
 
               return;
             }
-          } else {
-            sk.showWait();
           }
           updatePreview();
         },
@@ -1314,11 +1317,7 @@
       const toWebPath = (folder, item) => {
         const { path, type } = item;
         const nameParts = path.split('.');
-        if (folder === '/') {
-          folder = '';
-        }
-        const [file] = nameParts;
-        let [, ext] = nameParts;
+        let [file, ext] = nameParts;
         if (isSharePoint(sk.location) && ext === 'docx') {
           // omit docx extension on sharepoint
           ext = '';
@@ -1327,17 +1326,29 @@
           // use json extension for spreadsheets
           ext = 'json';
         }
-        return `${folder}/${file.toLowerCase().replace(/[^0-9a-z]/gi, '-')}${ext ? `.${ext}` : ''}`;
+        file = file
+          .toLowerCase()
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/^-|-$/g, '');
+        return `${folder}${folder.endsWith('/') ? '' : '/'}${file}${ext ? `.${ext}` : ''}`;
       };
 
       const getBulkSelection = () => {
         const { location } = sk;
         if (isSharePoint(location)) {
+          const isGrid = document.querySelector('div[class~="ms-TilesList"]');
           return [...document.querySelectorAll('#appRoot [role="presentation"] div[aria-selected="true"]')]
-            .filter((row) => !row.querySelector('img').getAttribute('src').endsWith('folder.svg'))
+            .filter((row) => !row.querySelector('img').getAttribute('src').includes('/foldericons/')
+              && !row.querySelector('img').getAttribute('src').endsWith('folder.svg'))
             .map((row) => ({
-              type: new URL(row.querySelector('img').getAttribute('src'), sk.location.href).pathname.split('/').slice(-1)[0].split('.')[0],
-              path: row.querySelector('button').textContent.trim(),
+              type: isGrid
+                ? row.querySelector(':scope i[aria-label]')?.getAttribute('aria-label').trim()
+                : new URL(row.querySelector('img').getAttribute('src'), sk.location.href).pathname.split('/').slice(-1)[0].split('.')[0],
+              path: isGrid
+                ? row.querySelector('div[data-automationid="name"]').textContent.trim()
+                : row.querySelector('button')?.textContent.trim(),
             }));
         } else {
           // gdrive
@@ -1345,7 +1356,8 @@
             .filter((row) => row.querySelector(':scope img'))
             .map((row) => ({
               type: new URL(row.querySelector('div > img').getAttribute('src'), sk.location.href).pathname.split('/').slice(-2).join('/'),
-              path: row.querySelector(':scope > div > div:nth-of-type(2)').textContent.trim(),
+              path: row.querySelector(':scope > div > div:nth-of-type(2)').textContent.trim() // list layout
+                || row.querySelector(':scope > div > div > div:nth-of-type(4)').textContent.trim(), // grid layout
             }));
         }
       };
@@ -1751,7 +1763,7 @@
                         tag: 'iframe',
                         attrs: {
                           src: target,
-                          allow: 'clipboard-write',
+                          allow: 'clipboard-write *',
                         },
                       });
                     }
