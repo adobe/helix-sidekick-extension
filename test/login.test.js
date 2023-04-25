@@ -88,23 +88,20 @@ describe('Test sidekick login', () => {
       browser,
       page,
       plugin: 'user-login',
-      pluginSleep: 2000,
+      pluginSleep: 7000, // sidekick tries 5 times before showing the login aborted modal
       loadModule: true,
     });
 
     nock('https://admin.hlx.page')
       .get('/status/adobe/blog/main/en/topics/bla?editUrl=auto')
-      .reply(401)
-      .get('/profile/adobe/blog/main')
-      .times(2)
-      .reply(401)
+      .reply(401, '{ "status": 401 }', { 'content-type': 'application/json' })
       .get('/login/adobe/blog/main')
-      .reply(200, 'not logged in!');
+      .reply(200, '<html>not logged in!<script>setTimeout(() => self.close(), 500)</script></html>')
+      .get('/profile/adobe/blog/main')
+      .times(5)
+      .reply(401, '{ "status": 401 }', { 'content-type': 'application/json' });
 
-    const { popupTarget } = await test.run();
-
-    // close login window
-    await (await popupTarget.page()).close();
+    await test.run();
 
     // wait for 'aborted' modal
     try {
