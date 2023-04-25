@@ -46,7 +46,9 @@ describe('Test sidekick logout', () => {
     nock.admin(new Setup('blog'));
     nock('https://admin.hlx.page')
       .get('/logout/adobe/blog/main')
-      .reply(200, '<html><script>setTimeout(() => self.close(), 500)</script></html>');
+      .reply(200, '<html>logged out<script>setTimeout(() => self.close(), 500)</script></html>')
+      .get('/profile/adobe/blog/main')
+      .reply(401, '{ "status": 401 }', { 'content-type': 'application/json' });
     nock.admin(new Setup('blog'));
 
     const test = new SidekickTest({
