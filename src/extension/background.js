@@ -331,21 +331,19 @@ function checkViewDocSource(id) {
 }
 
 async function updateAdminAuthHeaderRules() {
+  // remove all rules first
+  await chrome.declarativeNetRequest.updateSessionRules({
+    removeRuleIds: (await chrome.declarativeNetRequest.getSessionRules())
+      .map((rule) => rule.id),
+  });
+  // find projects with auth tokens and add rules for each
   let id = 1;
   const projects = await getConfig('sync', 'hlxSidekickProjects') || [];
-  projects.forEach(async (handle) => {
-    const project = await getConfig('sync', handle);
-    const {
-      owner,
-      repo,
-      authToken,
-    } = project;
-    const options = {
-      removeRuleIds: (await chrome.declarativeNetRequest.getSessionRules())
-        .map((rule) => rule.id),
-    };
+  const addRules = [];
+  const projectConfigs = await Promise.all(projects.map((handle) => getConfig('sync', handle)));
+  projectConfigs.forEach(({ owner, repo, authToken }) => {
     if (authToken) {
-      options.addRules = [{
+      addRules.push({
         id,
         priority: 1,
         action: {
@@ -362,14 +360,17 @@ async function updateAdminAuthHeaderRules() {
           requestMethods: ['get', 'post', 'delete'],
           resourceTypes: ['xmlhttprequest'],
         },
-      }];
+      });
       id += 1;
-    }
-    if (Object.keys(options).length) {
-      await chrome.declarativeNetRequest.updateSessionRules(options);
-      log.debug(`setAdminAuthHeaderRule: rule set for ${owner}/${repo}`);
+      log.debug('added admin auth header rule for ', owner, repo);
     }
   });
+  if (addRules.length > 0) {
+    await chrome.declarativeNetRequest.updateSessionRules({
+      addRules,
+    });
+    log.debug(`setAdminAuthHeaderRule: ${addRules.length} rule(s) set`);
+  }
 }
 
 async function storeAuthToken(owner, repo, token) {
