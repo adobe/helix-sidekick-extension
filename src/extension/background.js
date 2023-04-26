@@ -331,46 +331,54 @@ function checkViewDocSource(id) {
   });
 }
 
+/**
+ * Sets the x-auth-token header for all requests to admin.hlx.page if project config
+ * has an auth token.
+ */
 async function updateAdminAuthHeaderRules() {
-  // remove all rules first
-  await chrome.declarativeNetRequest.updateSessionRules({
-    removeRuleIds: (await chrome.declarativeNetRequest.getSessionRules())
-      .map((rule) => rule.id),
-  });
-  // find projects with auth tokens and add rules for each
-  let id = 1;
-  const projects = await getConfig('sync', 'hlxSidekickProjects') || [];
-  const addRules = [];
-  const projectConfigs = await Promise.all(projects.map((handle) => getConfig('sync', handle)));
-  projectConfigs.forEach(({ owner, repo, authToken }) => {
-    if (authToken) {
-      addRules.push({
-        id,
-        priority: 1,
-        action: {
-          type: 'modifyHeaders',
-          requestHeaders: [{
-            operation: 'set',
-            header: 'x-auth-token',
-            value: authToken,
-          }],
-        },
-        condition: {
-          regexFilter: `^https://admin.hlx.page/[a-z]+/${owner}/${repo}/.*`,
-          requestDomains: ['admin.hlx.page'],
-          requestMethods: ['get', 'post', 'delete'],
-          resourceTypes: ['xmlhttprequest'],
-        },
-      });
-      id += 1;
-      log.debug('added admin auth header rule for ', owner, repo);
-    }
-  });
-  if (addRules.length > 0) {
+  try {
+    // remove all rules first
     await chrome.declarativeNetRequest.updateSessionRules({
-      addRules,
+      removeRuleIds: (await chrome.declarativeNetRequest.getSessionRules())
+        .map((rule) => rule.id),
     });
-    log.debug(`setAdminAuthHeaderRule: ${addRules.length} rule(s) set`);
+    // find projects with auth tokens and add rules for each
+    let id = 1;
+    const projects = await getConfig('sync', 'hlxSidekickProjects') || [];
+    const addRules = [];
+    const projectConfigs = await Promise.all(projects.map((handle) => getConfig('sync', handle)));
+    projectConfigs.forEach(({ owner, repo, authToken }) => {
+      if (authToken) {
+        addRules.push({
+          id,
+          priority: 1,
+          action: {
+            type: 'modifyHeaders',
+            requestHeaders: [{
+              operation: 'set',
+              header: 'x-auth-token',
+              value: authToken,
+            }],
+          },
+          condition: {
+            regexFilter: `^https://admin.hlx.page/[a-z]+/${owner}/${repo}/.*`,
+            requestDomains: ['admin.hlx.page'],
+            requestMethods: ['get', 'post', 'delete'],
+            resourceTypes: ['xmlhttprequest'],
+          },
+        });
+        id += 1;
+        log.debug('added admin auth header rule for ', owner, repo);
+      }
+    });
+    if (addRules.length > 0) {
+      await chrome.declarativeNetRequest.updateSessionRules({
+        addRules,
+      });
+      log.debug(`setAdminAuthHeaderRule: ${addRules.length} rule(s) set`);
+    }
+  } catch (e) {
+    log.error(`updateAdminAuthHeaderRules: ${e.message}`);
   }
 }
 
