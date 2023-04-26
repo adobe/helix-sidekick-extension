@@ -1810,7 +1810,7 @@
     sk.showWait();
     const loginUrl = getAdminUrl(sk.config, 'login');
     const extensionId = window.chrome?.runtime?.id;
-    if (extensionId) {
+    if (extensionId && !window.navigator.vendor.includes('Apple')) { // exclude safari
       loginUrl.searchParams.set('extensionId', extensionId);
     }
     if (selectAccount) {
@@ -1857,7 +1857,7 @@
     sk.showWait();
     const logoutUrl = getAdminUrl(sk.config, 'logout');
     const extensionId = window.chrome?.runtime?.id;
-    if (extensionId) {
+    if (extensionId && !window.navigator.vendor.includes('Apple')) { // exclude safari
       logoutUrl.searchParams.set('extensionId', extensionId);
     }
     const logoutWindow = window.open(logoutUrl.toString());
