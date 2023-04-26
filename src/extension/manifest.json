@@ -15,6 +15,7 @@
     "storage"
   ],
   "host_permissions": [
+    "https://www.hlx.live/tools/sidekick/*",
     "http://localhost:3000/*",
     "https://*/*"
   ],
