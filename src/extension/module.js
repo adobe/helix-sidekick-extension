@@ -1810,8 +1810,14 @@
     sk.showWait();
     const loginUrl = getAdminUrl(sk.config, 'login');
     const extensionId = window.chrome?.runtime?.id;
-    if (extensionId && !window.navigator.vendor.includes('Apple')) { // exclude safari
+    const authHeaderEnabled = extensionId && !window.navigator.vendor.includes('Apple');
+    if (authHeaderEnabled) {
       loginUrl.searchParams.set('extensionId', extensionId);
+    } else {
+      loginUrl.searchParams.set(
+        'loginRedirect',
+        'https://www.hlx.live/tools/sidekick/login-success',
+      );
     }
     if (selectAccount) {
       loginUrl.searchParams.set('selectAccount', true);
@@ -1859,6 +1865,11 @@
     const extensionId = window.chrome?.runtime?.id;
     if (extensionId && !window.navigator.vendor.includes('Apple')) { // exclude safari
       logoutUrl.searchParams.set('extensionId', extensionId);
+    } else {
+      logoutUrl.searchParams.set(
+        'logoutRedirect',
+        'https://www.hlx.live/tools/sidekick/logout-success',
+      );
     }
     const logoutWindow = window.open(logoutUrl.toString());
 
