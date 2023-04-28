@@ -1,3 +1,10 @@
+## [6.13.2](https://github.com/adobe/helix-sidekick-extension/compare/v6.13.1...v6.13.2) (2023-04-28)
+
+
+### Bug Fixes
+
+* delete project not working in safari ([9216df8](https://github.com/adobe/helix-sidekick-extension/commit/9216df871d3c4b7387f0c619c1c1f41de8823991))
+
 ## [6.13.1](https://github.com/adobe/helix-sidekick-extension/compare/v6.13.0...v6.13.1) (2023-04-28)
 
 
