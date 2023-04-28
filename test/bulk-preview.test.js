@@ -63,6 +63,7 @@ describe('Test bulk preview plugin', () => {
     const { plugins } = await new SidekickTest({
       browser,
       page,
+      sleep: 1000,
       fixture: TESTS[0].fixture,
       url: setup.getUrl('edit', 'admin'),
       pre: (p) => p.evaluate(() => {
