@@ -227,11 +227,11 @@ describe('Test extension utils', () => {
   it('deleteProject', async () => {
     const spy = sandbox.spy(window.chrome.storage.sync, 'set');
     const deleted = await new Promise((resolve) => {
-      utils.deleteProject('test/add-project', resolve);
+      utils.deleteProject('adobe/blog', resolve);
     });
     expect(deleted).to.be.true;
     expect(spy.calledWith({
-      hlxSidekickProjects: ['adobe/blog'],
+      hlxSidekickProjects: ['test/add-project'],
     })).to.be.true;
   });
 

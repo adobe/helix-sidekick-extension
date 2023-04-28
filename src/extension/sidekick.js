@@ -21,7 +21,6 @@ import {
   setConfig,
   setDisplay,
   i18n,
-  storeAuthToken,
 } from './utils.js';
 
 export default async function injectSidekick(config, display) {
@@ -104,11 +103,6 @@ export default async function injectSidekick(config, display) {
         // set display to false if user clicks close button
         sk.addEventListener('hidden', () => {
           setDisplay(false);
-        });
-        sk.addEventListener('loggedout', async () => {
-          // user clicked logout, delete the authToken from the config
-          log.debug(`removing authToken from config ${owner}/${repo}`);
-          await storeAuthToken(owner, repo, '');
         });
         const helpOptOut = await getConfig('sync', 'hlxSidekickHelpOptOut');
         if (!helpOptOut) {

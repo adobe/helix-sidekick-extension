@@ -310,6 +310,7 @@ export async function getProject(project) {
 export async function setProject(project, cb) {
   const { owner, repo } = project;
   const handle = `${owner}/${repo}`;
+  // update project config
   await setConfig('sync', {
     [handle]: project,
   });
@@ -320,6 +321,7 @@ export async function setProject(project, cb) {
     await setConfig('sync', { hlxSidekickProjects: projects });
   }
   log.info('updated project', project);
+
   if (typeof cb === 'function') {
     cb(project);
   }
@@ -346,6 +348,9 @@ export async function deleteProject(handle, cb) {
     const i = projects.indexOf(handle);
     if (i >= 0) {
       if (confirm(i18n('config_delete_confirm'))) {
+        // delete admin auth header rule
+        const [owner, repo] = handle.split('/');
+        chrome.runtime.sendMessage({ deleteAuthToken: { owner, repo } });
         // delete the project entry
         await removeConfig('sync', handle);
         // remove project entry from index
@@ -378,22 +383,6 @@ export function toggleDisplay(cb) {
   getState(({ display }) => {
     setDisplay(!display, cb);
   });
-}
-
-export async function storeAuthToken(owner, repo, token) {
-  // find config tab with owner/repo
-  const project = await getProject({ owner, repo });
-  if (project) {
-    if (token) {
-      project.authToken = token;
-    } else {
-      delete project.authToken;
-    }
-    await setProject(project);
-    log.debug(`updated auth token for ${owner}--${repo}`);
-  } else {
-    log.warn(`unable to update auth token for ${owner}--${repo}: no such config`);
-  }
 }
 
 export async function updateProjectConfigs() {
