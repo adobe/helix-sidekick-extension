@@ -40,15 +40,6 @@ function alert(msg) {
   return null;
 }
 
-// shows a window.confirm (noop if headless)
-function confirm(msg) {
-  if (typeof window !== 'undefined' && !/HeadlessChrome/.test(window.navigator.userAgent)) {
-    // eslint-disable-next-line no-alert
-    return window.confirm(msg);
-  }
-  return true;
-}
-
 // shorthand for browser.i18n.getMessage()
 export function i18n(msg, subs) {
   return chrome.i18n.getMessage(msg, subs);
@@ -347,7 +338,7 @@ export async function deleteProject(handle, cb) {
     const projects = await getConfig('sync', 'hlxSidekickProjects') || [];
     const i = projects.indexOf(handle);
     if (i >= 0) {
-      if (confirm(i18n('config_delete_confirm'))) {
+      try {
         // delete admin auth header rule
         const [owner, repo] = handle.split('/');
         chrome.runtime.sendMessage({ deleteAuthToken: { owner, repo } });
@@ -358,8 +349,8 @@ export async function deleteProject(handle, cb) {
         await setConfig('sync', { hlxSidekickProjects: projects });
         log.info('project deleted', handle);
         if (typeof cb === 'function') cb(true);
-      } else {
-        log.info('project deletion aborted', handle);
+      } catch (e) {
+        log.error('project deletion aborted', handle, e);
         if (typeof cb === 'function') cb(false);
       }
     } else {
