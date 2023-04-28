@@ -85,7 +85,7 @@ import {
  * @param {string} o.env=preview The environment (preview or live)
  * @param {string} o.type=html The content type of the requested resource (html, xml or json)
  * @param {string} o.fixture=generic.html The fixture file to use as test bed
- * @param {number} o.sleep=0 The number of milliseconds to wait after loading the sidekick
+ * @param {number} o.sleep=500 The number of milliseconds to wait after loading the sidekick
  * @param {string} o.plugin A plugin to execute after loading the sidekick
  * @param {number} o.pluginSleep=0 The number of milliseconds to wait after executing a plugin
  * @param {boolean} acceptDialogs=false Defines whether dialogs will be accepted or dismissed
@@ -140,7 +140,7 @@ export class SidekickTest extends EventEmitter {
     this.env = o.env || 'preview';
     this.type = o.type || 'html';
     this.fixture = o.fixture || 'generic.html';
-    this.sleep = o.sleep ?? 0;
+    this.sleep = o.sleep ?? 500;
     this.plugin = o.plugin;
     this.pluginSleep = o.pluginSleep ?? 0;
     this.acceptDialogs = o.acceptDialogs || false;
