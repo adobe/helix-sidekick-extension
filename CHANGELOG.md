@@ -1,3 +1,10 @@
+## [6.13.1](https://github.com/adobe/helix-sidekick-extension/compare/v6.13.0...v6.13.1) (2023-04-28)
+
+
+### Bug Fixes
+
+* share url instrumentation ([fd732b6](https://github.com/adobe/helix-sidekick-extension/commit/fd732b60a41b56b50d519210760c6d8d0383a9f1))
+
 # [6.13.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.12.5...v6.13.0) (2023-04-28)
 
 
