@@ -1,3 +1,19 @@
+# [6.13.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.12.5...v6.13.0) (2023-04-28)
+
+
+### Bug Fixes
+
+* only inject content script if config match ([55f628d](https://github.com/adobe/helix-sidekick-extension/commit/55f628d0565011aad4911f6d86f462de7748fecb))
+* only inject content script if config match ([17bdb1b](https://github.com/adobe/helix-sidekick-extension/commit/17bdb1b55bc524fcfa4278047f7d629227a38557))
+* safari error on localhost urls ([637e3c2](https://github.com/adobe/helix-sidekick-extension/commit/637e3c2863f684a2f8077d9396ec2b4cd487f379))
+
+
+### Features
+
+* add auth token to every admin api request ([e11b61d](https://github.com/adobe/helix-sidekick-extension/commit/e11b61df713111484f7f0e684048d0391ca36020))
+* add auth token to every admin api request ([1007caf](https://github.com/adobe/helix-sidekick-extension/commit/1007cafb75215f65477262f3bae2b26213b76117))
+* new logout flow ([8835ae6](https://github.com/adobe/helix-sidekick-extension/commit/8835ae6e309023439e2c2f92add8cc754b0a2521))
+
 ## [6.12.5](https://github.com/adobe/helix-sidekick-extension/compare/v6.12.4...v6.12.5) (2023-04-24)
 
 
