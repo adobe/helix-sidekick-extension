@@ -350,7 +350,7 @@ export async function deleteProject(handle, cb) {
         log.info('project deleted', handle);
         if (typeof cb === 'function') cb(true);
       } catch (e) {
-        log.error('project deletion aborted', handle, e);
+        log.error('project deletion failed', handle, e);
         if (typeof cb === 'function') cb(false);
       }
     } else {
