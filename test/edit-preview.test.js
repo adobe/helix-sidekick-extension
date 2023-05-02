@@ -43,7 +43,9 @@ describe('Test editor preview plugin', () => {
   });
 
   it('Editor preview plugin updates preview when switching from editor', async () => {
-    nock.admin(new Setup('blog'));
+    const setup = new Setup('blog');
+    nock.sidekick(setup);
+    nock.admin(setup);
     nock('https://admin.hlx.page')
       .post('/preview/adobe/blog/main/en/topics/bla')
       .reply(201);
@@ -76,6 +78,7 @@ describe('Test editor preview plugin', () => {
 
   it('Editor preview plugin refetches status and retries on error', async () => {
     const setup = new Setup('blog');
+    nock.sidekick(setup);
     nock.admin(setup);
     nock('https://admin.hlx.page')
       // send 404 on first post
@@ -106,6 +109,7 @@ describe('Test editor preview plugin', () => {
   it('Editor preview plugin handles /.helix/config.json special case', async () => {
     const setup = new Setup('blog');
     setup.apiResponse().webPath = '/.helix/config.json';
+    nock.sidekick(setup);
     nock.admin(setup);
     nock('https://admin.hlx.page')
       .post('/preview/adobe/blog/main/.helix/config.json')
@@ -134,6 +138,7 @@ describe('Test editor preview plugin', () => {
   it('Editor preview plugin shows /.helix/* error message from server', async () => {
     const setup = new Setup('blog');
     setup.apiResponse().webPath = '/.helix/config.json';
+    nock.sidekick(setup);
     nock.admin(setup);
     nock.admin(setup);
     nock('https://admin.hlx.page')
@@ -163,6 +168,7 @@ describe('Test editor preview plugin', () => {
     const previewLastMod = setup.apiResponse().preview.lastModified;
     setup.apiResponse().preview.lastModified = new Date(new Date(previewLastMod)
       .setFullYear(2020)).toUTCString();
+    nock.sidekick(setup);
     nock.admin(setup);
     const { plugins } = await new SidekickTest({
       browser,
@@ -179,6 +185,7 @@ describe('Test editor preview plugin', () => {
     const setup = new Setup('pages');
     setup.apiResponse().edit.sourceLocation = 'gdrive:1mfBb_tpzM4yYGdxMhRgrKEnBqboxsr';
     setup.apiResponse().edit.contentType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+    nock.sidekick(setup);
     nock.admin(setup);
     const { popupOpened, notification } = await new SidekickTest({
       browser,

@@ -46,6 +46,7 @@ describe('Test delete plugin', () => {
     const setup = new Setup('blog');
     setup.apiResponse().edit = {}; // no source doc
     setup.apiResponse().live = {}; // not published
+    nock.sidekick(setup);
     nock.admin(setup);
     nock('https://admin.hlx.page')
       .delete('/preview/adobe/blog/main/en/topics/bla')
@@ -66,6 +67,7 @@ describe('Test delete plugin', () => {
   it('Delete plugin uses preview and live API if page published', async () => {
     const setup = new Setup('blog');
     setup.apiResponse().edit = {}; // no source doc
+    nock.sidekick(setup);
     nock.admin(setup);
     nock('https://admin.hlx.page')
       .delete('/preview/adobe/blog/main/en/topics/bla')
@@ -89,6 +91,7 @@ describe('Test delete plugin', () => {
   it('Delete plugin uses code API', async () => {
     const setup = new Setup('blog');
     setup.apiResponse().edit = {}; // no source doc
+    nock.sidekick(setup);
     nock.admin(setup);
     nock('https://admin.hlx.page')
       .delete('/code/adobe/blog/main/en/topics/bla')
@@ -110,7 +113,9 @@ describe('Test delete plugin', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('No delete plugin if source document exists', async () => {
-    nock.admin(new Setup('blog'));
+    const setup = new Setup('blog');
+    nock.sidekick(setup);
+    nock.admin(setup);
     const { plugins } = await new SidekickTest({
       browser,
       page,
@@ -121,6 +126,7 @@ describe('Test delete plugin', () => {
   it('No delete plugin if preview does not exist', async () => {
     const setup = new Setup('blog');
     setup.apiResponse().preview = {}; // no preview
+    nock.sidekick(setup);
     nock.admin(setup);
     const { plugins } = await new SidekickTest({
       browser,

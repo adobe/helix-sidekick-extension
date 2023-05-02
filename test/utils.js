@@ -699,6 +699,33 @@ export function Nock() {
     }
   };
 
+  nocker.sidekick = (
+    /** @type Setup */ setup,
+    {
+      persist = false,
+      configJson,
+    } = {},
+  ) => {
+    // nock stray rum requests
+    nocker('https://rum.hlx.page/')
+      .get(/.*/)
+      .optionally()
+      .reply(200)
+      .persist();
+
+    // nock sidekick config request
+    const n = nocker('https://admin.hlx.page/sidekick/');
+    if (persist) {
+      n.persist();
+    }
+    return n
+      .get(/.*/)
+      .optionally()
+      .reply(() => (setup
+        ? [200, configJson || setup.configJson]
+        : [404]));
+  };
+
   nocker.admin = (
     /** @type Setup */ setup,
     {
@@ -716,11 +743,35 @@ export function Nock() {
     return n[method](/.*/).reply(() => [status.length === 1 ? status[0] : status.shift(), setup.apiResponse(type)]);
   };
 
-  nocker.edit = () => nocker('https://adobe.sharepoint.com')
-    .get('/:w:/r/sites/TheBlog/_layouts/15/Doc.aspx?sourcedoc=%7BE8EC80CB-24C3-4B95-B082-C51FD8BC8760%7D&file=bla.docx&action=default&mobileredirect=true')
-    .reply(200, 'this would be a docx...', {
-      'content-type': 'text/plain',
-    });
+  nocker.login = () => {
+    nocker('https://login.microsoftonline.com')
+      .get(/.*/)
+      .optionally()
+      .reply(200);
+    nocker('https://login.live.com')
+      .get(/.*/)
+      .optionally()
+      .reply(200);
+    nocker('https://aadcdn.msauth.net')
+      .get(/.*/)
+      .optionally()
+      .reply(200);
+  };
+
+  nocker.edit = () => {
+    // also nock optional microsoft login redirect urls
+    nocker.login();
+
+    return nocker('https://adobe.sharepoint.com')
+      .get('/:w:/r/sites/TheBlog/_layouts/15/Doc.aspx?sourcedoc=%7BE8EC80CB-24C3-4B95-B082-C51FD8BC8760%7D&file=bla.docx&action=default&mobileredirect=true')
+      .optionally()
+      .reply(200, 'this would be a docx...', {
+        'content-type': 'text/plain',
+      })
+      .get('/favicon.ico')
+      .optionally()
+      .reply(404);
+  };
 
   return nocker;
 }

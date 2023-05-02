@@ -52,7 +52,16 @@ describe('Test sidekick login', () => {
       loadModule: true,
     });
 
+    nock.login();
     nock('https://admin.hlx.page')
+      .get('/sidekick/adobe/blog/main/config.json')
+      .twice()
+      .reply(function req() {
+        if (this.req.headers.cookie === 'auth_token=foobar') {
+          return [200, '{}', { 'content-type': 'application/json' }];
+        }
+        return [401];
+      })
       .get('/status/adobe/blog/main/en/topics/bla?editUrl=auto')
       .twice()
       .reply(function req() {
@@ -92,7 +101,10 @@ describe('Test sidekick login', () => {
       loadModule: true,
     });
 
+    nock.login();
     nock('https://admin.hlx.page')
+      .get('/sidekick/adobe/blog/main/config.json')
+      .reply(401)
       .get('/status/adobe/blog/main/en/topics/bla?editUrl=auto')
       .reply(401, '{ "status": 401 }', { 'content-type': 'application/json' })
       .get('/login/adobe/blog/main?loginRedirect=https%3A%2F%2Fwww.hlx.live%2Ftools%2Fsidekick%2Flogin-success')
