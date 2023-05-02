@@ -1,3 +1,15 @@
+# [6.14.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.13.2...v6.14.0) (2023-05-02)
+
+
+### Bug Fixes
+
+* authToken needed for microsoft profile pic ([3a961e5](https://github.com/adobe/helix-sidekick-extension/commit/3a961e582067ca348cd10a7fc9fc277478ac4347))
+
+
+### Features
+
+* load sidekick from admin API [skip ci] ([f02764b](https://github.com/adobe/helix-sidekick-extension/commit/f02764b93256a1ec735a8745acd0a3eb8549515a))
+
 ## [6.13.2](https://github.com/adobe/helix-sidekick-extension/compare/v6.13.1...v6.13.2) (2023-04-28)
 
 
