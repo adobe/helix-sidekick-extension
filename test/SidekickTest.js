@@ -140,7 +140,7 @@ export class SidekickTest extends EventEmitter {
     this.env = o.env || 'preview';
     this.type = o.type || 'html';
     this.fixture = o.fixture || 'generic.html';
-    this.sleep = o.sleep ?? 500;
+    this.sleep = o.sleep ?? 0;
     this.plugin = o.plugin;
     this.pluginSleep = o.pluginSleep ?? 0;
     this.acceptDialogs = o.acceptDialogs || false;
