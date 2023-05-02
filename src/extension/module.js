@@ -1863,6 +1863,7 @@
           delete status.status;
           sk.addEventListener('statusfetched', () => sk.hideModal(), { once: true });
           sk.config = await initConfig(config, location);
+          sk.config.authToken = window.hlx.sidekickConfig.authToken;
           sk.fetchStatus();
           fireEvent(sk, 'loggedin');
           return;
