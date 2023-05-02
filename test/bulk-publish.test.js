@@ -68,6 +68,7 @@ describe('Test bulk publish plugin', () => {
       route: 'status',
       type: 'admin',
     });
+    nock.sidekick(setup);
     const { plugins } = await new SidekickTest({
       browser,
       page,
@@ -87,6 +88,7 @@ describe('Test bulk publish plugin', () => {
 
   it('Bulk publish plugin shows notification when triggered with empty selection', async () => {
     const { setup } = TESTS[0];
+    nock.sidekick(setup);
     nock.admin(setup, {
       route: 'status',
       type: 'admin',
@@ -115,6 +117,7 @@ describe('Test bulk publish plugin', () => {
     it(`Bulk publish plugin publishes existing selection in ${env}`, async () => {
       mockRequests(nock);
       const { owner, repo, ref } = setup.sidekickConfig;
+      nock.sidekick(setup);
       nock.admin(setup, {
         route: 'status',
         type: 'admin',
@@ -145,6 +148,7 @@ describe('Test bulk publish plugin', () => {
     it(`Bulk publish plugin publishes user selection in ${env} and copies publish URLs to clipboard`, async () => {
       mockRequests(nock);
       const { owner, repo, ref } = setup.sidekickConfig;
+      nock.sidekick(setup);
       nock.admin(setup, {
         route: 'status',
         type: 'admin',
@@ -206,6 +210,7 @@ describe('Test bulk publish plugin', () => {
   it('Bulk publish plugin handles error response', async () => {
     TESTS[0].mockRequests(nock);
     const { setup } = TESTS[0];
+    nock.sidekick(setup);
     nock.admin(setup, {
       route: 'status',
       type: 'admin',
@@ -235,6 +240,7 @@ describe('Test bulk publish plugin', () => {
   it('Bulk publish plugin handles partial error response', async () => {
     TESTS[0].mockRequests(nock);
     const { setup } = TESTS[0];
+    nock.sidekick(setup);
     nock.admin(setup, {
       route: 'status',
       type: 'admin',
@@ -269,6 +275,7 @@ describe('Test bulk publish plugin', () => {
   it('Bulk publish plugin refetches status after navigation', async () => {
     TESTS[0].mockRequests(nock);
     const { setup } = TESTS[0];
+    nock.sidekick(setup);
     nock.admin(setup, {
       route: 'status',
       type: 'admin',

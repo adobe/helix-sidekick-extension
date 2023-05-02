@@ -46,7 +46,9 @@ describe('Test production plugin', () => {
     nock('https://pages.adobe.com')
       .get('/creativecloud/en/test')
       .reply(200, 'some content...');
-    nock.admin(new Setup('pages'));
+    const setup = new Setup('pages');
+    nock.sidekick(setup);
+    nock.admin(setup);
     const { popupOpened } = await new SidekickTest({
       browser,
       page,
@@ -66,7 +68,9 @@ describe('Test production plugin', () => {
     nock('https://blog.adobe.com')
       .get('/en/topics/bla')
       .reply(200, 'some content...');
-    nock.admin(new Setup('blog'));
+    const setup = new Setup('blog');
+    nock.sidekick(setup);
+    nock.admin(setup);
     const { popupOpened } = await new SidekickTest({
       browser,
       page,
@@ -82,7 +86,9 @@ describe('Test production plugin', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Production plugin switches to production from preview URL', async () => {
-    nock.admin(new Setup('blog'));
+    const setup = new Setup('blog');
+    nock.sidekick(setup);
+    nock.admin(setup);
     const { requestsMade } = await new SidekickTest({
       browser,
       page,
@@ -97,7 +103,9 @@ describe('Test production plugin', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Production plugin switches to production from live URL', async () => {
-    nock.admin(new Setup('blog'));
+    const setup = new Setup('blog');
+    nock.sidekick(setup);
+    nock.admin(setup);
     const { requestsMade } = await new SidekickTest({
       browser,
       page,
@@ -115,6 +123,7 @@ describe('Test production plugin', () => {
   it('Production plugin button disabled if page not published', async () => {
     const setup = new Setup('blog');
     setup.apiResponse().live = {};
+    nock.sidekick(setup);
     nock.admin(setup);
     const { plugins } = await new SidekickTest({
       browser,

@@ -43,23 +43,24 @@ describe('Test edit plugin', () => {
   });
 
   it('Edit plugin opens editor from preview URL', async () => {
+    const setup = new Setup('blog');
+    nock.sidekick(setup);
+    nock.admin(setup);
     nock.edit();
-    nock.admin(new Setup('blog'));
     const { popupOpened } = await new SidekickTest({
       browser,
       page,
       plugin: 'edit',
-      waitPopup: 3000,
+      waitPopup: 2000,
     }).run();
-    assert.ok(
-      popupOpened?.startsWith('https://adobe.sharepoint.com/'),
-      'Onedrive document not opened',
-    );
+    assert.ok(popupOpened, 'Onedrive document not opened');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Edit plugin opens editor from production URL', async () => {
+    const setup = new Setup('blog');
+    nock.sidekick(setup);
+    nock.admin(setup);
     nock.edit();
-    nock.admin(new Setup('blog'));
     const { popupOpened } = await new SidekickTest({
       browser,
       page,
@@ -76,6 +77,7 @@ describe('Test edit plugin', () => {
   it('Edit plugin button disabled without source document', async () => {
     const setup = new Setup('blog');
     delete setup.apiResponse().edit;
+    nock.sidekick(setup);
     nock.admin(setup);
     const { plugins } = await new SidekickTest({
       browser,

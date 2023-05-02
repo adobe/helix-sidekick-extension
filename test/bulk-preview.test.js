@@ -56,6 +56,7 @@ describe('Test bulk preview plugin', () => {
 
   it('Bulk preview plugin hidden on empty selection', async () => {
     const { setup } = TESTS[0];
+    nock.sidekick();
     nock.admin(setup, {
       route: 'status',
       type: 'admin',
@@ -80,6 +81,7 @@ describe('Test bulk preview plugin', () => {
 
   it('Bulk preview plugin shows notification when triggered with empty selection', async () => {
     const { setup } = TESTS[0];
+    nock.sidekick();
     nock.admin(setup, {
       route: 'status',
       type: 'admin',
@@ -102,6 +104,7 @@ describe('Test bulk preview plugin', () => {
   TESTS.forEach(({ env, fixture, setup }) => {
     it(`Bulk preview plugin previews existing selection in ${env}`, async () => {
       const { owner, repo, ref } = setup.sidekickConfig;
+      nock.sidekick();
       nock.admin(setup, {
         route: 'status',
         type: 'admin',
@@ -131,6 +134,7 @@ describe('Test bulk preview plugin', () => {
 
     it(`Bulk preview plugin previews user selection in ${env} and copies preview URLs to clipboard`, async () => {
       const { owner, repo, ref } = setup.sidekickConfig;
+      nock.sidekick();
       nock.admin(setup, {
         route: 'status',
         type: 'admin',
@@ -191,6 +195,7 @@ describe('Test bulk preview plugin', () => {
 
   it('Bulk preview plugin handles error response', async () => {
     const { setup } = TESTS[0];
+    nock.sidekick();
     nock.admin(setup, {
       route: 'status',
       type: 'admin',
@@ -219,6 +224,7 @@ describe('Test bulk preview plugin', () => {
 
   it('Bulk preview plugin handles partial error response', async () => {
     const { setup } = TESTS[0];
+    nock.sidekick();
     nock.admin(setup, {
       route: 'status',
       type: 'admin',
@@ -252,6 +258,7 @@ describe('Test bulk preview plugin', () => {
 
   it('Bulk preview plugin refetches status after navigation', async () => {
     const { setup } = TESTS[0];
+    nock.sidekick(setup);
     nock.admin(setup, {
       route: 'status',
       type: 'admin',

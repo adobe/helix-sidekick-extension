@@ -43,7 +43,9 @@ describe('Test sidekick logout', () => {
   });
 
   it('Logout removes auth token from config', async () => {
-    nock.admin(new Setup('blog'));
+    const setup = new Setup('blog');
+    nock.sidekick(setup);
+    nock.admin(setup);
     nock('https://admin.hlx.page')
       .get('/status/adobe/blog/main/en/topics/bla?editUrl=auto')
       .reply(200, { status: 200 })

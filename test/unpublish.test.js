@@ -45,6 +45,7 @@ describe('Test unpublish plugin', () => {
   it('Unpublish plugin uses live API', async () => {
     const setup = new Setup('blog');
     setup.apiResponse().edit = {}; // no source doc
+    nock.sidekick(setup);
     nock.admin(setup);
     nock('https://admin.hlx.page')
       .delete('/live/adobe/blog/main/en/topics/bla')
@@ -58,7 +59,9 @@ describe('Test unpublish plugin', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('No unpublish plugin if source document still exists', async () => {
-    nock.admin(new Setup('blog'));
+    const setup = new Setup('blog');
+    nock.sidekick(setup);
+    nock.admin(setup);
     const { plugins } = await new SidekickTest({
       browser,
       page,
@@ -70,6 +73,7 @@ describe('Test unpublish plugin', () => {
     const setup = new Setup('blog');
     setup.apiResponse().edit = {}; // no source doc
     setup.apiResponse().live = {}; // page not published
+    nock.sidekick(setup);
     nock.admin(setup);
     const { plugins } = await new SidekickTest({
       browser,

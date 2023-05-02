@@ -46,7 +46,9 @@ describe('Test preview plugin', () => {
     nock('https://main--pages--adobe.hlx.page')
       .get('/creativecloud/en/test')
       .reply(200, '<html></html>');
-    nock.admin(new Setup('pages'));
+    const setup = new Setup('pages');
+    nock.sidekick(setup);
+    nock.admin(setup);
     const { popupOpened } = await new SidekickTest({
       browser,
       page,
@@ -66,7 +68,9 @@ describe('Test preview plugin', () => {
     nock('https://main--blog--adobe.hlx.page')
       .get('/en/topics/bla')
       .reply(200, '<html></html>');
-    nock.admin(new Setup('blog'));
+    const setup = new Setup('blog');
+    nock.sidekick(setup);
+    nock.admin(setup);
     const { popupOpened } = await new SidekickTest({
       browser,
       page,
@@ -82,7 +86,9 @@ describe('Test preview plugin', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Preview plugin switches to preview from live URL', async () => {
-    nock.admin(new Setup('blog'));
+    const setup = new Setup('blog');
+    nock.sidekick(setup);
+    nock.admin(setup);
     const { navigated } = await new SidekickTest({
       browser,
       page,
@@ -98,7 +104,9 @@ describe('Test preview plugin', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Preview plugin switches to preview from production URL', async () => {
-    nock.admin(new Setup('blog'));
+    const setup = new Setup('blog');
+    nock.sidekick(setup);
+    nock.admin(setup);
     const { navigated } = await new SidekickTest({
       browser,
       page,
@@ -114,7 +122,9 @@ describe('Test preview plugin', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Preview plugin preserves query parameters and hash when switching to preview', async () => {
-    nock.admin(new Setup('blog'));
+    const setup = new Setup('blog');
+    nock.sidekick(setup);
+    nock.admin(setup);
     const { navigated } = await new SidekickTest({
       browser,
       page,
@@ -133,7 +143,9 @@ describe('Test preview plugin', () => {
     nock('https://main--blog--adobe.hlx.page')
       .get('/en/topics/bla')
       .reply(200, 'some content...');
-    nock.admin(new Setup('blog'));
+    const setup = new Setup('blog');
+    nock.sidekick(setup);
+    nock.admin(setup);
     const { popupOpened } = await new SidekickTest({
       browser,
       page,

@@ -43,7 +43,9 @@ describe('Test user auth handling', () => {
   });
 
   it('Shows user info from profile', async () => {
-    nock.admin(new Setup('blog'));
+    const setup = new Setup('blog');
+    nock.sidekick(setup);
+    nock.admin(setup);
     const { checkPageResult } = await new SidekickTest({
       browser,
       page,
@@ -56,6 +58,7 @@ describe('Test user auth handling', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Shows login option in user menu if user not logged in', async () => {
+    nock.sidekick();
     nock('https://admin.hlx.page')
       .get('/status/adobe/blog/main/en/topics/bla?editUrl=auto')
       .reply(401);
@@ -70,7 +73,9 @@ describe('Test user auth handling', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Shows switch user and logout option in user menu if user logged in', async () => {
-    nock.admin(new Setup('blog'));
+    const setup = new Setup('blog');
+    nock.sidekick(setup);
+    nock.admin(setup);
     const { plugins } = await new SidekickTest({
       browser,
       page,
@@ -82,6 +87,7 @@ describe('Test user auth handling', () => {
   it('Keeps plugin buttons disabled based on permissions', async () => {
     const setup = new Setup('blog');
     setup.apiResponse().live.permissions = ['read'];
+    nock.sidekick(setup);
     nock.admin(setup);
     const { plugins } = await new SidekickTest({
       browser,

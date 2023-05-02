@@ -67,7 +67,9 @@ describe('Test live plugin', () => {
     nock('https://main--pages--adobe.hlx.live')
       .get('/creativecloud/en/test')
       .reply(200, 'some content...');
-    nock.admin(new Setup('pages'));
+    const setup = new Setup('pages');
+    nock.sidekick(setup);
+    nock.admin(setup);
     const { popupOpened } = await new SidekickTest({
       browser,
       page,
@@ -87,7 +89,9 @@ describe('Test live plugin', () => {
     nock('https://main--blog--adobe.hlx.live')
       .get('/en/topics/bla')
       .reply(200, 'some content...');
-    nock.admin(new Setup('blog'));
+    const setup = new Setup('blog');
+    nock.sidekick(setup);
+    nock.admin(setup);
     const { popupOpened } = await new SidekickTest({
       browser,
       page,
@@ -103,7 +107,9 @@ describe('Test live plugin', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Live plugin switches to live from preview URL', async () => {
-    nock.admin(new Setup('blog'));
+    const setup = new Setup('blog');
+    nock.sidekick(setup);
+    nock.admin(setup);
     const { requestsMade } = await new SidekickTest({
       browser,
       page,
@@ -118,7 +124,9 @@ describe('Test live plugin', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Live plugin switches to live from production URL', async () => {
-    nock.admin(new Setup('blog'));
+    const setup = new Setup('blog');
+    nock.sidekick(setup);
+    nock.admin(setup);
     const { requestsMade } = await new SidekickTest({
       browser,
       page,
@@ -136,6 +144,7 @@ describe('Test live plugin', () => {
   it('Live plugin button disabled if page not published', async () => {
     const setup = new Setup('blog');
     setup.apiResponse().live = {};
+    nock.sidekick(setup);
     nock.admin(setup);
 
     const { plugins } = await new SidekickTest({
