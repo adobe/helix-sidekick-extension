@@ -1,3 +1,10 @@
+# [6.15.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.14.0...v6.15.0) (2023-05-03)
+
+
+### Features
+
+* set user agent header ([d05f693](https://github.com/adobe/helix-sidekick-extension/commit/d05f693ee4032fe9bbca597859fbf7cbb494cf44))
+
 # [6.14.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.13.2...v6.14.0) (2023-05-02)
 
 
