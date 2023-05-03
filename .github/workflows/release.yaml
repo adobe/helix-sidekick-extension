@@ -29,7 +29,7 @@ jobs:
           mkdir -p _target/tools/sidekick/lib
           cp src/extension/lib/process-queue.js _target/tools/sidekick/lib/
       - name: Create branch commit and pull request in target repo
-        uses: peter-evans/create-pull-request@v4
+        uses: peter-evans/create-pull-request@v5
         with:
           commit-message: "chore(sidekick): new release candidate [skip ci]"
           token: ${{ secrets.PAT }}
