@@ -332,6 +332,37 @@ function checkViewDocSource(id) {
 }
 
 /**
+ * Appends sidekick name and version to the user-agent header for all requests to
+ * admin.hlx.page and rum.hlx.page.
+ */
+async function setUserAgentHeader() {
+  // remove existing rule first
+  await chrome.declarativeNetRequest.updateDynamicRules({ removeRuleIds: [100] });
+  const manifest = chrome.runtime.getManifest();
+  await chrome.declarativeNetRequest.updateDynamicRules({
+    addRules: [
+      {
+        id: 100,
+        priority: 1,
+        action: {
+          type: 'modifyHeaders',
+          requestHeaders: [
+            {
+              operation: 'set',
+              header: 'user-agent',
+              value: `${navigator.userAgent} Sidekick/${manifest.version}`,
+            },
+          ],
+        },
+        condition: {
+          requestDomains: ['admin.hlx.page', 'rum.hlx.page'],
+        },
+      },
+    ],
+  });
+}
+
+/**
  * Sets the x-auth-token header for all requests to admin.hlx.page if project config
  * has an auth token.
  */
@@ -408,6 +439,7 @@ async function storeAuthToken(owner, repo, token) {
     log.info(`sidekick extension installed (${reason})`);
     await updateHelpContent();
     await updateProjectConfigs();
+    await setUserAgentHeader();
     await updateAdminAuthHeaderRules();
   });
 

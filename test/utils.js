@@ -708,7 +708,7 @@ export function Nock() {
   ) => {
     // nock stray rum requests
     nocker('https://rum.hlx.page/')
-      .get(/.*/)
+      .post(/.*/)
       .optionally()
       .reply(200)
       .persist();
