@@ -478,7 +478,6 @@
             adminVersion,
             _extended: Date.now(),
           };
-          console.log('extended config found');
         }
       } catch (e) {
         console.log('error retrieving custom sidekick config', e);
