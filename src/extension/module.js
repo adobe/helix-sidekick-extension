@@ -431,12 +431,14 @@
 
   /**
    * Returns the fetch options for admin requests
+   * @param {SidekickConfig} config The sidekick config
    * @returns {object}
    */
-  function getAdminFetchOptions() {
+  function getAdminFetchOptions(config) {
+    const { devMode } = config;
     const opts = {
       cache: 'no-store',
-      credentials: 'include',
+      credentials: devMode ? 'omit' : 'include',
       headers: {},
     };
     return opts;
@@ -465,7 +467,7 @@
         ? `${DEV_URL.origin}/tools/sidekick/config.json`
         : getAdminUrl(config, 'sidekick', '/config.json');
       try {
-        const res = await fetch(configUrl, getAdminFetchOptions());
+        const res = await fetch(configUrl, getAdminFetchOptions(config));
         if (res.status === 200) {
           config = {
             ...config,
