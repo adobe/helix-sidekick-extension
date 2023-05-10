@@ -432,13 +432,13 @@
   /**
    * Returns the fetch options for admin requests
    * @param {SidekickConfig} config The sidekick config
+   * @param {boolean} omitCredentials Should we omit the credentials
    * @returns {object}
    */
-  function getAdminFetchOptions(config) {
-    const { devMode } = config;
+  function getAdminFetchOptions(config, omitCredentials = false) {
     const opts = {
       cache: 'no-store',
-      credentials: devMode ? 'omit' : 'include',
+      credentials: omitCredentials ? 'omit' : 'include',
       headers: {},
     };
     return opts;
@@ -467,7 +467,7 @@
         ? `${DEV_URL.origin}/tools/sidekick/config.json`
         : getAdminUrl(config, 'sidekick', '/config.json');
       try {
-        const res = await fetch(configUrl, getAdminFetchOptions(config));
+        const res = await fetch(configUrl, getAdminFetchOptions(config, true));
         if (res.status === 200) {
           config = {
             ...config,
