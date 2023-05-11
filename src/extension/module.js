@@ -1722,6 +1722,7 @@
           }
           // assemble plugin config
           const plugin = {
+            custom: true,
             id: id || `custom-plugin-${i}`,
             condition,
             button: {
@@ -1864,6 +1865,7 @@
           sk.addEventListener('statusfetched', () => sk.hideModal(), { once: true });
           sk.config = await initConfig(config, location);
           sk.config.authToken = window.hlx.sidekickConfig.authToken;
+          addCustomPlugins(sk);
           sk.fetchStatus();
           fireEvent(sk, 'loggedin');
           return;
@@ -2188,6 +2190,7 @@
   function registerPlugin(sk, plugin, $plugin) {
     // re-evaluate plugin when status fetched
     sk.addEventListener('statusfetched', () => {
+      const { status } = sk;
       if (typeof plugin.condition === 'function') {
         if ($plugin && !plugin.condition(sk)) {
           // plugin exists but condition now false
@@ -2196,6 +2199,10 @@
           // plugin doesn't exist but condition now true
           sk.add(plugin);
         }
+      }
+      if ($plugin && plugin.custom && status.status === 401) {
+        // custom plugin exists but user logged out now
+        sk.remove(plugin.id);
       }
       const isEnabled = plugin.button && plugin.button.isEnabled;
       if (typeof isEnabled === 'function') {
