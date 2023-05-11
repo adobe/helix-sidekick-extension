@@ -336,30 +336,35 @@ function checkViewDocSource(id) {
  * admin.hlx.page and rum.hlx.page.
  */
 async function setUserAgentHeader() {
-  // remove existing rule first
-  await chrome.declarativeNetRequest.updateDynamicRules({ removeRuleIds: [100] });
   const manifest = chrome.runtime.getManifest();
-  await chrome.declarativeNetRequest.updateDynamicRules({
-    addRules: [
-      {
-        id: 100,
-        priority: 1,
-        action: {
-          type: 'modifyHeaders',
-          requestHeaders: [
-            {
-              operation: 'set',
-              header: 'user-agent',
-              value: `${navigator.userAgent} Sidekick/${manifest.version}`,
-            },
-          ],
+  const ua = `${navigator.userAgent} Sidekick/${manifest.version}`;
+  try {
+    // remove existing rule first
+    await chrome.declarativeNetRequest.updateDynamicRules({ removeRuleIds: [1] });
+    await chrome.declarativeNetRequest.updateDynamicRules({
+      addRules: [
+        {
+          id: 1,
+          priority: 1,
+          action: {
+            type: 'modifyHeaders',
+            requestHeaders: [
+              {
+                operation: 'set',
+                header: 'user-agent',
+                value: ua,
+              },
+            ],
+          },
+          condition: {
+            requestDomains: ['admin.hlx.page', 'rum.hlx.page'],
+          },
         },
-        condition: {
-          requestDomains: ['admin.hlx.page', 'rum.hlx.page'],
-        },
-      },
-    ],
-  });
+      ],
+    });
+  } catch (e) {
+    log.error(`setUserAgentHeader: ${e.message}`);
+  }
 }
 
 /**
@@ -374,7 +379,7 @@ async function updateAdminAuthHeaderRules() {
         .map((rule) => rule.id),
     });
     // find projects with auth tokens and add rules for each
-    let id = 1;
+    let id = 2;
     const projects = await getConfig('sync', 'hlxSidekickProjects') || [];
     const addRules = [];
     const projectConfigs = await Promise.all(projects.map((handle) => getConfig('sync', handle)));
@@ -434,15 +439,7 @@ async function storeAuthToken(owner, repo, token) {
 /**
  * Adds the listeners for the extension.
  */
-(() => {
-  chrome.runtime.onInstalled.addListener(async ({ reason }) => {
-    log.info(`sidekick extension installed (${reason})`);
-    await updateHelpContent();
-    await updateProjectConfigs();
-    await setUserAgentHeader();
-    await updateAdminAuthHeaderRules();
-  });
-
+(async () => {
   // register message listener
   chrome.runtime.onMessageExternal.addListener(async (message, sender, sendResponse) => {
     log.info('sidekick got external message', message);
@@ -550,6 +547,12 @@ async function storeAuthToken(owner, repo, token) {
   // chrome.declarativeNetRequest.onRuleMatchedDebug.addListener(({ request, rule }) => {
   //   console.log('rule matched', request.method, request.url, rule.ruleId);
   // });
+
+  await updateHelpContent();
+  await updateProjectConfigs();
+  await setUserAgentHeader();
+  await updateAdminAuthHeaderRules();
+  log.info('sidekick extension initialized');
 })();
 
 // announce sidekick display state
