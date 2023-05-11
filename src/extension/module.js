@@ -431,12 +431,13 @@
 
   /**
    * Returns the fetch options for admin requests
+   * @param {boolean} omitCredentials Should we omit the credentials
    * @returns {object}
    */
-  function getAdminFetchOptions() {
+  function getAdminFetchOptions(omitCredentials = false) {
     const opts = {
       cache: 'no-store',
-      credentials: 'include',
+      credentials: omitCredentials ? 'omit' : 'include',
       headers: {},
     };
     return opts;
@@ -465,7 +466,7 @@
         ? `${DEV_URL.origin}/tools/sidekick/config.json`
         : getAdminUrl(config, 'sidekick', '/config.json');
       try {
-        const res = await fetch(configUrl, getAdminFetchOptions());
+        const res = await fetch(configUrl, getAdminFetchOptions(true));
         if (res.status === 200) {
           config = {
             ...config,
@@ -1820,7 +1821,7 @@
 
   async function checkProfileStatus(sk, status) {
     const url = getAdminUrl(sk.config, 'profile');
-    const opts = getAdminFetchOptions(sk.config);
+    const opts = getAdminFetchOptions();
     return fetch(url, opts)
       .then((res) => res.json())
       .then((json) => (json.status === status))
@@ -2651,7 +2652,7 @@
         this.status.apiUrl = apiUrl.toString();
       }
       fetch(this.status.apiUrl, {
-        ...getAdminFetchOptions(this.config),
+        ...getAdminFetchOptions(),
       })
         .then((resp) => {
           // check for error status
@@ -3404,7 +3405,7 @@
           getAdminUrl(config, this.isContent() ? 'preview' : 'code', path),
           {
             method: 'POST',
-            ...getAdminFetchOptions(this.config),
+            ...getAdminFetchOptions(),
           },
         );
         if (resp.ok) {
@@ -3441,7 +3442,7 @@
           getAdminUrl(config, this.isContent() ? 'preview' : 'code', path),
           {
             method: 'DELETE',
-            ...getAdminFetchOptions(this.config),
+            ...getAdminFetchOptions(),
           },
         );
         // also unpublish if published
@@ -3481,7 +3482,7 @@
           getAdminUrl(config, 'live', purgeURL.pathname),
           {
             method: 'POST',
-            ...getAdminFetchOptions(this.config),
+            ...getAdminFetchOptions(),
           },
         );
         // bust client cache for live and production
@@ -3522,7 +3523,7 @@
           getAdminUrl(config, 'live', path),
           {
             method: 'DELETE',
-            ...getAdminFetchOptions(this.config),
+            ...getAdminFetchOptions(),
           },
         );
         fireEvent(this, 'unpublished', path);
