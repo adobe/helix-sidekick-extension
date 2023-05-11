@@ -1,3 +1,14 @@
+## [6.15.1](https://github.com/adobe/helix-sidekick-extension/compare/v6.15.0...v6.15.1) (2023-05-11)
+
+
+### Bug Fixes
+
+* custom plugin handling ([8b9dbb0](https://github.com/adobe/helix-sidekick-extension/commit/8b9dbb0c88fc6f6ab234845186f4bd957cdca744))
+* don't set credentials:include when in devMode ([c869054](https://github.com/adobe/helix-sidekick-extension/commit/c869054cce97760aa034c83eecb805f26d198abe))
+* only set `omit` credentials on calls to `config.json` ([b3dea1e](https://github.com/adobe/helix-sidekick-extension/commit/b3dea1ed83bb8bb9cd454d84646b7927bc6c5f5e))
+* remove config param on getAdminFetchOptions ([a71839d](https://github.com/adobe/helix-sidekick-extension/commit/a71839d26637780967a37304fc71b52df73dbdba))
+* **safari:** help content not displayed ([f110834](https://github.com/adobe/helix-sidekick-extension/commit/f1108345d50a7a2f4e187894566f8e6d5c92dbb8))
+
 # [6.15.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.14.0...v6.15.0) (2023-05-03)
 
 
