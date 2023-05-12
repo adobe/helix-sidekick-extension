@@ -12,14 +12,17 @@
 
 :host,
 :root {
-  --hlx-sk-bg: #e0e0e0;
+  --hlx-sk-bg: #fff;
+  --hlx-sk-logo-url: url(data:image/svg+xml;base64,PHN2ZyBpZD0iQWRvYmVFeHBlcmllbmNlQ2xvdWQiIGRhdGEtbmFtZT0iTGF5ZXIgMSIgdmlld0JveD0iLTUgLTUgMjUwIDI0NCIgd2lkdGg9IjI1MCIgaGVpZ2h0PSIyNDQiCiAgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCBoZWlnaHQ9IjIzNCIgcng9IjQyLjUiIHdpZHRoPSIyNDAiIGZpbGw9IiNmYTBmMDAiLz4KICA8cGF0aCBkPSJNMTg2LjYxNyAxNzUuOTVoLTI4LjUwNmE2LjI0MyA2LjI0MyAwIDAgMS01Ljg0Ny0zLjc2OWwtMzAuOTQ3LTcyLjM1OWExLjM2NCAxLjM2NCAwIDAgMC0yLjYxMS0uMDM0TDk5LjQyIDE0NS43MzFhMS42MzUgMS42MzUgMCAwIDAgMS41MDYgMi4yNjloMjEuMmEzLjI3IDMuMjcgMCAwIDEgMy4wMSAxLjk5NGw5LjI4MSAyMC42NTVhMy44MTIgMy44MTIgMCAwIDEtMy41MDcgNS4zMDFINTMuNzM0YTMuNTE4IDMuNTE4IDAgMCAxLTMuMjEzLTQuOTA0bDQ5LjA5LTExNi45MDJBNi42MzkgNi42MzkgMCAwIDEgMTA1Ljg0MyA1MGgyOC4zMTRhNi42MjggNi42MjggMCAwIDEgNi4yMzIgNC4xNDRsNDkuNDMgMTE2LjkwMmEzLjUxNyAzLjUxNyAwIDAgMS0zLjIwMiA0LjkwNHoiIGRhdGEtbmFtZT0iMjU2IiBmaWxsPSIjZmZmIi8+Cjwvc3ZnPg==);
+  --hlx-sk-logo-size: 24px;
+  --hlx-sk-logo-position: 10px 12px;
   --hlx-sk-color: #505050;
   --hlx-sk-border: none;
   --hlx-sk-border-radius: 10px;
   --hlx-sk-font-family: arial, helvetica, sans-serif;
-  --hlx-sk-font-size: 16px;
+  --hlx-sk-font-size: 14px;
   --hlx-sk-line-height: 1;
-  --hlx-sk-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.1), 0 10px 20px 0 rgba(0, 0, 0, 0.3);
+  --hlx-sk-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.1), 0 0 0 0 rgba(0, 0, 0, 0.3);
   --hlx-sk-button-color: #707070;
   --hlx-sk-button-bg: transparent;
   --hlx-sk-button-border: solid 1px var(--hlx-sk-button-color);
@@ -27,18 +30,23 @@
   --hlx-sk-button-line-height: var(--hlx-sk-line-height);
   --hlx-sk-button-font-weight: 500;
   --hlx-sk-button-padding: 5px 8px;
-  --hlx-sk-button-hover-bg: #707070;
-  --hlx-sk-button-hover-border: #707070;
-  --hlx-sk-button-hover-color: white;
-  --hlx-sk-button-pressed-bg: #c0c0c0;
-  --hlx-sk-button-pressed-color: #505050;
+  --hlx-sk-button-hover-bg: rgba(44, 44, 44, .04);
+  --hlx-sk-button-hover-border: var(--hlx-sk-button-color);
+  --hlx-sk-button-hover-color: var(--hlx-sk-button-color);
+  --hlx-sk-button-focus-bg: rgba(44, 44, 44, .2);
+  --hlx-sk-button-focus-border: var(--hlx-sk-button-hover-border);
+  --hlx-sk-button-focus-color: var(--hlx-sk-button-hover-color);
+  --hlx-sk-button-pressed-bg: rgba(44, 44, 44, .1);
+  --hlx-sk-button-pressed-color: #404040;
   --hlx-sk-button-border-radius: 6px;
   --hlx-sk-button-disabled-color: #909090;
   --hlx-sk-button-disabled-border: solid 1px var(--hlx-sk-button-disabled-color);
   --hlx-sk-button-disabled-hover-bg: transparent;
   --hlx-sk-button-badge: #F15B3A;
   --hlx-sk-button-badge-hover: #FFC40E;
-  --hlx-sk-dropdown-container-bg: rgba(224, 224, 224, .9);
+  --hlx-sk-label-font-size: 14px;
+  --hlx-sk-dropdown-container-bg: rgba(250, 250, 250, .9);
+  --hlx-sk-dropdown-container-bg-solid: rgb(250, 250, 250);
   --hlx-sk-modal-overlay-bg: rgba(0,0,0, 0.5);
   --hlx-sk-modal-bg-0: #e60016;
   --hlx-sk-modal-bg-1: #e67316;
@@ -59,16 +67,14 @@
     --hlx-sk-bg: rgb(48, 48, 48);
     --hlx-sk-color: #dedede;
     --hlx-sk-button-color: #dedede;
-    --hlx-sk-button-hover-bg: #909090;
-    --hlx-sk-button-hover-border: var(--hlx-sk-color);
-    --hlx-sk-button-hover-color: #303030;
-    --hlx-sk-button-pressed-bg: #505050;
-    --hlx-sk-button-pressed-color: white;
+    --hlx-sk-button-hover-bg: rgba(211, 211, 211, .04);
+    --hlx-sk-button-pressed-bg: rgba(211, 211, 211, .06);
+    --hlx-sk-button-pressed-color: #C0C0C0;
     --hlx-sk-button-disabled-color: #707070;
-    --hlx-sk-button-disabled-border: solid 1px var(--hlx-sk-button-disabled-color);
     --hlx-sk-button-badge: #F15B3A;
     --hlx-sk-button-badge-hover: #C71F3D;
     --hlx-sk-dropdown-container-bg: rgba(48, 48, 48, .9);
+    --hlx-sk-dropdown-container-bg-solid: rgb(48, 48, 48);
     --hlx-sk-modal-overlay-bg: rgba(127, 127, 127, 0.5);
     --hlx-sk-special-view-button-color: rgba(127, 127, 127, 0.8);
     --hlx-sk-special-view-table-border: rgba(127, 127, 127, 0.8);
@@ -85,10 +91,10 @@
   flex-wrap: nowrap;
   justify-content: start;
   background-color: var(--hlx-sk-bg);
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 216 216'><defs><style>.cls-1{fill:%23f15a3a;}.cls-2{fill:%23c71f3d;}.cls-3{fill:%23ffc40c;}</style></defs><circle class='cls-1' cx='22.5' cy='108' r='22.5'/><circle class='cls-1' cx='193.5' cy='108' r='22.5'/><circle class='cls-2' cx='63' cy='27' r='27'/><circle class='cls-3' cx='162' cy='27' r='18'/><circle class='cls-2' cx='162' cy='189' r='27'/><circle class='cls-3' cx='63' cy='189' r='18'/></svg>");
+  background-image: var(--hlx-sk-logo-url);
+  background-position: var(--hlx-sk-logo-position);
+  background-size: var(--hlx-sk-logo-size);
   background-repeat: no-repeat;
-  background-position: 10px 14px;
-  background-size: 22px;
   color: var(--hlx-sk-color);
   top: 0;
   left: 0;
@@ -98,7 +104,22 @@
   padding: 10px 10px 10px 42px;
   font-family: var(--hlx-sk-font-family);
   font-size: var(--hlx-sk-font-size);
+  line-height: var(--hlx-sk-line-height);
   box-shadow: var(--hlx-sk-shadow);
+}
+
+.hlx-sk::before {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 240px;
+  height: 240px;
+  background-color: #f00;
+  background-image: url('data:image/svg+xml;utf8,<svg id="AdobeExperienceCloud" data-name="Layer 1" viewBox="-5 -5 250 244" width="250" height="244" xmlns="http://www.w3.org/2000/svg"><rect height="234" rx="42.5" width="240" fill="#fa0f00"/><path d="M186.617 175.95h-28.506a6.243 6.243 0 0 1-5.847-3.769l-30.947-72.359a1.364 1.364 0 0 0-2.611-.034L99.42 145.731a1.635 1.635 0 0 0 1.506 2.269h21.2a3.27 3.27 0 0 1 3.01 1.994l9.281 20.655a3.812 3.812 0 0 1-3.507 5.301H53.734a3.518 3.518 0 0 1-3.213-4.904l49.09-116.902A6.639 6.639 0 0 1 105.843 50h28.314a6.628 6.628 0 0 1 6.232 4.144l49.43 116.902a3.517 3.517 0 0 1-3.202 4.904z" data-name="256" fill="#fff"/></svg>');
+  background-position: 0 0;
+  background-repeat: no-repeat;
+  background-size: 240px;
+  margin: 12px 14px 0 0;
 }
 
 .hlx-sk button,
@@ -124,12 +145,17 @@
 }
 
 .hlx-sk button:hover,
-.hlx-sk button:focus,
-.hlx-sk-overlay button:hover,
-.hlx-sk-overlay button:focus {
+.hlx-sk-overlay button:hover {
   background-color: var(--hlx-sk-button-hover-bg);
   border-color: var(--hlx-sk-button-hover-border);
   color: var(--hlx-sk-button-hover-color);
+}
+
+.hlx-sk button:focus,
+.hlx-sk-overlay button:focus {
+  background-color: var(--hlx-sk-button-focus-bg);
+  border-color: var(--hlx-sk-button-focus-border);
+  color: var(--hlx-sk-button-focus-color);
 }
 
 .hlx-sk button.pressed,
@@ -182,6 +208,13 @@
   line-height: 28px;
 }
 
+.hlx-sk .hlx-sk-label,
+.hlx-sk .plugin > span {
+  display: inline-block;
+  margin: 7px 8px 0 0;
+  font-size: var(--hlx-sk-label-font-size);
+}
+
 .hlx-sk .feature-container {
   display: flex;
   flex-direction: row;
@@ -191,6 +224,41 @@
 
 .hlx-sk .feature-container button {
   border-color: transparent;
+}
+
+.hlx-sk .feature-container .info {
+  line-height: normal;
+}
+
+.hlx-sk .feature-container .info > button::before {
+    display: none;
+}
+
+.hlx-sk .feature-container .info .dropdown-container {
+  right: 8px;
+  background-color: var(--hlx-sk-dropdown-container-bg-solid);
+}
+
+.hlx-sk .feature-container .info .page-info {
+  position: relative;
+  font-size: 12px;
+  margin: 10px;
+}
+
+.hlx-sk .feature-container .info .page-info > div {
+  padding: 5px 0;
+  white-space: nowrap;
+}
+
+.hlx-sk .feature-container .info .page-info > div > span {
+  margin: 0;
+  font-size: inherit;
+}
+
+.hlx-sk .feature-container .info .page-info > div > span:first-child {
+  display: inline-block;
+  font-weight: bold;
+  min-width: 80px;
 }
 
 .hlx-sk .feature-container .user .dropdown-toggle {
@@ -206,10 +274,15 @@
   line-height: 0;
 }
 
+.hlx-sk .feature-container .info .dropdown-toggle:disabled {
+  opacity: 0.4;
+}
+
 .hlx-sk .feature-container .user .dropdown-toggle:disabled {
   opacity: 0.8;
 }
 
+.hlx-sk .feature-container .info .dropdown-toggle::after,
 .hlx-sk .feature-container .user .dropdown-toggle::after {
   display: none;
 }
@@ -281,7 +354,7 @@
 }
 
 .hlx-sk .feature-container .user .user-info .profile-name {
-  font-weight: 600; 
+  font-weight: 600;
 }
 
 .hlx-sk .feature-container .share {
@@ -355,6 +428,31 @@
   transform: rotate(-45deg);
 }
 
+.hlx-sk .feature-container .info-icon {
+  background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' height='18' viewBox='0 0 18 18' width='18'%3E%3Cdefs%3E%3Cstyle%3E .fill { fill: %23707070; } @media (prefers-color-scheme: dark) { .fill { fill: %23dedede; } } %3C/style%3E%3C/defs%3E%3Ctitle%3ES InfoOutline 18 N%3C/title%3E%3Crect id='Canvas' fill='%23fff' opacity='0' width='18' height='18' /%3E%3Cpath class='fill' d='M10.075,6A1.075,1.075,0,1,1,9,4.925H9A1.075,1.075,0,0,1,10.075,6Zm.09173,6H10V8.2A.20005.20005,0,0,0,9.8,8H7.83324S7.25,8.01612,7.25,8.5c0,.48365.58325.5.58325.5H8v3H7.83325s-.58325.01612-.58325.5c0,.48365.58325.5.58325.5h2.3335s.58325-.01635.58325-.5C10.75,12.01612,10.16673,12,10.16673,12ZM9,.5A8.5,8.5,0,1,0,17.5,9,8.5,8.5,0,0,0,9,.5ZM9,15.6748A6.67481,6.67481,0,1,1,15.67484,9,6.67481,6.67481,0,0,1,9,15.6748Z' /%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-size: 20px;
+  background-position: 3px 3px;
+  border-radius: 5px;
+  position: absolute;
+  top: 1px;
+  left: 1px;
+  height: 28px;
+  width: 28px;
+  fill: var(--hlx-sk-button-color);
+}
+
+.hlx-sk .feature-container .modified-dates {
+  display: flex;
+  font-size: 12px;
+}
+
+.hlx-sk .feature-container .modified-dates > div {
+  line-height: normal;
+  margin: 0 10px;
+  white-space: pre;
+}
+
 .hlx-sk .dropdown,
 .hlx-sk-overlay .dropdown {
   min-height: 28px;
@@ -380,10 +478,9 @@
   background-color: var(--hlx-sk-button-hover-bg);
 }
 
-.hlx-sk:not(.hlx-sk-loading) .dropdown,
+.hlx-sk .dropdown,
 .hlx-sk-overlay .dropdown {
   display: block;
-  /* margin-top: 0; */
 }
 
 .hlx-sk-overlay .dropdown {
@@ -507,6 +604,22 @@
   color: var(--hlx-sk-modal-color);
 }
 
+.hlx-sk-overlay .level-0 button,
+.hlx-sk-overlay .level-1 button {
+  border-color: var(--hlx-sk-modal-color);
+  color: var(--hlx-sk-modal-color);
+}
+
+.hlx-sk-overlay .level-0 button:hover {
+  background-color: var(--hlx-sk-modal-color);
+  color: var(--hlx-sk-modal-bg-0);
+}
+
+.hlx-sk-overlay .level-1 button:hover {
+  background-color: var(--hlx-sk-modal-color);
+  color: var(--hlx-sk-modal-bg-1);
+}
+
 .hlx-sk-overlay .modal.help {
   margin-top: 15px;
   position: absolute;
@@ -595,14 +708,14 @@
 
 .hlx-sk-overlay .modal.help .help-step {
   padding: 19px 12px 9px 12px;
-  cursor: pointer;    
+  cursor: pointer;
 }
 
 .hlx-sk-overlay .modal.help .help-step .circle {
   border: 5px solid var(--hlx-sk-modal-help-color);
   border-radius: 50%;
   width: 0;
-  height: 0;  
+  height: 0;
   opacity: 0.45;
 }
 
@@ -638,7 +751,7 @@
   font-family: var(--hlx-sk-font-family);
   font-size: var(--hlx-sk-font-size);
   color: var(--hlx-sk-color);
-  padding: 20px;
+  padding: 60px 20px 20px;
 }
 
 .hlx-sk-special-view .description {
@@ -770,13 +883,19 @@
   height: 100%;
 }
 
+.hlx-sk span.hlx-sk-placeholder {
+  /* display: none; */
+  background-color: orange;
+}
+
 @media(max-width:600px) {
   .hlx-sk {
     background-image: none;
     padding-left: 10px;
   }
 
-  .hlx-sk .feature-container .share {
+  .hlx-sk .feature-container .share,
+  .hlx-sk .feature-container .close {
     display: none;
   }
 
@@ -785,12 +904,15 @@
   }
 }
 
-@media(max-width:400px) {
-  .hlx-sk .env.dropdown .dropdown-toggle::before {
+@media(max-width:450px) {
+  .hlx-sk .env.dropdown .dropdown-toggle {
     font-size: 0;
   }
 
   .hlx-sk .env.dropdown .dropdown-toggle::after {
+    position: absolute;
+    top: 8px;
+    left: 10px;
     margin-left: 0;
     margin-right: 4px;
   }
@@ -800,7 +922,7 @@
   }
 
   .hlx-sk .env.dropdown.dropdown-expanded .dropdown-toggle::after {
-    top: 7px;
+    top: 14px;
     transform: rotate(-45deg) scale(1.4);
   }
 
@@ -813,227 +935,4 @@
   .hlx-sk-overlay .modal.help p.help-controls .help-actions {
       justify-content: center;
   }
-}
-
-/* i18n */
-
-.hlx-sk .plugin-container:empty::before {
-  content: "No actions found for this page";
-}
-
-.hlx-sk .plugin-container.loading::before {
-  content: 'Loading actions...';
-}
-
-.hlx-sk .share::before {
-  content: "Share your Sidekick";
-}
-
-.hlx-sk .feature-container .close::before,
-.hlx-sk-overlay .help-close button::before,
-.hlx-sk-palette .close::before {
-  content: "Close";
-}
-
-.hlx-sk-overlay div.modal.wait:empty::before {
-  content: "Please wait..."
-}
-
-.hlx-sk .edit button::before {
-  content: "Edit";
-}
-
-.hlx-sk .env .dropdown-toggle::before {
-  content: "View";
-}
-
-.hlx-sk .env.is-dev .dropdown-toggle::before,
-.hlx-sk .env .dev button::before {
-  content: "Development";
-}
-
-.hlx-sk .env.is-preview .dropdown-toggle::before,
-.hlx-sk .env .preview button::before,
-.hlx-sk .edit-preview button::before {
-  content: "Preview";
-}
-
-.hlx-sk .env.is-live .dropdown-toggle::before,
-.hlx-sk .env .live button::before {
-  content: "Live";
-}
-
-.hlx-sk .env.is-prod .dropdown-toggle::before,
-.hlx-sk .env .prod button::before {
-  content: "Production";
-}
-
-.hlx-sk .reload button::before {
-  content: "Reload";
-}
-
-.hlx-sk .delete button::before {
-  content: "Delete";
-}
-
-.hlx-sk .publish button::before {
-  content: "Publish";
-}
-
-.hlx-sk .unpublish button::before {
-  content: "Unpublish";
-}
-
-.hlx-sk-special-view .description::before {
-  content: "User-friendly data rendition.";
-}
-
-.hlx-sk-special-view button.close::before {
-  content: "Turn off";
-}
-
-.hlx-sk-special-view h2.helix-default::before {
-  content: "Default sheet";
-}
-
-.hlx-sk-overlay .modal.help .help-acknowledge::before {
-  content: "Got it!";
-}
-
-.hlx-sk-overlay .modal.help .help-close-dismiss::before {
-  content: "Show help topic again later";
-}
-
-.hlx-sk-overlay .modal.help .help-close-acknowledge::before {
-  content: "Don't show help topic again";
-}
-
-.hlx-sk-overlay .modal.help .help-close-opt-out::before {
-  content: "Never show any help topics";
-}
-
-.hlx-sk-overlay .modal.help .help-previous::before {
-  content: "Previous tip";
-}
-
-.hlx-sk-overlay .modal.help .help-current::before {
-  content: "This tip";
-}
-
-.hlx-sk-overlay .modal.help .help-next::before {
-  content: "Next tip";
-}
-
-.hlx-sk-overlay .modal.modal-login p:first-of-type::before {
-  content: "Please sign in to Sidekick to continue...";
-}
-
-.hlx-sk .feature-container .user-login button::before,
-.hlx-sk-overlay .modal.modal-login button::before {
-  content: "Sign in";
-}
-
-.hlx-sk .feature-container .user-switch button::before,
-.hlx-sk-overlay .modal.modal-user-switch button::before {
-    content: "Switch user";
-}
-
-.hlx-sk .feature-container .user-logout button::before {
-    content: "Sign out";
-}
-
-.hlx-sk .feature-container .user button.dropdown-toggle::before {
-  content: "Anonymous";
-}
-
-.hlx-sk-overlay .modal.modal-wait::before {
-  content: "Please wait...";
-}
-
-.hlx-sk-overlay .modal.modal-preview-onedrive::before {
-  content: "Pro tip: Press Ctrl + S before previewing to see the latest changes immediately...";
-}
-
-.hlx-sk-overlay .modal.modal-preview-onedrive-mac::before {
-  content: "Pro tip: Press ⌘ + S before previewing to see the latest changes immediately...";
-}
-
-.hlx-sk-overlay .modal.modal-reload-onedrive::before {
-  content: "Pro tip: Press Ctrl + S in the editor before reloading a page...";
-}
-
-.hlx-sk-overlay .modal.modal-reload-onedrive-mac::before {
-  content: "Pro tip: Press ⌘ + S in the editor before reloading a page...";
-}
-
-.hlx-sk-overlay .modal.modal-share-success::before {
-  content: "Sharing URL copied to clipboard.";
-}
-
-.hlx-sk-overlay .modal.modal-config-success::before {
-  content: "Configuration successfully activated.";
-}
-
-.hlx-sk-overlay .modal.modal-config-failure::before {
-  content: "Failed to activate configuration: ";
-}
-
-.hlx-sk-overlay .modal.modal-preview-failure::before {
-  content: "Previewing failed. Please try again later.";
-}
-
-.hlx-sk-overlay .modal.modal-preview-not-gdoc::before {
-  content: "Previewing failed. Must be Google document or spreadsheet.";
-}
-
-.hlx-sk-overlay .modal.modal-reload-failure::before {
-  content: "Reloading failed. Please try again later.";
-}
-
-.hlx-sk-overlay .modal.modal-publish-failure::before {
-  content: "Publication failed. Please try again later.";
-}
-
-.hlx-sk-overlay .modal.modal-delete-failure::before {
-  content: "Deletion failed. Please try again later.";
-}
-
-.hlx-sk-overlay .modal.modal-unpublish-failure::before {
-  content: "Unpublication failed. Please try again later.";
-}
-
-.hlx-sk-overlay .modal.modal-status-404-document::before {
-  content: "404 Not found: Check your Sidekick configuration and make sure Franklin has access to this document.";
-}
-
-.hlx-sk-overlay .modal.modal-status-404-content::before {
-  content: "404 Not found: Check your Sidekick configuration or URL.";
-}
-
-.hlx-sk-overlay .modal.modal-status-500::before {
-  content: "500 Internal server error: Failed to fetch the page status. Please try again later.";
-}
-
-.hlx-sk-overlay .modal.modal-status-502::before {
-  content: "502 Bad gateway: Failed to fetch the page status. Please try again later.";
-}
-
-.hlx-sk-overlay .modal.modal-status-504::before {
-  content: "504 Gateway timeout: Failed to fetch the page status. Please try again later.";
-}
-
-.hlx-sk-overlay .modal.modal-status-invalid::before {
-  content: "Invalid server response. Check your Sidekick configuration or URL.";
-}
-
-.hlx-sk-overlay .modal.modal-login-timeout::before {
-  content: "Sign in timed out. Please try again later.";
-}
-
-.hlx-sk-overlay .modal.modal-login-aborted::before {
-  content: "Sign in aborted.";
-}
-
-.hlx-sk-overlay .modal.modal-logout-error::before {
-  content: "Sign out failed. Please try again later.";
 }

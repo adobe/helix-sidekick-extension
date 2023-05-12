@@ -60,38 +60,40 @@
     if (!browser) {
       return;
     }
-    const EXT_HINT = 'hlxSidekickExtensionHint';
-    // respect user choice
-    const userChoice = window.localStorage.getItem(EXT_HINT);
-    if (userChoice && userChoice * 1 > Date.now()) {
-      return;
-    }
-    // show extension hint
-    window.hlx.sidekick.showHelp({
-      id: EXT_HINT,
-      steps: [{
-        message: message.replace('{{browser}}', browser),
-      }],
-    });
-    const laterHandler = () => window.localStorage
-      .setItem(EXT_HINT, Date.now() + 259200000 /* +3 days */);
-    const ackHandler = () => window.localStorage
-      .setItem(EXT_HINT, Date.now() + 31536000000 /* +1 year */);
-    const installButton = document.createElement('button');
-    installButton.textContent = installButtonText;
-    installButton.addEventListener('click', () => {
-      window.open(installUrl);
-      ackHandler();
-    });
-    const laterButton = document.createElement('button');
-    laterButton.textContent = laterButtonText;
-    laterButton.addEventListener('click', laterHandler);
+    window.hlx.sidekick.addEventListener('contextloaded', () => {
+      const EXT_HINT = 'hlxSidekickExtensionHint';
+      // respect user choice
+      const userChoice = window.localStorage.getItem(EXT_HINT);
+      if (userChoice && userChoice * 1 > Date.now()) {
+        return;
+      }
+      // show extension hint
+      window.hlx.sidekick.showHelp({
+        id: EXT_HINT,
+        steps: [{
+          message: message.replace('{{browser}}', browser),
+        }],
+      });
+      const laterHandler = () => window.localStorage
+        .setItem(EXT_HINT, Date.now() + 259200000 /* +3 days */);
+      const ackHandler = () => window.localStorage
+        .setItem(EXT_HINT, Date.now() + 31536000000 /* +1 year */);
+      const installButton = document.createElement('button');
+      installButton.textContent = installButtonText;
+      installButton.addEventListener('click', () => {
+        window.open(installUrl);
+        ackHandler();
+      });
+      const laterButton = document.createElement('button');
+      laterButton.textContent = laterButtonText;
+      laterButton.addEventListener('click', laterHandler);
 
-    const helpActions = window.hlx.sidekick.shadowRoot.querySelector('.hlx-sk-overlay .modal .help-actions');
-    helpActions.prepend(laterButton);
-    helpActions.prepend(installButton);
-    installButton.focus();
-    window.hlx.sidekick.addEventListener('helpacknowledged', ackHandler);
+      const helpActions = window.hlx.sidekick.shadowRoot.querySelector('.hlx-sk-overlay .modal .help-actions');
+      helpActions.prepend(laterButton);
+      helpActions.prepend(installButton);
+      installButton.focus();
+      window.hlx.sidekick.addEventListener('helpacknowledged', ackHandler);
+    });
   }
 
   if (!window.hlx || !window.hlx.sidekick) {
@@ -112,34 +114,11 @@
         initSidekickCompatMode();
       } else {
         // extract and validate base config
-        const {
-          owner, repo, ref = 'main', devMode,
-        } = baseConfig;
+        const { owner, repo } = baseConfig;
         baseConfig.scriptUrl = appScript.getAttribute('src');
         if (owner && repo) {
-          // init sidekick config
-          window.hlx.sidekickConfig = {};
-          // look for custom config in project
-          let configOrigin = '';
-          if (devMode) {
-            configOrigin = 'http://localhost:3000';
-          } else if (!new RegExp(`${repo}\\-\\-${owner}\\.hlx(\\-\\d|3)?\\.page$`)
-            .test(window.location.hostname)) {
-            // load config from inner CDN
-            configOrigin = `https://${ref}--${repo}--${owner}.hlx.live`;
-          }
-          try {
-            const res = await fetch(`${configOrigin}/tools/sidekick/config.json`);
-            if (res.ok) {
-              console.log(`custom sidekick config loaded from ${configOrigin}/tools/sidekick/config.json`);
-              // apply custom config
-              Object.assign(window.hlx.sidekickConfig, await res.json());
-            }
-          } catch (e) {
-            console.log('error retrieving custom sidekick config', e);
-          }
-          // apply base config
-          Object.assign(window.hlx.sidekickConfig, baseConfig);
+          // load sidekick
+          window.hlx.sidekickConfig = baseConfig;
           window.hlx.initSidekick();
 
           showExtensionHint({

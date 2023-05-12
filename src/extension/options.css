@@ -67,6 +67,10 @@ h1, h2, h3 {
 h1 {
 	font-size: 2rem;
 	margin: 1.6rem 0 0.8em;
+  padding-left: 2.5rem;
+  background-image: url('/icons/ec-icon-48x48.png');
+  background-repeat: no-repeat;
+  background-size: 2rem;
 }
 h3 {
 	font-size: 1.2rem;
@@ -464,7 +468,9 @@ body.advanced .advanced-only {
 
   h1 {
     font-size: 1.6rem;
-  }
+    padding-left: 0;
+    background: none;
+    }
 
   h2 {
     font-size: 1.3rem;

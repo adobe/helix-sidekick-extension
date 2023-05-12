@@ -11,8 +11,6 @@
  */
 /* eslint-disable no-console, no-alert */
 
-'use strict';
-
 (() => {
   /**
    * @typedef {Object} ElemConfig
@@ -70,7 +68,8 @@
    * @prop {boolean} isContainer Determines whether to turn this plugin into a dropdown
    * @prop {boolean} isPalette Determines whether a URL is opened in a palette instead of a new tab
    * @prop {string} paletteRect The dimensions and position of a palette (optional)
-   * @prop {string[]} environments Specifies when to show this plugin (edit, preview, live, or prod)
+   * @prop {string[]} environments Specifies when to show this plugin
+   *                               (admin, edit, dev, preview, live, prod)
    * @prop {string[]} excludePaths Exclude the plugin from these paths (glob patterns supported)
    * @prop {string[]} includePaths Include the plugin on these paths (glob patterns supported)
    */
@@ -252,12 +251,90 @@
   };
 
   /**
+   * Array of restricted paths with limited sidekick functionality.
+   * @private
+   * @type {string[]}
+   */
+  const RESTRICTED_PATHS = [
+    '/helix-env.json',
+  ];
+
+  /**
    * The URL of the development environment.
-   * @see {@link https://github.com/adobe/helix-cli|Franklin CLI}).
+   * @see {@link https://github.com/adobe/helix-cli|AEM CLI}).
    * @private
    * @type {URL}
    */
   const DEV_URL = new URL('http://localhost:3000');
+
+  /**
+   * Log RUM for sidekick telemetry.
+   * @private
+   * @param {string} checkpoint identifies the checkpoint in funnel
+   * @param {Object} data additional data for RUM sample
+   */
+  function sampleRUM(checkpoint, data = {}) {
+    sampleRUM.defer = sampleRUM.defer || [];
+    const defer = (fnname) => {
+      sampleRUM[fnname] = sampleRUM[fnname]
+        || ((...args) => sampleRUM.defer.push({ fnname, args }));
+    };
+    sampleRUM.drain = sampleRUM.drain
+      || ((dfnname, fn) => {
+        sampleRUM[dfnname] = fn;
+        sampleRUM.defer
+          .filter(({ fnname }) => dfnname === fnname)
+          .forEach(({ fnname, args }) => sampleRUM[fnname](...args));
+      });
+    sampleRUM.on = (chkpnt, fn) => {
+      sampleRUM.cases[chkpnt] = fn;
+    };
+    defer('observe');
+    defer('cw');
+    try {
+      window.hlx = window.hlx || {};
+      const sk = window.hlx.sidekick;
+      if (!window.hlx.rum) {
+        const usp = new URLSearchParams(sk.location.search);
+        const weight = (usp.get('hlx-sk-rum') === 'on') ? 1 : 10; // with parameter, weight is 1. Defaults to 10.
+        // eslint-disable-next-line no-bitwise
+        const hashCode = (s) => s.split('').reduce((a, b) => (((a << 5) - a) + b.charCodeAt(0)) | 0, 0);
+        const id = `${hashCode(sk.location.href)}-${new Date().getTime()}-${Math.random().toString(16).substr(2, 14)}`;
+        const random = Math.random();
+        const isSelected = (random * weight < 1);
+        // eslint-disable-next-line object-curly-newline
+        window.hlx.rum = { weight, id, random, isSelected, sampleRUM };
+      }
+      const { weight, id } = window.hlx.rum;
+      if (window.hlx && window.hlx.rum && window.hlx.rum.isSelected) {
+        const sendPing = (pdata = data) => {
+          // eslint-disable-next-line object-curly-newline, max-len, no-use-before-define
+          const body = JSON.stringify({ weight, id, referer: sk.location.href, generation: window.hlx.RUM_GENERATION, checkpoint, ...data });
+          const url = `https://rum.hlx.page/.rum/${weight}`;
+          // eslint-disable-next-line no-unused-expressions
+          navigator.sendBeacon(url, body);
+          // eslint-disable-next-line no-console
+          console.debug(`ping:${checkpoint}`, pdata);
+        };
+        sampleRUM.cases = sampleRUM.cases || {
+          cwv: () => sampleRUM.cwv(data) || true,
+          lazy: () => {
+            // use classic script to avoid CORS issues
+            const script = document.createElement('script');
+            script.src = 'https://rum.hlx.page/.rum/@adobe/helix-rum-enhancer@^1/src/index.js';
+            document.head.appendChild(script);
+            return true;
+          },
+        };
+        sendPing(data);
+        if (sampleRUM.cases[checkpoint]) {
+          sampleRUM.cases[checkpoint]();
+        }
+      }
+    } catch (error) {
+      // something went wrong
+    }
+  }
 
   /**
    * Retrieves project details from a host name.
@@ -328,18 +405,87 @@
   }
 
   /**
+   * Creates an Admin URL for an API and path.
+   * @private
+   * @param {Object} config The sidekick configuration
+   * @param {string} api The API endpoint to call
+   * @param {string} path The current path
+   * @returns {URL} The admin URL
+   */
+  function getAdminUrl({
+    owner, repo, ref, adminVersion,
+  }, api, path = '') {
+    const adminUrl = new URL([
+      'https://admin.hlx.page/',
+      api,
+      `/${owner}`,
+      `/${repo}`,
+      `/${ref}`,
+      path,
+    ].join(''));
+    if (adminVersion) {
+      adminUrl.searchParams.append('hlx-admin-version', adminVersion);
+    }
+    return adminUrl;
+  }
+
+  /**
+   * Returns the fetch options for admin requests
+   * @param {boolean} omitCredentials Should we omit the credentials
+   * @returns {object}
+   */
+  function getAdminFetchOptions(omitCredentials = false) {
+    const opts = {
+      cache: 'no-store',
+      credentials: omitCredentials ? 'omit' : 'include',
+      headers: {},
+    };
+    return opts;
+  }
+
+  /**
    * Returns the sidekick configuration.
    * @private
    * @param {SidekickConfig} cfg The sidekick config (defaults to {@link window.hlx.sidekickConfig})
    * @param {Location} location The current location
    * @returns {Object} The sidekick configuration
    */
-  function initConfig(cfg, location) {
-    const config = cfg || (window.hlx && window.hlx.sidekickConfig) || {};
+  async function initConfig(cfg, location) {
+    let config = cfg || (window.hlx && window.hlx.sidekickConfig) || {};
     const {
       owner,
       repo,
       ref = 'main',
+      devMode,
+      adminVersion,
+      _extended,
+    } = config;
+    if (owner && repo && !_extended) {
+      // look for custom config in project
+      const configUrl = devMode
+        ? `${DEV_URL.origin}/tools/sidekick/config.json`
+        : getAdminUrl(config, 'sidekick', '/config.json');
+      try {
+        const res = await fetch(configUrl, getAdminFetchOptions(true));
+        if (res.status === 200) {
+          config = {
+            ...config,
+            ...(await res.json()),
+            // no overriding below
+            owner,
+            repo,
+            ref,
+            devMode,
+            adminVersion,
+            _extended: Date.now(),
+          };
+        }
+      } catch (e) {
+        console.log('error retrieving custom sidekick config', e);
+      }
+    }
+
+    const {
       outerHost,
       host,
       project,
@@ -347,6 +493,7 @@
       pushDownSelector,
       specialViews,
       scriptUrl = 'https://www.hlx.live/tools/sidekick/module.js',
+      scriptRoot = scriptUrl.split('/').filter((_, i, arr) => i < arr.length - 1).join('/'),
     } = config;
     const innerPrefix = owner && repo ? `${ref}--${repo}--${owner}` : null;
     const publicHost = host && host.startsWith('http') ? new URL(host).host : host;
@@ -380,7 +527,7 @@
     const defaultSpecialViews = [
       {
         path: '**.json',
-        js: './view/json.js',
+        js: `${scriptRoot}/view/json.js`,
       },
     ];
     // try custom views first
@@ -389,17 +536,18 @@
       : defaultSpecialViews;
     // find view based on path
     const { pathname } = location;
-    const specialView = allSpecialViews.find(({ path }) => globToRegExp(path).test(pathname));
+    const specialView = allSpecialViews.find(({
+      path,
+    }) => !RESTRICTED_PATHS.includes(pathname) && globToRegExp(path).test(pathname));
 
     return {
       ...config,
       ref,
       innerHost,
       outerHost: liveHost,
-      scriptUrl,
+      scriptRoot,
       host: publicHost,
       project: project || '',
-      pushDown,
       pushDownElements,
       specialView,
     };
@@ -448,22 +596,9 @@
    */
   function makeAccessible(elem) {
     if (elem.tagName === 'A' || elem.tagName === 'BUTTON') {
-      const ensureTitle = (tag) => {
-        if (!tag.title) {
-          // wait for computed style to be available
-          window.setTimeout(() => {
-            let title = window.getComputedStyle(tag, ':before').getPropertyValue('content');
-            title = title !== 'normal' && title !== 'none'
-              ? title.substring(1, title.length - 1)
-              : '';
-            if (!title) {
-              title = tag.textContent;
-            }
-            tag.setAttribute('title', title);
-          }, 200);
-        }
-      };
-      ensureTitle(elem);
+      if (!elem.title) {
+        elem.title = elem.textContent;
+      }
       elem.setAttribute('tabindex', '0');
     }
     return elem;
@@ -526,6 +661,17 @@
   }
 
   /**
+   * Retrieves a string from the dictionary in the user's language.
+   * @private
+   * @param {Sidekick} sk The sidekick
+   * @param {string} key The dictionary key
+   * @returns {string} The string in the user's language
+   */
+  function i18n(sk, key) {
+    return sk.dict ? (sk.dict[key] || '') : '';
+  }
+
+  /**
    * Listener to collapse all dropdowns when document is clicked.
    * @private
    */
@@ -541,7 +687,7 @@
    * @returns {HTMLElement} The dropdown
    */
   function createDropdown(sk, config) {
-    const { id = '', button = {} } = config;
+    const { id = '', button = {}, lstnrs = {} } = config;
     const dropdown = createTag({
       tag: 'div',
       attrs: {
@@ -554,11 +700,19 @@
       attrs: {
         ...(button.attrs || {}),
         class: 'dropdown-toggle',
+        'aria-expanded': false,
       },
       lstnrs: {
         click: (evt) => {
+          if (dropdown.classList.contains('dropdown-expanded')) {
+            dropdown.classList.remove('dropdown-expanded');
+            evt.target.setAttribute('aria-expanded', false);
+            return;
+          }
+
           collapseDropdowns(sk);
-          dropdown.classList.toggle('dropdown-expanded');
+          dropdown.classList.add('dropdown-expanded');
+          evt.target.setAttribute('aria-expanded', true);
           const {
             lastElementChild: container,
           } = dropdown;
@@ -569,6 +723,9 @@
             container.style.marginLeft = `-${cWidth - tWidth}px`;
           }
           evt.stopPropagation();
+          if (lstnrs.click) {
+            lstnrs.click(evt);
+          }
         },
       },
     });
@@ -604,7 +761,7 @@
         // define alignment
         const alignments = [
           'bottom-center',
-          'botttom-left',
+          'bottom-left',
           'bottom-right',
         ];
         let align = target === sk.root ? alignments[0] : alignments[1];
@@ -662,16 +819,18 @@
     const shareUrl = getShareUrl(config);
     if (navigator.share) {
       navigator.share({
-        title: `Sidekick for ${config.project}`,
-        text: `Check out this helper bookmarklet for ${config.project}`,
+        text: i18n(sk, 'config_shareurl_share_title').replace('$1', config.project),
         url: shareUrl,
       });
     } else {
       navigator.clipboard.writeText(shareUrl);
-      sk.showModal({
-        css: 'modal-share-success',
-      });
+      sk.showModal(i18n(sk, 'config_shareurl_copied').replace('$1', config.project));
     }
+    // log telemetry
+    sampleRUM('sidekick:share', {
+      source: sk.location.href,
+      target: shareUrl,
+    });
   }
 
   /**
@@ -692,6 +851,30 @@
           },
         },
       }));
+      const userEvents = [
+        'shown',
+        'hidden',
+        'updated',
+        'published',
+        'unpublished',
+        'deleted',
+        'envswitched',
+        'page-info',
+        'user',
+        'loggedin',
+        'loggedout',
+        'helpnext',
+        'helpdismissed',
+        'helpacknowlegded',
+        'helpoptedout',
+      ];
+      if (name.startsWith('custom:') || userEvents.includes(name)) {
+        // log telemetry
+        sampleRUM(`sidekick:${name}`, {
+          source: data?.sourceUrl || sk.location.href,
+          target: data?.targetUrl || sk.status.webPath,
+        });
+      }
     } catch (e) {
       console.warn('failed to fire event', name, e);
     }
@@ -743,48 +926,6 @@
     return evt.metaKey || evt.shiftKey || evt.which === 2;
   }
 
-  /**
-   * Creates an Admin URL for an API and path.
-   * @private
-   * @param {Object} config The sidekick configuration
-   * @param {string} api The API endpoint to call
-   * @param {string} path The current path
-   * @returns {URL} The admin URL
-   */
-  function getAdminUrl({
-    owner, repo, ref, adminVersion,
-  }, api, path = '') {
-    const adminUrl = new URL([
-      'https://admin.hlx.page/',
-      api,
-      `/${owner}`,
-      `/${repo}`,
-      `/${ref}`,
-      path,
-    ].join(''));
-    if (adminVersion) {
-      adminUrl.searchParams.append('hlx-admin-version', adminVersion);
-    }
-    return adminUrl;
-  }
-
-  /**
-   * Returns the fetch options for admin requests
-   * @param {object} config
-   * @returns {object}
-   */
-  function getAdminFetchOptions({ authToken }) {
-    const opts = {
-      cache: 'no-store',
-      credentials: 'include',
-      headers: {},
-    };
-    if (authToken) {
-      opts.headers['x-auth-token'] = authToken;
-    }
-    return opts;
-  }
-
   async function updatePreview(sk, ranBefore) {
     const { status } = sk;
     const resp = await sk.update();
@@ -833,6 +974,7 @@
       id: 'edit',
       condition: (sidekick) => !sidekick.isEditor() && sidekick.isProject(),
       button: {
+        text: i18n(sk, 'edit'),
         action: async () => {
           const { config, status } = sk;
           const editUrl = status.edit && status.edit.url;
@@ -854,17 +996,17 @@
    */
   function addEnvPlugins(sk) {
     // add env container
+    let switchViewText = i18n(sk, 'switch_view');
+    if (sk.isDev()) switchViewText = i18n(sk, 'development');
+    if (sk.isInner()) switchViewText = i18n(sk, 'preview');
+    if (sk.isOuter()) switchViewText = i18n(sk, 'live');
+    if (sk.isProd()) switchViewText = i18n(sk, 'production');
     sk.add({
       id: 'env',
       feature: true,
       button: {
+        text: switchViewText,
         isDropdown: true,
-      },
-      callback: (sidekick, $env) => {
-        if (sidekick.isDev()) $env.classList.add('is-dev');
-        if (sidekick.isInner()) $env.classList.add('is-preview');
-        if (sidekick.isOuter()) $env.classList.add('is-live');
-        if (sidekick.isProd()) $env.classList.add('is-prod');
       },
     });
 
@@ -874,6 +1016,7 @@
       container: 'env',
       condition: (sidekick) => sidekick.isEditor() || sidekick.isProject(),
       button: {
+        text: i18n(sk, 'development'),
         action: async (evt) => {
           if (evt.target.classList.contains('pressed')) {
             return;
@@ -893,6 +1036,7 @@
       container: 'env',
       condition: (sidekick) => sidekick.isEditor() || sidekick.isProject(),
       button: {
+        text: i18n(sk, 'preview'),
         action: async (evt) => {
           if (evt.target.classList.contains('pressed')) {
             return;
@@ -912,6 +1056,7 @@
       condition: (sidekick) => sidekick.config.outerHost
         && (sidekick.isEditor() || sidekick.isProject()),
       button: {
+        text: i18n(sk, 'live'),
         action: async (evt) => {
           if (evt.target.classList.contains('pressed')) {
             return;
@@ -933,6 +1078,7 @@
         && sidekick.config.host !== sidekick.config.outerHost
         && (sidekick.isEditor() || sidekick.isProject()),
       button: {
+        text: i18n(sk, 'production'),
         action: async (evt) => {
           if (evt.target.classList.contains('pressed')) {
             return;
@@ -967,21 +1113,32 @@
             && status.edit.sourceLocation.startsWith('onedrive:')
             && !sk.location.pathname.startsWith('/:x:/')) {
             // show ctrl/cmd + s hint on onedrive docs
-            const mac = navigator.platform.toLowerCase().includes('mac') ? '-mac' : '';
-            sk.showModal({
-              css: `modal-preview-onedrive${mac}`,
-            });
-          } else if (status.edit.sourceLocation?.startsWith('gdrive:')
-            && status.edit.contentType !== 'application/vnd.google-apps.document'
-            && status.edit.contentType !== 'application/vnd.google-apps.spreadsheet') {
-            sk.showModal({
-              css: 'modal-preview-not-gdoc',
-              sticky: true,
-              level: 0,
-            });
-            return;
-          } else {
-            sk.showWait();
+            const mac = navigator.platform.toLowerCase().includes('mac') ? '_mac' : '';
+            sk.showModal(i18n(sk, `preview_onedrive${mac}`));
+          } else if (status.edit.sourceLocation?.startsWith('gdrive:')) {
+            const { contentType } = status.edit;
+
+            const isGoogleDocMime = contentType === 'application/vnd.google-apps.document';
+            const isGoogleSheetMime = contentType === 'application/vnd.google-apps.spreadsheet';
+            const neitherGdocOrGSheet = !isGoogleDocMime && !isGoogleSheetMime;
+
+            if (neitherGdocOrGSheet) {
+              const isMsDocMime = contentType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+              const isMsExcelSheet = contentType === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+              let errorKey = 'error_preview_not_gdoc_generic'; // show generic message by default
+              if (isMsDocMime) {
+                errorKey = 'error_preview_not_gdoc_ms_word';
+              } else if (isMsExcelSheet) {
+                errorKey = 'error_preview_not_gsheet_ms_excel';
+              }
+              sk.showModal({
+                message: i18n(sk, errorKey),
+                sticky: true,
+                level: 0,
+              });
+
+              return;
+            }
           }
           const url = new URL(sk.location.href);
           if (url.pathname.startsWith('/:x:/') && !url.searchParams.get('hlx-sk-preview')) {
@@ -1026,18 +1183,9 @@
       id: 'reload',
       condition: (s) => s.config.innerHost && (s.isInner() || s.isDev()),
       button: {
+        text: i18n(sk, 'reload'),
         action: async (evt) => {
-          const { status } = sk;
-          if (status.edit && status.edit.sourceLocation
-            && status.edit.sourceLocation.startsWith('onedrive:')) {
-            // show ctrl/cmd + s hint on onedrive docs
-            const mac = navigator.platform.toLowerCase().includes('mac') ? '-mac' : '';
-            sk.showModal({
-              css: `modal-reload-onedrive${mac}`,
-            });
-          } else {
-            sk.showWait();
-          }
+          sk.showWait();
           try {
             const resp = await sk.update();
             if (!resp.ok && resp.status >= 400) {
@@ -1053,7 +1201,7 @@
             }
           } catch (e) {
             sk.showModal({
-              css: 'modal-reload-failure',
+              message: i18n(sk, 'reload_failure'),
               sticky: true,
               level: 0,
             });
@@ -1075,8 +1223,10 @@
       id: 'delete',
       condition: (sidekick) => sidekick.isAuthorized('preview', 'delete') && sidekick.isProject()
         && (!sidekick.status.edit || !sidekick.status.edit.url) // show only if no edit url and
-        && (sidekick.status.preview && sidekick.status.preview.status !== 404), // preview exists
+        && (sidekick.status.preview && sidekick.status.preview.status !== 404) // preview exists
+        && !RESTRICTED_PATHS.includes(sidekick.location.pathname),
       button: {
+        text: i18n(sk, 'delete'),
         action: async () => {
           const { location, status } = sk;
           // double check
@@ -1100,7 +1250,7 @@
               window.location.href = `${location.origin}/`;
             } catch (e) {
               sk.showModal({
-                css: 'modal-delete-failure',
+                message: i18n(sk, 'delete_failure'),
                 sticky: true,
                 level: 0,
               });
@@ -1121,6 +1271,7 @@
       id: 'publish',
       condition: (sidekick) => sidekick.isProject() && sk.isContent(),
       button: {
+        text: i18n(sk, 'publish'),
         action: async (evt) => {
           const { config, location } = sk;
           const path = location.pathname;
@@ -1145,7 +1296,7 @@
           } else {
             console.error(results);
             sk.showModal({
-              css: 'modal-publish-failure',
+              message: i18n(sk, 'publish_failure'),
               sticky: true,
               level: 0,
             });
@@ -1168,8 +1319,9 @@
       condition: (sidekick) => sidekick.isAuthorized('live', 'delete') && sidekick.isProject()
         && (!sidekick.status.edit || !sidekick.status.edit.url) // show only if no edit url and
         && sidekick.status.live && sidekick.status.live.lastModified // published
-        && sk.isContent(),
+        && sk.isContent() && !RESTRICTED_PATHS.includes(sidekick.location.pathname),
       button: {
+        text: i18n(sk, 'unpublish'),
         action: async () => {
           const { status } = sk;
           // double check
@@ -1193,7 +1345,7 @@
               }
             } catch (e) {
               sk.showModal({
-                css: 'modal-unpublish-failure',
+                message: i18n(sk, 'unpublish_failure'),
                 sticky: true,
                 level: 0,
               });
@@ -1202,6 +1354,317 @@
         },
       },
     });
+  }
+
+  /**
+   * Adds the bulk plugins to the sidekick.
+   * @private
+   * @param {Sidekick} sk The sidekick
+   */
+  function addBulkPlugins(sk) {
+    if (sk.isAdmin()) {
+      let bulkSelection = [];
+
+      const isSharePoint = (location) => /\w+\.sharepoint.com$/.test(location.host)
+        && location.pathname.endsWith('/Forms/AllItems.aspx');
+
+      const toWebPath = (folder, item) => {
+        const { path, type } = item;
+        const nameParts = path.split('.');
+        let [file, ext] = nameParts;
+        if (isSharePoint(sk.location) && ext === 'docx') {
+          // omit docx extension on sharepoint
+          ext = '';
+        }
+        if (type === 'xlsx' || type.includes('vnd.google-apps.spreadsheet')) {
+          // use json extension for spreadsheets
+          ext = 'json';
+        }
+        file = file
+          .toLowerCase()
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/^-|-$/g, '');
+        return `${folder}${folder.endsWith('/') ? '' : '/'}${file}${ext ? `.${ext}` : ''}`;
+      };
+
+      const getBulkSelection = () => {
+        const { location } = sk;
+        if (isSharePoint(location)) {
+          const isGrid = document.querySelector('div[class~="ms-TilesList"]');
+          return [...document.querySelectorAll('#appRoot [role="presentation"] div[aria-selected="true"]')]
+            .filter((row) => !row.querySelector('img').getAttribute('src').includes('/foldericons/')
+              && !row.querySelector('img').getAttribute('src').endsWith('folder.svg'))
+            .map((row) => ({
+              type: isGrid
+                ? row.querySelector(':scope i[aria-label]')?.getAttribute('aria-label').trim()
+                : new URL(row.querySelector('img').getAttribute('src'), sk.location.href).pathname.split('/').slice(-1)[0].split('.')[0],
+              path: isGrid
+                ? row.querySelector('div[data-automationid="name"]').textContent.trim()
+                : row.querySelector('button')?.textContent.trim(),
+            }));
+        } else {
+          // gdrive
+          return [...document.querySelectorAll('#drive_main_page [role="row"][aria-selected="true"]')]
+            .filter((row) => row.querySelector(':scope img'))
+            .map((row) => ({
+              type: new URL(row.querySelector('div > img').getAttribute('src'), sk.location.href).pathname.split('/').slice(-2).join('/'),
+              path: row.querySelector(':scope > div > div:nth-of-type(2)').textContent.trim() // list layout
+                || row.querySelector(':scope > div > div > div:nth-of-type(4)').textContent.trim(), // grid layout
+            }));
+        }
+      };
+
+      const updateBulkInfo = () => {
+        const sel = getBulkSelection(sk);
+        bulkSelection = sel;
+        // update info
+        const label = sk.root.querySelector('#hlx-sk-bulk-info');
+        if (sel.length === 0) {
+          label.textContent = i18n(sk, 'bulk_selection_empty');
+        } else if (sel.length === 1) {
+          label.textContent = i18n(sk, 'bulk_selection_single');
+        } else {
+          label.textContent = i18n(sk, 'bulk_selection_multiple').replace('$1', sel.length);
+        }
+        // show/hide bulk buttons
+        ['preview', 'publish', 'copy-urls'].forEach((action) => {
+          sk.get(`bulk-${action}`).classList[sel.length === 0 ? 'add' : 'remove']('hlx-sk-hidden');
+        });
+        // update copy url button texts based on selection size
+        ['', 'preview', 'live', 'prod'].forEach((env) => {
+          const text = i18n(sk, `copy_${env}${env ? '_' : ''}url${sel.length === 1 ? '' : 's'}`);
+          const button = sk.get(`bulk-copy-${env}${env ? '-' : ''}urls`)?.querySelector('button');
+          if (button) {
+            button.textContent = text;
+            button.title = text;
+          }
+        });
+      };
+
+      const getBulkText = ([num, total], type, action, mod) => {
+        let i18nKey = `bulk_${type}`;
+        if (num === 0) {
+          i18nKey = `${i18nKey}_empty`;
+        } else {
+          i18nKey = `${i18nKey}_${action}_${(total || num) === 1 ? 'single' : 'multiple'}${mod ? `_${mod}` : ''}`;
+        }
+        return i18n(sk, i18nKey)
+          .replace('$1', num)
+          .replace('$2', total);
+      };
+
+      const isChangedUrl = () => {
+        const $test = document.getElementById('sidekick_test_location');
+        if ($test) {
+          return $test.value !== sk.location.href;
+        }
+        return window.location.href !== sk.location.href;
+      };
+
+      const doBulkOperation = async (operation, method, concurrency, host) => {
+        const { config, status } = sk;
+        const sel = bulkSelection.map((item) => toWebPath(status.webPath, item));
+        const results = [];
+        const total = sel.length;
+        const { processQueue } = await import(`${config.scriptRoot}/lib/process-queue.js`);
+        await processQueue(sel, async (file) => {
+          results.push(await sk[method](file));
+          if (total > 1) {
+            sk.showModal(getBulkText([results.length, total], 'progress', operation), true);
+          }
+        }, concurrency);
+        const lines = [];
+        const ok = results.filter((res) => res.ok);
+        if (ok.length > 0) {
+          lines.push(getBulkText([ok.length], 'result', operation, 'success'));
+          lines.push(createTag({
+            tag: 'button',
+            text: i18n(sk, ok.length === 1 ? 'copy_url' : 'copy_urls'),
+            lstnrs: {
+              click: (evt) => {
+                evt.stopPropagation();
+                navigator.clipboard.writeText(ok.map((item) => `https://${host}${item.path}`)
+                  .join('\n'));
+                sk.hideModal();
+              },
+            },
+          }));
+        }
+        const failed = results.filter((res) => !res.ok);
+        if (failed.length > 0) {
+          const failureText = getBulkText([failed.length], 'result', operation, 'failure');
+          lines.push(failureText);
+          lines.push(...failed.map((item) => {
+            if (item.error.endsWith('docx with google not supported.')) {
+              item.error = getBulkText([1], 'result', operation, 'error_no_docx');
+            }
+            if (item.error.endsWith('xlsx with google not supported.')) {
+              item.error = getBulkText([1], 'result', operation, 'error_no_xlsx');
+            }
+            if (item.error.includes('source does not exist')) {
+              item.error = getBulkText([1], 'result', operation, 'error_no_source');
+            }
+            return `${item.path.split('/').pop()}: ${item.error}`;
+          }));
+        }
+        lines.push(createTag({
+          tag: 'button',
+          text: i18n(sk, 'close'),
+        }));
+        let level = 2;
+        if (failed.length > 0) {
+          level = 1;
+          if (ok.length === 0) {
+            level = 0;
+          }
+        }
+        sk.showModal(
+          lines,
+          true,
+          level,
+        );
+      };
+
+      const doBulkCopyUrls = async (hostProperty) => {
+        const { config, status } = sk;
+        const urls = bulkSelection.map((item) => `https://${config[hostProperty]}${toWebPath(status.webPath, item)}`);
+        navigator.clipboard.writeText(urls.join('\n'));
+        sk.showModal(i18n(sk, `copied_url${urls.length !== 1 ? 's' : ''}`));
+      };
+
+      sk.addEventListener('statusfetched', () => {
+        // bulk info
+        sk.add({
+          id: 'bulk-info',
+          condition: (sidekick) => sidekick.isAdmin(),
+          elements: [{
+            tag: 'span',
+            attrs: {
+              id: 'hlx-sk-bulk-info',
+              class: 'hlx-sk-label',
+            },
+          }],
+          callback: () => {
+            window.setInterval(() => {
+              updateBulkInfo();
+            }, 500);
+          },
+        });
+
+        // bulk preview
+        sk.add({
+          id: 'bulk-preview',
+          condition: (sidekick) => sidekick.isAdmin(),
+          button: {
+            text: i18n(sk, 'preview'),
+            action: async () => {
+              const confirmText = getBulkText([bulkSelection.length], 'confirm', 'preview');
+              if (bulkSelection.length === 0) {
+                sk.showModal(confirmText);
+              } else if (window.confirm(confirmText)) {
+                sk.showWait();
+                if (isChangedUrl()) {
+                  // url changed, refetch status
+                  sk.addEventListener('statusfetched', () => {
+                    doBulkOperation('preview', 'update', 2, sk.config.innerHost);
+                  }, { once: true });
+                  sk.fetchStatus(true);
+                } else {
+                  doBulkOperation('preview', 'update', 2, sk.config.innerHost);
+                }
+              }
+            },
+            isEnabled: (s) => s.isAuthorized('preview', 'write') && s.status.webPath,
+          },
+        });
+
+        // bulk publish
+        sk.add({
+          id: 'bulk-publish',
+          condition: (sidekick) => sidekick.isAdmin(),
+          button: {
+            text: i18n(sk, 'publish'),
+            action: async () => {
+              const confirmText = getBulkText([bulkSelection.length], 'confirm', 'publish');
+              if (bulkSelection.length === 0) {
+                sk.showModal(confirmText);
+              } else if (window.confirm(confirmText)) {
+                sk.showWait();
+                if (isChangedUrl()) {
+                  // url changed, refetch status
+                  sk.addEventListener('statusfetched', () => {
+                    doBulkOperation('publish', 'publish', 40, sk.config.host || sk.config.outerHost);
+                  }, { once: true });
+                  sk.fetchStatus(true);
+                } else {
+                  doBulkOperation('publish', 'publish', 40, sk.config.host || sk.config.outerHost);
+                }
+              }
+            },
+            isEnabled: (s) => s.isAuthorized('live', 'write') && s.status.webPath,
+          },
+        });
+
+        // bulk copy urls
+        sk.add({
+          id: 'bulk-copy-urls',
+          condition: (sidekick) => sidekick.isAdmin(),
+          button: {
+            isDropdown: true,
+          },
+        });
+        [{
+          env: 'preview',
+          hostProperty: 'innerHost',
+          condition: (sidekick) => sidekick.isAdmin(),
+        }, {
+          env: 'live',
+          hostProperty: 'outerHost',
+          condition: (sidekick) => sidekick.isAdmin(),
+          advanced: (sidekick) => !!sidekick.config.host,
+        }, {
+          env: 'prod',
+          hostProperty: 'host',
+          condition: (sidekick) => sidekick.isAdmin() && sidekick.config.host,
+        }].forEach(({
+          env,
+          hostProperty,
+          condition,
+          advanced = () => false,
+        }) => {
+          sk.add({
+            id: `bulk-copy-${env}-urls`,
+            container: 'bulk-copy-urls',
+            condition,
+            advanced,
+            button: {
+              text: i18n(sk, `copy_${env}_url`),
+              action: async () => {
+                const emptyText = getBulkText([bulkSelection.length], 'confirm');
+                if (bulkSelection.length === 0) {
+                  sk.showModal(emptyText);
+                } else {
+                  sk.showWait();
+                  if (isChangedUrl()) {
+                    // url changed, refetch status
+                    sk.addEventListener('statusfetched', () => {
+                      doBulkCopyUrls(hostProperty);
+                    }, { once: true });
+                    sk.fetchStatus(true);
+                  } else {
+                    doBulkCopyUrls(hostProperty);
+                  }
+                }
+              },
+            },
+          });
+        });
+
+        updateBulkInfo();
+      }, { once: true });
+    }
   }
 
   /**
@@ -1284,6 +1747,7 @@
           }
           // assemble plugin config
           const plugin = {
+            custom: true,
             id: id || `custom-plugin-${i}`,
             condition,
             button: {
@@ -1311,6 +1775,11 @@
                       } else {
                         palette.classList.remove('hlx-sk-hidden');
                         button.classList.add('pressed');
+                        // log telemetry
+                        sampleRUM('sidekick:paletteclosed', {
+                          source: sk.location.href,
+                          target: sk.status.webPath,
+                        });
                       }
                     };
                     if (!palette) {
@@ -1333,6 +1802,7 @@
                       appendTag(titleBar, {
                         tag: 'button',
                         attrs: {
+                          title: i18n(sk, 'close'),
                           class: 'close',
                         },
                         lstnrs: {
@@ -1349,7 +1819,7 @@
                         tag: 'iframe',
                         attrs: {
                           src: target,
-                          allow: 'clipboard-write',
+                          allow: 'clipboard-write *',
                         },
                       });
                     }
@@ -1374,6 +1844,15 @@
     }
   }
 
+  async function checkProfileStatus(sk, status) {
+    const url = getAdminUrl(sk.config, 'profile');
+    const opts = getAdminFetchOptions();
+    return fetch(url, opts)
+      .then((res) => res.json())
+      .then((json) => (json.status === status))
+      .catch(() => false);
+  }
+
   /**
    * Logs the user in.
    * @private
@@ -1382,70 +1861,54 @@
    */
   function login(sk, selectAccount) {
     sk.showWait();
-    const loginUrl = getAdminUrl(
-      sk.config,
-      'login',
-      sk.isEditor() ? '' : sk.location.pathname,
-    );
-    loginUrl.searchParams.set('loginRedirect', 'https://www.hlx.live/tools/sidekick/login-success');
+    const loginUrl = getAdminUrl(sk.config, 'login');
     const extensionId = window.chrome?.runtime?.id;
-    if (extensionId) {
+    const authHeaderEnabled = extensionId && !window.navigator.vendor.includes('Apple');
+    if (authHeaderEnabled) {
       loginUrl.searchParams.set('extensionId', extensionId);
+    } else {
+      loginUrl.searchParams.set(
+        'loginRedirect',
+        'https://www.hlx.live/tools/sidekick/login-success',
+      );
     }
     if (selectAccount) {
       loginUrl.searchParams.set('selectAccount', true);
     }
-    const profileUrl = new URL('https://admin.hlx.page/profile');
-    if (sk.config.adminVersion) {
-      profileUrl.searchParams.append('hlx-admin-version', sk.config.adminVersion);
-    }
     const loginWindow = window.open(loginUrl.toString());
 
-    async function checkLoggedIn() {
-      if ((await fetch(profileUrl.href, getAdminFetchOptions(sk.config))).ok) {
-        window.setTimeout(() => {
-          if (!loginWindow.closed) {
-            loginWindow.close();
-          }
-        }, 500);
-        delete sk.status.status;
-        sk.addEventListener('statusfetched', () => sk.hideModal(), { once: true });
-        sk.fetchStatus();
-        fireEvent(sk, 'loggedin');
-        return true;
-      }
-      return false;
-    }
+    let attempts = 0;
 
-    let seconds = 0;
-    const loginCheck = window.setInterval(async () => {
-      // give up after 2 minutes or window closed
-      if (seconds >= 120 || loginWindow.closed) {
-        window.clearInterval(loginCheck);
-        loginWindow.close();
-        // last check
-        if (await checkLoggedIn()) {
+    async function checkLoggedIn() {
+      if (loginWindow.closed) {
+        const { config, status, location } = sk;
+        attempts += 1;
+        // try 5 times after login window has been closed
+        if (await checkProfileStatus(sk, 200)) {
+          // logged in, stop checking
+          delete status.status;
+          sk.addEventListener('statusfetched', () => sk.hideModal(), { once: true });
+          sk.config = await initConfig(config, location);
+          sk.config.authToken = window.hlx.sidekickConfig.authToken;
+          addCustomPlugins(sk);
+          sk.fetchStatus();
+          fireEvent(sk, 'loggedin');
           return;
         }
-
-        if (seconds >= 120) {
+        if (attempts >= 5) {
+          // give up after 5 attempts
           sk.showModal({
-            css: 'modal-login-timeout',
+            message: i18n(sk, 'error_login_timeout'),
             sticky: true,
             level: 1,
           });
-        } else {
-          sk.showModal({
-            css: 'modal-login-aborted',
-          });
+          return;
         }
       }
-
-      seconds += 1;
-      if (await checkLoggedIn()) {
-        window.clearInterval(loginCheck);
-      }
-    }, 1000);
+      // try again after 1s
+      window.setTimeout(checkLoggedIn, 1000);
+    }
+    window.setTimeout(checkLoggedIn, 1000);
   }
 
   /**
@@ -1454,29 +1917,47 @@
    * @param {Sidekick} sk The sidekick
    */
   function logout(sk) {
-    const logoutUrl = new URL('https://admin.hlx.page/logout');
-    if (sk.config.adminVersion) {
-      logoutUrl.searchParams.append('hlx-admin-version', sk.config.adminVersion);
+    sk.showWait();
+    const logoutUrl = getAdminUrl(sk.config, 'logout');
+    const extensionId = window.chrome?.runtime?.id;
+    if (extensionId && !window.navigator.vendor.includes('Apple')) { // exclude safari
+      logoutUrl.searchParams.set('extensionId', extensionId);
+    } else {
+      logoutUrl.searchParams.set(
+        'logoutRedirect',
+        'https://www.hlx.live/tools/sidekick/logout-success',
+      );
     }
+    const logoutWindow = window.open(logoutUrl.toString());
 
-    fetch(logoutUrl.href, {
-      ...getAdminFetchOptions(sk.config),
-    })
-      .then(() => {
-        delete sk.config.authToken;
-        sk.status = {
-          loggedOut: true,
-        };
-      })
-      .then(() => fireEvent(sk, 'loggedout'))
-      .then(() => sk.fetchStatus())
-      .catch((e) => {
-        console.error('logout failed', e);
-        sk.showModal({
-          css: 'modal-logout-error',
-          level: 0,
-        });
-      });
+    let attempts = 0;
+
+    async function checkLoggedOut() {
+      if (logoutWindow.closed) {
+        attempts += 1;
+        // try 5 times after login window has been closed
+        if (await checkProfileStatus(sk, 401)) {
+          delete sk.status.profile;
+          delete sk.config.authToken;
+          sk.addEventListener('statusfetched', () => sk.hideModal(), { once: true });
+          sk.fetchStatus();
+          fireEvent(sk, 'loggedout');
+          return;
+        }
+        if (attempts >= 5) {
+          // give up after 5 attempts
+          sk.showModal({
+            message: i18n(sk, 'error_logout_error'),
+            sticky: true,
+            level: 1,
+          });
+          return;
+        }
+      }
+      // try again after 1s
+      window.setTimeout(checkLoggedOut, 1000);
+    }
+    window.setTimeout(checkLoggedOut, 1000);
   }
 
   /**
@@ -1485,10 +1966,10 @@
    * @param {Sidekick} sk The sidekick
    */
   function checkUserState(sk) {
-    const toggle = sk.get('user').firstElementChild;
+    const toggle = sk.userMenu.firstElementChild;
     toggle.removeAttribute('disabled');
-    const updateUserPicture = async (picture) => {
-      toggle.querySelectorAll('.user-picture').forEach((img) => img.remove());
+    const updateUserPicture = async (picture, name) => {
+      toggle.querySelector('.user-picture')?.remove();
       if (picture) {
         if (picture.startsWith('https://admin.hlx.page/')) {
           // fetch the image with auth token
@@ -1507,15 +1988,19 @@
             src: picture,
           },
         });
+        toggle.title = name;
       } else {
+        toggle.querySelector('.user-picture')?.remove();
         toggle.querySelector('.user-icon').classList.remove('user-icon-hidden');
+        toggle.title = i18n(sk, 'anonymous');
       }
     };
     const { profile } = sk.status;
     if (profile) {
       const { name, email, picture } = profile;
-      toggle.title = name;
-      updateUserPicture(picture);
+      updateUserPicture(picture, name);
+      sk.remove('user-login');
+
       const info = sk.get('user-info');
       if (!info) {
         sk.add({
@@ -1553,12 +2038,13 @@
         info.querySelector('.profile-name').textContent = name;
         info.querySelector('.profile-email').textContent = email;
       }
-      // logout
+      // switch user
       sk.add({
         container: 'user',
         id: 'user-switch',
         condition: (sidekick) => sidekick.isAuthenticated(),
         button: {
+          text: i18n(sk, 'user_switch'),
           action: () => login(sk, true),
         },
       });
@@ -1568,27 +2054,152 @@
         id: 'user-logout',
         condition: (sidekick) => sidekick.isAuthenticated(),
         button: {
+          text: i18n(sk, 'user_logout'),
           action: () => logout(sk),
         },
       });
+      // clean up on logout
+      sk.addEventListener('loggedout', () => {
+        sk.remove('user-info');
+        sk.remove('user-switch');
+        sk.remove('user-logout');
+      });
     } else {
       updateUserPicture();
-      if (!sk.get('user-login')) {
-        // login
-        sk.add({
-          container: 'user',
-          id: 'user-login',
-          condition: (sidekick) => !sidekick.status.profile || !sidekick.isAuthenticated(),
-          button: {
-            action: () => login(sk),
-          },
-        });
-      }
-      if (!sk.status.loggedOut && !sk.isAuthenticated()) {
+      // login
+      sk.add({
+        container: 'user',
+        id: 'user-login',
+        condition: (sidekick) => !sidekick.status.profile || !sidekick.isAuthenticated(),
+        button: {
+          text: i18n(sk, 'user_login'),
+          action: () => login(sk),
+        },
+      });
+      // clean up on login
+      sk.addEventListener('loggedin', () => {
+        sk.remove('user-login');
+      });
+      if (!sk.status.loggedOut && sk.status.status === 401 && !sk.isAuthenticated()) {
         // // encourage login
         toggle.click();
         toggle.nextElementSibling.classList.add('highlight');
       }
+    }
+  }
+
+  function getTimeAgo(sk, dateParam) {
+    if (!dateParam) {
+      return i18n(sk, 'never');
+    }
+    const date = typeof dateParam === 'object' ? dateParam : new Date(dateParam);
+
+    const today = new Date();
+    const yesterday = new Date(today - 86400000); // 86400000 = ms in a day
+    const seconds = Math.round((today - date) / 1000);
+    const minutes = Math.round(seconds / 60);
+    const isToday = today.toDateString() === date.toDateString();
+    const isYesterday = yesterday.toDateString() === date.toDateString();
+    const isThisYear = today.getFullYear() === date.getFullYear();
+    const timeToday = date.toLocaleTimeString([], {
+      timeStyle: 'short',
+    });
+    const dateThisYear = date.toLocaleString([], {
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: 'numeric',
+    });
+    const fullDate = date.toLocaleString([], {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: 'numeric',
+    });
+
+    if (seconds < 30) {
+      return i18n(sk, 'now');
+    } else if (seconds < 120) {
+      return i18n(sk, 'seconds_ago').replace('$1', seconds);
+    } else if (minutes < 60) {
+      return i18n(sk, 'minutes_ago').replace('$1', minutes);
+    } else if (isToday) {
+      return i18n(sk, 'today_at').replace('$1', timeToday);
+    } else if (isYesterday) {
+      return i18n(sk, 'yesterday_at').replace('$1', timeToday);
+    } else if (isThisYear) {
+      return dateThisYear;
+    }
+
+    return fullDate;
+  }
+
+  function updateModifiedDates(sk) {
+    const infoPlugin = sk.get('info');
+    if (!infoPlugin) {
+      return;
+    }
+
+    const editEl = infoPlugin.querySelector('.edit-date');
+    const previewEl = infoPlugin.querySelector('.preview-date');
+    const publishEl = infoPlugin.querySelector('.publish-date');
+
+    const { status } = sk;
+    const editLastMod = (status.edit && status.edit.lastModified) || null;
+    const previewLastMod = (status.preview && status.preview.lastModified) || null;
+    const liveLastMod = (status.live && status.live.lastModified) || null;
+
+    editEl.innerHTML = getTimeAgo(sk, editLastMod);
+    previewEl.innerHTML = getTimeAgo(sk, previewLastMod);
+    publishEl.innerHTML = getTimeAgo(sk, liveLastMod);
+  }
+
+  /**
+   * Checks info menu.
+   * @private
+   * @param {Sidekick} sk The sidekick
+   */
+  function enableInfoBtn(sk) {
+    if (!sk.isAdmin()) {
+      const info = sk.get('page-info');
+      if (!info) {
+        const toggle = sk.get('info').firstElementChild;
+        toggle.removeAttribute('disabled');
+
+        sk.add({
+          id: 'page-info',
+          container: 'info',
+          condition: () => true,
+          elements: [
+            {
+              tag: 'div',
+              attrs: {
+                class: 'edit-date-container',
+              },
+            },
+            {
+              tag: 'div',
+              attrs: {
+                class: 'preview-date-container',
+              },
+            },
+            {
+              tag: 'div',
+              attrs: {
+                class: 'publish-date-container',
+              },
+            },
+          ],
+        });
+      }
+      sk.get('page-info').querySelector('.edit-date-container')
+        .innerHTML = `<span>${i18n(sk, 'edit_date')}</span><span class="edit-date"></span>`;
+      sk.get('page-info').querySelector('.preview-date-container')
+        .innerHTML = `<span>${i18n(sk, 'preview_date')}</span><span class="preview-date"></span>`;
+      sk.get('page-info').querySelector('.publish-date-container')
+        .innerHTML = `<span>${i18n(sk, 'publish_date')}</span><span class="publish-date"></span>`;
+      updateModifiedDates(sk);
     }
   }
 
@@ -1604,6 +2215,7 @@
   function registerPlugin(sk, plugin, $plugin) {
     // re-evaluate plugin when status fetched
     sk.addEventListener('statusfetched', () => {
+      const { status } = sk;
       if (typeof plugin.condition === 'function') {
         if ($plugin && !plugin.condition(sk)) {
           // plugin exists but condition now false
@@ -1612,6 +2224,10 @@
           // plugin doesn't exist but condition now true
           sk.add(plugin);
         }
+      }
+      if ($plugin && plugin.custom && status.status === 401) {
+        // custom plugin exists but user logged out now
+        sk.remove(plugin.id);
       }
       const isEnabled = plugin.button && plugin.button.isEnabled;
       if (typeof isEnabled === 'function') {
@@ -1642,7 +2258,14 @@
     window.setTimeout(() => {
       if (!sk.pluginContainer.querySelector(':scope div.plugin')) {
         // add empty text
-        sk.pluginContainer.classList.remove('loading');
+        sk.pluginContainer.innerHTML = '';
+        sk.pluginContainer.append(createTag({
+          tag: 'span',
+          text: i18n(sk, 'plugins_empty'),
+          attrs: {
+            class: 'hlx-sk-label',
+          },
+        }));
         sk.checkPushDownContent();
       }
     }, 5000);
@@ -1660,7 +2283,7 @@
     const { config, location } = sk;
     if (config.pushDown
       && !sk.hasAttribute('pushdown')
-      && location.host !== 'docs.google.com') {
+      && !location.host.endsWith('.google.com')) {
       window.setTimeout(() => {
         if (!skHeight) {
           skHeight = parseFloat(window.getComputedStyle(sk.root).height, 10);
@@ -1694,7 +2317,7 @@
     const { config, location } = sk;
     if (config.pushDown
       && sk.hasAttribute('pushdown')
-      && location.host !== 'docs.google.com') {
+      && !location.host.endsWith('.google.com')) {
       sk.removeAttribute('pushdown');
       config.pushDownElements.forEach((elem) => {
         elem.style.marginTop = 'initial';
@@ -1725,10 +2348,12 @@
     if (create && view) {
       const description = appendTag(view, {
         tag: 'div',
+        text: i18n(sk, 'json_view_description'),
         attrs: { class: 'description' },
       });
       appendTag(description, {
         tag: 'button',
+        text: i18n(sk, 'close'),
         attrs: { class: 'close' },
         // eslint-disable-next-line no-use-before-define
         lstnrs: { click: () => hideSpecialView(sk) },
@@ -1838,7 +2463,35 @@
           }
         }
       });
+
+      // log telemetry
+      sampleRUM('sidekick:specialviewhidden', {
+        source: sk.location.href,
+        target: sk.status.webPath,
+      });
     }
+  }
+
+  /**
+   * Fetches the dictionary for a language.
+   * @private
+   * @param {Sidekick} sk The sidekick
+   * @param {string} lang The language
+   * @returns {Object} The dictionary
+   */
+  async function fetchDict(sk, lang) {
+    const dict = {};
+    const dictPath = `${sk.config.scriptRoot}/_locales/${lang}/messages.json`;
+    try {
+      const res = await fetch(dictPath);
+      const messages = await res.json();
+      Object.keys(messages).forEach((key) => {
+        dict[key] = messages[key].message;
+      });
+    } catch (e) {
+      console.error(`failed to fetch dictionary from ${dictPath}`);
+    }
+    return dict;
   }
 
   /**
@@ -1876,6 +2529,94 @@
         },
       });
       this.addEventListener('contextloaded', () => {
+        this.loadCSS();
+        // containers
+        this.pluginContainer = appendTag(this.root, {
+          tag: 'div',
+          attrs: {
+            class: 'plugin-container',
+          },
+        });
+        this.pluginContainer.append(createTag({
+          tag: 'span',
+          text: i18n(this, 'plugins_loading'),
+          attrs: {
+            class: 'hlx-sk-label',
+          },
+        }));
+        this.featureContainer = appendTag(this.root, {
+          tag: 'div',
+          attrs: {
+            class: 'feature-container',
+          },
+        });
+        // info button
+        appendTag(
+          this.featureContainer,
+          createDropdown(this, {
+            id: 'info',
+            lstnrs: {
+              click: () => {
+                this.fetchStatus();
+                updateModifiedDates(this);
+              },
+            },
+            button: {
+              attrs: {
+                disabled: '',
+                title: i18n(this, 'info'),
+              },
+              elements: [{
+                tag: 'div',
+                attrs: {
+                  class: 'info-icon',
+                },
+              }],
+            },
+          }),
+        );
+        // user button
+        this.userMenu = appendTag(
+          this.featureContainer,
+          createDropdown(this, {
+            id: 'user',
+            button: {
+              attrs: {
+                disabled: '',
+                title: i18n(this, 'anonymous'),
+              },
+              elements: [{
+                tag: 'div',
+                attrs: {
+                  class: 'user-icon',
+                },
+              }],
+            },
+          }),
+        );
+        // share button
+        const share = appendTag(this.featureContainer, {
+          tag: 'button',
+          attrs: {
+            class: 'share',
+            title: i18n(this, 'share_description'),
+          },
+          lstnrs: {
+            click: () => shareSidekick(this),
+          },
+        });
+        appendTag(share, { tag: 'i' });
+        // close button
+        appendTag(this.featureContainer, {
+          tag: 'button',
+          attrs: {
+            title: i18n(this, 'close'),
+            class: 'close',
+          },
+          lstnrs: {
+            click: () => this.hide(),
+          },
+        });
         // add default plugins
         addEditPlugin(this);
         addEnvPlugins(this);
@@ -1885,14 +2626,21 @@
         addPublishPlugin(this);
         addUnpublishPlugin(this);
         addCustomPlugins(this);
+        addBulkPlugins(this);
+        // fetch status
+        this.fetchStatus();
+        // push down content
+        pushDownContent(this);
+        // show special view
+        showSpecialView(this);
       }, { once: true });
       this.addEventListener('statusfetched', () => {
         checkUserState(this);
         checkPlugins(this);
         checkLastModified(this);
+        enableInfoBtn(this);
       });
       this.addEventListener('shown', async () => {
-        await showSpecialView(this);
         pushDownContent(this);
       });
       this.addEventListener('hidden', () => {
@@ -1901,61 +2649,9 @@
       });
       this.status = {};
       this.plugins = [];
-      this.pluginContainer = appendTag(this.root, {
-        tag: 'div',
-        attrs: {
-          class: 'plugin-container loading',
-        },
-      });
-      this.featureContainer = appendTag(this.root, {
-        tag: 'div',
-        attrs: {
-          class: 'feature-container',
-        },
-      });
-      // user button
-      this.userMenu = appendTag(
-        this.featureContainer,
-        createDropdown(this, {
-          id: 'user',
-          button: {
-            attrs: {
-              disabled: '',
-            },
-            elements: [{
-              tag: 'div',
-              attrs: {
-                class: 'user-icon',
-              },
-            }],
-          },
-        }),
-      );
-      // share button
-      const share = appendTag(this.featureContainer, {
-        tag: 'button',
-        attrs: {
-          class: 'share',
-        },
-        lstnrs: {
-          click: () => shareSidekick(this),
-        },
-      });
-      appendTag(share, { tag: 'i' });
-      // close button
-      appendTag(this.featureContainer, {
-        tag: 'button',
-        attrs: {
-          class: 'close',
-        },
-        lstnrs: {
-          click: () => this.hide(),
-        },
-      });
+      this.config = {};
 
       this.loadContext(cfg);
-      this.fetchStatus();
-      this.loadCSS();
       checkForIssues(this);
 
       // collapse dropdowns when document is clicked
@@ -1965,30 +2661,34 @@
     /**
      * Fetches the status for the current resource.
      * @fires Sidekick#statusfetched
+     * @param {boolean} refreshLocation Refresh the sidekick's location (optional)
      * @returns {Sidekick} The sidekick
      */
-    async fetchStatus() {
+    async fetchStatus(refreshLocation) {
+      if (refreshLocation) {
+        this.location = getLocation();
+      }
       const { owner, repo, ref } = this.config;
       if (!owner || !repo || !ref) {
         return this;
       }
-      if (!this.status.apiUrl) {
+      if (!this.status.apiUrl || refreshLocation) {
         const { href, pathname } = this.location;
         const apiUrl = getAdminUrl(
           this.config,
           'status',
-          this.isEditor() ? '' : pathname,
+          (this.isEditor() || this.isAdmin()) ? '' : pathname,
         );
-        apiUrl.searchParams.append('editUrl', this.isEditor() ? href : 'auto');
+        apiUrl.searchParams.append('editUrl', (this.isEditor() || this.isAdmin()) ? href : 'auto');
         this.status.apiUrl = apiUrl.toString();
       }
       fetch(this.status.apiUrl, {
-        ...getAdminFetchOptions(this.config),
+        ...getAdminFetchOptions(),
       })
         .then((resp) => {
           // check for error status
           if (!resp.ok) {
-            let css = '';
+            let errorKey = '';
             switch (resp.status) {
               case 401:
                 // unauthorized, ask user to log in
@@ -1998,14 +2698,14 @@
                   }),
                 };
               case 404:
-                css = this.isEditor()
-                  ? 'modal-status-404-document'
-                  : 'modal-status-404-content';
+                errorKey = this.isEditor()
+                  ? 'error_status_404_document'
+                  : 'error_status_404_content';
                 break;
               default:
-                css = `modal-status-${resp.status}`;
+                errorKey = `error_status_${resp.status}`;
             }
-            throw new Error(css);
+            throw new Error(errorKey);
           }
           return resp;
         })
@@ -2013,14 +2713,18 @@
           try {
             return resp.json();
           } catch (e) {
-            throw new Error('modal-status-invalid');
+            throw new Error('error_status_invalid');
           }
         })
-        .then((json) => Object.assign(this.status, json))
+        .then((json) => {
+          this.status = json;
+          return json;
+        })
         .then((json) => fireEvent(this, 'statusfetched', json))
-        .catch((e) => {
-          this.status.error = e.message;
+        .catch(({ message }) => {
+          this.status.error = message;
           const modal = {
+            message: message.startsWith('error_') ? i18n(this, message) : message,
             sticky: true,
             level: 0,
             callback: () => {
@@ -2032,27 +2736,29 @@
               }
             },
           };
-          if (e.message.startsWith('modal-status-')) {
-            // add error mesasage as css class
-            modal.css = e.message;
-          } else {
-            // add error mesasage as text
-            modal.message = e.message;
-          }
           this.showModal(modal);
         });
       return this;
     }
 
     /**
-     * Loads the sidekick configuration and retrieves the location of the current document.
+     * Loads the sidekick configuration and language dictionary,
+     * and retrieves the location of the current document.
      * @param {SidekickConfig} cfg The sidekick config
      * @fires Sidekick#contextloaded
      * @returns {Sidekick} The sidekick
      */
-    loadContext(cfg) {
+    async loadContext(cfg) {
       this.location = getLocation();
-      this.config = initConfig(cfg, this.location);
+      this.config = await initConfig(cfg, this.location);
+
+      // load dictionary based on user language
+      const lang = this.config.lang || navigator.language.split('-')[0];
+      this.dict = await fetchDict(this, lang);
+      if (!this.dict.title) {
+        // unsupported language, default to english
+        this.dict = await fetchDict(this, 'en');
+      }
       fireEvent(this, 'contextloaded', {
         config: this.config,
         location: this.location,
@@ -2165,12 +2871,12 @@
           return $plugin;
         }
         // add plugin
-        $plugin = appendTag($pluginContainer, getPluginCfg(plugin), $before);
         if ($pluginContainer === this.pluginContainer
-            && this.pluginContainer.classList.contains('loading')) {
-          // remove loading text
-          this.pluginContainer.classList.remove('loading');
+          && !$pluginContainer.querySelector(':scope div.plugin')) {
+          // first plugin, remove loading text
+          $pluginContainer.innerHTML = '';
         }
+        $plugin = appendTag($pluginContainer, getPluginCfg(plugin), $before);
       } else if (!plugin.isShown) {
         // remove existing plugin
         $plugin.remove();
@@ -2254,9 +2960,24 @@
      */
     isEditor() {
       const { config, location } = this;
-      return /.*\.sharepoint\.com/.test(location.host)
+      const { host, pathname, search } = location;
+      return (/.*\.sharepoint\.com$/.test(host)
+        && pathname.match(/\/_layouts\/15\/[\w]+.aspx$/)
+        && search.includes('sourcedoc='))
         || location.host === 'docs.google.com'
-        || (config.mountpoint && new URL(config.mountpoint).host === location.host);
+        || (config.mountpoint && new URL(config.mountpoint).host === location.host
+          && !this.isAdmin());
+    }
+
+    /**
+     * Checks if the current location is an admin URL (SharePoint or Google Drive).
+     * @returns {boolean} <code>true</code> if admin URL, else <code>false</code>
+     */
+    isAdmin() {
+      const { location } = this;
+      return (location.host === 'drive.google.com')
+        || (/\w+\.sharepoint.com$/.test(location.host)
+        && location.pathname.endsWith('/Forms/AllItems.aspx'));
     }
 
     /**
@@ -2323,7 +3044,8 @@
     isContent() {
       const file = this.location.pathname.split('/').pop();
       const ext = file && file.split('.').pop();
-      return this.isEditor() || ext === file || ext === 'html' || ext === 'json' || ext === 'pdf';
+      return this.isEditor() || this.isAdmin() || ext === file || ext === 'html'
+        || ext === 'json' || ext === 'pdf';
     }
 
     /**
@@ -2332,8 +3054,7 @@
      * else <code>false</code>
      */
     isAuthenticated() {
-      const { status } = this.status;
-      return status !== 401;
+      return !!this.status?.profile;
     }
 
     /**
@@ -2371,7 +3092,7 @@
      * Displays a sticky notification asking the user to wait.
      */
     showWait() {
-      this.showModal({ css: 'modal-wait', sticky: true });
+      this.showModal({ message: i18n(this, 'please_wait'), sticky: true });
     }
 
     /**
@@ -2492,9 +3213,6 @@
      * @returns {Sidekick} The sidekick
      */
     showHelp(topic, step = 0) {
-      if (!this.isAuthenticated()) {
-        return this;
-      }
       const { id, steps } = topic;
       // contextualize and consolidate help steps
       const cSteps = steps.filter(({ selector }) => {
@@ -2541,6 +3259,7 @@
             tag: 'a',
             attrs: {
               class: `help-step help-${type}`,
+              title: i18n(this, `help_${type}`),
             },
             lstnrs: {
               click: (evt) => {
@@ -2562,16 +3281,12 @@
         const close = appendTag(buttonControls, createDropdown(this, {
           id: 'help-close',
           button: {
-            attrs: {
-              class: 'dropdown-toggle close',
-            },
+            text: i18n(this, 'close'),
           },
         }));
         appendTag(close.lastElementChild, {
           tag: 'button',
-          attrs: {
-            class: 'help-close-dismiss',
-          },
+          text: i18n(this, 'help_close_dismiss'),
           lstnrs: {
             click: () => {
               fireEvent(this, 'helpdismissed', id);
@@ -2580,9 +3295,7 @@
         });
         appendTag(close.lastElementChild, {
           tag: 'button',
-          attrs: {
-            class: 'help-close-acknowledge',
-          },
+          text: i18n(this, 'help_close_acknowledge'),
           lstnrs: {
             click: () => {
               fireEvent(this, 'helpacknowledged', id);
@@ -2591,9 +3304,7 @@
         });
         appendTag(close.lastElementChild, {
           tag: 'button',
-          attrs: {
-            class: 'help-close-opt-out',
-          },
+          text: i18n(this, 'help_close_opt_out'),
           lstnrs: {
             click: () => {
               fireEvent(this, 'helpoptedout', id);
@@ -2602,6 +3313,7 @@
         });
         appendTag(buttonControls, {
           tag: 'button',
+          text: i18n(this, 'help_next'),
           attrs: {
             class: 'help-next',
           },
@@ -2617,6 +3329,7 @@
         // last help step
         appendTag(buttonControls, {
           tag: 'button',
+          text: i18n(this, 'help_acknowledge'),
           attrs: {
             class: 'help-acknowledge',
           },
@@ -2643,8 +3356,8 @@
     loadCSS(path) {
       let href = path;
       if (!href) {
-        if (this.config.scriptUrl) {
-          href = `${this.config.scriptUrl.substring(0, this.config.scriptUrl.lastIndexOf('/'))}/app.css`;
+        if (this.config.scriptRoot) {
+          href = `${this.config.scriptRoot}/app.css`;
         } else {
           const filePath = this.location.pathname;
           href = `${filePath.substring(filePath.lastIndexOf('/') + 1).split('.')[0]}.css`;
@@ -2660,20 +3373,6 @@
         .addEventListener('load', () => {
           fireEvent(this, 'cssloaded');
         });
-      // i18n
-      if (!path && !navigator.language.startsWith('en')) {
-        // look for language file in same directory
-        const langHref = `${href.substring(0, href.lastIndexOf('/'))}/${navigator.language.split('-')[0]}.css`;
-        appendTag(this.shadowRoot, {
-          tag: 'link',
-          attrs: {
-            rel: 'stylesheet',
-            href: langHref,
-          },
-        }).addEventListener('load', () => {
-          fireEvent(this, 'langloaded');
-        });
-      }
       return this;
     }
 
@@ -2726,17 +3425,18 @@
      * @fires Sidekick#updated
      * @returns {Response} The response object
      */
-    async update() {
+    async update(path) {
       const { config, status } = this;
-      const path = status.webPath;
+      path = path || status.webPath;
       let resp;
+      let respPath;
       try {
         // update preview
         resp = await fetch(
           getAdminUrl(config, this.isContent() ? 'preview' : 'code', path),
           {
             method: 'POST',
-            ...getAdminFetchOptions(this.config),
+            ...getAdminFetchOptions(),
           },
         );
         if (resp.ok) {
@@ -2744,7 +3444,8 @@
             // bust client cache
             await fetch(`https://${config.innerHost}${path}`, { cache: 'reload', mode: 'no-cors' });
           }
-          fireEvent(this, 'updated', path);
+          respPath = (await resp.json()).webPath;
+          fireEvent(this, 'updated', respPath);
         }
       } catch (e) {
         console.error('failed to update', path, e);
@@ -2753,7 +3454,7 @@
         ok: (resp && resp.ok) || false,
         status: (resp && resp.status) || 0,
         error: (resp && resp.headers.get('x-error')) || '',
-        path,
+        path: respPath || path,
       };
     }
 
@@ -2772,7 +3473,7 @@
           getAdminUrl(config, this.isContent() ? 'preview' : 'code', path),
           {
             method: 'DELETE',
-            ...getAdminFetchOptions(this.config),
+            ...getAdminFetchOptions(),
           },
         );
         // also unpublish if published
@@ -2812,7 +3513,7 @@
           getAdminUrl(config, 'live', purgeURL.pathname),
           {
             method: 'POST',
-            ...getAdminFetchOptions(this.config),
+            ...getAdminFetchOptions(),
           },
         );
         // bust client cache for live and production
@@ -2828,8 +3529,10 @@
         }
         fireEvent(this, 'published', path);
       } catch (e) {
-        console.error('failed to unpublish', path, e);
+        console.error('failed to publish', path, e);
       }
+      resp.path = path;
+      resp.error = (resp.headers && resp.headers.get('x-error')) || '';
       return resp;
     }
 
@@ -2851,7 +3554,7 @@
           getAdminUrl(config, 'live', path),
           {
             method: 'DELETE',
-            ...getAdminFetchOptions(this.config),
+            ...getAdminFetchOptions(),
           },
         );
         fireEvent(this, 'unpublished', path);

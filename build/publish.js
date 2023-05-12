@@ -11,8 +11,10 @@
  */
 /* eslint-disable no-console, import/no-extraneous-dependencies, no-case-declarations */
 
-const fs = require('fs-extra');
-const { fetch } = require('@adobe/fetch').h1();
+import fs from 'fs-extra';
+import { h1 } from '@adobe/fetch';
+
+const { fetch } = h1();
 
 const supportedBrowsers = ['chrome'];
 

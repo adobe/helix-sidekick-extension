@@ -11,17 +11,12 @@
  */
 /* eslint-env mocha */
 
-'use strict';
+import assert from 'assert';
+import {
+  IT_DEFAULT_TIMEOUT, Nock, Setup, TestBrowser,
+} from './utils.js';
 
-const assert = require('assert');
-
-const {
-  IT_DEFAULT_TIMEOUT,
-  TestBrowser,
-  Nock,
-  Setup,
-} = require('./utils.js');
-const { SidekickTest } = require('./SidekickTest.js');
+import { SidekickTest } from './SidekickTest.js';
 
 describe('Test reload plugin', () => {
   /** @type TestBrowser */
@@ -48,7 +43,9 @@ describe('Test reload plugin', () => {
   });
 
   it('Reload plugin uses preview API', async () => {
-    nock.admin(new Setup('blog'));
+    const setup = new Setup('blog');
+    nock.sidekick(setup);
+    nock.admin(setup);
     nock('https://admin.hlx.page')
       .post('/preview/adobe/blog/main/en/topics/bla')
       .reply(200);
@@ -83,7 +80,9 @@ describe('Test reload plugin', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Reload plugin uses code API', async () => {
-    nock.admin(new Setup('blog'));
+    const setup = new Setup('blog');
+    nock.sidekick(setup);
+    nock.admin(setup);
     nock('https://admin.hlx.page')
       .post('/code/adobe/blog/main/en/topics/bla')
       .reply(200);
@@ -119,6 +118,7 @@ describe('Test reload plugin', () => {
   it('Reload plugin button disabled without source document', async () => {
     const setup = new Setup('blog');
     setup.apiResponse().edit = {};
+    nock.sidekick(setup);
     nock.admin(setup);
     const { plugins } = await new SidekickTest({
       browser,
@@ -132,6 +132,7 @@ describe('Test reload plugin', () => {
     const previewLastMod = setup.apiResponse().preview.lastModified;
     setup.apiResponse().preview.lastModified = new Date(new Date(previewLastMod)
       .setFullYear(2020)).toUTCString();
+    nock.sidekick(setup);
     nock.admin(setup);
     const { plugins } = await new SidekickTest({
       browser,

@@ -10,8 +10,6 @@
  * governing permissions and limitations under the License.
  */
 
-'use strict';
-
 (async () => {
   // ensure hlx namespace
   window.hlx = window.hlx || {};
@@ -48,9 +46,10 @@
         log.info('installhelper.js: project not added yet');
         if (addProjectContainer) {
           // instrument add project button
-          const button = addProjectContainer.querySelector('a');
+          const button = addProjectContainer.querySelector('a.button');
           if (button.dataset.sidekickExtension !== giturl) {
-            button.onclick = () => {
+            button.onclick = (e) => {
+              e.preventDefault();
               chrome.runtime.sendMessage({ action: 'addRemoveProject' });
             };
             button.dataset.sidekickExtension = giturl;
@@ -64,9 +63,10 @@
         log.info('installhelper.js: project added');
         if (deleteProjectContainer) {
           // instrument delete project button
-          const button = deleteProjectContainer.querySelector('a');
+          const button = deleteProjectContainer.querySelector('a.button');
           if (button.dataset.sidekickExtension !== giturl) {
-            button.onclick = () => {
+            button.onclick = (e) => {
+              e.preventDefault();
               chrome.runtime.sendMessage({ action: 'addRemoveProject' });
             };
             button.dataset.sidekickExtension = giturl;

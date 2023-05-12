@@ -11,17 +11,12 @@
  */
 /* eslint-env mocha */
 
-'use strict';
+import assert from 'assert';
+import {
+  IT_DEFAULT_TIMEOUT, Nock, Setup, TestBrowser,
+} from './utils.js';
 
-const assert = require('assert');
-
-const {
-  IT_DEFAULT_TIMEOUT,
-  Nock,
-  TestBrowser,
-  Setup,
-} = require('./utils.js');
-const { SidekickTest } = require('./SidekickTest.js');
+import { SidekickTest } from './SidekickTest.js';
 
 describe('Test editor preview plugin', () => {
   /** @type TestBrowser */
@@ -48,12 +43,15 @@ describe('Test editor preview plugin', () => {
   });
 
   it('Editor preview plugin updates preview when switching from editor', async () => {
-    nock.admin(new Setup('blog'));
+    const setup = new Setup('blog');
+    nock.sidekick(setup);
+    nock.admin(setup);
     nock('https://admin.hlx.page')
       .post('/preview/adobe/blog/main/en/topics/bla')
       .reply(201);
     nock('https://main--blog--adobe.hlx.page')
-      .get('/en/topics/bla')
+      .persist()
+      .get(/.*/)
       .reply(200, 'blog adobe...');
     const { requestsMade } = await new SidekickTest({
       browser,
@@ -62,6 +60,7 @@ describe('Test editor preview plugin', () => {
       plugin: 'edit-preview',
       waitPopup: 2000,
       waitNavigation: 'https://main--blog--adobe.hlx.page/en/topics/bla',
+      loadModule: true,
     }).run();
     const updateReq = requestsMade
       .filter((r) => r.method === 'POST')
@@ -79,6 +78,7 @@ describe('Test editor preview plugin', () => {
 
   it('Editor preview plugin refetches status and retries on error', async () => {
     const setup = new Setup('blog');
+    nock.sidekick(setup);
     nock.admin(setup);
     nock('https://admin.hlx.page')
       // send 404 on first post
@@ -90,7 +90,8 @@ describe('Test editor preview plugin', () => {
       .get('/status/adobe/blog/main?editUrl=https%3A%2F%2Fadobe.sharepoint.com%2F%3Aw%3A%2Fr%2Fsites%2FTheBlog%2F_layouts%2F15%2FDoc.aspx%3Fsourcedoc%3D%257BE8EC80CB-24C3-4B95-B082-C51FD8BC8760%257D%26file%3Dbla.docx%26action%3Ddefault%26mobileredirect%3Dtrue')
       .reply(200, setup.apiResponse());
     nock('https://main--blog--adobe.hlx.page')
-      .get('/en/topics/bla')
+      .persist()
+      .get(/.*/)
       .reply(200, 'blog adobe...');
     const { requestsMade } = await new SidekickTest({
       browser,
@@ -98,6 +99,7 @@ describe('Test editor preview plugin', () => {
       url: 'https://adobe.sharepoint.com/:w:/r/sites/TheBlog/_layouts/15/Doc.aspx?sourcedoc=%7BE8EC80CB-24C3-4B95-B082-C51FD8BC8760%7D&file=bla.docx&action=default&mobileredirect=true',
       plugin: 'edit-preview',
       waitNavigation: 'https://main--blog--adobe.hlx.page/en/topics/bla',
+      loadModule: true,
     }).run();
     const statusReqs = requestsMade
       .filter((r) => r.method === 'GET' && r.url.startsWith('https://admin.hlx.page/status/'));
@@ -107,6 +109,7 @@ describe('Test editor preview plugin', () => {
   it.skip('Editor preview plugin handles /.helix/config.json special case', async () => {
     const setup = new Setup('blog');
     setup.apiResponse().webPath = '/.helix/config.json';
+    nock.sidekick(setup);
     nock.admin(setup);
     nock('https://admin.hlx.page')
       .post('/preview/adobe/blog/main/.helix/config.json')
@@ -122,14 +125,20 @@ describe('Test editor preview plugin', () => {
       type: 'json',
       plugin: 'edit-preview',
       waitNavigation: 'https://main--blog--adobe.hlx.page/.helix/config.json',
+      loadModule: true,
     }).run();
     assert.ok(!popupOpened, 'Unexpected popup opened');
-    assert.ok(notification.className.includes('modal-config-success'), `Unexpected notification classes: ${notification.className}`);
+    assert.strictEqual(
+      notification.message,
+      'Configuration successfully activated.',
+      `Unexpected notification message: ${notification.message}`,
+    );
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it.skip('Editor preview plugin shows /.helix/* error message from server', async () => {
     const setup = new Setup('blog');
     setup.apiResponse().webPath = '/.helix/config.json';
+    nock.sidekick(setup);
     nock.admin(setup);
     nock('https://admin.hlx.page')
       .post('/preview/adobe/blog/main/.helix/config.json')
@@ -143,9 +152,14 @@ describe('Test editor preview plugin', () => {
       type: 'json',
       plugin: 'edit-preview',
       waitNavigation: 'https://main--blog--adobe.hlx.page/.helix/test.json',
+      loadModule: true,
     }).run();
     assert.ok(!popupOpened, 'Unexpected popup opened');
-    assert.strictEqual(notification.message, 'foo', `Unexpected notification message: ${notification.message}`);
+    assert.strictEqual(
+      notification.message,
+      'Failed to activate configuration: foo',
+      `Unexpected notification message: ${notification.message}`,
+    );
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Editor preview plugin shows update indicator if edit is newer than preview', async () => {
@@ -153,6 +167,7 @@ describe('Test editor preview plugin', () => {
     const previewLastMod = setup.apiResponse().preview.lastModified;
     setup.apiResponse().preview.lastModified = new Date(new Date(previewLastMod)
       .setFullYear(2020)).toUTCString();
+    nock.sidekick(setup);
     nock.admin(setup);
     const { plugins } = await new SidekickTest({
       browser,
@@ -169,6 +184,7 @@ describe('Test editor preview plugin', () => {
     const setup = new Setup('pages');
     setup.apiResponse().edit.sourceLocation = 'gdrive:1mfBb_tpzM4yYGdxMhRgrKEnBqboxsr';
     setup.apiResponse().edit.contentType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+    nock.sidekick(setup);
     nock.admin(setup);
     const { popupOpened, notification } = await new SidekickTest({
       browser,
@@ -177,8 +193,12 @@ describe('Test editor preview plugin', () => {
       url: 'https://docs.google.com/document/d/2E1PNphAhTZAZrDjevM0BX7CZr7KjomuBO6xE1TUo9NU/edit',
       plugin: 'edit-preview',
       waitPopup: 2000,
+      loadModule: true,
     }).run();
     assert.ok(!popupOpened, 'Unexpected popup opened');
-    assert.ok(notification.className.includes('modal-preview-not-gdoc'), `Unexpected notification classes: ${notification.className}`);
+    assert.ok(
+      notification.message.includes('Microsoft Excel'),
+      `Unexpected notification message: ${notification.message}`,
+    );
   }).timeout(IT_DEFAULT_TIMEOUT);
 });

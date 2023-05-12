@@ -10,8 +10,6 @@
  * governing permissions and limitations under the License.
  */
 
-'use strict';
-
 import {
   GH_URL,
   SHARE_PREFIX,
@@ -31,7 +29,6 @@ import {
   getGitHubSettings,
   setConfig,
   getConfig,
-  storeAuthToken,
   updateProjectConfigs,
 } from './utils.js';
 
@@ -113,14 +110,16 @@ async function guessIfFranklinSite({ id }) {
       func: () => {
         const isFranklinSite = document.head.querySelectorAll('script[src*="scripts.js"]').length > 0
           && document.head.querySelectorAll('link[href*="styles.css"]').length > 0
-          && document.body.querySelector('main > div.section') !== null;
+          && document.body.querySelector('main > div') !== null;
         chrome.runtime.sendMessage({ isFranklinSite });
       },
     });
     // listen for response message from tab
     const listener = ({ isFranklinSite }) => {
-      chrome.runtime.onMessage.removeListener(listener);
-      resolve(isFranklinSite);
+      if (typeof isFranklinSite === 'boolean') {
+        chrome.runtime.onMessage.removeListener(listener);
+        resolve(isFranklinSite);
+      }
     };
     chrome.runtime.onMessage.addListener(listener);
   });
@@ -136,7 +135,7 @@ async function checkContextMenu({ url: tabUrl, id }, configs = []) {
     // clear context menu
     chrome.contextMenus.removeAll(() => {
       // check if add project is applicable
-      if (configs && configs.length > 0 && !checkLastError()) {
+      if (configs && !checkLastError()) {
         const { giturl } = getConfigFromTabUrl(tabUrl);
         if (giturl) {
           const { owner, repo } = getGitHubSettings(giturl);
@@ -158,6 +157,15 @@ async function checkContextMenu({ url: tabUrl, id }, configs = []) {
               contexts: [
                 'action',
               ],
+            });
+            // open preview
+            chrome.contextMenus.create({
+              id: 'openPreview',
+              title: i18n('open_preview'),
+              contexts: [
+                'action',
+              ],
+              visible: tabUrl.startsWith(GH_URL),
             });
           }
         }
@@ -212,8 +220,7 @@ function checkTab(id) {
       }
       const matches = await getProjectMatches(projects, checkUrl);
       log.debug('checking', id, checkUrl, matches);
-      const allowed = matches.length > 0;
-      if (allowed) {
+      if (matches.length > 0) {
         try {
           // execute content script
           chrome.scripting.executeScript({
@@ -319,21 +326,120 @@ function checkViewDocSource(id) {
         openViewDocSource(id);
       }
     } catch (e) {
-      log.warn(`Error checking view source for url: ${tab.url}`, e);
+      log.warn(`Error checking view document source for url: ${tab.url}`, e);
     }
   });
 }
 
 /**
+ * Appends sidekick name and version to the user-agent header for all requests to
+ * admin.hlx.page and rum.hlx.page.
+ */
+async function setUserAgentHeader() {
+  const manifest = chrome.runtime.getManifest();
+  const ua = `${navigator.userAgent} Sidekick/${manifest.version}`;
+  try {
+    // remove existing rule first
+    await chrome.declarativeNetRequest.updateDynamicRules({ removeRuleIds: [1] });
+    await chrome.declarativeNetRequest.updateDynamicRules({
+      addRules: [
+        {
+          id: 1,
+          priority: 1,
+          action: {
+            type: 'modifyHeaders',
+            requestHeaders: [
+              {
+                operation: 'set',
+                header: 'user-agent',
+                value: ua,
+              },
+            ],
+          },
+          condition: {
+            requestDomains: ['admin.hlx.page', 'rum.hlx.page'],
+          },
+        },
+      ],
+    });
+  } catch (e) {
+    log.error(`setUserAgentHeader: ${e.message}`);
+  }
+}
+
+/**
+ * Sets the x-auth-token header for all requests to admin.hlx.page if project config
+ * has an auth token.
+ */
+async function updateAdminAuthHeaderRules() {
+  try {
+    // remove all rules first
+    await chrome.declarativeNetRequest.updateSessionRules({
+      removeRuleIds: (await chrome.declarativeNetRequest.getSessionRules())
+        .map((rule) => rule.id),
+    });
+    // find projects with auth tokens and add rules for each
+    let id = 2;
+    const projects = await getConfig('sync', 'hlxSidekickProjects') || [];
+    const addRules = [];
+    const projectConfigs = await Promise.all(projects.map((handle) => getConfig('sync', handle)));
+    projectConfigs.forEach(({ owner, repo, authToken }) => {
+      if (authToken) {
+        addRules.push({
+          id,
+          priority: 1,
+          action: {
+            type: 'modifyHeaders',
+            requestHeaders: [{
+              operation: 'set',
+              header: 'x-auth-token',
+              value: authToken,
+            }],
+          },
+          condition: {
+            regexFilter: `^https://admin.hlx.page/[a-z]+/${owner}/${repo}/.*`,
+            requestDomains: ['admin.hlx.page'],
+            requestMethods: ['get', 'post', 'delete'],
+            resourceTypes: ['xmlhttprequest'],
+          },
+        });
+        id += 1;
+        log.debug('added admin auth header rule for ', owner, repo);
+      }
+    });
+    if (addRules.length > 0) {
+      await chrome.declarativeNetRequest.updateSessionRules({
+        addRules,
+      });
+      log.debug(`setAdminAuthHeaderRule: ${addRules.length} rule(s) set`);
+    }
+  } catch (e) {
+    log.error(`updateAdminAuthHeaderRules: ${e.message}`);
+  }
+}
+
+async function storeAuthToken(owner, repo, token) {
+  // find config tab with owner/repo
+  const project = await getProject({ owner, repo });
+  if (project) {
+    if (token) {
+      project.authToken = token;
+    } else {
+      delete project.authToken;
+    }
+    await setProject(project);
+    log.debug(`updated auth token for ${owner}--${repo}`);
+  } else {
+    log.debug(`unable to update auth token for ${owner}--${repo}: no such config`);
+  }
+  // auth token changed, set/update admin auth header
+  updateAdminAuthHeaderRules();
+}
+
+/**
  * Adds the listeners for the extension.
  */
-(() => {
-  chrome.runtime.onInstalled.addListener(async ({ reason }) => {
-    log.info(`sidekick extension installed (${reason})`);
-    await updateHelpContent();
-    await updateProjectConfigs();
-  });
-
+(async () => {
   // register message listener
   chrome.runtime.onMessageExternal.addListener(async (message, sender, sendResponse) => {
     log.info('sidekick got external message', message);
@@ -372,6 +478,14 @@ function checkViewDocSource(id) {
       }
     },
     openViewDocSource: async ({ id }) => openViewDocSource(id),
+    openPreview: ({ url }) => {
+      const { owner, repo, ref = 'main' } = getGitHubSettings(url);
+      if (owner && repo) {
+        chrome.tabs.create({
+          url: `https://${ref}--${repo}--${owner}.hlx.page/`,
+        });
+      }
+    },
   };
 
   if (chrome.contextMenus) {
@@ -417,6 +531,28 @@ function checkViewDocSource(id) {
       actions[actionFromTab](tab);
     }
   });
+
+  // listen for delete auth token calls from the content window
+  chrome.runtime.onMessage.addListener(async ({ deleteAuthToken }, { tab }) => {
+    // check if message contains project config and is sent from tab
+    if (tab && tab.id && typeof deleteAuthToken === 'object') {
+      const { owner, repo } = deleteAuthToken;
+      await storeAuthToken(owner, repo, '');
+    }
+  });
+
+  // for local debugging of header modification rules:
+  // 1. add "declarativeNetRequestFeedback" to permissions in manifest.json
+  // 2. uncomment the following 3 lines:
+  // chrome.declarativeNetRequest.onRuleMatchedDebug.addListener(({ request, rule }) => {
+  //   console.log('rule matched', request.method, request.url, rule.ruleId);
+  // });
+
+  await updateHelpContent();
+  await updateProjectConfigs();
+  await setUserAgentHeader();
+  await updateAdminAuthHeaderRules();
+  log.info('sidekick extension initialized');
 })();
 
 // announce sidekick display state
