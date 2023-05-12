@@ -1107,11 +1107,12 @@
       id: 'edit-preview',
       condition: (sidekick) => sidekick.isEditor(),
       button: {
+        text: i18n(sk, 'preview'),
         action: async () => {
-          const { status } = sk;
+          const { status, location } = sk;
           if (status.edit && status.edit.sourceLocation
             && status.edit.sourceLocation.startsWith('onedrive:')
-            && !sk.location.pathname.startsWith('/:x:/')) {
+            && !location.pathname.startsWith('/:x:/')) {
             // show ctrl/cmd + s hint on onedrive docs
             const mac = navigator.platform.toLowerCase().includes('mac') ? '_mac' : '';
             sk.showModal(i18n(sk, `preview_onedrive${mac}`));
@@ -1140,11 +1141,13 @@
               return;
             }
           }
-          const url = new URL(sk.location.href);
-          if (url.pathname.startsWith('/:x:/') && !url.searchParams.get('hlx-sk-preview')) {
+          if (location.pathname.startsWith('/:x:/')) {
             // refresh excel with preview param
-            url.searchParams.append('hlx-sk-preview', Date.now() + 60000); // valid for 1 minute
-            window.location.href = url.toString();
+            window.sessionStorage.setItem('hlx-sk-preview', JSON.stringify({
+              previewUrl: location.href,
+              previewTimestamp: Date.now(),
+            }));
+            window.location.reload();
           } else {
             updatePreview(sk);
           }
@@ -1152,20 +1155,19 @@
         isEnabled: (sidekick) => sidekick.isAuthorized('preview', 'write')
           && sidekick.status.webPath,
       },
-      callback: (sidekick) => {
-        const url = new URL(sidekick.location.href);
-        const check = url.searchParams.get('hlx-sk-preview') || 0;
-        if (url.pathname.startsWith('/:x:/') && check > Date.now() && check < Date.now() + 60000) {
-          // excel preview param detected, wait for status...
+      callback: () => {
+        const { location } = sk;
+        const { previewUrl, previewTimestamp } = JSON
+          .parse(window.sessionStorage.getItem('hlx-sk-preview') || '{}');
+        window.sessionStorage.removeItem('hlx-sk-preview');
+        if (previewUrl === location.href && previewTimestamp < Date.now() + 60000) {
+          // preview request detected in session storage, wait for status...
           sk.showWait();
-          sidekick.addEventListener('statusfetched', async () => {
-            const { status: newStatus } = sk;
-            if (newStatus.webPath && sidekick.isAuthorized('preview', 'write')) {
-              // update preview and remove preview param again
-              updatePreview(sidekick);
-              url.searchParams.delete('hlx-sk-preview');
-              window.history.replaceState({}, '', url);
-              sidekick.location = getLocation();
+          sk.addEventListener('statusfetched', async () => {
+            const { status } = sk;
+            if (status.webPath && sk.isAuthorized('preview', 'write')) {
+              // update preview and remove preview request from session storage
+              updatePreview(sk);
             }
           }, { once: true });
         }
