@@ -927,27 +927,29 @@
   }
 
   async function updatePreview(sk, ranBefore) {
+    console.log('updatePreview');
     const { status } = sk;
     const resp = await sk.update();
     if (!resp.ok) {
       if (!ranBefore) {
+        console.log('preview failed once');
         // assume document has been renamed, re-fetch status and try again
         sk.addEventListener('statusfetched', async () => {
           updatePreview(sk, true);
         }, { once: true });
         sk.fetchStatus();
       } else if (status.webPath.startsWith('/.helix/') && resp.error) {
+        console.log('preview failed twice');
         // show detail message only in config update mode
         sk.showModal({
-          css: 'modal-config-failure',
-          message: resp.error,
+          message: `${i18n(sk, 'error_config_failure')}${resp.error}`,
           sticky: true,
           level: 0,
         });
       } else {
         console.error(resp);
         sk.showModal({
-          css: 'modal-preview-failure',
+          message: i18n(sk, 'error_preview_failure'),
           sticky: true,
           level: 0,
         });
@@ -957,7 +959,7 @@
     // handle special case /.helix/*
     if (status.webPath.startsWith('/.helix/')) {
       sk.showModal({
-        css: 'modal-config-success',
+        message: i18n(sk, 'preview_config_success'),
       });
       return;
     }
@@ -1165,6 +1167,7 @@
           sk.showWait();
           sk.addEventListener('statusfetched', async () => {
             const { status } = sk;
+            console.log('starting deferred preview', status.webPath, sk.isAuthorized('preview', 'write'));
             if (status.webPath && sk.isAuthorized('preview', 'write')) {
               // update preview and remove preview request from session storage
               updatePreview(sk);
