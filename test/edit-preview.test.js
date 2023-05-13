@@ -76,6 +76,34 @@ describe('Test editor preview plugin', () => {
     );
   }).timeout(IT_DEFAULT_TIMEOUT);
 
+  it('Editor preview plugin reloads excel before updating preview', async () => {
+    const url = 'https://adobe.sharepoint.com/:x:/r/sites/TheBlog/_layouts/15/Doc.aspx?sourcedoc=%7BE8EC80CB-24C3-4B95-B082-C51FD8BC8760%7D&file=test.xlsx&action=default&mobileredirect=true';
+    const setup = new Setup('blog');
+    nock.sidekick(setup);
+    nock.admin(setup);
+    const { checkPageResult: { windowReloaded, deferredPreview } = {} } = await new SidekickTest({
+      browser,
+      page,
+      url,
+      plugin: 'edit-preview',
+      loadModule: true,
+      pre: (p) => p.evaluate(() => {
+        window.onbeforeunload = () => {
+          window.hlx.reloaded = true;
+          return false;
+        };
+      }),
+      checkPage: (p) => p.evaluate(() => ({
+        windowReloaded: !!window.hlx.reloaded,
+        deferredPreview: window.sessionStorage.getItem('hlx-sk-preview'),
+      })),
+    }).run();
+    assert.ok(windowReloaded, 'Excel not reloaded');
+    assert.doesNotThrow(() => JSON.parse(deferredPreview), 'No deferred preview in session storage');
+    assert.strictEqual(JSON.parse(deferredPreview).previewUrl, url, 'Deferred preview URL does not match original URL');
+    assert.ok(JSON.parse(deferredPreview).previewTimestamp + 60000 > Date.now(), 'Deferred preview timestamp out of range');
+  }).timeout(IT_DEFAULT_TIMEOUT);
+
   it('Editor preview plugin refetches status and retries on error', async () => {
     const setup = new Setup('blog');
     nock.sidekick(setup);
@@ -106,7 +134,8 @@ describe('Test editor preview plugin', () => {
     assert.strictEqual(statusReqs.length, 2, 'Did not refetch status before updating preview URL');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
-  it.skip('Editor preview plugin handles /.helix/config.json special case', async () => {
+  it('Editor preview plugin handles /.helix/config.json special case', async () => {
+    const url = 'https://adobe.sharepoint.com/:x:/r/sites/TheBlog/_layouts/15/Doc.aspx?sourcedoc=%7BE8EC80CB-24C3-4B95-B082-C51FD8BC8760%7D&file=config.xlsx&action=default&mobileredirect=true';
     const setup = new Setup('blog');
     setup.apiResponse().webPath = '/.helix/config.json';
     nock.sidekick(setup);
@@ -121,11 +150,17 @@ describe('Test editor preview plugin', () => {
     const { popupOpened, notification } = await new SidekickTest({
       browser,
       page,
-      url: `https://adobe.sharepoint.com/:x:/r/sites/TheBlog/_layouts/15/Doc.aspx?sourcedoc=%7BE8EC80CB-24C3-4B95-B082-C51FD8BC8760%7D&file=test.xlsx&action=default&mobileredirect=true&hlx-sk-preview=${Date.now() + 30000}`,
+      url,
       type: 'json',
-      plugin: 'edit-preview',
       waitNavigation: 'https://main--blog--adobe.hlx.page/.helix/config.json',
       loadModule: true,
+      pre: (p) => p.evaluate((previewUrl) => {
+        // excel: set deferred preview in session storage
+        window.sessionStorage.setItem('hlx-sk-preview', JSON.stringify({
+          previewUrl,
+          previewTimestamp: Date.now(),
+        }));
+      }, url),
     }).run();
     assert.ok(!popupOpened, 'Unexpected popup opened');
     assert.strictEqual(
@@ -135,11 +170,12 @@ describe('Test editor preview plugin', () => {
     );
   }).timeout(IT_DEFAULT_TIMEOUT);
 
-  it.skip('Editor preview plugin shows /.helix/* error message from server', async () => {
+  it('Editor preview plugin shows /.helix/* error message from server', async () => {
+    const url = 'https://adobe.sharepoint.com/:x:/r/sites/TheBlog/_layouts/15/Doc.aspx?sourcedoc=%7BE8EC80CB-24C3-4B95-B082-C51FD8BC8760%7D&file=config.xlsx&action=default&mobileredirect=true';
     const setup = new Setup('blog');
     setup.apiResponse().webPath = '/.helix/config.json';
     nock.sidekick(setup);
-    nock.admin(setup);
+    nock.admin(setup, { persist: true });
     nock('https://admin.hlx.page')
       .post('/preview/adobe/blog/main/.helix/config.json')
       .twice()
@@ -148,11 +184,17 @@ describe('Test editor preview plugin', () => {
     const { popupOpened, notification } = await new SidekickTest({
       browser,
       page,
-      url: `https://adobe.sharepoint.com/:x:/r/sites/TheBlog/_layouts/15/Doc.aspx?sourcedoc=%7BE8EC80CB-24C3-4B95-B082-C51FD8BC8760%7D&file=test.xlsx&action=default&mobileredirect=true&hlx-sk-preview=${Date.now() + 30000}`,
+      url,
       type: 'json',
-      plugin: 'edit-preview',
       waitNavigation: 'https://main--blog--adobe.hlx.page/.helix/test.json',
       loadModule: true,
+      pre: (p) => p.evaluate((previewUrl) => {
+        // excel: set deferred preview in session storage
+        window.sessionStorage.setItem('hlx-sk-preview', JSON.stringify({
+          previewUrl,
+          previewTimestamp: Date.now(),
+        }));
+      }, url),
     }).run();
     assert.ok(!popupOpened, 'Unexpected popup opened');
     assert.strictEqual(
