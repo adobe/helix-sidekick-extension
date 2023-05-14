@@ -138,10 +138,10 @@ async function checkContextMenu({ url: tabUrl, id }, configs = []) {
       // check if add project is applicable
       if (configs && !checkLastError()) {
         const { giturl } = getConfigFromTabUrl(tabUrl);
-        const cachedRepo = DISCOVERY_CACHE.find(({ url }) => url === tabUrl);
-        if (giturl || cachedRepo) {
+        const discoveryCache = DISCOVERY_CACHE.find(({ url }) => url === tabUrl);
+        if (giturl || discoveryCache) {
           const { owner, repo } = giturl ? getGitHubSettings(giturl)
-            : (cachedRepo.results.find((r) => r.originalRepository) || {});
+            : (discoveryCache.results.find((r) => r.originalRepository) || {});
           if (owner && repo) {
             const config = configs.find((c) => c.owner === owner && c.repo === repo);
             // add context menu item for adding/removing project config
