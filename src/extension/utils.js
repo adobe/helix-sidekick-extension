@@ -18,7 +18,7 @@ export const GH_URL = 'https://github.com/';
 
 export const DEV_URL = 'http://localhost:3000';
 
-const DISCOVERY_CACHE = [];
+export const DISCOVERY_CACHE = [];
 const DISCOVERY_CACHE_TTL = 7200000;
 
 export const log = {

@@ -14,6 +14,7 @@ import {
   GH_URL,
   SHARE_PREFIX,
   DEV_URL,
+  DISCOVERY_CACHE,
   MANIFEST,
   log,
   i18n,
@@ -137,36 +138,40 @@ async function checkContextMenu({ url: tabUrl, id }, configs = []) {
       // check if add project is applicable
       if (configs && !checkLastError()) {
         const { giturl } = getConfigFromTabUrl(tabUrl);
-        if (giturl) {
-          const { owner, repo } = getGitHubSettings(giturl);
-          const config = configs.find((c) => c.owner === owner && c.repo === repo);
-          // add context menu item for adding/removing project config
-          chrome.contextMenus.create({
-            id: 'addRemoveProject',
-            title: config ? i18n('config_project_remove') : i18n('config_project_add'),
-            contexts: [
-              'action',
-            ],
-          });
-          if (config) {
-            // add context menu item for enabling/disabling project config
-            const { disabled } = config;
+        const cachedRepo = DISCOVERY_CACHE.find(({ url }) => url === tabUrl);
+        if (giturl || cachedRepo) {
+          const { owner, repo } = giturl ? getGitHubSettings(giturl)
+            : (cachedRepo.results.find((r) => r.originalRepository) || {});
+          if (owner && repo) {
+            const config = configs.find((c) => c.owner === owner && c.repo === repo);
+            // add context menu item for adding/removing project config
             chrome.contextMenus.create({
-              id: 'enableDisableProject',
-              title: disabled ? i18n('config_project_enable') : i18n('config_project_disable'),
+              id: 'addRemoveProject',
+              title: config ? i18n('config_project_remove') : i18n('config_project_add'),
               contexts: [
                 'action',
               ],
             });
-            // open preview
-            chrome.contextMenus.create({
-              id: 'openPreview',
-              title: i18n('open_preview'),
-              contexts: [
-                'action',
-              ],
-              visible: tabUrl.startsWith(GH_URL),
-            });
+            if (config) {
+              // add context menu item for enabling/disabling project config
+              const { disabled } = config;
+              chrome.contextMenus.create({
+                id: 'enableDisableProject',
+                title: disabled ? i18n('config_project_enable') : i18n('config_project_disable'),
+                contexts: [
+                  'action',
+                ],
+              });
+              // open preview
+              chrome.contextMenus.create({
+                id: 'openPreview',
+                title: i18n('open_preview'),
+                contexts: [
+                  'action',
+                ],
+                visible: tabUrl.startsWith(GH_URL),
+              });
+            }
           }
         }
       }
