@@ -262,6 +262,9 @@ async function getProjectConfig(owner, repo, ref = 'main') {
 
 export async function assembleProject({
   giturl,
+  owner,
+  repo,
+  ref = 'main',
   mountpoints,
   project,
   host,
@@ -269,7 +272,14 @@ export async function assembleProject({
   devMode,
   disabled,
 }) {
-  const { owner, repo, ref } = getGitHubSettings(giturl);
+  if (giturl && !owner && !repo) {
+    const gh = getGitHubSettings(giturl);
+    owner = gh.owner;
+    repo = gh.repo;
+    ref = gh.ref;
+  } else {
+    giturl = `https://github.com/${owner}/${repo}/tree/${ref}`;
+  }
   const projectConfig = await getProjectConfig(owner, repo, ref);
   const id = `${owner}/${repo}/${ref}`;
   // allow local project config overrides

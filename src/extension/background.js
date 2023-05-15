@@ -42,23 +42,43 @@ function getConfigFromTabUrl(tabUrl) {
   if (!tabUrl) {
     return {};
   }
-  const cfg = getShareSettings(tabUrl);
-  if (!cfg.giturl) {
-    if (tabUrl.startsWith(GH_URL)) {
-      cfg.giturl = tabUrl;
-    } else {
-      try {
-        const url = new URL(tabUrl);
-        const res = /(.*)--(.*)--(.*)\.hlx\.[page|live]/.exec(url.hostname);
-        if (res && res.length === 4) {
-          cfg.giturl = `${GH_URL}${res[3]}/${res[2]}/tree/${res[1]}`;
+  const share = getShareSettings(tabUrl);
+  if (share.giturl) {
+    // share url
+    return getGitHubSettings(share.giturl);
+  } else if (tabUrl.startsWith(GH_URL)) {
+    // github url
+    return getGitHubSettings(tabUrl);
+  } else {
+    try {
+      // check if hlx.page or hlx.live url
+      const url = new URL(tabUrl);
+      const res = /(.*)--(.*)--(.*)\.hlx\.[page|live]/.exec(url.hostname);
+      if (res && res.length === 4) {
+        return {
+          owner: res[3],
+          repo: res[2],
+          ref: res[1],
+        };
+      } else {
+        // check if url is known in discovery cache
+        const discoveryCache = DISCOVERY_CACHE.find(({ url: cacheUrl }) => cacheUrl === tabUrl);
+        if (discoveryCache) {
+          const { owner, repo } = discoveryCache.results.find((r) => r.originalRepository) || {};
+          if (owner && repo) {
+            return {
+              owner,
+              repo,
+              ref: 'main',
+            };
+          }
         }
-      } catch (e) {
-        // ignore invalid url
       }
+    } catch (e) {
+      // ignore invalid url
     }
   }
-  return cfg;
+  return {};
 }
 
 /**
@@ -137,41 +157,36 @@ async function checkContextMenu({ url: tabUrl, id }, configs = []) {
     chrome.contextMenus.removeAll(() => {
       // check if add project is applicable
       if (configs && !checkLastError()) {
-        const { giturl } = getConfigFromTabUrl(tabUrl);
-        const discoveryCache = DISCOVERY_CACHE.find(({ url }) => url === tabUrl);
-        if (giturl || discoveryCache) {
-          const { owner, repo } = giturl ? getGitHubSettings(giturl)
-            : (discoveryCache.results.find((r) => r.originalRepository) || {});
-          if (owner && repo) {
-            const config = configs.find((c) => c.owner === owner && c.repo === repo);
-            // add context menu item for adding/removing project config
+        const { owner, repo } = getConfigFromTabUrl(tabUrl);
+        if (owner && repo) {
+          const config = configs.find((c) => c.owner === owner && c.repo === repo);
+          // add context menu item for adding/removing project config
+          chrome.contextMenus.create({
+            id: 'addRemoveProject',
+            title: config ? i18n('config_project_remove') : i18n('config_project_add'),
+            contexts: [
+              'action',
+            ],
+          });
+          if (config) {
+            // add context menu item for enabling/disabling project config
+            const { disabled } = config;
             chrome.contextMenus.create({
-              id: 'addRemoveProject',
-              title: config ? i18n('config_project_remove') : i18n('config_project_add'),
+              id: 'enableDisableProject',
+              title: disabled ? i18n('config_project_enable') : i18n('config_project_disable'),
               contexts: [
                 'action',
               ],
             });
-            if (config) {
-              // add context menu item for enabling/disabling project config
-              const { disabled } = config;
-              chrome.contextMenus.create({
-                id: 'enableDisableProject',
-                title: disabled ? i18n('config_project_enable') : i18n('config_project_disable'),
-                contexts: [
-                  'action',
-                ],
-              });
-              // open preview
-              chrome.contextMenus.create({
-                id: 'openPreview',
-                title: i18n('open_preview'),
-                contexts: [
-                  'action',
-                ],
-                visible: tabUrl.startsWith(GH_URL),
-              });
-            }
+            // open preview
+            chrome.contextMenus.create({
+              id: 'openPreview',
+              title: i18n('open_preview'),
+              contexts: [
+                'action',
+              ],
+              visible: tabUrl.startsWith(GH_URL),
+            });
           }
         }
       }
@@ -457,29 +472,25 @@ async function storeAuthToken(owner, repo, token) {
   // actions for context menu items and install helper
   const actions = {
     addRemoveProject: async ({ id, url }) => {
-      const cfg = getConfigFromTabUrl(url);
-      if (cfg.giturl) {
-        getState(async ({ projects = [] }) => {
-          const { owner, repo } = getGitHubSettings(cfg.giturl);
-          const project = projects.find((p) => p.owner === owner && p.repo === repo);
-          if (!project) {
-            await addProject(cfg);
-          } else {
-            await deleteProject(`${owner}/${repo}`);
-          }
-          chrome.tabs.reload(id, { bypassCache: true });
-        });
-      }
+      getState(async ({ projects = [] }) => {
+        const cfg = getConfigFromTabUrl(url);
+        const { owner, repo } = cfg;
+        const project = projects.find((p) => p.owner === owner && p.repo === repo);
+        if (!project) {
+          await addProject(cfg);
+        } else {
+          await deleteProject(`${owner}/${repo}`);
+        }
+        chrome.tabs.reload(id, { bypassCache: true });
+      });
     },
     enableDisableProject: async ({ id, url }) => {
       const cfg = getConfigFromTabUrl(url);
-      if (cfg.giturl) {
-        const project = await getProject(getGitHubSettings(cfg.giturl));
-        if (project) {
-          project.disabled = !project.disabled;
-          await setProject(project);
-          chrome.tabs.reload(id, { bypassCache: true });
-        }
+      const project = await getProject(cfg);
+      if (project) {
+        project.disabled = !project.disabled;
+        await setProject(project);
+        chrome.tabs.reload(id, { bypassCache: true });
       }
     },
     openViewDocSource: async ({ id }) => openViewDocSource(id),
