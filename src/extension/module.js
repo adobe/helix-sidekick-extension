@@ -1983,16 +1983,18 @@
               'x-auth-token': sk.config.authToken,
             },
           });
-          picture = URL.createObjectURL(await resp.blob());
+          picture = resp.ok ? URL.createObjectURL(await resp.blob()) : null;
         }
-        toggle.querySelector('.user-icon').classList.add('user-icon-hidden');
-        appendTag(toggle, {
-          tag: 'img',
-          attrs: {
-            class: 'user-picture',
-            src: picture,
-          },
-        });
+        if (picture) {
+          toggle.querySelector('.user-icon').classList.add('user-icon-hidden');
+          appendTag(toggle, {
+            tag: 'img',
+            attrs: {
+              class: 'user-picture',
+              src: picture,
+            },
+          });
+        }
         toggle.title = name;
       } else {
         toggle.querySelector('.user-picture')?.remove();
