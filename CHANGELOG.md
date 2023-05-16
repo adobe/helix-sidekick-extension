@@ -1,3 +1,17 @@
+# [6.16.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.15.1...v6.16.0) (2023-05-16)
+
+
+### Bug Fixes
+
+* handle unavailable sharepoint picture ([57a8cc7](https://github.com/adobe/helix-sidekick-extension/commit/57a8cc75d28da728f098e996811dd5dd244256cf))
+
+
+### Features
+
+* add project from sharepoint/gdrive url ([b05ac9a](https://github.com/adobe/helix-sidekick-extension/commit/b05ac9a964a30bf6db95421c3f870cab8947c73a))
+* excel preview ([a26ddf3](https://github.com/adobe/helix-sidekick-extension/commit/a26ddf327636840b2a9c87c408d07834a1cd8c02))
+* excel preview (wip) ([f6f3f66](https://github.com/adobe/helix-sidekick-extension/commit/f6f3f668fdcb8e28439c94e5fecd2a7376e1beb7))
+
 ## [6.15.1](https://github.com/adobe/helix-sidekick-extension/compare/v6.15.0...v6.15.1) (2023-05-11)
 
 
