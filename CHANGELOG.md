@@ -1,3 +1,10 @@
+## [6.16.1](https://github.com/adobe/helix-sidekick-extension/compare/v6.16.0...v6.16.1) (2023-05-17)
+
+
+### Bug Fixes
+
+* excel preview can fail the first time ([0a763a8](https://github.com/adobe/helix-sidekick-extension/commit/0a763a84d0f981c6e1a946799e9922b225345b62))
+
 # [6.16.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.15.1...v6.16.0) (2023-05-16)
 
 
