@@ -927,19 +927,16 @@
   }
 
   async function updatePreview(sk, ranBefore) {
-    console.log('updatePreview');
     const { status } = sk;
     const resp = await sk.update();
     if (!resp.ok) {
       if (!ranBefore) {
-        console.log('preview failed once');
         // assume document has been renamed, re-fetch status and try again
         sk.addEventListener('statusfetched', async () => {
           updatePreview(sk, true);
         }, { once: true });
         sk.fetchStatus();
       } else if (status.webPath.startsWith('/.helix/') && resp.error) {
-        console.log('preview failed twice');
         // show detail message only in config update mode
         sk.showModal({
           message: `${i18n(sk, 'error_config_failure')}${resp.error}`,
@@ -1146,7 +1143,7 @@
           if (location.pathname.startsWith('/:x:/')) {
             // refresh excel with preview param
             window.sessionStorage.setItem('hlx-sk-preview', JSON.stringify({
-              previewUrl: location.href,
+              previewPath: status.webPath,
               previewTimestamp: Date.now(),
             }));
             window.location.reload();
@@ -1158,17 +1155,15 @@
           && sidekick.status.webPath,
       },
       callback: () => {
-        const { location } = sk;
-        const { previewUrl, previewTimestamp } = JSON
+        const { previewPath, previewTimestamp } = JSON
           .parse(window.sessionStorage.getItem('hlx-sk-preview') || '{}');
         window.sessionStorage.removeItem('hlx-sk-preview');
-        if (previewUrl === location.href && previewTimestamp < Date.now() + 60000) {
+        if (previewTimestamp < Date.now() + 60000) {
           // preview request detected in session storage, wait for status...
           sk.showWait();
           sk.addEventListener('statusfetched', async () => {
             const { status } = sk;
-            console.log('starting deferred preview', status.webPath, sk.isAuthorized('preview', 'write'));
-            if (status.webPath && sk.isAuthorized('preview', 'write')) {
+            if (status.webPath === previewPath && sk.isAuthorized('preview', 'write')) {
               // update preview and remove preview request from session storage
               updatePreview(sk);
             }
