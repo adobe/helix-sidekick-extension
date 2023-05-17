@@ -100,7 +100,7 @@ describe('Test editor preview plugin', () => {
     }).run();
     assert.ok(windowReloaded, 'Excel not reloaded');
     assert.doesNotThrow(() => JSON.parse(deferredPreview), 'No deferred preview in session storage');
-    assert.strictEqual(JSON.parse(deferredPreview).previewUrl, url, 'Deferred preview URL does not match original URL');
+    assert.strictEqual(JSON.parse(deferredPreview).previewPath, url, 'Deferred preview URL does not match original URL');
     assert.ok(JSON.parse(deferredPreview).previewTimestamp + 60000 > Date.now(), 'Deferred preview timestamp out of range');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
@@ -154,10 +154,10 @@ describe('Test editor preview plugin', () => {
       type: 'json',
       waitNavigation: 'https://main--blog--adobe.hlx.page/.helix/config.json',
       loadModule: true,
-      pre: (p) => p.evaluate((previewUrl) => {
+      pre: (p) => p.evaluate((previewPath) => {
         // excel: set deferred preview in session storage
         window.sessionStorage.setItem('hlx-sk-preview', JSON.stringify({
-          previewUrl,
+          previewPath,
           previewTimestamp: Date.now(),
         }));
       }, url),
@@ -188,10 +188,10 @@ describe('Test editor preview plugin', () => {
       type: 'json',
       waitNavigation: 'https://main--blog--adobe.hlx.page/.helix/test.json',
       loadModule: true,
-      pre: (p) => p.evaluate((previewUrl) => {
+      pre: (p) => p.evaluate((previewPath) => {
         // excel: set deferred preview in session storage
         window.sessionStorage.setItem('hlx-sk-preview', JSON.stringify({
-          previewUrl,
+          previewPath,
           previewTimestamp: Date.now(),
         }));
       }, url),
