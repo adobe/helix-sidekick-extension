@@ -927,6 +927,7 @@
   }
 
   async function updatePreview(sk, ranBefore) {
+    sk.showWait();
     const { status } = sk;
     const resp = await sk.update();
     if (!resp.ok) {
@@ -960,6 +961,7 @@
       });
       return;
     }
+    sk.hideModal();
     sk.switchEnv('preview');
   }
 
@@ -1166,6 +1168,8 @@
             if (status.webPath === previewPath && sk.isAuthorized('preview', 'write')) {
               // update preview and remove preview request from session storage
               updatePreview(sk);
+            } else {
+              sk.hideModal();
             }
           }, { once: true });
         }
