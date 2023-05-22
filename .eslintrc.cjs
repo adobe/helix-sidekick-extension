@@ -33,6 +33,7 @@ module.exports = {
     'debug/*',
     'dist/*',
     'src/extension/lib/*.js',
+    'src/extension/module.js',
     'src/safari/*',
   ],
   rules: {

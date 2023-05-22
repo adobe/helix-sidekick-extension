@@ -13,11 +13,12 @@
 
 import fs from 'fs-extra';
 import archiver from 'archiver';
+import * as esbuild from 'esbuild';
 
 const supportedBrowsers = ['chrome', 'safari', 'firefox'];
+const sourceDir = './src/extension';
 
 async function copyResources(browser) {
-  const sourceDir = './src/extension';
   const targetDir = `./dist/${browser}`;
   try {
     await fs.remove(targetDir);
@@ -31,6 +32,25 @@ async function copyResources(browser) {
     process.exit(1);
   }
   console.log(`  resources copied to ${targetDir}`);
+  return targetDir;
+}
+
+async function buildModule(targetDir) {
+  const entryPoints = [`${sourceDir}/app/main.js`];
+  const outfile = `${targetDir}/module.js`;
+  try {
+    await esbuild.build({
+      entryPoints,
+      bundle: true,
+      platform: 'browser',
+      outfile,
+    });
+  } catch (e) {
+    console.error(`  failed to build module: ${e.message}`);
+    process.exit(1);
+  }
+  console.log(`  module built at ${outfile}`);
+  return targetDir;
 }
 
 function copyManifestKeys(sourceObj, browser) {
@@ -58,11 +78,11 @@ function copyManifestKeys(sourceObj, browser) {
   return targetObj;
 }
 
-async function buildManifest(browser) {
-  const targetPath = `./dist/${browser}/manifest.json`;
+async function buildManifest(targetDir, browser) {
+  const targetPath = `${targetDir}/manifest.json`;
   let targetMF = {};
   try {
-    const sourceMF = await fs.readJson('./src/extension/manifest.json');
+    const sourceMF = await fs.readJson(`${sourceDir}/manifest.json`);
     targetMF = copyManifestKeys(sourceMF, browser);
   } catch (e) {
     throw new Error(`  failed to read source manifest.json: ${e.message}`);
@@ -74,11 +94,11 @@ async function buildManifest(browser) {
     throw new Error(`  failed to write target manifest.json: ${e.message}`);
   }
   console.log(`  ${browser}-specific manifest.json created at ${targetPath}`);
+  return targetDir;
 }
 
-function zipExtension(browser) {
-  const dir = `./dist/${browser}`;
-  const zip = `${dir}.zip`;
+function zipExtension(targetDir) {
+  const zip = `${targetDir}.zip`;
   const output = fs.createWriteStream(zip);
   const archive = archiver('zip', {
     zlib: { level: 9 },
@@ -88,10 +108,11 @@ function zipExtension(browser) {
   });
 
   archive.pipe(output);
-  archive.directory(dir, false);
+  archive.directory(targetDir, false);
   archive.finalize();
 
   console.log(`  zip created at ${zip}`);
+  return targetDir;
 }
 
 // run build script
@@ -108,13 +129,15 @@ if (!supportedBrowsers.includes(browser)) {
 console.log(`building ${browser} extension...`);
 
 copyResources(browser)
-  .then(() => buildManifest(browser))
-  .then(() => {
+  .then((dir) => buildModule(dir))
+  .then((dir) => buildManifest(dir, browser))
+  .then((dir) => {
     if (browser === 'chrome') {
-      zipExtension(browser);
+      return zipExtension(dir);
     }
-    console.log('done.');
+    return dir;
   })
+  .then((dir) => console.log(`done: ${dir}`))
   .catch((e) => {
     console.error(e);
     process.exit(1);

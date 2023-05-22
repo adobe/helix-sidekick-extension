@@ -39,8 +39,8 @@
     ]
   },
   "devDependencies": {
-    "@adobe/fetch": "4.0.10",
     "@adobe/eslint-config-helix": "2.0.2",
+    "@adobe/fetch": "4.0.10",
     "@babel/eslint-parser": "7.21.8",
     "@esm-bundle/chai": "4.3.4-fix.0",
     "@semantic-release/changelog": "6.0.3",
@@ -52,6 +52,7 @@
     "archiver": "5.3.1",
     "c8": "7.13.0",
     "codecov": "3.8.3",
+    "esbuild": "0.17.19",
     "eslint": "8.40.0",
     "express": "4.18.2",
     "husky": "8.0.3",
