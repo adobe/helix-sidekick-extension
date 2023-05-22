@@ -618,7 +618,8 @@ The sidekick configuration.
 | liveHost | <code>string</code> |  | The host name of a custom live CDN (optional) |
 | host | <code>string</code> |  | The production host name to publish content to (optional) |
 | byocdn | <code>boolean</code> | <code>false</code> | <pre>true</pre> if the production host is a 3rd party CDN |
-| devMode | <code>boolean</code> | <code>false</code> | Loads configuration and plugins from the developmemt environment |
+| devMode | <code>boolean</code> | <code>false</code> | Loads configuration and plugins from the development environment |
+| devOrigin | <code>boolean</code> | <code>http://localhost:3000</code> | URL of the local development environment |
 | pushDown | <code>boolean</code> | <code>false</code> | <pre>true</pre> to have the sidekick push down page content |
 | pushDownSelector | <code>string</code> |  | The CSS selector for absolute elements to also push down |
 | specialViews | [<code>Array.&lt;ViewConfig&gt;</code>](#ViewConfig) |  | An array of custom [view configurations](#ViewConfig) |

@@ -87,36 +87,32 @@ function getConfigFromTabUrl(tabUrl) {
  * @returns {Promise} The proxy URL
  */
 async function getProxyUrl({ id, url: tabUrl }) {
-  if (tabUrl.startsWith(DEV_URL)) {
-    return new Promise((resolve) => {
-      // inject proxy url retriever
-      chrome.scripting.executeScript({
-        target: { tabId: id },
-        func: () => {
-          let proxyUrl = null;
-          const meta = document.head.querySelector('meta[property="hlx:proxyUrl"]');
-          if (meta && meta.content) {
-            proxyUrl = meta.content;
-          }
-          chrome.runtime.sendMessage({ proxyUrl });
-        },
-      });
-      // listen for proxy url from tab
-      const listener = ({ proxyUrl: proxyUrlFromTab }, { tab }) => {
-        // check if message contains proxy url and is sent from right tab
-        if (proxyUrlFromTab && tab && tab.url === tabUrl && tab.id === id) {
-          chrome.runtime.onMessage.removeListener(listener);
-          resolve(proxyUrlFromTab);
-        } else {
-          // fall back to tab url
-          resolve(tabUrl);
+  return new Promise((resolve) => {
+    // inject proxy url retriever
+    chrome.scripting.executeScript({
+      target: { tabId: id },
+      func: () => {
+        let proxyUrl = null;
+        const meta = document.head.querySelector('meta[property="hlx:proxyUrl"]');
+        if (meta && meta.content) {
+          proxyUrl = meta.content;
         }
-      };
-      chrome.runtime.onMessage.addListener(listener);
+        chrome.runtime.sendMessage({ proxyUrl });
+      },
     });
-  } else {
-    return tabUrl;
-  }
+    // listen for proxy url from tab
+    const listener = ({ proxyUrl: proxyUrlFromTab }, { tab }) => {
+      // check if message contains proxy url and is sent from right tab
+      if (proxyUrlFromTab && tab && tab.url === tabUrl && tab.id === id) {
+        chrome.runtime.onMessage.removeListener(listener);
+        resolve(proxyUrlFromTab);
+      } else {
+        // fall back to tab url
+        resolve(tabUrl);
+      }
+    };
+    chrome.runtime.onMessage.addListener(listener);
+  });
 }
 
 /**
@@ -218,7 +214,13 @@ function checkTab(id) {
       if (!tab.url) return;
       let checkUrl = tab.url;
       // check if active tab has a local dev URL
-      if (checkUrl.startsWith(DEV_URL)) {
+      const devUrls = [
+        DEV_URL,
+        ...projects
+          .filter((p) => !!p.devOrigin)
+          .map((p) => p.devOrigin),
+      ];
+      if (devUrls.find((devUrl) => checkUrl.startsWith(devUrl))) {
         // retrieve proxy url
         log.debug('local dev url detected, retrieve proxy url');
         checkUrl = await getProxyUrl(tab);
