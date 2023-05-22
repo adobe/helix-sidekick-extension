@@ -59,7 +59,9 @@ describe('Test bulk copy URLs plugin', () => {
     nock.admin(setup, {
       route: 'status',
       type: 'admin',
+      persist: true,
     });
+    nock.sidekick(setup);
     const { checkPageResult: buttonTexts } = await new SidekickTest({
       browser,
       page,
@@ -95,6 +97,7 @@ describe('Test bulk copy URLs plugin', () => {
       route: 'status',
       type: 'admin',
     });
+    nock.sidekick(setup);
     const { plugins } = await new SidekickTest({
       browser,
       page,
@@ -114,6 +117,7 @@ describe('Test bulk copy URLs plugin', () => {
 
   it('Bulk copy preview URLs plugin shows notification when triggered with empty selection', async () => {
     const { setup } = TESTS[0];
+    nock.sidekick(setup);
     nock.admin(setup, {
       route: 'status',
       type: 'admin',
@@ -135,6 +139,7 @@ describe('Test bulk copy URLs plugin', () => {
 
   it('Bulk copy live URLs plugin hidden with production host', async () => {
     const { setup } = TESTS[0];
+    nock.sidekick(setup);
     nock.admin(setup, {
       route: 'status',
       type: 'admin',
@@ -156,6 +161,7 @@ describe('Test bulk copy URLs plugin', () => {
 
   it('Bulk copy preview URLs plugin prevents duplicate slashes in path if root folder', async () => {
     const { setup } = TESTS[0];
+    nock.sidekick(setup);
     nock('https://admin.hlx.page/status')
       .get(/.*/)
       .reply(200, {
@@ -187,6 +193,7 @@ describe('Test bulk copy URLs plugin', () => {
 
   it('Bulk copy preview URLs plugin uses json extension for spreadsheet', async () => {
     const { setup } = TESTS[1];
+    nock.sidekick(setup);
     nock.admin(setup, {
       route: 'status',
       type: 'admin',
@@ -222,6 +229,7 @@ describe('Test bulk copy URLs plugin', () => {
   TESTS.forEach(({ env, fixture, setup }) => {
     it(`Bulk copy preview URLs plugin copies preview URLs for existing selection to clipboard in ${env}`, async () => {
       const { owner, repo, ref } = setup.sidekickConfig;
+      nock.sidekick(setup);
       nock.admin(setup, {
         route: 'status',
         type: 'admin',
@@ -252,6 +260,7 @@ describe('Test bulk copy URLs plugin', () => {
 
     it(`Bulk copy preview URLs plugin copies preview URLs for user selection to clipboard in ${env}`, async () => {
       const { owner, repo, ref } = setup.sidekickConfig;
+      nock.sidekick(setup);
       nock.admin(setup, {
         route: 'status',
         type: 'admin',
@@ -291,6 +300,7 @@ describe('Test bulk copy URLs plugin', () => {
 
     it(`Bulk copy live URLs plugin copies live URLs for existing selection to clipboard in ${env}`, async () => {
       const { owner, repo, ref } = setup.sidekickConfig;
+      nock.sidekick(setup);
       nock.admin(setup, {
         route: 'status',
         type: 'admin',
@@ -322,6 +332,7 @@ describe('Test bulk copy URLs plugin', () => {
 
     it(`Bulk copy prod URLs plugin copies production URLs for existing selection to clipboard in ${env}`, async () => {
       const { host } = JSON.parse(setup.configJson);
+      nock.sidekick(setup);
       nock.admin(setup, {
         route: 'status',
         type: 'admin',
@@ -352,6 +363,7 @@ describe('Test bulk copy URLs plugin', () => {
     }).timeout(IT_DEFAULT_TIMEOUT);
 
     it(`Bulk copy prod URLs plugin refetches status after navigation in ${env}`, async () => {
+      nock.sidekick(setup);
       nock.admin(setup, {
         route: 'status',
         type: 'admin',

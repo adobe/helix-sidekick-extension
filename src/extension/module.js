@@ -69,7 +69,7 @@
    * @prop {boolean} isPalette Determines whether a URL is opened in a palette instead of a new tab
    * @prop {string} paletteRect The dimensions and position of a palette (optional)
    * @prop {string[]} environments Specifies when to show this plugin
-   *                               (admin, edit, preview, live, prod)
+   *                               (admin, edit, dev, preview, live, prod)
    * @prop {string[]} excludePaths Exclude the plugin from these paths (glob patterns supported)
    * @prop {string[]} includePaths Include the plugin on these paths (glob patterns supported)
    */
@@ -104,7 +104,8 @@
    * @prop {string} mountpoint The content source URL (optional)
    * @prop {string} project The name of the project used in the sharing link (optional)
    * @prop {Plugin[]} plugins An array of {@link Plugin|plugin configurations} (optional)
-   * @prop {string} outerHost The outer CDN's host name (optional)
+   * @prop {string} previewHost The host name of a custom preview CDN (optional)
+   * @prop {string} liveHost The host name of a custom live CDN (optional)
    * @prop {string} host The production host name to publish content to (optional)
    * @prop {boolean} byocdn=false <pre>true</pre> if the production host is a 3rd party CDN
    * @prop {boolean} devMode=false Loads configuration and plugins from the development environment
@@ -396,19 +397,91 @@
   }
 
   /**
+   * Creates an Admin URL for an API and path.
+   * @private
+   * @param {Object} config The sidekick configuration
+   * @param {string} api The API endpoint to call
+   * @param {string} path The current path
+   * @returns {URL} The admin URL
+   */
+  function getAdminUrl({
+    owner, repo, ref, adminVersion,
+  }, api, path = '') {
+    const adminUrl = new URL([
+      'https://admin.hlx.page/',
+      api,
+      `/${owner}`,
+      `/${repo}`,
+      `/${ref}`,
+      path,
+    ].join(''));
+    if (adminVersion) {
+      adminUrl.searchParams.append('hlx-admin-version', adminVersion);
+    }
+    return adminUrl;
+  }
+
+  /**
+   * Returns the fetch options for admin requests
+   * @param {boolean} omitCredentials Should we omit the credentials
+   * @returns {object}
+   */
+  function getAdminFetchOptions(omitCredentials = false) {
+    const opts = {
+      cache: 'no-store',
+      credentials: omitCredentials ? 'omit' : 'include',
+      headers: {},
+    };
+    return opts;
+  }
+
+  /**
    * Returns the sidekick configuration.
    * @private
    * @param {SidekickConfig} cfg The sidekick config (defaults to {@link window.hlx.sidekickConfig})
    * @param {Location} location The current location
    * @returns {Object} The sidekick configuration
    */
-  function initConfig(cfg, location) {
-    const config = cfg || (window.hlx && window.hlx.sidekickConfig) || {};
+  async function initConfig(cfg, location) {
+    let config = cfg || (window.hlx && window.hlx.sidekickConfig) || {};
     const {
       owner,
       repo,
       ref = 'main',
-      outerHost,
+      devMode,
+      devOrigin = 'http://localhost:3000',
+      adminVersion,
+      _extended,
+    } = config;
+    if (owner && repo && !_extended) {
+      // look for custom config in project
+      const configUrl = devMode
+        ? `${devOrigin}/tools/sidekick/config.json`
+        : getAdminUrl(config, 'sidekick', '/config.json');
+      try {
+        const res = await fetch(configUrl, getAdminFetchOptions(true));
+        if (res.status === 200) {
+          config = {
+            ...config,
+            ...(await res.json()),
+            // no overriding below
+            owner,
+            repo,
+            ref,
+            devMode,
+            adminVersion,
+            _extended: Date.now(),
+          };
+        }
+      } catch (e) {
+        console.log('error retrieving custom sidekick config', e);
+      }
+    }
+
+    const {
+      previewHost,
+      liveHost,
+      outerHost: legacyLiveHost,
       host,
       project,
       pushDown,
@@ -417,32 +490,17 @@
       scriptUrl = 'https://www.hlx.live/tools/sidekick/module.js',
       scriptRoot = scriptUrl.split('/').filter((_, i, arr) => i < arr.length - 1).join('/'),
     } = config;
-    let { devOrigin } = config;
-    if (!devOrigin) {
-      devOrigin = 'http://localhost:3000';
+    const publicHost = host && host.startsWith('http') ? new URL(host).host : host;
+    const hostPrefix = owner && repo ? `${ref}--${repo}--${owner}` : null;
+    let innerHost = previewHost;
+    if (!innerHost) {
+      innerHost = hostPrefix ? `${hostPrefix}.hlx.page` : null;
+    }
+    let outerHost = liveHost || legacyLiveHost;
+    if (!outerHost) {
+      outerHost = hostPrefix ? `${hostPrefix}.hlx.live` : null;
     }
     const devUrl = new URL(devOrigin);
-    const innerPrefix = owner && repo ? `${ref}--${repo}--${owner}` : null;
-    const publicHost = host && host.startsWith('http') ? new URL(host).host : host;
-    let innerHost = 'hlx.page';
-    if (!innerHost && scriptUrl) {
-      // get hlx domain from script src (used for branch deployment testing)
-      const scriptHost = new URL(scriptUrl).host;
-      if (scriptHost && scriptHost !== 'www.hlx.live' && !scriptHost.startsWith(devUrl.host)) {
-        // keep only 1st and 2nd level domain
-        innerHost = scriptHost.split('.')
-          .reverse()
-          .splice(0, 2)
-          .reverse()
-          .join('.');
-      }
-    }
-    innerHost = innerPrefix ? `${innerPrefix}.${innerHost}` : null;
-    let liveHost = outerHost;
-    if (!liveHost && owner && repo) {
-      // use default hlx3 outer CDN including the ref
-      liveHost = `${ref}--${repo}--${owner}.hlx.live`;
-    }
     // define elements to push down
     const pushDownElements = [];
     if (pushDown) {
@@ -471,11 +529,10 @@
       ...config,
       ref,
       innerHost,
-      outerHost: liveHost,
+      outerHost,
       scriptRoot,
       host: publicHost,
       project: project || '',
-      pushDown,
       pushDownElements,
       specialView,
       devUrl,
@@ -855,46 +912,43 @@
     return evt.metaKey || evt.shiftKey || evt.which === 2;
   }
 
-  /**
-   * Creates an Admin URL for an API and path.
-   * @private
-   * @param {Object} config The sidekick configuration
-   * @param {string} api The API endpoint to call
-   * @param {string} path The current path
-   * @returns {URL} The admin URL
-   */
-  function getAdminUrl({
-    owner, repo, ref, adminVersion,
-  }, api, path = '') {
-    const adminUrl = new URL([
-      'https://admin.hlx.page/',
-      api,
-      `/${owner}`,
-      `/${repo}`,
-      `/${ref}`,
-      path,
-    ].join(''));
-    if (adminVersion) {
-      adminUrl.searchParams.append('hlx-admin-version', adminVersion);
+  async function updatePreview(sk, ranBefore) {
+    sk.showWait();
+    const { status } = sk;
+    const resp = await sk.update();
+    if (!resp.ok) {
+      if (!ranBefore) {
+        // assume document has been renamed, re-fetch status and try again
+        sk.addEventListener('statusfetched', async () => {
+          updatePreview(sk, true);
+        }, { once: true });
+        sk.fetchStatus();
+      } else if (status.webPath.startsWith('/.helix/') && resp.error) {
+        // show detail message only in config update mode
+        sk.showModal({
+          message: `${i18n(sk, 'error_config_failure')}${resp.error}`,
+          sticky: true,
+          level: 0,
+        });
+      } else {
+        console.error(resp);
+        sk.showModal({
+          message: i18n(sk, 'error_preview_failure'),
+          sticky: true,
+          level: 0,
+        });
+      }
+      return;
     }
-    return adminUrl;
-  }
-
-  /**
-   * Returns the fetch options for admin requests
-   * @param {object} config
-   * @returns {object}
-   */
-  function getAdminFetchOptions({ authToken }) {
-    const opts = {
-      cache: 'no-store',
-      credentials: 'include',
-      headers: {},
-    };
-    if (authToken) {
-      opts.headers['x-auth-token'] = authToken;
+    // handle special case /.helix/*
+    if (status.webPath.startsWith('/.helix/')) {
+      sk.showModal({
+        message: i18n(sk, 'preview_config_success'),
+      });
+      return;
     }
-    return opts;
+    sk.hideModal();
+    sk.switchEnv('preview');
   }
 
   /**
@@ -1041,47 +1095,11 @@
       condition: (sidekick) => sidekick.isEditor(),
       button: {
         text: i18n(sk, 'preview'),
-        action: async (evt) => {
-          const { status } = sk;
-          sk.showWait();
-          const updatePreview = async (ranBefore) => {
-            const resp = await sk.update();
-            if (!resp.ok) {
-              if (!ranBefore) {
-                // assume document has been renamed, re-fetch status and try again
-                sk.addEventListener('statusfetched', async () => {
-                  updatePreview(true);
-                }, { once: true });
-                sk.fetchStatus();
-              } else if (status.webPath.startsWith('/.helix/') && resp.error) {
-                // show detail message only in config update mode
-                sk.showModal({
-                  message: `${i18n(sk, 'error_config_failure')}${resp.error}`,
-                  sticky: true,
-                  level: 0,
-                });
-              } else {
-                console.error(resp);
-                sk.showModal({
-                  message: i18n(sk, 'error_preview_failure'),
-                  sticky: true,
-                  level: 0,
-                });
-              }
-              return;
-            }
-            // handle special case /.helix/*
-            if (status.webPath.startsWith('/.helix/')) {
-              sk.showModal({
-                message: i18n(sk, 'preview_config_success'),
-              });
-              return;
-            }
-            sk.switchEnv('preview', newTab(evt));
-          };
+        action: async () => {
+          const { status, location } = sk;
           if (status.edit && status.edit.sourceLocation
             && status.edit.sourceLocation.startsWith('onedrive:')
-            && status.edit.contentType && status.edit.contentType.includes('word')) {
+            && !location.pathname.startsWith('/:x:/')) {
             // show ctrl/cmd + s hint on onedrive docs
             const mac = navigator.platform.toLowerCase().includes('mac') ? '_mac' : '';
             sk.showModal(i18n(sk, `preview_onedrive${mac}`));
@@ -1110,10 +1128,37 @@
               return;
             }
           }
-          updatePreview();
+          if (location.pathname.startsWith('/:x:/')) {
+            // refresh excel with preview param
+            window.sessionStorage.setItem('hlx-sk-preview', JSON.stringify({
+              previewPath: status.webPath,
+              previewTimestamp: Date.now(),
+            }));
+            window.location.reload();
+          } else {
+            updatePreview(sk);
+          }
         },
         isEnabled: (sidekick) => sidekick.isAuthorized('preview', 'write')
           && sidekick.status.webPath,
+      },
+      callback: () => {
+        const { previewPath, previewTimestamp } = JSON
+          .parse(window.sessionStorage.getItem('hlx-sk-preview') || '{}');
+        window.sessionStorage.removeItem('hlx-sk-preview');
+        if (previewTimestamp < Date.now() + 60000) {
+          // preview request detected in session storage, wait for status...
+          sk.showWait();
+          sk.addEventListener('statusfetched', async () => {
+            const { status } = sk;
+            if (status.webPath === previewPath && sk.isAuthorized('preview', 'write')) {
+              // update preview and remove preview request from session storage
+              updatePreview(sk);
+            } else {
+              sk.hideModal();
+            }
+          }, { once: true });
+        }
       },
     });
   }
@@ -1231,7 +1276,6 @@
             // fetch and redirect to production
             const redirectHost = config.host || config.outerHost;
             const prodURL = `https://${redirectHost}${path}`;
-            await fetch(prodURL, { cache: 'reload', mode: 'no-cors' });
             console.log(`redirecting to ${prodURL}`);
             if (newTab(evt)) {
               window.open(prodURL);
@@ -1381,9 +1425,11 @@
         // update copy url button texts based on selection size
         ['', 'preview', 'live', 'prod'].forEach((env) => {
           const text = i18n(sk, `copy_${env}${env ? '_' : ''}url${sel.length === 1 ? '' : 's'}`);
-          const button = sk.get(`bulk-copy-${env}${env ? '-' : ''}urls`).querySelector('button');
-          button.textContent = text;
-          button.title = text;
+          const button = sk.get(`bulk-copy-${env}${env ? '-' : ''}urls`)?.querySelector('button');
+          if (button) {
+            button.textContent = text;
+            button.title = text;
+          }
         });
       };
 
@@ -1691,6 +1737,7 @@
           }
           // assemble plugin config
           const plugin = {
+            custom: true,
             id: id || `custom-plugin-${i}`,
             condition,
             button: {
@@ -1762,7 +1809,7 @@
                         tag: 'iframe',
                         attrs: {
                           src: target,
-                          allow: 'clipboard-write',
+                          allow: 'clipboard-write *',
                         },
                       });
                     }
@@ -1787,6 +1834,15 @@
     }
   }
 
+  async function checkProfileStatus(sk, status) {
+    const url = getAdminUrl(sk.config, 'profile');
+    const opts = getAdminFetchOptions();
+    return fetch(url, opts)
+      .then((res) => res.json())
+      .then((json) => (json.status === status))
+      .catch(() => false);
+  }
+
   /**
    * Logs the user in.
    * @private
@@ -1795,70 +1851,54 @@
    */
   function login(sk, selectAccount) {
     sk.showWait();
-    const loginUrl = getAdminUrl(
-      sk.config,
-      'login',
-      sk.isProject() ? sk.location.pathname : '',
-    );
-    loginUrl.searchParams.set('loginRedirect', 'https://www.hlx.live/tools/sidekick/login-success');
+    const loginUrl = getAdminUrl(sk.config, 'login');
     const extensionId = window.chrome?.runtime?.id;
-    if (extensionId) {
+    const authHeaderEnabled = extensionId && !window.navigator.vendor.includes('Apple');
+    if (authHeaderEnabled) {
       loginUrl.searchParams.set('extensionId', extensionId);
+    } else {
+      loginUrl.searchParams.set(
+        'loginRedirect',
+        'https://www.hlx.live/tools/sidekick/login-success',
+      );
     }
     if (selectAccount) {
       loginUrl.searchParams.set('selectAccount', true);
     }
-    const profileUrl = new URL('https://admin.hlx.page/profile');
-    if (sk.config.adminVersion) {
-      profileUrl.searchParams.append('hlx-admin-version', sk.config.adminVersion);
-    }
     const loginWindow = window.open(loginUrl.toString());
 
-    async function checkLoggedIn() {
-      if ((await fetch(profileUrl.href, getAdminFetchOptions(sk.config))).ok) {
-        window.setTimeout(() => {
-          if (!loginWindow.closed) {
-            loginWindow.close();
-          }
-        }, 500);
-        delete sk.status.status;
-        sk.addEventListener('statusfetched', () => sk.hideModal(), { once: true });
-        sk.fetchStatus();
-        fireEvent(sk, 'loggedin');
-        return true;
-      }
-      return false;
-    }
+    let attempts = 0;
 
-    let seconds = 0;
-    const loginCheck = window.setInterval(async () => {
-      // give up after 2 minutes or window closed
-      if (seconds >= 120 || loginWindow.closed) {
-        window.clearInterval(loginCheck);
-        loginWindow.close();
-        // last check
-        if (await checkLoggedIn()) {
+    async function checkLoggedIn() {
+      if (loginWindow.closed) {
+        const { config, status, location } = sk;
+        attempts += 1;
+        // try 5 times after login window has been closed
+        if (await checkProfileStatus(sk, 200)) {
+          // logged in, stop checking
+          delete status.status;
+          sk.addEventListener('statusfetched', () => sk.hideModal(), { once: true });
+          sk.config = await initConfig(config, location);
+          sk.config.authToken = window.hlx.sidekickConfig.authToken;
+          addCustomPlugins(sk);
+          sk.fetchStatus();
+          fireEvent(sk, 'loggedin');
           return;
         }
-
-        if (seconds >= 120) {
+        if (attempts >= 5) {
+          // give up after 5 attempts
           sk.showModal({
             message: i18n(sk, 'error_login_timeout'),
             sticky: true,
             level: 1,
           });
-        } else {
-          sk.showModal({
-            messsage: i18n(sk, 'error_login_aborted'),
-          });
+          return;
         }
       }
-
-      seconds += 1;
-      if (await checkLoggedIn()) {
-        window.clearInterval(loginCheck);
-      }
-    }, 1000);
+      // try again after 1s
+      window.setTimeout(checkLoggedIn, 1000);
+    }
+    window.setTimeout(checkLoggedIn, 1000);
   }
 
   /**
@@ -1867,29 +1907,47 @@
    * @param {Sidekick} sk The sidekick
    */
   function logout(sk) {
-    const logoutUrl = new URL('https://admin.hlx.page/logout');
-    if (sk.config.adminVersion) {
-      logoutUrl.searchParams.append('hlx-admin-version', sk.config.adminVersion);
+    sk.showWait();
+    const logoutUrl = getAdminUrl(sk.config, 'logout');
+    const extensionId = window.chrome?.runtime?.id;
+    if (extensionId && !window.navigator.vendor.includes('Apple')) { // exclude safari
+      logoutUrl.searchParams.set('extensionId', extensionId);
+    } else {
+      logoutUrl.searchParams.set(
+        'logoutRedirect',
+        'https://www.hlx.live/tools/sidekick/logout-success',
+      );
     }
+    const logoutWindow = window.open(logoutUrl.toString());
 
-    fetch(logoutUrl.href, {
-      ...getAdminFetchOptions(sk.config),
-    })
-      .then(() => {
-        delete sk.config.authToken;
-        sk.status = {
-          loggedOut: true,
-        };
-      })
-      .then(() => fireEvent(sk, 'loggedout'))
-      .then(() => sk.fetchStatus())
-      .catch((e) => {
-        console.error('logout failed', e);
-        sk.showModal({
-          message: i18n(sk, 'error_logout_error'),
-          level: 0,
-        });
-      });
+    let attempts = 0;
+
+    async function checkLoggedOut() {
+      if (logoutWindow.closed) {
+        attempts += 1;
+        // try 5 times after login window has been closed
+        if (await checkProfileStatus(sk, 401)) {
+          delete sk.status.profile;
+          delete sk.config.authToken;
+          sk.addEventListener('statusfetched', () => sk.hideModal(), { once: true });
+          sk.fetchStatus();
+          fireEvent(sk, 'loggedout');
+          return;
+        }
+        if (attempts >= 5) {
+          // give up after 5 attempts
+          sk.showModal({
+            message: i18n(sk, 'error_logout_error'),
+            sticky: true,
+            level: 1,
+          });
+          return;
+        }
+      }
+      // try again after 1s
+      window.setTimeout(checkLoggedOut, 1000);
+    }
+    window.setTimeout(checkLoggedOut, 1000);
   }
 
   /**
@@ -1910,16 +1968,18 @@
               'x-auth-token': sk.config.authToken,
             },
           });
-          picture = URL.createObjectURL(await resp.blob());
+          picture = resp.ok ? URL.createObjectURL(await resp.blob()) : null;
         }
-        toggle.querySelector('.user-icon').classList.add('user-icon-hidden');
-        appendTag(toggle, {
-          tag: 'img',
-          attrs: {
-            class: 'user-picture',
-            src: picture,
-          },
-        });
+        if (picture) {
+          toggle.querySelector('.user-icon').classList.add('user-icon-hidden');
+          appendTag(toggle, {
+            tag: 'img',
+            attrs: {
+              class: 'user-picture',
+              src: picture,
+            },
+          });
+        }
         toggle.title = name;
       } else {
         toggle.querySelector('.user-picture')?.remove();
@@ -2147,6 +2207,7 @@
   function registerPlugin(sk, plugin, $plugin) {
     // re-evaluate plugin when status fetched
     sk.addEventListener('statusfetched', () => {
+      const { status } = sk;
       if (typeof plugin.condition === 'function') {
         if ($plugin && !plugin.condition(sk)) {
           // plugin exists but condition now false
@@ -2155,6 +2216,10 @@
           // plugin doesn't exist but condition now true
           sk.add(plugin);
         }
+      }
+      if ($plugin && plugin.custom && status.status === 401) {
+        // custom plugin exists but user logged out now
+        sk.remove(plugin.id);
       }
       const isEnabled = plugin.button && plugin.button.isEnabled;
       if (typeof isEnabled === 'function') {
@@ -2456,6 +2521,7 @@
         },
       });
       this.addEventListener('contextloaded', () => {
+        this.loadCSS();
         // containers
         this.pluginContainer = appendTag(this.root, {
           tag: 'div',
@@ -2555,6 +2621,10 @@
         addBulkPlugins(this);
         // fetch status
         this.fetchStatus();
+        // push down content
+        pushDownContent(this);
+        // show special view
+        showSpecialView(this);
       }, { once: true });
       this.addEventListener('statusfetched', () => {
         checkUserState(this);
@@ -2563,7 +2633,6 @@
         enableInfoBtn(this);
       });
       this.addEventListener('shown', async () => {
-        await showSpecialView(this);
         pushDownContent(this);
       });
       this.addEventListener('hidden', () => {
@@ -2572,9 +2641,9 @@
       });
       this.status = {};
       this.plugins = [];
+      this.config = {};
 
       this.loadContext(cfg);
-      this.loadCSS();
       checkForIssues(this);
 
       // collapse dropdowns when document is clicked
@@ -2606,7 +2675,7 @@
         this.status.apiUrl = apiUrl.toString();
       }
       fetch(this.status.apiUrl, {
-        ...getAdminFetchOptions(this.config),
+        ...getAdminFetchOptions(),
       })
         .then((resp) => {
           // check for error status
@@ -2639,7 +2708,10 @@
             throw new Error('error_status_invalid');
           }
         })
-        .then((json) => Object.assign(this.status, json))
+        .then((json) => {
+          this.status = json;
+          return json;
+        })
         .then((json) => fireEvent(this, 'statusfetched', json))
         .catch(({ message }) => {
           this.status.error = message;
@@ -2670,7 +2742,7 @@
      */
     async loadContext(cfg) {
       this.location = getLocation();
-      this.config = initConfig(cfg, this.location);
+      this.config = await initConfig(cfg, this.location);
 
       // load dictionary based on user language
       const lang = this.config.lang || navigator.language.split('-')[0];
@@ -3356,7 +3428,7 @@
           getAdminUrl(config, this.isContent() ? 'preview' : 'code', path),
           {
             method: 'POST',
-            ...getAdminFetchOptions(this.config),
+            ...getAdminFetchOptions(),
           },
         );
         if (resp.ok) {
@@ -3393,7 +3465,7 @@
           getAdminUrl(config, this.isContent() ? 'preview' : 'code', path),
           {
             method: 'DELETE',
-            ...getAdminFetchOptions(this.config),
+            ...getAdminFetchOptions(),
           },
         );
         // also unpublish if published
@@ -3433,7 +3505,7 @@
           getAdminUrl(config, 'live', purgeURL.pathname),
           {
             method: 'POST',
-            ...getAdminFetchOptions(this.config),
+            ...getAdminFetchOptions(),
           },
         );
         // bust client cache for live and production
@@ -3474,7 +3546,7 @@
           getAdminUrl(config, 'live', path),
           {
             method: 'DELETE',
-            ...getAdminFetchOptions(this.config),
+            ...getAdminFetchOptions(),
           },
         );
         fireEvent(this, 'unpublished', path);

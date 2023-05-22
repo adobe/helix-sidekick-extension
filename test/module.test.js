@@ -44,18 +44,10 @@ describe('Test sidekick', () => {
         nock.done();
       });
 
-      it('Does not render without config', async () => {
-        const { sidekick } = await new SidekickTest({
-          browser,
-          page,
-          setup: 'none',
-          url: 'https://foo.bar/',
-        });
-        assert.ok(!sidekick, 'Did render with missing config');
-      }).timeout(IT_DEFAULT_TIMEOUT);
-
       it('Renders with config', async () => {
-        nock.admin(new Setup('blog'));
+        const setup = new Setup('blog');
+        nock.sidekick(setup);
+        nock.admin(setup);
         const result = await new SidekickTest({
           browser,
           page,
@@ -84,10 +76,12 @@ describe('Test sidekick', () => {
           .reply(500)
           .get('/status/adobe/blog/main/en/topics/bla?editUrl=auto')
           .reply(504);
+        nock.sidekick(new Setup('blog'), { persist: true }); // will be called multiple times
         const test = new SidekickTest({
           browser,
           page,
           loadModule,
+          acceptDialogs: true,
           checkPage: (p) => p.evaluate(() => {
             // click overlay and return sidekick reference
             window.hlx.sidekick.shadowRoot.querySelector('.hlx-sk-overlay').click();
@@ -108,7 +102,9 @@ describe('Test sidekick', () => {
       }).timeout(IT_DEFAULT_TIMEOUT);
 
       it('Uses main branch by default', async () => {
-        nock.admin(new Setup('blog'));
+        const setup = new Setup('blog');
+        nock.sidekick(setup);
+        nock.admin(setup);
         const result = await new SidekickTest({
           browser,
           page,
@@ -124,25 +120,29 @@ describe('Test sidekick', () => {
       }).timeout(IT_DEFAULT_TIMEOUT);
 
       it('Adds plugin from config', async () => {
-        nock.admin(new Setup('blog'));
-        const { configLoaded, plugins } = await new SidekickTest({
+        const setup = new Setup('blog');
+        nock.sidekick(setup, {
+          configJson: `{
+            "plugins": [{
+              "id": "foo",
+              "title": "Foo",
+              "url": "https://www.foo.bar"
+            }]
+          }`,
+        });
+        nock.admin(setup);
+        const { plugins } = await new SidekickTest({
           browser,
           page,
           loadModule,
-          configJson: `{
-        "plugins": [{
-          "id": "foo",
-          "title": "Foo",
-          "url": "https://www.foo.bar"
-        }]
-      }`,
         }).run();
-        assert.strictEqual(new URL(configLoaded).host, 'main--blog--adobe.hlx.live', 'Did not load config from outer CDN');
         assert.ok(plugins.find((p) => p.id === 'foo'), 'Did not add plugin from config');
       }).timeout(IT_DEFAULT_TIMEOUT);
 
       it('Detects innerHost and outerHost from config', async () => {
-        nock.admin(new Setup('blog'));
+        const setup = new Setup('blog');
+        nock.sidekick(setup);
+        nock.admin(setup);
         const result = await new SidekickTest({
           browser,
           page,
@@ -155,26 +155,52 @@ describe('Test sidekick', () => {
         assert.strictEqual(outerHost, 'main--blog--adobe.hlx.live', `Unexpected outerHost: ${innerHost}`);
       }).timeout(IT_DEFAULT_TIMEOUT);
 
-      it('Uses outerHost from config', async () => {
-        nock.admin(new Setup('blog'));
-        const testOuterHost = 'test--blog--adobe.hlx.live';
+      it('Uses previewHost from config', async () => {
+        const testPreviewHost = 'preview.example.com';
+        const setup = new Setup('blog');
+        nock.sidekick(setup, {
+          configJson: `{
+            "previewHost": "${testPreviewHost}"
+          }`,
+        });
+        nock.admin(setup);
+        const { sidekick: { config: { innerHost } } } = await new SidekickTest({
+          browser,
+          page,
+          loadModule,
+          setup: 'blog',
+        }).run();
+        assert.strictEqual(
+          innerHost,
+          testPreviewHost,
+        );
+      }).timeout(IT_DEFAULT_TIMEOUT);
+
+      it('Uses liveHost from config', async () => {
+        const testLiveHost = 'live.example.com';
+        const setup = new Setup('blog');
+        nock.sidekick(setup, {
+          configJson: `{
+            "liveHost": "${testLiveHost}"
+          }`,
+        });
+        nock.admin(setup);
         const { sidekick: { config: { outerHost } } } = await new SidekickTest({
           browser,
           page,
           loadModule,
           setup: 'blog',
-          configJson: `{
-        "outerHost": "${testOuterHost}"
-      }`,
         }).run();
         assert.strictEqual(
           outerHost,
-          testOuterHost,
+          testLiveHost,
         );
       }).timeout(IT_DEFAULT_TIMEOUT);
 
       it('Adds plugin via API', async () => {
-        nock.admin(new Setup('blog'));
+        const setup = new Setup('blog');
+        nock.sidekick(setup);
+        nock.admin(setup);
         const { plugins } = await new SidekickTest({
           browser,
           page,
@@ -202,24 +228,27 @@ describe('Test sidekick', () => {
       }).timeout(IT_DEFAULT_TIMEOUT);
 
       it('Loads config and plugins from project config', async () => {
-        nock.admin(new Setup('blog'));
+        const setup = new Setup('blog');
+        nock.sidekick(setup, {
+          configJson: `{
+            "host": "blog.adobe.com",
+            "plugins": [{
+              "id": "bar",
+              "title": "Bar",
+              "url": "https://www.adobe.com/"
+            }]
+            }`,
+        });
+        nock.admin(setup);
         nock('https://www.adobe.com')
           .get(/.*/)
+          .optionally()
           .reply(200, 'some content...');
 
         const test = new SidekickTest({
           browser,
           page,
           loadModule,
-          configJson: `{
-          "host": "blog.adobe.com",
-          "plugins": [{
-            "id": "bar",
-            "title": "Bar",
-            "url": "https://www.adobe.com/"
-          }]
-          }`,
-          sleep: 1000,
           plugin: 'bar',
           pluginSleep: 1000,
         });
@@ -242,21 +271,25 @@ describe('Test sidekick', () => {
 
         nock('https://www.adobe.com')
           .get(/.*/)
+          .optionally()
           .reply(200, 'some content...');
 
-        nock.admin(new Setup('blog'));
+        const setup = new Setup('blog');
+        nock.sidekick(setup, {
+          configJson: `{
+            "plugins": [{
+              "id": "bar",
+              "title": "Bar",
+              "url": "${pluginUrl}",
+              "passReferrer": true
+            }]
+          }`,
+        });
+        nock.admin(setup);
         const test = new SidekickTest({
           browser,
           page,
           loadModule,
-          configJson: `{
-        "plugins": [{
-          "id": "bar",
-          "title": "Bar",
-          "url": "${pluginUrl}",
-          "passReferrer": true
-        }]
-      }`,
           plugin: 'bar',
           pluginSleep: 2000,
         });
@@ -275,21 +308,25 @@ describe('Test sidekick', () => {
 
         nock('https://www.adobe.com')
           .get(/.*/)
+          .optionally()
           .reply(200, 'some content...');
 
-        nock.admin(new Setup('blog'));
+        const setup = new Setup('blog');
+        nock.sidekick(setup, {
+          configJson: `{
+            "plugins": [{
+              "id": "bar",
+              "title": "Bar",
+              "url": "${pluginUrl}",
+              "passConfig": true
+            }]
+          }`,
+        });
+        nock.admin(setup);
         const test = new SidekickTest({
           browser,
           page,
           loadModule,
-          configJson: `{
-        "plugins": [{
-          "id": "bar",
-          "title": "Bar",
-          "url": "${pluginUrl}",
-          "passConfig": true
-        }]
-      }`,
           plugin: 'bar',
           pluginSleep: 2000,
         });
@@ -302,14 +339,8 @@ describe('Test sidekick', () => {
       }).timeout(IT_DEFAULT_TIMEOUT);
 
       it('Plugin shows palette', async () => {
-        nock.admin(new Setup('blog'));
-        nock('https://www.adobe.com/')
-          .get('/')
-          .reply(200, 'foo');
-        const test = new SidekickTest({
-          browser,
-          page,
-          loadModule,
+        const setup = new Setup('blog');
+        nock.sidekick(setup, {
           configJson: JSON.stringify({
             host: 'blog.adobe.com',
             plugins: [{
@@ -319,6 +350,16 @@ describe('Test sidekick', () => {
               isPalette: true,
             }],
           }),
+        });
+        nock.admin(setup);
+        nock('https://www.adobe.com/')
+          .get('/')
+          .optionally()
+          .reply(200, 'foo');
+        const test = new SidekickTest({
+          browser,
+          page,
+          loadModule,
           plugin: 'bar',
           pluginSleep: 50,
         });
@@ -343,24 +384,27 @@ describe('Test sidekick', () => {
         assert.ok(palette, 'Did not show palette');
         assert.deepStrictEqual(palette, {
           title: 'Bar<button title="Close" class="close" tabindex="0"></button>',
-          content: '<iframe src="https://www.adobe.com/" allow="clipboard-write"></iframe>',
+          content: '<iframe src="https://www.adobe.com/" allow="clipboard-write *"></iframe>',
         });
       }).timeout(IT_DEFAULT_TIMEOUT);
 
       it('Plugin fires custom event', async () => {
-        nock.admin(new Setup('blog'));
+        const setup = new Setup('blog');
+        nock.sidekick(setup, {
+          configJson: `{
+            "host": "blog.adobe.com",
+            "plugins": [{
+              "id": "bar",
+              "title": "Bar",
+              "event": "foo"
+            }]
+          }`,
+        });
+        nock.admin(setup);
         const test = new SidekickTest({
           browser,
           page,
           loadModule,
-          configJson: `{
-        "host": "blog.adobe.com",
-        "plugins": [{
-          "id": "bar",
-          "title": "Bar",
-          "event": "foo"
-        }]
-      }`,
           plugin: 'bar',
           checkEvents: ['custom:foo'],
         });
@@ -374,18 +418,21 @@ describe('Test sidekick', () => {
       }).timeout(IT_DEFAULT_TIMEOUT);
 
       it('Plugin extends existing plugin', async () => {
-        nock.admin(new Setup('blog'));
+        const setup = new Setup('blog');
+        nock.sidekick(setup, {
+          configJson: `{
+            "host": "blog.adobe.com",
+            "plugins": [{
+              "id": "publish",
+              "excludePaths": ["**/drafts/**"]
+            }]
+          }`,
+        });
+        nock.admin(setup);
         const test = new SidekickTest({
           browser,
           page,
           loadModule,
-          configJson: `{
-        "host": "blog.adobe.com",
-        "plugins": [{
-          "id": "publish",
-          "excludePaths": ["**/drafts/**"]
-        }]
-      }`,
         });
         const {
           plugins,
@@ -394,7 +441,9 @@ describe('Test sidekick', () => {
       }).timeout(IT_DEFAULT_TIMEOUT);
 
       it('Loads config from development environment', async () => {
-        nock.admin(new Setup('blog'));
+        const setup = new Setup('blog');
+        nock.admin(setup);
+        nock.sidekick(setup);
         const { configLoaded } = await new SidekickTest({
           browser,
           page,
@@ -404,14 +453,15 @@ describe('Test sidekick', () => {
             repo: 'blog',
             ref: 'main',
             devMode: true,
-            hlx3: true,
           },
         }).run();
         assert.ok(configLoaded.startsWith('http://localhost:3000/'), 'Did not load project config from development environment');
       }).timeout(IT_DEFAULT_TIMEOUT);
 
       it('Replaces plugin', async () => {
-        nock.admin(new Setup('blog'));
+        const setup = new Setup('blog');
+        nock.sidekick(setup);
+        nock.admin(setup);
         const { plugins } = await new SidekickTest({
           browser,
           page,
@@ -434,7 +484,9 @@ describe('Test sidekick', () => {
       }).timeout(IT_DEFAULT_TIMEOUT);
 
       it('Extends plugin', async () => {
-        nock.admin(new Setup('blog'));
+        const setup = new Setup('blog');
+        nock.sidekick(setup);
+        nock.admin(setup);
         const { plugins } = await new SidekickTest({
           browser,
           page,
@@ -455,7 +507,9 @@ describe('Test sidekick', () => {
       }).timeout(IT_DEFAULT_TIMEOUT);
 
       it('Removes plugin', async () => {
-        nock.admin(new Setup('blog'));
+        const setup = new Setup('blog');
+        nock.sidekick(setup);
+        nock.admin(setup);
         const { plugins } = await new SidekickTest({
           browser,
           page,
@@ -466,7 +520,9 @@ describe('Test sidekick', () => {
       }).timeout(IT_DEFAULT_TIMEOUT);
 
       it('Adds HTML element in plugin', async () => {
-        nock.admin(new Setup('blog'));
+        const setup = new Setup('blog');
+        nock.sidekick(setup);
+        nock.admin(setup);
         const { plugins } = await new SidekickTest({
           browser,
           page,
@@ -487,7 +543,9 @@ describe('Test sidekick', () => {
       }).timeout(IT_DEFAULT_TIMEOUT);
 
       it('Enables plugin button', async () => {
-        nock.admin(new Setup('blog'));
+        const setup = new Setup('blog');
+        nock.sidekick(setup);
+        nock.admin(setup);
         const { plugins } = await new SidekickTest({
           browser,
           page,
@@ -506,7 +564,9 @@ describe('Test sidekick', () => {
       }).timeout(IT_DEFAULT_TIMEOUT);
 
       it('Adds dropdown as plugin container', async () => {
-        nock.admin(new Setup('blog'));
+        const setup = new Setup('blog');
+        nock.sidekick(setup);
+        nock.admin(setup);
         const { plugins } = await new SidekickTest({
           browser,
           page,
@@ -533,7 +593,9 @@ describe('Test sidekick', () => {
       }).timeout(IT_DEFAULT_TIMEOUT);
 
       it('Loads custom CSS', async () => {
-        nock.admin(new Setup('blog'));
+        const setup = new Setup('blog');
+        nock.sidekick(setup);
+        nock.admin(setup);
         const { checkPageResult } = await new SidekickTest({
           browser,
           page,
@@ -549,7 +611,9 @@ describe('Test sidekick', () => {
 
       it('Shows notifications', async () => {
         // shows modal
-        nock.admin(new Setup('blog'));
+        const setup = new Setup('blog');
+        nock.admin(setup, { persist: true });
+        nock.sidekick(setup, { persist: true });
         let result = await new SidekickTest({
           browser,
           page,
@@ -561,7 +625,6 @@ describe('Test sidekick', () => {
         assert.strictEqual(result.notification.message, 'Lorem ipsum', 'Did not show modal');
 
         // shows sticky modal
-        nock.admin(new Setup('blog'));
         result = await new SidekickTest({
           browser,
           page,
@@ -574,7 +637,6 @@ describe('Test sidekick', () => {
         assert.strictEqual(result.notification.message, 'Sticky', 'Did not show sticky modal');
 
         // adds css class
-        nock.admin(new Setup('blog'));
         result = await new SidekickTest({
           browser,
           page,
@@ -586,7 +648,6 @@ describe('Test sidekick', () => {
         assert.ok(result.notification.className.includes('test'), 'Did not add CSS class');
 
         // shows legacy notification
-        nock.admin(new Setup('blog'));
         result = await new SidekickTest({
           browser,
           page,
@@ -596,7 +657,6 @@ describe('Test sidekick', () => {
         assert.strictEqual(result.notification.message, 'Lorem ipsum', 'Did not show legacy notification');
 
         // shows legacy modal
-        nock.admin(new Setup('blog'));
         result = await new SidekickTest({
           browser,
           page,
@@ -606,7 +666,6 @@ describe('Test sidekick', () => {
         assert.strictEqual(result.notification.message, 'Sticky', 'Did not show legacy modal');
 
         // shows multi-line modal
-        nock.admin(new Setup('blog'));
         result = await new SidekickTest({
           browser,
           page,
@@ -620,7 +679,9 @@ describe('Test sidekick', () => {
 
       it('Hides notifications', async () => {
         // hides sticky modal
-        nock.admin(new Setup('blog'));
+        const setup = new Setup('blog');
+        nock.sidekick(setup);
+        nock.admin(setup);
         const { notification } = await new SidekickTest({
           browser,
           page,
@@ -638,7 +699,9 @@ describe('Test sidekick', () => {
 
       it('Hides notifications on overlay click', async () => {
         // hides sticky modal on overlay click
-        nock.admin(new Setup('blog'), { persist: true });
+        const setup = new Setup('blog');
+        nock.admin(setup);
+        nock.sidekick(setup);
         const { checkPageResult } = await new SidekickTest({
           browser,
           page,
@@ -669,7 +732,9 @@ describe('Test sidekick', () => {
       }).timeout(IT_DEFAULT_TIMEOUT);
 
       it('Hides sidekick on close button click', async () => {
-        nock.admin(new Setup('blog'));
+        const setup = new Setup('blog');
+        nock.sidekick(setup);
+        nock.admin(setup);
         const { checkPageResult, eventsFired } = await new SidekickTest({
           browser,
           page,
@@ -689,7 +754,9 @@ describe('Test sidekick', () => {
       }).timeout(IT_DEFAULT_TIMEOUT);
 
       it('Copies sharing URL to clipboard on share button click', async () => {
-        nock.admin(new Setup('blog'));
+        const setup = new Setup('blog');
+        nock.sidekick(setup);
+        nock.admin(setup);
         const { notification } = await new SidekickTest({
           browser,
           page,
@@ -707,10 +774,12 @@ describe('Test sidekick', () => {
       }).timeout(IT_DEFAULT_TIMEOUT);
 
       it('Displays page modified info on info button click', async () => {
-        nock.admin(new Setup('blog'), {
+        const setup = new Setup('blog');
+        nock.admin(setup, {
           route: 'status',
           persist: true,
         });
+        nock.sidekick(setup);
         const { checkPageResult } = await new SidekickTest({
           browser,
           page,
@@ -729,10 +798,12 @@ describe('Test sidekick', () => {
       }).timeout(IT_DEFAULT_TIMEOUT);
 
       it('Closes open info dropdown when clicking icon', async () => {
-        nock.admin(new Setup('blog'), {
+        const setup = new Setup('blog');
+        nock.admin(setup, {
           route: 'status',
           persist: true,
         });
+        nock.sidekick(setup);
         const { checkPageResult } = await new SidekickTest({
           browser,
           page,
@@ -765,7 +836,9 @@ describe('Test sidekick', () => {
       }).timeout(IT_DEFAULT_TIMEOUT);
 
       it('Detects edit environment correctly', async () => {
-        nock.admin(new Setup('blog'));
+        const setup = new Setup('blog');
+        nock.admin(setup, { persist: true });
+        nock.sidekick(setup, { persist: true });
         const test = new SidekickTest({
           browser,
           page,
@@ -777,24 +850,23 @@ describe('Test sidekick', () => {
         assert.ok(gdocsUrl, 'Did not detect google docs URL');
 
         // check with sharepoint url
-        nock.admin(new Setup('blog'));
         const { checkPageResult: standardSharepointUrl } = await test.run('https://adobe.sharepoint.com/:w:/r/sites/TheBlog/_layouts/15/Doc.aspx?sourcedoc=%7BE8EC80CB-24C3-4B95-B082-C51FD8BC8760%7D&file=bla.docx&action=default&mobileredirect=true');
         assert.ok(standardSharepointUrl, 'Did not detect standard sharepoint URL');
 
         // check again with sharepoint url for new documents
-        nock.admin(new Setup('blog'));
         const { checkPageResult: newDocSharepointUrl } = await test.run('https://adobe.sharepoint.com/:w:/r/sites/TheBlog/_layouts/15/doc.aspx?sourcedoc=%7Bac6f726e-9293-433d-b825-18bc487816b6%7D&action=edit&cid=04035fad-1161-4f85-9654-ee42e52a20fb');
         assert.ok(newDocSharepointUrl, 'Did not detect sharepoint URL for new document');
 
         // check again with custom sharepoint url as mountpoint
         test.sidekickConfig.mountpoint = 'https://foo.custom/sites/foo/Shared%20Documents/root1';
-        nock.admin(new Setup('blog'));
         const { checkPageResult: customSharepointUrl } = await test.run('https://foo.custom/:w:/r/sites/foo/_layouts/15/Doc.aspx?sourcedoc=%7BBFD9A19C-4A68-4DBF-8641-DA2F1283C895%7D&file=index.docx&action=default&mobileredirect=true');
         assert.ok(customSharepointUrl, 'Did not detect custom sharepoint URL');
       }).timeout(IT_DEFAULT_TIMEOUT);
 
       it('Detects development environment correctly', async () => {
-        nock.admin(new Setup('blog'));
+        const setup = new Setup('blog');
+        nock.sidekick(setup);
+        nock.admin(setup);
         const { checkPageResult } = await new SidekickTest({
           browser,
           page,
@@ -806,7 +878,9 @@ describe('Test sidekick', () => {
       }).timeout(IT_DEFAULT_TIMEOUT);
 
       it('Detects preview environment correctly', async () => {
-        nock.admin(new Setup('blog'));
+        const setup = new Setup('blog');
+        nock.sidekick(setup);
+        nock.admin(setup);
         const test = new SidekickTest({
           browser,
           page,
@@ -815,13 +889,15 @@ describe('Test sidekick', () => {
         });
         assert.ok((await test.run()).checkPageResult, 'Did not detect preview URL');
         // check again with different ref
-        nock.admin(new Setup('blog'));
+        nock.sidekick(setup);
+        nock.admin(setup);
         assert.ok(
           (await test.run('https://test--blog--adobe.hlx.page/')).checkPageResult,
           'Did not detect preview URL with different ref',
         );
         // check again with hlx3.page
-        nock.admin(new Setup('blog'));
+        nock.sidekick(setup);
+        nock.admin(setup);
         assert.ok(
           (await test.run('https://main--blog--adobe.hlx3.page/')).checkPageResult,
           'Did not detect preview URL with hlx3.page',
@@ -845,6 +921,9 @@ describe('Test sidekick', () => {
       }).timeout(IT_DEFAULT_TIMEOUT);
 
       it('Detects production environment correctly', async () => {
+        const setup = new Setup('blog');
+        nock.sidekick(setup);
+        nock.admin(setup);
         const test = new SidekickTest({
           browser,
           page,
@@ -857,6 +936,9 @@ describe('Test sidekick', () => {
       }).timeout(IT_DEFAULT_TIMEOUT);
 
       it('Does not push down page content by default', async () => {
+        const setup = new Setup('blog');
+        nock.sidekick(setup);
+        nock.admin(setup);
         const { checkPageResult } = await new SidekickTest({
           browser,
           page,
@@ -867,6 +949,11 @@ describe('Test sidekick', () => {
       }).timeout(IT_DEFAULT_TIMEOUT);
 
       it('Pushes down page content if configured', async () => {
+        const setup = new Setup('blog');
+        nock.sidekick(setup, {
+          configJson: '{"pushDown": true}',
+        });
+        nock.admin(setup);
         const test = new SidekickTest({
           browser,
           page,
@@ -874,18 +961,21 @@ describe('Test sidekick', () => {
           sleep: 500,
           checkPage: (p) => p.evaluate(() => document.documentElement.style.marginTop),
         });
-        test.sidekickConfig.pushDown = true;
         const { checkPageResult } = await test.run();
         assert.strictEqual(checkPageResult, '49px', 'Did not push down content');
       }).timeout(IT_DEFAULT_TIMEOUT);
 
       it('Pushes down custom elements', async () => {
+        const setup = new Setup('blog');
+        nock.sidekick(setup, {
+          configJson: '{"pushDown": true, "pushDownSelector":"#topnav"}',
+        });
+        nock.admin(setup);
         const { checkPageResult } = await new SidekickTest({
           browser,
           page,
           loadModule,
           sleep: 500,
-          configJson: '{"pushDown": true, "pushDownSelector":"#topnav"}',
           pre: (p) => p.evaluate(() => {
             // add topnav element
             const topNav = document.createElement('div');
@@ -899,12 +989,16 @@ describe('Test sidekick', () => {
       }).timeout(IT_DEFAULT_TIMEOUT);
 
       it('Push down adjusts height of word iframe', async () => {
+        const setup = new Setup('blog');
+        nock.sidekick(setup, {
+          configJson: '{"pushDown": true, "pushDownSelector":"#topnav"}',
+        });
+        nock.admin(setup);
         const { checkPageResult } = await new SidekickTest({
           browser,
           page,
           loadModule,
           sleep: 500,
-          configJson: '{"pushDown": true, "pushDownSelector":"#topnav"}',
           pre: (p) => p.evaluate(() => {
             // add fake word iframe
             const frame = document.createElement('iframe');
@@ -922,35 +1016,32 @@ describe('Test sidekick', () => {
       }).timeout(IT_DEFAULT_TIMEOUT);
 
       it('Reverts push down when hidden', async () => {
+        const setup = new Setup('blog');
+        nock.sidekick(setup, {
+          configJson: '{"pushDown": true, "pushDownSelector":"#topnav"}',
+        });
+        nock.admin(setup);
         const { checkPageResult } = await new SidekickTest({
           browser,
           page,
           loadModule,
           sleep: 500,
-          configJson: '{"pushDown": true, "pushDownSelector":"#topnav"}',
           post: (p) => p.evaluate(() => window.hlx.sidekick.hide()),
           checkPage: (p) => p.evaluate(() => document.documentElement.style.marginTop),
         }).run();
         assert.strictEqual(checkPageResult, 'initial', 'Push down not reverted');
       }).timeout(IT_DEFAULT_TIMEOUT);
 
-      it('Does not push down if pushDown false', async () => {
-        const { checkPageResult } = await new SidekickTest({
-          browser,
-          page,
-          loadModule,
-          configJson: '{"pushDown":false}',
-          checkPage: (p) => p.evaluate(() => document.documentElement.style.marginTop),
-        }).run();
-        assert.strictEqual(checkPageResult, '', 'Pushed down content');
-      }).timeout(IT_DEFAULT_TIMEOUT);
-
       it('Does not push down if gdrive', async () => {
+        const setup = new Setup('blog');
+        nock.sidekick(setup, {
+          configJson: '{"pushDown":false}',
+        });
+        nock.admin(setup);
         const { checkPageResult } = await new SidekickTest({
           browser,
           page,
           loadModule,
-          configJson: '{"pushDown":false}',
           url: 'https://docs.google.com/document/d/2E1PNphAhTZAZrDjevM0BX7CZr7KjomuBO6xE1TUo9NU/edit',
           checkPage: (p) => p.evaluate(() => document.documentElement.style.marginTop),
         }).run();
@@ -958,7 +1049,9 @@ describe('Test sidekick', () => {
       }).timeout(IT_DEFAULT_TIMEOUT);
 
       it('Shows special view for JSON file', async () => {
-        nock.admin(new Setup('blog'));
+        const setup = new Setup('blog');
+        nock.sidekick(setup);
+        nock.admin(setup);
         nock('https://main--blog--adobe.hlx.page')
           .get('/en/bla.json')
           .reply(200, JSON.stringify({
@@ -990,7 +1083,9 @@ describe('Test sidekick', () => {
       }).timeout(IT_DEFAULT_TIMEOUT);
 
       it('Suppresses special view for /helix-env.json', async () => {
-        nock.admin(new Setup('blog'));
+        const setup = new Setup('blog');
+        nock.sidekick(setup);
+        nock.admin(setup);
         const { checkPageResult } = await new SidekickTest({
           browser,
           page,
@@ -1026,7 +1121,9 @@ describe('Test sidekick', () => {
       }).timeout(IT_DEFAULT_TIMEOUT);
 
       it('Calls admin API with a specific version', async () => {
-        nock.admin(new Setup('blog'));
+        const setup = new Setup('blog');
+        nock.sidekick(setup);
+        nock.admin(setup);
         const test = new SidekickTest({
           browser,
           page,
@@ -1044,7 +1141,8 @@ describe('Test sidekick', () => {
 
       it('Handles 401 response from admin API', async () => {
         nock('https://admin.hlx.page')
-          .get('/status/adobe/blog/main/en/topics/bla?editUrl=auto')
+          .get(/.*/)
+          .twice()
           .reply(401);
         const { checkPageResult } = await new SidekickTest({
           browser,

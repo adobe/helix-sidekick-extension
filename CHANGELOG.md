@@ -1,3 +1,98 @@
+# [6.17.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.16.1...v6.17.0) (2023-05-22)
+
+
+### Features
+
+* custom preview and live host ([9237065](https://github.com/adobe/helix-sidekick-extension/commit/923706562ca71ebe63a497e1404230e18f41a87a))
+
+## [6.16.1](https://github.com/adobe/helix-sidekick-extension/compare/v6.16.0...v6.16.1) (2023-05-17)
+
+
+### Bug Fixes
+
+* excel preview can fail the first time ([0a763a8](https://github.com/adobe/helix-sidekick-extension/commit/0a763a84d0f981c6e1a946799e9922b225345b62))
+
+# [6.16.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.15.1...v6.16.0) (2023-05-16)
+
+
+### Bug Fixes
+
+* handle unavailable sharepoint picture ([57a8cc7](https://github.com/adobe/helix-sidekick-extension/commit/57a8cc75d28da728f098e996811dd5dd244256cf))
+
+
+### Features
+
+* add project from sharepoint/gdrive url ([b05ac9a](https://github.com/adobe/helix-sidekick-extension/commit/b05ac9a964a30bf6db95421c3f870cab8947c73a))
+* excel preview ([a26ddf3](https://github.com/adobe/helix-sidekick-extension/commit/a26ddf327636840b2a9c87c408d07834a1cd8c02))
+* excel preview (wip) ([f6f3f66](https://github.com/adobe/helix-sidekick-extension/commit/f6f3f668fdcb8e28439c94e5fecd2a7376e1beb7))
+
+## [6.15.1](https://github.com/adobe/helix-sidekick-extension/compare/v6.15.0...v6.15.1) (2023-05-11)
+
+
+### Bug Fixes
+
+* custom plugin handling ([8b9dbb0](https://github.com/adobe/helix-sidekick-extension/commit/8b9dbb0c88fc6f6ab234845186f4bd957cdca744))
+* don't set credentials:include when in devMode ([c869054](https://github.com/adobe/helix-sidekick-extension/commit/c869054cce97760aa034c83eecb805f26d198abe))
+* only set `omit` credentials on calls to `config.json` ([b3dea1e](https://github.com/adobe/helix-sidekick-extension/commit/b3dea1ed83bb8bb9cd454d84646b7927bc6c5f5e))
+* remove config param on getAdminFetchOptions ([a71839d](https://github.com/adobe/helix-sidekick-extension/commit/a71839d26637780967a37304fc71b52df73dbdba))
+* **safari:** help content not displayed ([f110834](https://github.com/adobe/helix-sidekick-extension/commit/f1108345d50a7a2f4e187894566f8e6d5c92dbb8))
+
+# [6.15.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.14.0...v6.15.0) (2023-05-03)
+
+
+### Features
+
+* set user agent header ([d05f693](https://github.com/adobe/helix-sidekick-extension/commit/d05f693ee4032fe9bbca597859fbf7cbb494cf44))
+
+# [6.14.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.13.2...v6.14.0) (2023-05-02)
+
+
+### Bug Fixes
+
+* authToken needed for microsoft profile pic ([3a961e5](https://github.com/adobe/helix-sidekick-extension/commit/3a961e582067ca348cd10a7fc9fc277478ac4347))
+
+
+### Features
+
+* load sidekick from admin API [skip ci] ([f02764b](https://github.com/adobe/helix-sidekick-extension/commit/f02764b93256a1ec735a8745acd0a3eb8549515a))
+
+## [6.13.2](https://github.com/adobe/helix-sidekick-extension/compare/v6.13.1...v6.13.2) (2023-04-28)
+
+
+### Bug Fixes
+
+* delete project not working in safari ([9216df8](https://github.com/adobe/helix-sidekick-extension/commit/9216df871d3c4b7387f0c619c1c1f41de8823991))
+
+## [6.13.1](https://github.com/adobe/helix-sidekick-extension/compare/v6.13.0...v6.13.1) (2023-04-28)
+
+
+### Bug Fixes
+
+* share url instrumentation ([fd732b6](https://github.com/adobe/helix-sidekick-extension/commit/fd732b60a41b56b50d519210760c6d8d0383a9f1))
+
+# [6.13.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.12.5...v6.13.0) (2023-04-28)
+
+
+### Bug Fixes
+
+* only inject content script if config match ([55f628d](https://github.com/adobe/helix-sidekick-extension/commit/55f628d0565011aad4911f6d86f462de7748fecb))
+* only inject content script if config match ([17bdb1b](https://github.com/adobe/helix-sidekick-extension/commit/17bdb1b55bc524fcfa4278047f7d629227a38557))
+* safari error on localhost urls ([637e3c2](https://github.com/adobe/helix-sidekick-extension/commit/637e3c2863f684a2f8077d9396ec2b4cd487f379))
+
+
+### Features
+
+* add auth token to every admin api request ([e11b61d](https://github.com/adobe/helix-sidekick-extension/commit/e11b61df713111484f7f0e684048d0391ca36020))
+* add auth token to every admin api request ([1007caf](https://github.com/adobe/helix-sidekick-extension/commit/1007cafb75215f65477262f3bae2b26213b76117))
+* new logout flow ([8835ae6](https://github.com/adobe/helix-sidekick-extension/commit/8835ae6e309023439e2c2f92add8cc754b0a2521))
+
+## [6.12.5](https://github.com/adobe/helix-sidekick-extension/compare/v6.12.4...v6.12.5) (2023-04-24)
+
+
+### Bug Fixes
+
+* add wildcard to clipboard-write permissions ([18bc288](https://github.com/adobe/helix-sidekick-extension/commit/18bc2888e37c8aec04f4554e49f8f414833d5b49))
+
 ## [6.12.4](https://github.com/adobe/helix-sidekick-extension/compare/v6.12.3...v6.12.4) (2023-04-15)
 
 

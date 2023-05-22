@@ -47,7 +47,9 @@ describe('Test sidekick bookmarklet only', () => {
   });
 
   it('Shows extension hint', async () => {
-    nock.admin(new Setup('blog'));
+    const setup = new Setup('blog');
+    nock.sidekick(setup);
+    nock.admin(setup);
     const { notification } = await new SidekickTest({
       browser,
       page,
@@ -59,7 +61,9 @@ describe('Test sidekick bookmarklet only', () => {
   });
 
   it('Extension hint opens share URL and writes local storage', async () => {
-    nock.admin(new Setup('blog'));
+    const setup = new Setup('blog');
+    nock.sidekick(setup);
+    nock.admin(setup);
 
     const { popupOpened } = await new SidekickTest({
       browser,
@@ -82,7 +86,9 @@ describe('Test sidekick bookmarklet only', () => {
   });
 
   it('Extension hint opens share URL', async () => {
-    nock.admin(new Setup('blog'));
+    const setup = new Setup('blog');
+    nock.sidekick(setup);
+    nock.admin(setup);
 
     const { popupOpened } = await new SidekickTest({
       browser,

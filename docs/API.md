@@ -555,7 +555,7 @@ The plugin configuration.
 | isContainer | <code>boolean</code> |  | Determines whether to turn this plugin into a dropdown |
 | isPalette | <code>boolean</code> |  | Determines whether a URL is opened in a palette instead of a new tab |
 | paletteRect | <code>string</code> |  | The dimensions and position of a palette (optional) |
-| environments | <code>Array.&lt;string&gt;</code> |  | Specifies when to show this plugin                               (admin, edit, preview, live, prod) |
+| environments | <code>Array.&lt;string&gt;</code> |  | Specifies when to show this plugin                               (admin, edit, dev, preview, live, prod) |
 | excludePaths | <code>Array.&lt;string&gt;</code> |  | Exclude the plugin from these paths (glob patterns supported) |
 | includePaths | <code>Array.&lt;string&gt;</code> |  | Include the plugin on these paths (glob patterns supported) |
 
@@ -614,7 +614,8 @@ The sidekick configuration.
 | mountpoint | <code>string</code> |  | The content source URL (optional) |
 | project | <code>string</code> |  | The name of the project used in the sharing link (optional) |
 | plugins | [<code>Array.&lt;Plugin&gt;</code>](#Plugin) |  | An array of [plugin configurations](#Plugin) (optional) |
-| outerHost | <code>string</code> |  | The outer CDN's host name (optional) |
+| previewHost | <code>string</code> |  | The host name of a custom preview CDN (optional) |
+| liveHost | <code>string</code> |  | The host name of a custom live CDN (optional) |
 | host | <code>string</code> |  | The production host name to publish content to (optional) |
 | byocdn | <code>boolean</code> | <code>false</code> | <pre>true</pre> if the production host is a 3rd party CDN |
 | devMode | <code>boolean</code> | <code>false</code> | Loads configuration and plugins from the development environment |

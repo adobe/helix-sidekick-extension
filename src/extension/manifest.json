@@ -1,19 +1,21 @@
 {
   "manifest_version": 3,
   "name": "__MSG_title__",
-  "version": "6.12.4",
+  "version": "6.17.0",
   "author": "Adobe",
   "homepage_url": "https://www.hlx.live/tools/sidekick/",
   "default_locale": "en",
   "options_page": "options.html",
   "description": "__MSG_description__",
   "permissions": [
+    "activeTab",
     "contextMenus",
+    "declarativeNetRequest",
     "scripting",
-    "storage",
-    "activeTab"
+    "storage"
   ],
   "host_permissions": [
+    "https://www.hlx.live/tools/sidekick/*",
     "http://localhost:3000/*",
     "https://*/*"
   ],

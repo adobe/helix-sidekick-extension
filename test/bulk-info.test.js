@@ -58,6 +58,7 @@ describe('Test bulk info plugin', () => {
     env, fixtureList, fixtureGrid, setup,
   }) => {
     it(`Bulk info plugin displays selection size in ${env} list view`, async () => {
+      nock.sidekick();
       nock.admin(setup, {
         route: 'status',
         type: 'admin',
@@ -81,6 +82,7 @@ describe('Test bulk info plugin', () => {
     }).timeout(IT_DEFAULT_TIMEOUT);
 
     it(`Bulk info plugin displays selection size in ${env} grid view`, async () => {
+      nock.sidekick();
       nock.admin(setup, {
         route: 'status',
         type: 'admin',

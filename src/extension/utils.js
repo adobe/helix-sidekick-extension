@@ -18,7 +18,7 @@ export const GH_URL = 'https://github.com/';
 
 export const DEV_URL = 'http://localhost:3000';
 
-const DISCOVERY_CACHE = [];
+export const DISCOVERY_CACHE = [];
 const DISCOVERY_CACHE_TTL = 7200000;
 
 export const log = {
@@ -38,15 +38,6 @@ function alert(msg) {
     return window.alert(msg);
   }
   return null;
-}
-
-// shows a window.confirm (noop if headless)
-function confirm(msg) {
-  if (typeof window !== 'undefined' && !/HeadlessChrome/.test(window.navigator.userAgent)) {
-    // eslint-disable-next-line no-alert
-    return window.confirm(msg);
-  }
-  return true;
 }
 
 // shorthand for browser.i18n.getMessage()
@@ -271,6 +262,9 @@ async function getProjectConfig(owner, repo, ref = 'main') {
 
 export async function assembleProject({
   giturl,
+  owner,
+  repo,
+  ref = 'main',
   mountpoints,
   project,
   host,
@@ -279,7 +273,14 @@ export async function assembleProject({
   devOrigin,
   disabled,
 }) {
-  const { owner, repo, ref } = getGitHubSettings(giturl);
+  if (giturl && !owner && !repo) {
+    const gh = getGitHubSettings(giturl);
+    owner = gh.owner;
+    repo = gh.repo;
+    ref = gh.ref;
+  } else {
+    giturl = `https://github.com/${owner}/${repo}/tree/${ref}`;
+  }
   const projectConfig = await getProjectConfig(owner, repo, ref);
   const id = `${owner}/${repo}/${ref}`;
   // allow local project config overrides
@@ -312,6 +313,7 @@ export async function getProject(project) {
 export async function setProject(project, cb) {
   const { owner, repo } = project;
   const handle = `${owner}/${repo}`;
+  // update project config
   await setConfig('sync', {
     [handle]: project,
   });
@@ -322,6 +324,7 @@ export async function setProject(project, cb) {
     await setConfig('sync', { hlxSidekickProjects: projects });
   }
   log.info('updated project', project);
+
   if (typeof cb === 'function') {
     cb(project);
   }
@@ -347,7 +350,10 @@ export async function deleteProject(handle, cb) {
     const projects = await getConfig('sync', 'hlxSidekickProjects') || [];
     const i = projects.indexOf(handle);
     if (i >= 0) {
-      if (confirm(i18n('config_delete_confirm'))) {
+      try {
+        // delete admin auth header rule
+        const [owner, repo] = handle.split('/');
+        chrome.runtime.sendMessage({ deleteAuthToken: { owner, repo } });
         // delete the project entry
         await removeConfig('sync', handle);
         // remove project entry from index
@@ -355,8 +361,8 @@ export async function deleteProject(handle, cb) {
         await setConfig('sync', { hlxSidekickProjects: projects });
         log.info('project deleted', handle);
         if (typeof cb === 'function') cb(true);
-      } else {
-        log.info('project deletion aborted', handle);
+      } catch (e) {
+        log.error('project deletion failed', handle, e);
         if (typeof cb === 'function') cb(false);
       }
     } else {
@@ -380,22 +386,6 @@ export function toggleDisplay(cb) {
   getState(({ display }) => {
     setDisplay(!display, cb);
   });
-}
-
-export async function storeAuthToken(owner, repo, token) {
-  // find config tab with owner/repo
-  const project = await getProject({ owner, repo });
-  if (project) {
-    if (token) {
-      project.authToken = token;
-    } else {
-      delete project.authToken;
-    }
-    await setProject(project);
-    log.debug(`updated auth token for ${owner}--${repo}`);
-  } else {
-    log.warn(`unable to update auth token for ${owner}--${repo}: no such config`);
-  }
 }
 
 export async function updateProjectConfigs() {

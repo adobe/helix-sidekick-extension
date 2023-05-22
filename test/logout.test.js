@@ -43,16 +43,22 @@ describe('Test sidekick logout', () => {
   });
 
   it('Logout removes auth token from config', async () => {
-    nock.admin(new Setup('blog'));
+    const setup = new Setup('blog');
+    nock.sidekick(setup);
+    nock.admin(setup);
     nock('https://admin.hlx.page')
-      .get('/logout')
-      .reply(200, {});
-    nock.admin(new Setup('blog'));
+      .get('/status/adobe/blog/main/en/topics/bla?editUrl=auto')
+      .reply(200, { status: 200 })
+      .get('/logout/adobe/blog/main?logoutRedirect=https%3A%2F%2Fwww.hlx.live%2Ftools%2Fsidekick%2Flogout-success')
+      .reply(200, '<html>logged out<script>setTimeout(() => self.close(), 500)</script></html>')
+      .get('/profile/adobe/blog/main')
+      .reply(401, '{ "status": 401 }', { 'content-type': 'application/json' });
+
     const test = new SidekickTest({
       browser,
       page,
       plugin: 'user-logout',
-      sleep: 2000,
+      pluginSleep: 3000,
       checkPage: async (p) => p.evaluate(() => window.hlx.sidekick.config),
     });
     test.sidekickConfig.authToken = 'foobar';

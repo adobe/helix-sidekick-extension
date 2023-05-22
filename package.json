@@ -1,6 +1,6 @@
 {
   "name": "@adobe/helix-sidekick-extension",
-  "version": "6.12.4",
+  "version": "6.17.0",
   "description": "AEM Sidekick Extension",
   "type": "module",
   "scripts": {
@@ -39,34 +39,34 @@
     ]
   },
   "devDependencies": {
-    "@adobe/fetch": "4.0.10",
+    "@adobe/fetch": "4.0.13",
     "@adobe/eslint-config-helix": "2.0.2",
-    "@babel/eslint-parser": "7.21.3",
+    "@babel/eslint-parser": "7.21.8",
     "@esm-bundle/chai": "4.3.4-fix.0",
     "@semantic-release/changelog": "6.0.3",
     "@semantic-release/exec": "6.0.3",
     "@semantic-release/git": "10.0.1",
-    "@web/test-runner": "0.15.3",
-    "@web/test-runner-commands": "0.6.6",
+    "@web/test-runner": "0.16.1",
+    "@web/test-runner-commands": "0.7.0",
     "ajv": "8.12.0",
     "archiver": "5.3.1",
     "c8": "7.13.0",
     "codecov": "3.8.3",
-    "eslint": "8.38.0",
+    "eslint": "8.41.0",
     "express": "4.18.2",
     "husky": "8.0.3",
     "jsdoc-to-markdown": "8.0.0",
-    "lint-staged": "13.2.1",
+    "lint-staged": "13.2.2",
     "mime": "3.0.0",
     "mocha": "10.2.0",
-    "nock": "13.3.0",
-    "puppeteer": "19.9.0",
-    "puppeteer-core": "19.9.0",
+    "nock": "13.3.1",
+    "puppeteer": "20.2.1",
+    "puppeteer-core": "20.2.1",
     "puppeteer-to-istanbul": "1.4.0",
-    "semantic-release": "21.0.1",
+    "semantic-release": "21.0.2",
     "semantic-release-react-native": "1.8.0",
     "shelljs": "0.8.5",
-    "sinon": "15.0.3"
+    "sinon": "15.1.0"
   },
   "lint-staged": {
     "*.js": "eslint"

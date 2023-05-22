@@ -13,7 +13,7 @@
 
 import assert from 'assert';
 import {
-  DEBUG, IT_DEFAULT_TIMEOUT, Nock, sleep, TestBrowser,
+  IT_DEFAULT_TIMEOUT, Nock, TestBrowser,
 } from './utils.js';
 
 import { SidekickTest } from './SidekickTest.js';
@@ -47,55 +47,49 @@ describe('Test sidekick login', () => {
     const test = new SidekickTest({
       browser,
       page,
-      waitPopup: 2000,
+      pluginSleep: 2000,
       plugin: 'user-login',
       loadModule: true,
     });
 
+    nock.login();
     nock('https://admin.hlx.page')
+      .get('/sidekick/adobe/blog/main/config.json')
+      .twice()
+      .reply(function req() {
+        if (this.req.headers.cookie === 'auth_token=foobar') {
+          return [200, '{}', { 'content-type': 'application/json' }];
+        }
+        return [401];
+      })
       .get('/status/adobe/blog/main/en/topics/bla?editUrl=auto')
-      .times(2)
+      .twice()
       .reply(function req() {
         if (this.req.headers.cookie === 'auth_token=foobar') {
           loggedIn = true;
-          return [200, '{}', { 'content-type': 'application/json' }];
+          return [200, '{ "status": 200}', { 'content-type': 'application/json' }];
         }
-        return [401];
+        return [401, '{ "status": 401 }', { 'content-type': 'application/json' }];
       })
-      .get('/login/adobe/blog/main/en/topics/bla?loginRedirect=https%3A%2F%2Fwww.hlx.live%2Ftools%2Fsidekick%2Flogin-success')
-      .times(DEBUG ? 2 : 1) // when dev-tools are enabled, browser makes 2 requests.
-      .delay(1500) // delay so that 2 requests are made
-      .reply(200, 'logged in!', {
+      .get('/login/adobe/blog/main?loginRedirect=https%3A%2F%2Fwww.hlx.live%2Ftools%2Fsidekick%2Flogin-success')
+      .reply(200, '<html>logged in<script>setTimeout(() => self.close(), 500)</script></html>', {
         'set-cookie': 'auth_token=foobar; Path=/; HttpOnly; Secure; SameSite=None',
       })
-      .get('/profile')
-      .times(2)
+      .get('/profile/adobe/blog/main')
       .reply(function req() {
         if (this.req.headers.cookie === 'auth_token=foobar') {
-          return [200, '{}', { 'content-type': 'application/json' }];
+          return [200, '{ "status": 200 }', { 'content-type': 'application/json' }];
         }
-        return [401];
-      });
+        return [401, '{ "status": 401 }', { 'content-type': 'application/json' }];
+      })
+      // in debug mode, the browser requests /favicon.ico
+      .get('/favicon.ico')
+      .optionally()
+      .reply(404);
 
     await test.run();
 
-    // wait until login window closes
-    let loginClosed = false;
-    await Promise.race([
-      new Promise((resolve) => {
-        page.browser().on('targetdestroyed', async (target) => {
-          const targetUrl = target.url();
-          if (targetUrl.startsWith('https://admin.hlx.page/login/adobe/blog/main/en/topics/bla')) {
-            loginClosed = true;
-            resolve();
-          }
-        });
-      }),
-      sleep(2000),
-    ]);
-
     assert.ok(loggedIn, 'Sidekick did not send auth cookie.');
-    assert.ok(loginClosed, 'Sidekick did not close login window.');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Opens login window and shows aborted modal', async () => {
@@ -103,26 +97,23 @@ describe('Test sidekick login', () => {
       browser,
       page,
       plugin: 'user-login',
-      pluginSleep: 2000,
+      pluginSleep: 7000, // sidekick tries 5 times before showing the login aborted modal
       loadModule: true,
     });
 
+    nock.login();
     nock('https://admin.hlx.page')
+      .get('/sidekick/adobe/blog/main/config.json')
+      .reply(401)
       .get('/status/adobe/blog/main/en/topics/bla?editUrl=auto')
-      .reply(401)
-      .get('/profile')
-      .times(2)
-      .reply(401)
-      .get('/login/adobe/blog/main/en/topics/bla')
-      .query({
-        loginRedirect: 'https://www.hlx.live/tools/sidekick/login-success',
-      })
-      .reply(200, 'not logged in!');
+      .reply(401, '{ "status": 401 }', { 'content-type': 'application/json' })
+      .get('/login/adobe/blog/main?loginRedirect=https%3A%2F%2Fwww.hlx.live%2Ftools%2Fsidekick%2Flogin-success')
+      .reply(200, '<html>not logged in!<script>setTimeout(() => self.close(), 500)</script></html>')
+      .get('/profile/adobe/blog/main')
+      .times(5)
+      .reply(401, '{ "status": 401 }', { 'content-type': 'application/json' });
 
-    const { popupTarget } = await test.run();
-
-    // close login window
-    await (await popupTarget.page()).close();
+    await test.run();
 
     // wait for 'aborted' modal
     try {
