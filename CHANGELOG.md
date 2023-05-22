@@ -1,3 +1,10 @@
+# [6.17.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.16.1...v6.17.0) (2023-05-22)
+
+
+### Features
+
+* custom preview and live host ([9237065](https://github.com/adobe/helix-sidekick-extension/commit/923706562ca71ebe63a497e1404230e18f41a87a))
+
 ## [6.16.1](https://github.com/adobe/helix-sidekick-extension/compare/v6.16.0...v6.16.1) (2023-05-17)
 
 
