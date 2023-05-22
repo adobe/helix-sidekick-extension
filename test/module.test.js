@@ -155,12 +155,33 @@ describe('Test sidekick', () => {
         assert.strictEqual(outerHost, 'main--blog--adobe.hlx.live', `Unexpected outerHost: ${innerHost}`);
       }).timeout(IT_DEFAULT_TIMEOUT);
 
-      it('Uses outerHost from config', async () => {
-        const testOuterHost = 'test--blog--adobe.hlx.live';
+      it('Uses previewHost from config', async () => {
+        const testPreviewHost = 'preview.example.com';
         const setup = new Setup('blog');
         nock.sidekick(setup, {
           configJson: `{
-            "outerHost": "${testOuterHost}"
+            "previewHost": "${testPreviewHost}"
+          }`,
+        });
+        nock.admin(setup);
+        const { sidekick: { config: { innerHost } } } = await new SidekickTest({
+          browser,
+          page,
+          loadModule,
+          setup: 'blog',
+        }).run();
+        assert.strictEqual(
+          innerHost,
+          testPreviewHost,
+        );
+      }).timeout(IT_DEFAULT_TIMEOUT);
+
+      it('Uses liveHost from config', async () => {
+        const testLiveHost = 'live.example.com';
+        const setup = new Setup('blog');
+        nock.sidekick(setup, {
+          configJson: `{
+            "liveHost": "${testLiveHost}"
           }`,
         });
         nock.admin(setup);
@@ -172,7 +193,7 @@ describe('Test sidekick', () => {
         }).run();
         assert.strictEqual(
           outerHost,
-          testOuterHost,
+          testLiveHost,
         );
       }).timeout(IT_DEFAULT_TIMEOUT);
 
