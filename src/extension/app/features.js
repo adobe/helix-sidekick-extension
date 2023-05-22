@@ -38,7 +38,7 @@ export function addEnvFeature(sk) {
   if (sk.isInner()) switchViewText = i18n(sk, 'preview');
   if (sk.isOuter()) switchViewText = i18n(sk, 'live');
   if (sk.isProd()) switchViewText = i18n(sk, 'production');
-  appendTag(sk.featureContainer, createDropdown({
+  appendTag(sk.featureContainer, createDropdown(sk, {
     id: 'env',
     button: {
       text: switchViewText,
