@@ -104,10 +104,12 @@
    * @prop {string} mountpoint The content source URL (optional)
    * @prop {string} project The name of the project used in the sharing link (optional)
    * @prop {Plugin[]} plugins An array of {@link Plugin|plugin configurations} (optional)
-   * @prop {string} outerHost The outer CDN's host name (optional)
+   * @prop {string} previewHost The host name of a custom preview CDN (optional)
+   * @prop {string} liveHost The host name of a custom live CDN (optional)
    * @prop {string} host The production host name to publish content to (optional)
    * @prop {boolean} byocdn=false <pre>true</pre> if the production host is a 3rd party CDN
-   * @prop {boolean} devMode=false Loads configuration and plugins from the developmemt environment
+   * @prop {boolean} devMode=false Loads configuration and plugins from the development environment
+   * @prop {boolean} devOrigin=http://localhost:3000 URL of the local development environment
    * @prop {boolean} pushDown=false <pre>true</pre> to have the sidekick push down page content
    * @prop {string} pushDownSelector The CSS selector for absolute elements to also push down
    * @prop {ViewConfig[]} specialViews An array of custom {@link ViewConfig|view configurations}
@@ -260,14 +262,6 @@
   ];
 
   /**
-   * The URL of the development environment.
-   * @see {@link https://github.com/adobe/helix-cli|AEM CLI}).
-   * @private
-   * @type {URL}
-   */
-  const DEV_URL = new URL('http://localhost:3000');
-
-  /**
    * Log RUM for sidekick telemetry.
    * @private
    * @param {string} checkpoint identifies the checkpoint in funnel
@@ -307,14 +301,12 @@
       }
       const { weight, id } = window.hlx.rum;
       if (window.hlx && window.hlx.rum && window.hlx.rum.isSelected) {
-        const sendPing = (pdata = data) => {
+        const sendPing = () => {
           // eslint-disable-next-line object-curly-newline, max-len, no-use-before-define
           const body = JSON.stringify({ weight, id, referer: sk.location.href, generation: window.hlx.RUM_GENERATION, checkpoint, ...data });
           const url = `https://rum.hlx.page/.rum/${weight}`;
           // eslint-disable-next-line no-unused-expressions
           navigator.sendBeacon(url, body);
-          // eslint-disable-next-line no-console
-          console.debug(`ping:${checkpoint}`, pdata);
         };
         sampleRUM.cases = sampleRUM.cases || {
           cwv: () => sampleRUM.cwv(data) || true,
@@ -457,13 +449,14 @@
       repo,
       ref = 'main',
       devMode,
+      devOrigin = 'http://localhost:3000',
       adminVersion,
       _extended,
     } = config;
     if (owner && repo && !_extended) {
       // look for custom config in project
       const configUrl = devMode
-        ? `${DEV_URL.origin}/tools/sidekick/config.json`
+        ? `${devOrigin}/tools/sidekick/config.json`
         : getAdminUrl(config, 'sidekick', '/config.json');
       try {
         const res = await fetch(configUrl, getAdminFetchOptions(true));
@@ -486,7 +479,9 @@
     }
 
     const {
-      outerHost,
+      previewHost,
+      liveHost,
+      outerHost: legacyLiveHost,
       host,
       project,
       pushDown,
@@ -495,27 +490,17 @@
       scriptUrl = 'https://www.hlx.live/tools/sidekick/module.js',
       scriptRoot = scriptUrl.split('/').filter((_, i, arr) => i < arr.length - 1).join('/'),
     } = config;
-    const innerPrefix = owner && repo ? `${ref}--${repo}--${owner}` : null;
     const publicHost = host && host.startsWith('http') ? new URL(host).host : host;
-    let innerHost = 'hlx.page';
-    if (!innerHost && scriptUrl) {
-      // get hlx domain from script src (used for branch deployment testing)
-      const scriptHost = new URL(scriptUrl).host;
-      if (scriptHost && scriptHost !== 'www.hlx.live' && !scriptHost.startsWith(DEV_URL.host)) {
-        // keep only 1st and 2nd level domain
-        innerHost = scriptHost.split('.')
-          .reverse()
-          .splice(0, 2)
-          .reverse()
-          .join('.');
-      }
+    const hostPrefix = owner && repo ? `${ref}--${repo}--${owner}` : null;
+    let innerHost = previewHost;
+    if (!innerHost) {
+      innerHost = hostPrefix ? `${hostPrefix}.hlx.page` : null;
     }
-    innerHost = innerPrefix ? `${innerPrefix}.${innerHost}` : null;
-    let liveHost = outerHost;
-    if (!liveHost && owner && repo) {
-      // use default hlx3 outer CDN including the ref
-      liveHost = `${ref}--${repo}--${owner}.hlx.live`;
+    let outerHost = liveHost || legacyLiveHost;
+    if (!outerHost) {
+      outerHost = hostPrefix ? `${hostPrefix}.hlx.live` : null;
     }
+    const devUrl = new URL(devOrigin);
     // define elements to push down
     const pushDownElements = [];
     if (pushDown) {
@@ -544,12 +529,13 @@
       ...config,
       ref,
       innerHost,
-      outerHost: liveHost,
+      outerHost,
       scriptRoot,
       host: publicHost,
       project: project || '',
       pushDownElements,
       specialView,
+      devUrl,
     };
   }
 
@@ -2991,10 +2977,10 @@
      * @returns {boolean} <code>true</code> if development URL, else <code>false</code>
      */
     isDev() {
-      const { location } = this;
+      const { config, location } = this;
       return [
         '', // for unit testing
-        DEV_URL.host, // for development and browser testing
+        config.devUrl.host, // for development and browser testing
       ].includes(location.host);
     }
 
@@ -3406,7 +3392,7 @@
         window.setTimeout(() => this.switchEnv(targetEnv, open), 1000);
         return this;
       }
-      const envOrigin = targetEnv === 'dev' ? DEV_URL.origin : `https://${config[hostType]}`;
+      const envOrigin = targetEnv === 'dev' ? config.devUrl.origin : `https://${config[hostType]}`;
       let envUrl = `${envOrigin}${status.webPath}`;
       if (!this.isEditor()) {
         envUrl += `${search}${hash}`;

@@ -270,6 +270,7 @@ export async function assembleProject({
   host,
   outerHost,
   devMode,
+  devOrigin,
   disabled,
 }) {
   if (giturl && !owner && !repo) {
@@ -294,6 +295,7 @@ export async function assembleProject({
     host,
     outerHost,
     devMode,
+    devOrigin,
     disabled,
     giturl,
     owner,
