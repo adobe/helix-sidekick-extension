@@ -1,3 +1,10 @@
+# [6.18.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.17.0...v6.18.0) (2023-05-22)
+
+
+### Features
+
+* custom dev url ([a3781a3](https://github.com/adobe/helix-sidekick-extension/commit/a3781a3ab3bef2d48945c2d19e4f19c950df803f))
+
 # [6.17.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.16.1...v6.17.0) (2023-05-22)
 
 
