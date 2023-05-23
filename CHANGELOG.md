@@ -1,3 +1,10 @@
+## [6.18.1](https://github.com/adobe/helix-sidekick-extension/compare/v6.18.0...v6.18.1) (2023-05-23)
+
+
+### Bug Fixes
+
+* check for empty dev url ([9148a9f](https://github.com/adobe/helix-sidekick-extension/commit/9148a9f34d89587c32c66d26f9f180e83c720d14))
+
 # [6.18.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.17.0...v6.18.0) (2023-05-22)
 
 
