@@ -19,13 +19,13 @@
     "message": "Aucun fichier sélectionné"
   },
   "bulk_confirm_preview_multiple": {
-    "message": "Voulez-vous vraiment prévisualiser les fichiers $1 ?"
+    "message": "Voulez-vous vraiment prévisualiser $1 fichiers ?"
   },
   "bulk_confirm_preview_single": {
     "message": "Voulez-vous vraiment prévisualiser 1 fichier ?"
   },
   "bulk_confirm_publish_multiple": {
-    "message": "Voulez-vous vraiment publier les fichiers $1 ?"
+    "message": "Voulez-vous vraiment publier $1 fichiers ?"
   },
   "bulk_confirm_publish_single": {
     "message": "Voulez-vous vraiment publier 1 fichier ?"
@@ -37,10 +37,10 @@
     "message": "$1 sur $2 fichiers publiés..."
   },
   "bulk_result_preview_multiple_failure": {
-    "message": "Échec de la prévisualisation des fichiers $1 :"
+    "message": "Échec de la prévisualisation de $1 fichiers :"
   },
   "bulk_result_preview_multiple_success": {
-    "message": "Les fichiers $1 ont été prévisualisés."
+    "message": "$1 fichiers ont été prévisualisés."
   },
   "bulk_result_preview_single_error_invalid_folder_name": {
     "message": "Les noms de dossiers n'acceptent que les lettres latines normalisées, les chiffres et les traits d'union."
@@ -52,16 +52,16 @@
     "message": "Document Microsoft Excel, convertissez-le d'abord au format Google Sheets."
   },
   "bulk_result_preview_single_failure": {
-    "message": "Échec de l'aperçu d'un fichier :"
+    "message": "Échec de la prévisualisation d'un fichier :"
   },
   "bulk_result_preview_single_success": {
     "message": "Un fichier a été prévisualisé."
   },
   "bulk_result_publish_multiple_failure": {
-    "message": "Échec de la publication des fichiers $1 :"
+    "message": "Échec de la publication de $1 fichiers :"
   },
   "bulk_result_publish_multiple_success": {
-    "message": "Les fichiers $1 ont été publiés."
+    "message": "$1 fichiers ont été publiés."
   },
   "bulk_result_publish_single_error_no_source": {
     "message": "Le fichier doit d'abord être prévisualisé."
@@ -79,7 +79,7 @@
     "message": "$1 fichiers sélectionnés"
   },
   "bulk_selection_single": {
-    "message": "Sélection d'un fichier"
+    "message": "Un fichier sélectionné"
   },
   "cancel": {
     "message": "Annuler"
@@ -155,6 +155,9 @@
   },
   "config_manual_devMode": {
     "message": "Tester la configuration du projet localement"
+  },
+  "config_manual_devOrigin_placeholder": {
+    "message": "URL de développement local : http://localhost:3000"
   },
   "config_manual_giturl_placeholder": {
     "message": "URL du référentiel : https://github.com/..."

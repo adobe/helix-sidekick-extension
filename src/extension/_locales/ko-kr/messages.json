@@ -156,6 +156,9 @@
   "config_manual_devMode": {
     "message": "로컬에서 프로젝트 구성 테스트"
   },
+  "config_manual_devOrigin_placeholder": {
+    "message": "로컬 개발 URL: http://localhost:3000"
+  },
   "config_manual_giturl_placeholder": {
     "message": "저장소 URL: https://github.com/..."
   },

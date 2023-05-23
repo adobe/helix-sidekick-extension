@@ -156,6 +156,9 @@
   "config_manual_devMode": {
     "message": "Testar a configuração do projeto localmente"
   },
+  "config_manual_devOrigin_placeholder": {
+    "message": "URL de desenvolvimento local: http://localhost:3000"
+  },
   "config_manual_giturl_placeholder": {
     "message": "URL do repositório: https://github.com/..."
   },

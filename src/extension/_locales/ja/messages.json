@@ -19,7 +19,7 @@
     "message": "ファイルが選択されていません"
   },
   "bulk_confirm_preview_multiple": {
-    "message": "$1 ファイルをプレビューしてもよろしいですか？"
+    "message": "$1 個のファイルをプレビューしてもよろしいですか？"
   },
   "bulk_confirm_preview_single": {
     "message": "1 個のファイルをプレビューしてもよろしいですか？"
@@ -37,7 +37,7 @@
     "message": "$2 個のうち $1 個のファイルが公開されました..."
   },
   "bulk_result_preview_multiple_failure": {
-    "message": "$1 ファイルをプレビューできませんでした :"
+    "message": "$1 個のファイルをプレビューできませんでした :"
   },
   "bulk_result_preview_multiple_success": {
     "message": "$1 個のファイルが正常にプレビューされました。"
@@ -58,10 +58,10 @@
     "message": "1 個のファイルが正常にプレビューされました。"
   },
   "bulk_result_publish_multiple_failure": {
-    "message": "$1 ファイルを公開できませんでした :"
+    "message": "$1 個のファイルを公開できませんでした :"
   },
   "bulk_result_publish_multiple_success": {
-    "message": "$1 ファイルが正常に公開されました。"
+    "message": "$1 個のファイルが正常に公開されました。"
   },
   "bulk_result_publish_single_error_no_source": {
     "message": "最初にファイルをプレビューする必要があります"
@@ -155,6 +155,9 @@
   },
   "config_manual_devMode": {
     "message": "プロジェクト設定をローカルでテスト"
+  },
+  "config_manual_devOrigin_placeholder": {
+    "message": "ローカル開発 URL:http://localhost:3000"
   },
   "config_manual_giturl_placeholder": {
     "message": "リポジトリ URL : https://github.com/..."
@@ -480,7 +483,7 @@
     "message": "AEM Sidekick"
   },
   "today_at": {
-    "message": "今日は $1"
+    "message": "今日の $1"
   },
   "unpublish": {
     "message": "非公開"
@@ -498,6 +501,6 @@
     "message": "ユーザーを切り替え"
   },
   "yesterday_at": {
-    "message": "昨日 ($1)"
+    "message": "昨日の $1"
   }
 }
