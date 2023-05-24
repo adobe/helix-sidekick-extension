@@ -215,7 +215,7 @@ export function isSharePointHost(host) {
 }
 
 export function isGoogleDriveHost(host) {
-  return /(docs|drive)\.google\.com$/.test(host);
+  return /^(docs|drive)\.google\.com$/.test(host);
 }
 
 export async function getProjectMatches(configs, tabUrl) {
