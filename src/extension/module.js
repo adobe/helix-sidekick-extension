@@ -985,6 +985,52 @@
       .replace(/\+/, '-');
     return `u!${base64}`;
   }
+  async function fetchSharePointStatus() {
+    const shareLink = encodeSharingUrl(window.location.href);
+    const url = new URL(window.location.href);
+    url.pathname = `/_api/v2.0/shares/${shareLink}/driveItem`;
+    let resp = await fetch(url);
+    const data = await resp.json();
+    console.log(data);
+
+    // get root item
+    url.pathname = `/_api/v2.0/drives/${data.parentReference.driveId}`;
+    resp = await fetch(url);
+    const rootData = await resp.json();
+    console.log(rootData);
+
+    const status = {
+      status: 200,
+      name: data.name,
+      sourceLocation: `onedrive:/drives/${data.parentReference.driveId}/items/${data.id}`,
+      lastModified: data.lastModifiedDateTime,
+    };
+    if (data.folder) {
+      status.url = data.webUrl;
+      status.contentType = 'application/folder';
+      status.childCount = data.folder.childCount;
+    } else {
+      const folder = data.parentReference.path.split(':').pop();
+      status.url = `${rootData.webUrl}${folder}/${data.name}`;
+      status.contentType = data.file.mimeType;
+    }
+    console.log(status);
+
+    const discoverUrl = new URL('https://admin.hlx.page/discover/');
+    discoverUrl.searchParams.append('url', status.url);
+    resp = await fetch(discoverUrl);
+
+    const discoverData = await resp.json();
+
+    if (discoverData.length > 0) {
+      status.owner = discoverData[0].owner;
+      status.repo = discoverData[0].repo;
+    }
+    console.log(discoverData);
+
+
+    return status;
+  }
 
   /**
    * Adds the test plugin to the sidekick.
@@ -998,19 +1044,11 @@
       button: {
         text: 'Test',
         action: async () => {
-          // encode sharelink
-          const shareLink = encodeSharingUrl(window.location.href);
-          const url = new URL(window.location.href);
-          url.pathname = `/_api/v2.0/shares/${shareLink}/driveItem`;
-          const resp = await fetch(url);
-          const data = await resp.json();
-          if (data.folder) {
-            alert(`Folder (${data.folder.childCount}):\n${data.webUrl}`);
+          const status = await fetchSharePointStatus();
+          if (status.contentType === 'application/folder') {
+            alert(`Folder (${status.childCount}):\n${status.url}\nowner: ${status.owner}\nrepo: ${status.repo}`);
           } else {
-            const folder = data.parentReference.path.split(':').pop();
-            const rootUrl = data.webUrl.split('/_layouts/')[0];
-            const documentPath = `${rootUrl}${folder}/${data.name}`;
-            alert(`Document:\n${documentPath}`);
+            alert(`Document:\n${status.url}\nowner: ${status.owner}\nrepo: ${status.repo}`);
           }
         },
         isEnabled: () => true,
