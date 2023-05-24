@@ -15,7 +15,7 @@ const HELIX_ENV_JSON = {
     host: 'business.adobe.com',
     routes: [],
   },
-  project: 'Adobe Business Wesbite',
+  project: 'Adobe Business Website',
   contentSourceUrl: 'https://adobe.sharepoint.com/:f:/s/Dummy/Alk9MSH25LpBuUWA_N6DOL8BuI6Vrdyrr87gne56dz3QeQ',
   contentSourceType: 'onedrive',
 };
@@ -27,6 +27,24 @@ const FSTAB_YAML = `mountpoints:
 const DISCOVER_JSON = [
   { owner: 'foo', repo: 'bar1' },
 ];
+
+const DRIVE_ITEM_JSON = {
+  webUrl: 'https://foo.sharepoint.com/:w:/r/sites/foo/_layouts/15/Doc.aspx?sourcedoc=%7BBFD9A19C',
+  parentReference: {
+    driveId: '1234',
+    itemId: 'foobar',
+    path: '1234/root:/products',
+  },
+  name: 'index.docx',
+  file: {
+    mimeType: 'word',
+  },
+};
+
+const ROOT_ITEM_JSON = {
+  webUrl: 'https://foo.sharepoint.com/sites/foo/Shared Documents',
+};
+
 class ResponseMock {
   constructor(body) {
     this.ok = true;
@@ -51,6 +69,11 @@ export default async function fetchMock(url) {
     return new ResponseMock(JSON.stringify(HELIX_ENV_JSON));
   } else if (path.startsWith('/discover')) {
     return new ResponseMock(JSON.stringify(DISCOVER_JSON));
+  } else if (path.startsWith('/_api/v2.0/shares/')) {
+    return new ResponseMock(JSON.stringify(DRIVE_ITEM_JSON));
+  } else if (path.startsWith('/_api/v2.0/drives/1234')) {
+    return new ResponseMock(JSON.stringify(ROOT_ITEM_JSON));
   }
+  console.log(url);
   return new ResponseMock('');
 }
