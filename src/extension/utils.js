@@ -249,7 +249,7 @@ export async function getProjectMatches(configs, tabUrl) {
         ? await fetchSharePointEditInfo(tabUrl)
         : await fetchGoogleEditInfo(tabUrl);
       // eslint-disable-next-line no-console
-      console.log('resource edit info', info);
+      console.debug('resource edit info', info);
 
       // discover project details from edit url
       const discoverUrl = new URL('https://admin.hlx.page/discover/');
@@ -258,7 +258,10 @@ export async function getProjectMatches(configs, tabUrl) {
       if (resp.ok) {
         results = await resp.json();
         if (results.length > 0) {
-          // cache for 2h if discovered correctly
+          // when switching back to a sharepoint tab if can happen that the fetch call to the
+          // sharepoint API is no longer authenticated, this the info returns null.
+          // in this case, we don't want to cache a potentially incomplete discovery response.
+          // cache for 2h
           const ttl = info ? DISCOVERY_CACHE_TTL : 0;
           const newEntry = {
             url: tabUrl,
