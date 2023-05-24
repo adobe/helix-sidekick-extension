@@ -1004,10 +1004,14 @@
           url.pathname = `/_api/v2.0/shares/${shareLink}/driveItem`;
           const resp = await fetch(url);
           const data = await resp.json();
-          const folder = data.parentReference.path.split(':').pop();
-          const rootUrl = data.webUrl.split('/_layouts/')[0];
-          const documentPath = `${rootUrl}${folder}/${data.name}`;
-          alert(`Document:\n${documentPath}`);
+          if (data.folder) {
+            alert(`Folder (${data.folder.childCount}):\n${data.webUrl}`);
+          } else {
+            const folder = data.parentReference.path.split(':').pop();
+            const rootUrl = data.webUrl.split('/_layouts/')[0];
+            const documentPath = `${rootUrl}${folder}/${data.name}`;
+            alert(`Document:\n${documentPath}`);
+          }
         },
         isEnabled: () => true,
       },
