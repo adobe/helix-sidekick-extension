@@ -978,84 +978,6 @@
     });
   }
 
-  function encodeSharingUrl(sharingUrl) {
-    const base64 = btoa(sharingUrl)
-      .replace(/=/, '')
-      .replace(/\//, '_')
-      .replace(/\+/, '-');
-    return `u!${base64}`;
-  }
-  async function fetchSharePointStatus() {
-    const shareLink = encodeSharingUrl(window.location.href);
-    const url = new URL(window.location.href);
-    url.pathname = `/_api/v2.0/shares/${shareLink}/driveItem`;
-    let resp = await fetch(url);
-    const data = await resp.json();
-    console.log(data);
-
-    // get root item
-    url.pathname = `/_api/v2.0/drives/${data.parentReference.driveId}`;
-    resp = await fetch(url);
-    const rootData = await resp.json();
-    console.log(rootData);
-
-    const status = {
-      status: 200,
-      name: data.name,
-      sourceLocation: `onedrive:/drives/${data.parentReference.driveId}/items/${data.id}`,
-      lastModified: data.lastModifiedDateTime,
-    };
-    if (data.folder) {
-      status.url = data.webUrl;
-      status.contentType = 'application/folder';
-      status.childCount = data.folder.childCount;
-    } else {
-      const folder = data.parentReference.path.split(':').pop();
-      status.url = `${rootData.webUrl}${folder}/${data.name}`;
-      status.contentType = data.file.mimeType;
-    }
-    console.log(status);
-
-    const discoverUrl = new URL('https://admin.hlx.page/discover/');
-    discoverUrl.searchParams.append('url', status.url);
-    resp = await fetch(discoverUrl);
-
-    const discoverData = await resp.json();
-
-    if (discoverData.length > 0) {
-      status.owner = discoverData[0].owner;
-      status.repo = discoverData[0].repo;
-    }
-    console.log(discoverData);
-
-
-    return status;
-  }
-
-  /**
-   * Adds the test plugin to the sidekick.
-   * @private
-   * @param {Sidekick} sk The sidekick
-   */
-  function addTestPlugin(sk) {
-    sk.add({
-      id: 'edit',
-      condition: () => true,
-      button: {
-        text: 'Test',
-        action: async () => {
-          const status = await fetchSharePointStatus();
-          if (status.contentType === 'application/folder') {
-            alert(`Folder (${status.childCount}):\n${status.url}\nowner: ${status.owner}\nrepo: ${status.repo}`);
-          } else {
-            alert(`Document:\n${status.url}\nowner: ${status.owner}\nrepo: ${status.repo}`);
-          }
-        },
-        isEnabled: () => true,
-      },
-    });
-  }
-
   /**
    * Adds the following environment plugins to the sidekick:
    * Preview, Live and Production
@@ -2691,7 +2613,6 @@
           },
         });
         // add default plugins
-        addTestPlugin(this);
         addEditPlugin(this);
         addEnvPlugins(this);
         addPreviewPlugin(this);
@@ -2748,14 +2669,17 @@
       }
       if (!this.status.apiUrl || refreshLocation) {
         const { href, pathname } = this.location;
+        const isDM = this.isEditor() || this.isAdmin(); // is document management
         const apiUrl = getAdminUrl(
           this.config,
           'status',
-          (this.isEditor() || this.isAdmin()) ? '' : pathname,
+          isDM ? '' : pathname,
         );
-        apiUrl.searchParams.append('editUrl', (this.isEditor() || this.isAdmin()) ? href : 'auto');
-        this.status.apiUrl = apiUrl.toString();
+
+        apiUrl.searchParams.append('editUrl', isDM ? href : 'auto');
+        this.status.apiUrl = apiUrl;
       }
+
       fetch(this.status.apiUrl, {
         ...getAdminFetchOptions(),
       })
