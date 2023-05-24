@@ -978,6 +978,42 @@
     });
   }
 
+  function encodeSharingUrl(sharingUrl) {
+    const base64 = btoa(sharingUrl)
+      .replace(/=/, '')
+      .replace(/\//, '_')
+      .replace(/\+/, '-');
+    return `u!${base64}`;
+  }
+
+  /**
+   * Adds the test plugin to the sidekick.
+   * @private
+   * @param {Sidekick} sk The sidekick
+   */
+  function addTestPlugin(sk) {
+    sk.add({
+      id: 'edit',
+      condition: () => true,
+      button: {
+        text: 'Test',
+        action: async () => {
+          // encode sharelink
+          const shareLink = encodeSharingUrl(window.location.href);
+          const url = new URL(window.location.href);
+          url.pathname = `/_api/v2.0/shares/${shareLink}/driveItem`;
+          const resp = await fetch(url);
+          const data = await resp.json();
+          const folder = data.parentReference.path.split(':').pop();
+          const rootUrl = data.webUrl.split('/_layouts/')[0];
+          const documentPath = `${rootUrl}${folder}/${data.name}`;
+          alert(`Document:\n${documentPath}`);
+        },
+        isEnabled: () => true,
+      },
+    });
+  }
+
   /**
    * Adds the following environment plugins to the sidekick:
    * Preview, Live and Production
@@ -2613,6 +2649,7 @@
           },
         });
         // add default plugins
+        addTestPlugin(this);
         addEditPlugin(this);
         addEnvPlugins(this);
         addPreviewPlugin(this);
