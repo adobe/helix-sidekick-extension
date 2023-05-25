@@ -1,3 +1,11 @@
+# [6.19.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.18.1...v6.19.0) (2023-05-25)
+
+
+### Features
+
+* **configpicker:** persist user choice for session ([829e4b2](https://github.com/adobe/helix-sidekick-extension/commit/829e4b29e9b7339e0bcbab0f550ba9e13e1f0085))
+* fetch status from sharepoint to help discover the correct project ([378db08](https://github.com/adobe/helix-sidekick-extension/commit/378db0827f004df320758aba8f72c7b7fdc4486c))
+
 ## [6.18.1](https://github.com/adobe/helix-sidekick-extension/compare/v6.18.0...v6.18.1) (2023-05-23)
 
 
