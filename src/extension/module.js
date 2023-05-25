@@ -2669,14 +2669,17 @@
       }
       if (!this.status.apiUrl || refreshLocation) {
         const { href, pathname } = this.location;
+        const isDM = this.isEditor() || this.isAdmin(); // is document management
         const apiUrl = getAdminUrl(
           this.config,
           'status',
-          (this.isEditor() || this.isAdmin()) ? '' : pathname,
+          isDM ? '' : pathname,
         );
-        apiUrl.searchParams.append('editUrl', (this.isEditor() || this.isAdmin()) ? href : 'auto');
-        this.status.apiUrl = apiUrl.toString();
+
+        apiUrl.searchParams.append('editUrl', isDM ? href : 'auto');
+        this.status.apiUrl = apiUrl;
       }
+
       fetch(this.status.apiUrl, {
         ...getAdminFetchOptions(),
       })
