@@ -143,6 +143,81 @@ export async function getState(cb) {
   }
 }
 
+/**
+ * Encodes the url to be used in the `/shares/` msgraph API call
+ * @param {string} sharingUrl
+ * @returns {string}
+ */
+export function encodeSharingUrl(sharingUrl) {
+  const base64 = btoa(sharingUrl)
+    .replace(/=/, '')
+    .replace(/\//, '_')
+    .replace(/\+/, '-');
+  return `u!${base64}`;
+}
+
+/**
+ * Fetches the sharepoint edit info directly from sharepoint
+ * @todo also use fstab information to figure out the resource path etc.
+ *
+ * @param {string} tabUrl
+ * @returns {Promise<object>}
+ */
+export async function fetchSharePointEditInfo(tabUrl) {
+  const shareLink = encodeSharingUrl(tabUrl);
+  const spUrl = new URL(tabUrl);
+  spUrl.pathname = `/_api/v2.0/shares/${shareLink}/driveItem`;
+  let resp = await fetch(spUrl);
+  if (!resp.ok) {
+    // eslint-disable-next-line no-console
+    console.warn('unable to resolve edit url: ', resp.status);
+    return null;
+  }
+  const data = await resp.json();
+
+  // get root item
+  spUrl.pathname = `/_api/v2.0/drives/${data.parentReference.driveId}`;
+  resp = await fetch(spUrl);
+  if (!resp.ok) {
+    // eslint-disable-next-line no-console
+    console.warn('unable to load root url: ', resp.status);
+    return null;
+  }
+  const rootData = await resp.json();
+
+  const info = {
+    status: 200,
+    name: data.name,
+    sourceLocation: `onedrive:/drives/${data.parentReference.driveId}/items/${data.id}`,
+    lastModified: data.lastModifiedDateTime,
+  };
+  if (data.folder) {
+    info.url = data.webUrl;
+    info.contentType = 'application/folder';
+    info.childCount = data.folder.childCount;
+  } else {
+    const folder = data.parentReference.path.split(':').pop();
+    info.url = `${rootData.webUrl}${folder}/${data.name}`;
+    info.contentType = data.file.mimeType;
+  }
+  return info;
+}
+
+export async function fetchGoogleEditInfo(tabUrl) {
+  // todo: fetch from gdrive ?
+  return {
+    url: tabUrl,
+  };
+}
+
+export function isSharePointHost(host) {
+  return /^[a-z-]+\.sharepoint\.com$/.test(host);
+}
+
+export function isGoogleDriveHost(host) {
+  return /^(docs|drive)\.google\.com$/.test(host);
+}
+
 export async function getProjectMatches(configs, tabUrl) {
   const {
     host: checkHost,
@@ -160,9 +235,8 @@ export async function getProjectMatches(configs, tabUrl) {
       || checkHost === outerHost // custom outer
       || checkHost.split('.hlx.')[0].endsWith(`${repo}--${owner}`); // inner or outer
   });
-  if (matches.length === 0
-    && (/(docs|drive)\.google\.com$/.test(checkHost) // gdrive
-      || /^[a-z-]+\.sharepoint\.com$/.test(checkHost))) { // sharepoint
+
+  if (matches.length === 0 && (isSharePointHost(checkHost) || isGoogleDriveHost(checkHost))) {
     let results = [];
     // check cache
     log.debug('discovery cache', DISCOVERY_CACHE);
@@ -171,18 +245,28 @@ export async function getProjectMatches(configs, tabUrl) {
       // reuse fresh entry from cache
       results = entry.results;
     } else {
+      const info = isSharePointHost(checkHost)
+        ? await fetchSharePointEditInfo(tabUrl)
+        : await fetchGoogleEditInfo(tabUrl);
+      // eslint-disable-next-line no-console
+      console.debug('resource edit info', info);
+
       // discover project details from edit url
       const discoverUrl = new URL('https://admin.hlx.page/discover/');
-      discoverUrl.searchParams.append('url', tabUrl);
+      discoverUrl.searchParams.append('url', info?.url || tabUrl);
       const resp = await fetch(discoverUrl);
       if (resp.ok) {
         results = await resp.json();
         if (results.length > 0) {
+          // when switching back to a sharepoint tab if can happen that the fetch call to the
+          // sharepoint API is no longer authenticated, this the info returns null.
+          // in this case, we don't want to cache a potentially incomplete discovery response.
           // cache for 2h
+          const ttl = info ? DISCOVERY_CACHE_TTL : 0;
           const newEntry = {
             url: tabUrl,
             results,
-            expiry: Date.now() + DISCOVERY_CACHE_TTL,
+            expiry: Date.now() + ttl,
           };
           const index = DISCOVERY_CACHE.indexOf(entry);
           if (index >= 0) {
