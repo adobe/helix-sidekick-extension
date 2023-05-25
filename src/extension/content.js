@@ -21,7 +21,8 @@
 
   let inject = () => {};
   if (!window.hlx.projectMatches) {
-    inject = (selectedProject = window.hlx.selectedSidekickProject) => {
+    const storedProject = JSON.parse(window.sessionStorage.getItem('hlx-sk-project') || null);
+    inject = (selectedProject = storedProject) => {
       getState(({
         display, adminVersion, pushDown,
       }) => {
@@ -46,7 +47,9 @@
         if (selectedProject || matchingProject) {
           log.info('content.js: selected or single matching config found, inject sidekick');
           // user selected config or single match, remember and show sidekick
-          window.hlx.selectedSidekickProject = selectedProject;
+          if (selectedProject) {
+            window.sessionStorage.setItem('hlx-sk-project', JSON.stringify(selectedProject));
+          }
           const config = selectedProject || matchingProject;
           if (adminVersion) {
             config.adminVersion = adminVersion;
