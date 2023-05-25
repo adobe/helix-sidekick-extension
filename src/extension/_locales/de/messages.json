@@ -19,10 +19,10 @@
     "message": "Keine Datei ausgewählt"
   },
   "bulk_confirm_preview_multiple": {
-    "message": "Möchten Sie wirklich eine Vorschau von $1 Dateien anzeigen?"
+    "message": "Möchten Sie wirklich die Vorschau für $1 Dateien generieren?"
   },
   "bulk_confirm_preview_single": {
-    "message": "Möchten Sie wirklich 1 Datei in der Vorschau anzeigen?"
+    "message": "Möchten Sie wirklich die Vorschau für 1 Datei generieren?"
   },
   "bulk_confirm_publish_multiple": {
     "message": "Möchten Sie wirklich $1 Dateien veröffentlichen?"
@@ -31,16 +31,16 @@
     "message": "Möchten Sie wirklich 1 Datei veröffentlichen?"
   },
   "bulk_progress_preview_multiple": {
-    "message": "$1 von $2 Dateien in der Vorschau angezeigt …"
+    "message": "Für $1 von $2 Dateien wurde eine Vorschau generiert …"
   },
   "bulk_progress_publish_multiple": {
     "message": "$1 von $2 Dateien veröffentlicht …"
   },
   "bulk_result_preview_multiple_failure": {
-    "message": "$1 Dateien konnten nicht in der Vorschau angezeigt werden:"
+    "message": "Für $1 Dateien konnte keine Vorschau generiert werden:"
   },
   "bulk_result_preview_multiple_success": {
-    "message": "$1 Dateien erfolgreich in der Vorschau angezeigt."
+    "message": "Für $1 Dateien wurde erfolgreich eine Vorschau generiert."
   },
   "bulk_result_preview_single_error_invalid_folder_name": {
     "message": "In Ordnernamen sind nur normalisierte, kleine lateinische Buchstaben, Ziffern und Bindestriche zulässig"
@@ -52,10 +52,10 @@
     "message": "Microsoft Excel-Dokument, muss zunächst in eine Google-Tabelle konvertiert werden"
   },
   "bulk_result_preview_single_failure": {
-    "message": "1 Datei konnte nicht in der Vorschau angezeigt werden:"
+    "message": "Für 1 Datei konnte keine Vorschau generiert werden:"
   },
   "bulk_result_preview_single_success": {
-    "message": "1 Datei erfolgreich in der Vorschau angezeigt."
+    "message": "Für 1 Datei wurde erfolgreich eine Vorschau generiert."
   },
   "bulk_result_publish_multiple_failure": {
     "message": "$1 Dateien konnten nicht veröffentlicht werden:"
@@ -64,7 +64,7 @@
     "message": "$1 Dateien erfolgreich veröffentlicht."
   },
   "bulk_result_publish_single_error_no_source": {
-    "message": "Die Datei muss zuerst in der Vorschau angezeigt werden"
+    "message": "Für die Datei muss zunächst eine Vorschau generiert werden"
   },
   "bulk_result_publish_single_failure": {
     "message": "1 Datei konnte nicht veröffentlicht werden:"
@@ -431,7 +431,7 @@
     "message": "Konfiguration erfolgreich aktiviert."
   },
   "preview_date": {
-    "message": "In Vorschau angezeigt: "
+    "message": "Vorschau generiert:"
   },
   "preview_onedrive": {
     "message": "Profi-Tipp: Drücken Sie vor der Vorschau Strg+S, um die neuesten Änderungen sofort zu sehen …"
