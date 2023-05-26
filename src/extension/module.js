@@ -2620,8 +2620,8 @@
         addDeletePlugin(this);
         addPublishPlugin(this);
         addUnpublishPlugin(this);
-        addCustomPlugins(this);
         addBulkPlugins(this);
+        addCustomPlugins(this);
         // fetch status
         this.fetchStatus();
         // push down content
