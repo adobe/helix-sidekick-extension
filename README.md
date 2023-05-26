@@ -29,7 +29,7 @@ Navigate to https://www.hlx.live/tools/sidekick/ and follow the instructions the
 
 ##### Adding projects to the Chrome extension
 1. Right-click the extension's icon and select _Options_:<br />
-![Extension box](docs/imgs/install_contextmenu_options.png)<br />
+![Extension box](docs/imgs/install_contextmenu_options.jpg)<br />
 On this page, you can add projects by either pasting a share URL* or a GitHub URL in the respective fields and clicking _Add_. This page will also allow you to view, edit and delete existing projects.
    1. Alternatively, you can also navigate to a share URL* or a GitHub project, click the extension's icon and select _Add project_.
 1. Navigate to your project's homepage and click on the extension's icon to toggle the Sidekick.
