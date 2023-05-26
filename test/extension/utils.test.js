@@ -201,16 +201,24 @@ describe('Test extension utils', () => {
     expect((await utils.getProjectMatches(CONFIGS, 'https://main--bar2--foo.hlx.live/')).length).to.equal(0);
   });
 
+  it('getProjectEnv', async () => {
+    const {
+      owner, repo, ref,
+    } = await utils.getProjectEnv('adobe', 'business-website', 'main');
+    expect(owner).to.equal('adobe');
+    expect(repo).to.equal('business-website');
+    expect(ref).to.equal('main');
+  });
+
   it('assembleProject with giturl', async () => {
     const {
-      owner, repo, ref, host,
+      owner, repo, ref,
     } = await utils.assembleProject({
       giturl: 'https://github.com/adobe/business-website/tree/main',
     });
     expect(owner).to.equal('adobe');
     expect(repo).to.equal('business-website');
     expect(ref).to.equal('main');
-    expect(host).to.equal('business.adobe.com');
   });
 
   it('assembleProject with owner and repo', async () => {

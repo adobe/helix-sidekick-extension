@@ -51,7 +51,7 @@ describe.skip('Test sidekick extension', () => {
     extPage.on('request', async (req) => {
       const url = req.url();
       console.log('[pup] request:', url);
-      if (url === 'https://main--helix-sidekick--adobe.hlx.page/helix-env.json') {
+      if (url === 'https://admin.hlx.page/sidekick/example/test/main/env.json') {
         req.respond({
           status: 200,
           contentType: 'application/json',
@@ -98,7 +98,7 @@ describe.skip('Test sidekick extension', () => {
     });
 
     const inputGitUrl = await extPage.$('#giturl');
-    await inputGitUrl.type('https://github.com/adobe/helix-sidekick');
+    await inputGitUrl.type('https://github.com/example/test');
     await extPage.click('#addManualConfigButton');
     await dlg;
 
@@ -121,9 +121,9 @@ describe.skip('Test sidekick extension', () => {
     });
     console.log(configs);
     assert.deepStrictEqual(configs, [{
-      giturl: 'https://github.com/adobe/helix-sidekick',
+      giturl: 'https://github.com/example/test',
       host: 'www.example.com',
-      id: 'adobe/helix-sidekick/main',
+      id: 'example/test/main',
       mountpoints: [
         'https://example.sharepoint.com/documents/website',
       ],

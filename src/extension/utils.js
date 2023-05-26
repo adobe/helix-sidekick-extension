@@ -318,11 +318,11 @@ export function isValidShareURL(shareurl) {
   return Object.keys(getShareSettings(shareurl)).length > 1;
 }
 
-async function getProjectConfig(owner, repo, ref = 'main') {
+export async function getProjectEnv(owner, repo, ref = 'main') {
   const cfg = {};
   let res;
   try {
-    res = await fetch(`https://${ref}--${repo}--${owner}.hlx.page/helix-env.json`);
+    res = await fetch(`https://admin.hlx.page/sidekick/${owner}/${repo}/${ref}/env.json`);
   } catch (e) {
     log.warn(`unable to retrieve project config: ${e}`);
   }
@@ -337,9 +337,8 @@ async function getProjectConfig(owner, repo, ref = 'main') {
     if (contentSourceUrl) {
       cfg.mountpoints = [contentSourceUrl];
     }
-  } else {
-    // extract mountpoints from fstab.yaml
-    cfg.mountpoints = await getMountpoints(owner, repo, ref);
+  } else if (res.status === 401) {
+    cfg.unauthorized = true;
   }
   return cfg;
 }
@@ -365,13 +364,7 @@ export async function assembleProject({
   } else {
     giturl = `https://github.com/${owner}/${repo}/tree/${ref}`;
   }
-  const projectConfig = await getProjectConfig(owner, repo, ref);
   const id = `${owner}/${repo}/${ref}`;
-  // allow local project config overrides
-  project = project || projectConfig.project;
-  host = host || projectConfig.host;
-  outerHost = outerHost || projectConfig.outerHost;
-  mountpoints = mountpoints || projectConfig.mountpoints;
 
   return {
     id,
@@ -396,6 +389,12 @@ export async function getProject(project) {
 
 export async function setProject(project, cb) {
   const { owner, repo } = project;
+  // sanitize input
+  Object.keys(project).forEach((key) => {
+    if (!project[key]) {
+      delete project[key];
+    }
+  });
   const handle = `${owner}/${repo}`;
   // update project config
   await setConfig('sync', {
@@ -416,6 +415,32 @@ export async function setProject(project, cb) {
 
 export async function addProject(input, cb) {
   const config = await assembleProject(input);
+  const { owner, repo, ref } = config;
+  const env = await getProjectEnv(owner, repo, ref);
+  if (env.unauthorized) {
+    // defer adding project and have user sign in
+    await chrome.tabs.create({
+      url: `https://admin.hlx.page/login/${owner}/${repo}/${ref}?extensionId=${chrome.runtime.id}`,
+    });
+    // retry adding project after sign in
+    const retryAddProjectListener = (message = {}) => {
+      // retry adding project if owner/repo matches
+      if (owner === message.owner && repo === message.repo) {
+        addProject(config, cb);
+      }
+      // clean up
+      chrome.runtime.onMessageExternal.removeListener(retryAddProjectListener);
+    };
+    chrome.runtime.onMessageExternal.addListener(retryAddProjectListener);
+    return;
+  }
+  // allow local project config overrides, otherwise use from env
+  config.project = config.project || env.project;
+  config.host = config.host || env.host;
+  config.previewHost = config.previewHost || env.previewHost;
+  config.liveHost = config.liveHost || env.liveHost;
+  config.mountpoints = config.mountpoints || env.mountpoints;
+
   const project = await getProject(config);
   if (!project) {
     await setProject(config);
