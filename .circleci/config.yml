@@ -6,7 +6,7 @@ executors:
 
 orbs:
   browser-tools: circleci/browser-tools@1.4.1
-  codecov: codecov/codecov@3.2.4
+  codecov: codecov/codecov@3.2.5
 
 commands:
   setup:
