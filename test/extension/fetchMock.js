@@ -46,10 +46,10 @@ const ROOT_ITEM_JSON = {
 };
 
 class ResponseMock {
-  constructor(body) {
-    this.ok = true;
-    this.status = 200;
-    this.body = body;
+  constructor(res) {
+    this.body = res.body || res || '';
+    this.status = res.status || 200;
+    this.ok = this.status === 200;
   }
 
   async json() {
@@ -61,11 +61,18 @@ class ResponseMock {
   }
 }
 
-export default async function fetchMock(url) {
+export default async function fetchMock(url, options = {}) {
   const path = new URL(url).pathname;
   if (path.endsWith('/fstab.yaml')) {
     return new ResponseMock(FSTAB_YAML);
   } else if (path.endsWith('/env.json')) {
+    if (path.includes('/test/auth-project/')) {
+      if (options.headers && options.headers['x-auth-token']) {
+        return new ResponseMock(JSON.stringify(HELIX_ENV_JSON));
+      } else {
+        return new ResponseMock({ status: 401 });
+      }
+    }
     return new ResponseMock(JSON.stringify(HELIX_ENV_JSON));
   } else if (path.startsWith('/discover')) {
     return new ResponseMock(JSON.stringify(DISCOVER_JSON));
