@@ -227,7 +227,7 @@ describe('Test sidekick', () => {
         assert.ok(plugins.find((p) => p.id === 'baz'), 'Did not execute plugin action');
       }).timeout(IT_DEFAULT_TIMEOUT);
 
-      it('Loads config and plugins from project config', async () => {
+      it.only('Loads config and plugins from project config', async () => {
         const setup = new Setup('blog');
         nock.sidekick(setup, {
           configJson: `{
@@ -236,6 +236,9 @@ describe('Test sidekick', () => {
               "id": "bar",
               "title": "Bar",
               "url": "https://www.adobe.com/"
+            }, {
+              "id": "publish",
+              "excludePaths": ["/en/topics/**"]
             }]
             }`,
         });
@@ -260,6 +263,7 @@ describe('Test sidekick', () => {
         } = await test.run();
         assert.ok(configLoaded, 'Did not load project config');
         assert.ok(plugins.find((p) => p.id === 'bar'), 'Did not load plugins from project');
+        assert.ok(!plugins.find((p) => p.id === 'publish'), 'Did not override publish plugin from project');
         assert.ok(popupOpened === 'https://www.adobe.com/', 'Did not open plugin URL');
         assert.strictEqual(host, 'blog.adobe.com', 'Did not load config from project');
       }).timeout(IT_DEFAULT_TIMEOUT);

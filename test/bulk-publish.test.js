@@ -86,6 +86,35 @@ describe('Test bulk publish plugin', () => {
     );
   }).timeout(IT_DEFAULT_TIMEOUT);
 
+  it('Bulk publish plugin hidden via project config', async () => {
+    const { setup } = TESTS[0];
+    nock.sidekick(setup, {
+      configJson: `{
+        "host": "blog.adobe.com",
+        "plugins": [{
+          "id": "publish",
+          "excludePaths": ["/**"]
+        }]
+      }`,
+    });
+    nock.admin(setup, {
+      route: 'status',
+      type: 'admin',
+    });
+    const { plugins } = await new SidekickTest({
+      browser,
+      page,
+      fixture: TESTS[0].fixture,
+      url: setup.getUrl('edit', 'admin'),
+      sleep: 1000,
+      loadModule: true,
+    }).run();
+    assert.ok(
+      plugins.find((p) => p.id === 'bulk-publish' && p.classes.includes('hlx-sk-hidden')),
+      'Plugin not hidden via project config',
+    );
+  }).timeout(IT_DEFAULT_TIMEOUT);
+
   it('Bulk publish plugin shows notification when triggered with empty selection', async () => {
     const { setup } = TESTS[0];
     nock.sidekick(setup);
