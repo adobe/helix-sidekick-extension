@@ -1,3 +1,12 @@
+## [6.19.1](https://github.com/adobe/helix-sidekick-extension/compare/v6.19.0...v6.19.1) (2023-05-30)
+
+
+### Bug Fixes
+
+* add project for authenticated sites ([671baef](https://github.com/adobe/helix-sidekick-extension/commit/671baefdf8f014a604f61f55e60b48f01f25bea0))
+* cannot override bulk plugins ([d29a2cb](https://github.com/adobe/helix-sidekick-extension/commit/d29a2cb7ff5e717e95c909b171c0b987a62b741b))
+* retrieve env from projects with auth ([6a82ade](https://github.com/adobe/helix-sidekick-extension/commit/6a82ade937ef16164f4e7a968e69cf01ffe5d0b8))
+
 # [6.19.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.18.1...v6.19.0) (2023-05-25)
 
 
