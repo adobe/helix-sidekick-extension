@@ -2716,6 +2716,9 @@
         })
         .then((json) => {
           this.status = json;
+          if (window.hlx.sidekick) {
+            window.hlx.sidekick.setAttribute('data-status', JSON.stringify(json));
+          }
           return json;
         })
         .then((json) => fireEvent(this, 'statusfetched', json))
