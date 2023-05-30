@@ -84,7 +84,7 @@ _Note: Mirrored development branches in https://github.com/adobe/helix-website/b
 ![Load unpacked](docs/imgs/install_load_unpacked.png)
 1. Navigate to the `dist > chrome` folder and click _Select_ to install and activate the Sidekick extension.
 1. Verify that your _Extensions_ page displays a box like this:<br />
-![Extension box](docs/imgs/install_extension_box.png)<br />
+![Extension box](docs/imgs/install_extension_box.jpg)<br />
 1. Follow the steps under [Adding projects to the extension](#adding-projects-to-the-extension)
 
 #### Testing a local project config
