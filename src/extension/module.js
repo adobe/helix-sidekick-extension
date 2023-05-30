@@ -2717,7 +2717,7 @@
         .then((json) => {
           this.status = json;
           if (window.hlx.sidekick) {
-            window.hlx.sidekick.setAttribute('data-status', JSON.stringify(json));
+            window.hlx.sidekick.setAttribute('status', JSON.stringify(json));
           }
           return json;
         })
@@ -2725,7 +2725,7 @@
         .catch(({ message }) => {
           this.status.error = message;
           if (window.hlx.sidekick) {
-            window.hlx.sidekick.setAttribute('data-status', JSON.stringify(this.status));
+            window.hlx.sidekick.setAttribute('status', JSON.stringify(this.status));
           }
           const modal = {
             message: message.startsWith('error_') ? i18n(this, message) : message,

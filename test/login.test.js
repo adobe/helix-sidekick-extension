@@ -13,7 +13,7 @@
 
 import assert from 'assert';
 import {
-  IT_DEFAULT_TIMEOUT, Nock, TestBrowser, getSidekickDataAttribute,
+  IT_DEFAULT_TIMEOUT, Nock, TestBrowser, getSidekickDOMAttribute,
 } from './utils.js';
 
 import { SidekickTest } from './SidekickTest.js';
@@ -90,7 +90,7 @@ describe('Test sidekick login', () => {
     await test.run();
 
     assert.ok(loggedIn, 'Sidekick did not send auth cookie.');
-    const status = await getSidekickDataAttribute(page, 'status');
+    const status = await getSidekickDOMAttribute(page, 'status');
     assert.ok(status, 'Did not set the status data attribute');
     assert.deepEqual(JSON.parse(status), { status: 200 }, 'Did not set the status data attribute to 200');
   }).timeout(IT_DEFAULT_TIMEOUT);

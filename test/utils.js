@@ -777,16 +777,16 @@ export function Nock() {
 }
 
 /**
- * Retrieves the value of a data attribute from the sidekick
+ * Retrieves the value of a DOM attribute from the sidekick
  * @param {*} page The page
- * @param {*} attribute The name of the data attribute (data-<attribute>)
- * @returns The data attribute value or null if not found
+ * @param {*} attribute The name of the DOM attribute
+ * @returns The DOM attribute value or null if not found
  */
-export async function getSidekickDataAttribute(page, attribute) {
+export async function getSidekickDOMAttribute(page, attribute) {
   return page.evaluate((attr) => {
     const sk = document.querySelector('helix-sidekick');
-    if (sk && sk.hasAttribute(`data-${attr}`)) {
-      return sk.getAttribute(`data-${attr}`);
+    if (sk && sk.hasAttribute(attr)) {
+      return sk.getAttribute(attr);
     }
     return null;
   }, attribute);
