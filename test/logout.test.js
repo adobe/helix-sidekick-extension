@@ -13,7 +13,7 @@
 
 import assert from 'assert';
 import {
-  IT_DEFAULT_TIMEOUT, Nock, Setup, TestBrowser,
+  IT_DEFAULT_TIMEOUT, Nock, Setup, TestBrowser, getSidekickDataAttribute,
 } from './utils.js';
 
 import { SidekickTest } from './SidekickTest.js';
@@ -65,5 +65,9 @@ describe('Test sidekick logout', () => {
     const { checkPageResult: config } = await test.run();
 
     assert.ok(!config.authToken, 'Did not remove auth token from config');
+
+    const status = await getSidekickDataAttribute(page, 'status');
+    assert.ok(status, 'Did not set the status data attribute');
+    assert.deepEqual(JSON.parse(status), { status: 401 }, 'Did not set the status data attribute to 401');
   }).timeout(IT_DEFAULT_TIMEOUT);
 });
