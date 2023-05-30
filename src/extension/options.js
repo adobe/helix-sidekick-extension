@@ -66,7 +66,7 @@ function drawProjects() {
     const container = document.getElementById('configs');
     container.innerHTML = '';
     projects.forEach(({
-      owner, repo, ref, mountpoints, project, host, disabled,
+      owner, repo, ref, mountpoints = [], project, host, disabled,
     }, i) => {
       const innerHost = getInnerHost(owner, repo, ref);
       const section = document.createElement('section');
