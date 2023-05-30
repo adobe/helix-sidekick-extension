@@ -240,6 +240,17 @@
    */
 
   /**
+   * Supported sidekick languages.
+   * @private
+   * @type {string[]}
+   */
+  const LANGS = [
+    'en',
+    'de',
+    'fr',
+  ];
+
+  /**
    * Mapping between the plugin IDs that will be treated as environments
    * and their corresponding host properties in the config.
    * @private
@@ -397,6 +408,17 @@
   }
 
   /**
+   * Retrieves the sidekick language preferred by the user.
+   * The default language is <code>en</code>.
+   * @private
+   * @return {string} The language
+   */
+  function getLanguage() {
+    const userLangs = navigator.languages.map((lang) => lang.split('-')[0]);
+    return userLangs.find((lang) => LANGS.includes(lang)) || LANGS[0];
+  }
+
+  /**
    * Creates an Admin URL for an API and path.
    * @private
    * @param {Object} config The sidekick configuration
@@ -486,7 +508,7 @@
       liveHost,
       outerHost: legacyLiveHost,
       host,
-      project,
+      project = '',
       pushDown,
       pushDownSelector,
       specialViews,
@@ -504,6 +526,7 @@
       outerHost = hostPrefix ? `${hostPrefix}.hlx.live` : null;
     }
     const devUrl = new URL(devOrigin);
+    const lang = getLanguage();
     // define elements to push down
     const pushDownElements = [];
     if (pushDown) {
@@ -535,10 +558,11 @@
       outerHost,
       scriptRoot,
       host: publicHost,
-      project: project || '',
+      project,
       pushDownElements,
       specialView,
       devUrl,
+      lang,
     };
   }
 
@@ -1666,8 +1690,7 @@
    * @param {Sidekick} sk The sidekick
    */
   function addCustomPlugins(sk) {
-    const { location, config: { plugins, innerHost } = {} } = sk;
-    const language = navigator.language.split('-')[0];
+    const { location, config: { lang, plugins, innerHost } = {} } = sk;
     if (plugins && Array.isArray(plugins)) {
       plugins.forEach((cfg, i) => {
         if (typeof (cfg.button && cfg.button.action) === 'function'
@@ -1744,7 +1767,7 @@
             id: id || `custom-plugin-${i}`,
             condition,
             button: {
-              text: (titleI18n && titleI18n[language]) || title,
+              text: (titleI18n && titleI18n[lang]) || title,
               action: () => {
                 if (url) {
                   const target = url.startsWith('/') ? new URL(url, `https://${innerHost}/`) : new URL(url);
@@ -1787,7 +1810,7 @@
                       });
                       const titleBar = appendTag(palette, {
                         tag: 'div',
-                        text: (titleI18n && titleI18n[language]) || title,
+                        text: (titleI18n && titleI18n[lang]) || title,
                         attrs: {
                           class: 'palette-title',
                         },
@@ -2471,11 +2494,11 @@
    * Fetches the dictionary for a language.
    * @private
    * @param {Sidekick} sk The sidekick
-   * @param {string} lang The language
    * @returns {Object} The dictionary
    */
-  async function fetchDict(sk, lang) {
+  async function fetchDict(sk) {
     const dict = {};
+    const { lang } = sk.config;
     const dictPath = `${sk.config.scriptRoot}/_locales/${lang}/messages.json`;
     try {
       const res = await fetch(dictPath);
@@ -2751,8 +2774,7 @@
       this.config = await initConfig(cfg, this.location);
 
       // load dictionary based on user language
-      const lang = this.config.lang || navigator.language.split('-')[0];
-      this.dict = await fetchDict(this, lang);
+      this.dict = await fetchDict(this);
       if (!this.dict.title) {
         // unsupported language, default to english
         this.dict = await fetchDict(this, 'en');
