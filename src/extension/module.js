@@ -2724,6 +2724,9 @@
         .then((json) => fireEvent(this, 'statusfetched', json))
         .catch(({ message }) => {
           this.status.error = message;
+          if (window.hlx.sidekick) {
+            window.hlx.sidekick.setAttribute('data-status', JSON.stringify(this.status));
+          }
           const modal = {
             message: message.startsWith('error_') ? i18n(this, message) : message,
             sticky: true,
