@@ -128,8 +128,8 @@ describe('Test extension utils', () => {
   it('getShareSettings', async () => {
     const { giturl, project } = utils.getShareSettings('https://www.hlx.live/tools/sidekick/?giturl=https%3A%2F%2Fgithub.com%2Ffoo%2Fbar&project=bar');
     expect(giturl).to.equal('https://github.com/foo/bar');
-    expect(Object.keys(utils.getShareSettings('https://www.hlx.live/tools/sidekick/?giturl=https%3A%2F%2Fgithub.com')).length).to.equal(0);
     expect(project).to.equal('bar');
+    expect(Object.keys(utils.getShareSettings('https://www.hlx.live/tools/sidekick/?giturl=https%3A%2F%2Fgithub.com')).length).to.equal(0);
   });
 
   it('isValidShareURL', async () => {
@@ -201,16 +201,27 @@ describe('Test extension utils', () => {
     expect((await utils.getProjectMatches(CONFIGS, 'https://main--bar2--foo.hlx.live/')).length).to.equal(0);
   });
 
+  it('getProjectEnv', async () => {
+    const {
+      host, project, mountpoints = [],
+    } = await utils.getProjectEnv({
+      owner: 'adobe',
+      repo: 'business-website',
+    });
+    expect(host).to.equal('business.adobe.com');
+    expect(project).to.equal('Adobe Business Website');
+    expect(mountpoints[0]).to.equal('https://adobe.sharepoint.com/:f:/s/Dummy/Alk9MSH25LpBuUWA_N6DOL8BuI6Vrdyrr87gne56dz3QeQ');
+  });
+
   it('assembleProject with giturl', async () => {
     const {
-      owner, repo, ref, host,
+      owner, repo, ref,
     } = await utils.assembleProject({
       giturl: 'https://github.com/adobe/business-website/tree/main',
     });
     expect(owner).to.equal('adobe');
     expect(repo).to.equal('business-website');
     expect(ref).to.equal('main');
-    expect(host).to.equal('business.adobe.com');
   });
 
   it('assembleProject with owner and repo', async () => {
@@ -226,15 +237,33 @@ describe('Test extension utils', () => {
 
   it('addProject', async () => {
     const spy = sandbox.spy(window.chrome.storage.sync, 'set');
+    // add project
     const added = await new Promise((resolve) => {
       utils.addProject({
-        giturl: 'https://github.com/test/add-project',
+        giturl: 'https://github.com/test/project',
       }, resolve);
     });
     expect(added).to.be.true;
     expect(spy.calledWith({
-      hlxSidekickProjects: ['adobe/blog', 'test/add-project'],
+      hlxSidekickProjects: ['adobe/blog', 'test/project'],
     })).to.be.true;
+    // add project with auth enabled
+    const addedWithAuth = await new Promise((resolve) => {
+      utils.addProject({
+        giturl: 'https://github.com/test/auth-project',
+      }, resolve);
+    });
+    expect(addedWithAuth).to.be.true;
+    expect(spy.calledWith({
+      hlxSidekickProjects: ['adobe/blog', 'test/project', 'test/auth-project'],
+    })).to.be.true;
+    // add existing
+    const addedExisting = await new Promise((resolve) => {
+      utils.addProject({
+        giturl: 'https://github.com/test/project',
+      }, resolve);
+    });
+    expect(addedExisting).to.be.false;
   });
 
   it('deleteProject', async () => {
@@ -244,7 +273,7 @@ describe('Test extension utils', () => {
     });
     expect(deleted).to.be.true;
     expect(spy.calledWith({
-      hlxSidekickProjects: ['test/add-project'],
+      hlxSidekickProjects: ['test/project', 'test/auth-project'],
     })).to.be.true;
   });
 

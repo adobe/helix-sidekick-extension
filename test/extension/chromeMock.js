@@ -52,6 +52,10 @@ export default {
     getURL: (path) => `chrome-extension://${ID}${path}`,
     lastError: null,
     sendMessage: () => {},
+    onMessageExternal: {
+      // simulate external message from admin API with authToken
+      addListener: (func) => func({ owner: 'test', repo: 'auth-project', authToken: 'foo' }),
+    },
   },
   storage: {
     sync: new StorageMock({
@@ -77,5 +81,9 @@ export default {
   declarativeNetRequest: {
     getSessionRules: async () => ([]),
     updateSessionRules: async () => undefined,
+  },
+  tabs: {
+    create: async ({ url }) => ({ url, id: 7 }),
+    remove: async () => {},
   },
 };
