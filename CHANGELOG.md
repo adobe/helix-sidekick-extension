@@ -1,3 +1,10 @@
+# [6.20.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.19.2...v6.20.0) (2023-05-31)
+
+
+### Features
+
+* add status attribute to sk custom element ([#400](https://github.com/adobe/helix-sidekick-extension/issues/400)) ([63ca1a6](https://github.com/adobe/helix-sidekick-extension/commit/63ca1a6b77f65dbc1980c4460c48246a7500d090))
+
 ## [6.19.2](https://github.com/adobe/helix-sidekick-extension/compare/v6.19.1...v6.19.2) (2023-05-31)
 
 
