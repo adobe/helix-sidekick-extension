@@ -1,3 +1,10 @@
+## [6.19.2](https://github.com/adobe/helix-sidekick-extension/compare/v6.19.1...v6.19.2) (2023-05-31)
+
+
+### Bug Fixes
+
+* **regression:** detect drive navigation ([18db4d5](https://github.com/adobe/helix-sidekick-extension/commit/18db4d5b893cd27e66a07ebd4c4c17a6cdce33ee))
+
 ## [6.19.1](https://github.com/adobe/helix-sidekick-extension/compare/v6.19.0...v6.19.1) (2023-05-30)
 
 
