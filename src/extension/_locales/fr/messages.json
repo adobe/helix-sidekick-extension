@@ -157,7 +157,7 @@
     "message": "Tester la configuration du projet localement"
   },
   "config_manual_devOrigin_placeholder": {
-    "message": "URL de développement local : http://localhost:3000"
+    "message": "URL de développement local : http://localhost:3000"
   },
   "config_manual_giturl_placeholder": {
     "message": "URL du référentiel : https://github.com/..."

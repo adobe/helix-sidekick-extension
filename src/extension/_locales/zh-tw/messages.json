@@ -157,7 +157,7 @@
     "message": "在本機測試專案設定"
   },
   "config_manual_devOrigin_placeholder": {
-    "message": "本機開發URL:http://localhost:3000"
+    "message": "本機開發 URL：http://localhost:3000"
   },
   "config_manual_giturl_placeholder": {
     "message": "存放庫 URL：https://github.com/..."

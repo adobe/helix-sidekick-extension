@@ -157,7 +157,7 @@
     "message": "プロジェクト設定をローカルでテスト"
   },
   "config_manual_devOrigin_placeholder": {
-    "message": "ローカル開発 URL:http://localhost:3000"
+    "message": "ローカル開発 URL : http://localhost:3000"
   },
   "config_manual_giturl_placeholder": {
     "message": "リポジトリ URL : https://github.com/..."

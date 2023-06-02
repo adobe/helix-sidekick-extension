@@ -19,16 +19,16 @@
     "message": "Nenhum arquivo selecionado"
   },
   "bulk_confirm_preview_multiple": {
-    "message": "Tem certeza de que deseja visualizar $1 arquivos?"
+    "message": "Deseja visualizar $1 arquivos?"
   },
   "bulk_confirm_preview_single": {
-    "message": "Tem certeza de que deseja visualizar 1 arquivo?"
+    "message": "Deseja visualizar 1 arquivo?"
   },
   "bulk_confirm_publish_multiple": {
-    "message": "Tem certeza de que deseja publicar $1 arquivos?"
+    "message": "Deseja publicar $1 arquivos?"
   },
   "bulk_confirm_publish_single": {
-    "message": "Tem certeza de que deseja publicar 1 arquivo?"
+    "message": "Deseja publicar 1 arquivo?"
   },
   "bulk_progress_preview_multiple": {
     "message": "$1 de $2 arquivos visualizados..."
@@ -43,7 +43,7 @@
     "message": "$1 arquivos visualizados com sucesso."
   },
   "bulk_result_preview_single_error_invalid_folder_name": {
-    "message": "Apenas letras latinas pequenas, dígitos e hifens normalizados são permitidos em nomes de pastas"
+    "message": "Apenas letras latinas minúsculas e normalizadas, dígitos e hifens são permitidos em nomes de pastas"
   },
   "bulk_result_preview_single_error_no_docx": {
     "message": "Documento do Microsoft Word, converta-o primeiro para Documento do Google"
@@ -67,7 +67,7 @@
     "message": "O arquivo deve ser visualizado primeiro"
   },
   "bulk_result_publish_single_failure": {
-    "message": "Falha na publicação de 1 arquivo:"
+    "message": "Falha ao publicar 1 arquivo:"
   },
   "bulk_result_publish_single_success": {
     "message": "1 arquivo publicado com sucesso."
@@ -106,13 +106,13 @@
     "message": "Excluir todas as configurações"
   },
   "config_delete_all_confirm": {
-    "message": "Deseja mesmo excluir todas as configurações?"
+    "message": "Deseja excluir todas as configurações?"
   },
   "config_delete_all_description": {
     "message": "Atenção: esta ação não pode ser desfeita."
   },
   "config_delete_confirm": {
-    "message": "Deseja mesmo excluir este projeto?"
+    "message": "Deseja excluir este projeto?"
   },
   "config_development": {
     "message": "Desenvolvimento"
@@ -130,7 +130,7 @@
     "message": "Importar configuração"
   },
   "config_import_confirm": {
-    "message": "Deseja realmente importar esta configuração e sobrescrever a atual?"
+    "message": "Deseja importar esta configuração e sobrescrever a atual?"
   },
   "config_import_description": {
     "message": "Importe uma configuração do seu computador. Certifique-se de ter um backup de sua configuração atual."
@@ -221,7 +221,7 @@
     "message": "Compartilhar"
   },
   "config_shareurl_copied": {
-    "message": "URL de compartilhamento para $1 copiado para a área de transferência"
+    "message": "URL de compartilhamento de $1 copiado para a área de transferência"
   },
   "config_shareurl_description": {
     "message": "Peça a alguém com um Sidekick para compartilhar o URL com você clicando no ícone de compartilhamento no lado direito."
@@ -284,7 +284,7 @@
     "message": "O AEM Sidekick permite que os autores de sites do AEM visualizem e publiquem conteúdo com facilidade."
   },
   "description_shortcut": {
-    "message": "Alternar Sidekick"
+    "message": "Ativar Sidekick"
   },
   "development": {
     "message": "Desenvolvimento"
@@ -332,7 +332,7 @@
     "message": "500 Erro interno do servidor: falha ao buscar o status da página. Tente novamente mais tarde."
   },
   "error_status_502": {
-    "message": "502 Gateway incorreto: Falha ao buscar o status da página. Tente novamente mais tarde."
+    "message": "502 Gateway incorreto: falha ao buscar o status da página. Tente novamente mais tarde."
   },
   "error_status_504": {
     "message": "504 Tempo limite do gateway: falha ao buscar o status da página. Tente novamente mais tarde."
@@ -452,7 +452,7 @@
     "message": "Falha na publicação. Tente novamente mais tarde."
   },
   "push_down_content": {
-    "message": "Empurre o conteúdo em vez de sobrepor"
+    "message": "Posicionar o conteúdo abaixo em vez de sobrepor"
   },
   "push_down_content_description": {
     "message": "Observação: dependendo da estrutura do site, pode ser necessária a configuração de um projeto personalizado para funcionar conforme o esperado."
@@ -492,7 +492,7 @@
     "message": "Falha ao cancelar a publicação. Tente novamente mais tarde."
   },
   "user_login": {
-    "message": "Conectar"
+    "message": "Fazer logon"
   },
   "user_logout": {
     "message": "Fazer logoff"
