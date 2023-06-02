@@ -115,7 +115,7 @@ function drawProjects() {
       const { owner, repo } = projects[i];
       button.addEventListener('click', () => deleteProject(`${owner}/${repo}`, drawProjects));
     });
-    if (projects.length > 3) {
+    if (projects.length > 5) {
       const filterPanel = document.querySelector('#config_filter');
       filterPanel.classList.remove('hidden');
       const filter = filterPanel.querySelector('input');
