@@ -318,30 +318,39 @@ export function isValidShareURL(shareurl) {
   return Object.keys(getShareSettings(shareurl)).length > 1;
 }
 
-async function getProjectConfig(owner, repo, ref = 'main') {
-  const cfg = {};
+export async function getProjectEnv({
+  owner,
+  repo,
+  ref = 'main',
+  authToken,
+}) {
+  const env = {};
   let res;
   try {
-    res = await fetch(`https://${ref}--${repo}--${owner}.hlx.page/helix-env.json`);
+    const options = {
+      cache: 'no-store',
+      credentials: 'include',
+      headers: authToken ? { 'x-auth-token': authToken } : {},
+    };
+    res = await fetch(`https://admin.hlx.page/sidekick/${owner}/${repo}/${ref}/env.json`, options);
   } catch (e) {
     log.warn(`unable to retrieve project config: ${e}`);
   }
   if (res && res.ok) {
     const { prod, project, contentSourceUrl } = await res.json();
     if (prod && prod.host) {
-      cfg.host = prod.host;
+      env.host = prod.host;
     }
     if (project) {
-      cfg.project = project;
+      env.project = project;
     }
     if (contentSourceUrl) {
-      cfg.mountpoints = [contentSourceUrl];
+      env.mountpoints = [contentSourceUrl];
     }
-  } else {
-    // extract mountpoints from fstab.yaml
-    cfg.mountpoints = await getMountpoints(owner, repo, ref);
+  } else if (res.status === 401) {
+    env.unauthorized = true;
   }
-  return cfg;
+  return env;
 }
 
 export async function assembleProject({
@@ -356,6 +365,7 @@ export async function assembleProject({
   devMode,
   devOrigin,
   disabled,
+  authToken,
 }) {
   if (giturl && !owner && !repo) {
     const gh = getGitHubSettings(giturl);
@@ -365,13 +375,7 @@ export async function assembleProject({
   } else {
     giturl = `https://github.com/${owner}/${repo}/tree/${ref}`;
   }
-  const projectConfig = await getProjectConfig(owner, repo, ref);
   const id = `${owner}/${repo}/${ref}`;
-  // allow local project config overrides
-  project = project || projectConfig.project;
-  host = host || projectConfig.host;
-  outerHost = outerHost || projectConfig.outerHost;
-  mountpoints = mountpoints || projectConfig.mountpoints;
 
   return {
     id,
@@ -386,6 +390,7 @@ export async function assembleProject({
     repo,
     ref,
     mountpoints,
+    authToken,
   };
 }
 
@@ -396,6 +401,12 @@ export async function getProject(project) {
 
 export async function setProject(project, cb) {
   const { owner, repo } = project;
+  // sanitize input
+  Object.keys(project).forEach((key) => {
+    if (!project[key]) {
+      delete project[key];
+    }
+  });
   const handle = `${owner}/${repo}`;
   // update project config
   await setConfig('sync', {
@@ -416,9 +427,30 @@ export async function setProject(project, cb) {
 
 export async function addProject(input, cb) {
   const config = await assembleProject(input);
+  const { owner, repo, ref } = config;
+  const env = await getProjectEnv(config);
+  if (env.unauthorized && !input.authToken) {
+    // defer adding project and have user sign in
+    const { id: loginTabId } = await chrome.tabs.create({
+      url: `https://admin.hlx.page/login/${owner}/${repo}/${ref}?extensionId=${chrome.runtime.id}`,
+      active: false,
+    });
+    // retry adding project after sign in
+    const retryAddProjectListener = async (message = {}) => {
+      if (message.authToken && owner === message.owner && repo === message.repo) {
+        await chrome.tabs.remove(loginTabId);
+        config.authToken = message.authToken;
+        await addProject(config, cb);
+      }
+      // clean up
+      chrome.runtime.onMessageExternal.removeListener(retryAddProjectListener);
+    };
+    chrome.runtime.onMessageExternal.addListener(retryAddProjectListener);
+    return;
+  }
   const project = await getProject(config);
   if (!project) {
-    await setProject(config);
+    await setProject({ ...config, ...env });
     log.info('added project', config);
     alert(i18n('config_add_success'));
     if (typeof cb === 'function') cb(true);

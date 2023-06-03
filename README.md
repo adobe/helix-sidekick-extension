@@ -28,8 +28,8 @@ Navigate to https://www.hlx.live/tools/sidekick/ and follow the instructions the
 1. Click the pin button next to it to make sure it always stays visible.
 
 ##### Adding projects to the Chrome extension
-1. Click the extension's icon and select _Options_:<br />
-![Extension box](docs/imgs/install_contextmenu_options.png)<br />
+1. Right-click the extension's icon and select _Options_:<br />
+![Extension box](docs/imgs/install_contextmenu_options.jpg)<br />
 On this page, you can add projects by either pasting a share URL* or a GitHub URL in the respective fields and clicking _Add_. This page will also allow you to view, edit and delete existing projects.
    1. Alternatively, you can also navigate to a share URL* or a GitHub project, click the extension's icon and select _Add project_.
 1. Navigate to your project's homepage and click on the extension's icon to toggle the Sidekick.
@@ -84,7 +84,7 @@ _Note: Mirrored development branches in https://github.com/adobe/helix-website/b
 ![Load unpacked](docs/imgs/install_load_unpacked.png)
 1. Navigate to the `dist > chrome` folder and click _Select_ to install and activate the Sidekick extension.
 1. Verify that your _Extensions_ page displays a box like this:<br />
-![Extension box](docs/imgs/install_extension_box.png)<br />
+![Extension box](docs/imgs/install_extension_box.jpg)<br />
 1. Follow the steps under [Adding projects to the extension](#adding-projects-to-the-extension)
 
 #### Testing a local project config
@@ -93,7 +93,7 @@ If you want to test a config file before deploying it to your project:
 1. Run `hlx up` on your local checkout of the project repository
 1. [Add your project](#adding-projects-to-the-chrome-extension) to the sidekick extension
 1. Enable local project configruation:
-   1. Click the extension's icon and select _Options_
+   1. Right-click the extension's icon and select _Options_
    1. Click _Advanced_ on the left
    1. Click _Edit_ on the project configuration you want to test locally
    1. Tick the _Test project configuration locally_ checkbox

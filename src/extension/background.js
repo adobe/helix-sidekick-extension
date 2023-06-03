@@ -477,13 +477,13 @@ async function storeAuthToken(owner, repo, token) {
       getState(async ({ projects = [] }) => {
         const cfg = getConfigFromTabUrl(url);
         const { owner, repo } = cfg;
+        const reload = () => chrome.tabs.reload(id, { bypassCache: true });
         const project = projects.find((p) => p.owner === owner && p.repo === repo);
         if (!project) {
-          await addProject(cfg);
+          addProject(cfg, reload);
         } else {
-          await deleteProject(`${owner}/${repo}`);
+          deleteProject(`${owner}/${repo}`, reload);
         }
-        chrome.tabs.reload(id, { bypassCache: true });
       });
     },
     enableDisableProject: async ({ id, url }) => {
