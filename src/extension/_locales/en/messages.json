@@ -19,28 +19,28 @@
     "message": "No file selected"
   },
   "bulk_confirm_preview_multiple": {
-    "message": "Are you sure you want to preview $1 files?"
+    "message": "Are you sure you want to generate the preview of $1 files?"
   },
   "bulk_confirm_preview_single": {
-    "message": "Are you sure you want to preview 1 file?"
+    "message": "Are you sure you want to generate the preview of this file?"
   },
   "bulk_confirm_publish_multiple": {
     "message": "Are you sure you want to publish $1 files?"
   },
   "bulk_confirm_publish_single": {
-    "message": "Are you sure you want to publish 1 file?"
+    "message": "Are you sure you want to publish this file?"
   },
   "bulk_progress_preview_multiple": {
-    "message": "$1 of $2 files previewed..."
+    "message": "Preview for $1 of $2 files generated..."
   },
   "bulk_progress_publish_multiple": {
     "message": "$1 of $2 files published..."
   },
   "bulk_result_preview_multiple_failure": {
-    "message": "Failed to preview $1 files:"
+    "message": "Failed to generate preview of $1 files:"
   },
   "bulk_result_preview_multiple_success": {
-    "message": "$1 files successfully previewed."
+    "message": "Preview of $1 files successfully generated."
   },
   "bulk_result_preview_single_error_invalid_folder_name": {
     "message": "Only normalized, small latin letters, digits and hyphens are allowed in folder names"
@@ -52,10 +52,10 @@
     "message": "Microsoft Excel document, convert to Google Sheets first"
   },
   "bulk_result_preview_single_failure": {
-    "message": "Failed to preview 1 file:"
+    "message": "Failed to generate preview of this file:"
   },
   "bulk_result_preview_single_success": {
-    "message": "1 file successfully previewed."
+    "message": "Preview of this file successfully generated."
   },
   "bulk_result_publish_multiple_failure": {
     "message": "Failed to publish $1 files:"
@@ -311,10 +311,10 @@
     "message": "Sign out failed. Please try again later."
   },
   "error_preview_failure": {
-    "message": "Previewing failed. Please try again later."
+    "message": "Preview generation failed. Please try again later."
   },
   "error_preview_not_gdoc_generic": {
-    "message": "Previewing failed. Must be Google document or spreadsheet."
+    "message": "Preview generation failed. Must be Google document or spreadsheet."
   },
   "error_preview_not_gdoc_ms_word": {
     "message": "This is a Microsoft Word document. Please convert it to Google Docs: File > Save as Google Docs"
@@ -434,10 +434,10 @@
     "message": "Previewed: "
   },
   "preview_onedrive": {
-    "message": "Pro tip: Press Ctrl + S before previewing to see the latest changes immediately..."
+    "message": "Pro tip: Press Ctrl + S before generating previewing to see the latest changes immediately..."
   },
   "preview_onedrive_mac": {
-    "message": "Pro tip: Press ⌘ + S before previewing to see the latest changes immediately..."
+    "message": "Pro tip: Press ⌘ + S before generating previewing to see the latest changes immediately..."
   },
   "production": {
     "message": "Production"
