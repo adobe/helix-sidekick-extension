@@ -227,7 +227,7 @@ describe('Test sidekick', () => {
         assert.ok(plugins.find((p) => p.id === 'baz'), 'Did not execute plugin action');
       }).timeout(IT_DEFAULT_TIMEOUT);
 
-      it.only('Loads config and plugins from project config', async () => {
+      it('Loads config and plugins from project config', async () => {
         const setup = new Setup('blog');
         nock.sidekick(setup, {
           configJson: `{
@@ -837,6 +837,46 @@ describe('Test sidekick', () => {
           checkPageResult === 'Menu closed as expected',
           checkPageResult,
         );
+      }).timeout(IT_DEFAULT_TIMEOUT);
+
+      it('Exposes latest status via DOM', async () => {
+        const setup = new Setup('blog');
+        const statusBefore = setup.apiResponse('html');
+        const statusAfter = {
+          ...setup.apiResponse('html'),
+          edit: {
+            ...statusBefore.edit,
+            lastModified: new Date().toGMTString(),
+          },
+        };
+        nock.sidekick(setup);
+        nock('https://admin.hlx.page')
+          .get('/status/adobe/blog/main/en/topics/bla?editUrl=auto')
+          .reply(200, statusBefore)
+          .get('/status/adobe/blog/main/en/topics/bla?editUrl=auto')
+          .reply(200, statusAfter);
+
+        const { checkPageResult } = await new SidekickTest({
+          browser,
+          page,
+          loadModule,
+          setup: 'blog',
+          plugin: 'info',
+          pluginSleep: 1000,
+          post: (p) => p.evaluate(() => {
+            window.hlx.status = [];
+            // check status attribute before clicking info plugin
+            window.hlx.status.push(JSON.parse(window.hlx.sidekick.getAttribute('status')));
+          }),
+          checkPage: (p) => p.evaluate(() => {
+            // check status attribute after clicking info plugin
+            window.hlx.status.push(JSON.parse(window.hlx.sidekick.getAttribute('status')));
+            return window.hlx.status;
+          }),
+        }).run();
+
+        assert.deepStrictEqual(checkPageResult[0], statusBefore, 'Did not expose status via DOM');
+        assert.deepStrictEqual(checkPageResult[1], statusAfter, 'Did not update status attribute');
       }).timeout(IT_DEFAULT_TIMEOUT);
 
       it('Detects edit environment correctly', async () => {
