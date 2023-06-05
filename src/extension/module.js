@@ -3521,13 +3521,11 @@
         // bust client cache for live and production
         if (config.outerHost) {
           // reuse purgeURL to ensure page relative paths (e.g. when publishing dependencies)
-          purgeURL.hostname = config.outerHost;
-          await fetch(purgeURL.href, { cache: 'reload', mode: 'no-cors' });
+          await fetch(`https://${config.outerHost}${purgeURL.pathname}`, { cache: 'reload', mode: 'no-cors' });
         }
         if (config.host) {
           // reuse purgeURL to ensure page relative paths (e.g. when publishing dependencies)
-          purgeURL.hostname = config.host;
-          await fetch(purgeURL.href, { cache: 'reload', mode: 'no-cors' });
+          await fetch(`https://${config.host}${purgeURL.pathname}`, { cache: 'reload', mode: 'no-cors' });
         }
         fireEvent(this, 'published', path);
       } catch (e) {
