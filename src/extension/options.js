@@ -66,7 +66,7 @@ function drawProjects() {
     const container = document.getElementById('configs');
     container.innerHTML = '';
     projects.forEach(({
-      owner, repo, ref, mountpoints = [], project, host, disabled,
+      owner, repo, ref, mountpoints = [], project, previewHost, host, disabled,
     }, i) => {
       const innerHost = getInnerHost(owner, repo, ref);
       const section = document.createElement('section');
@@ -81,7 +81,7 @@ function drawProjects() {
       <input type="checkbox" ${disabled ? '' : 'checked'} title="${i18n(disabled ? 'config_project_enable' : 'config_project_disable')}">
       ${project ? sanitize(project) : 'Project'}
     </h4>
-    <p><span class="property">${i18n('config_project_innerhost')}</span>${drawLink(innerHost)}</p>
+    <p><span class="property">${i18n('config_project_innerhost')}</span>${drawLink(previewHost || innerHost)}</p>
     ${mountpoints.length
     ? `<p><span class="property">${i18n('config_project_mountpoints')}</span>${mountpoints.map((mp) => drawLink(mp)).join(' ')}</p>`
     : ''}
