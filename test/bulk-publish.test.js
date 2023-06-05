@@ -67,6 +67,7 @@ describe('Test bulk publish plugin', () => {
     nock.admin(setup, {
       route: 'status',
       type: 'admin',
+      persist: true,
     });
     nock.sidekick(setup);
     const { plugins } = await new SidekickTest({
@@ -100,6 +101,7 @@ describe('Test bulk publish plugin', () => {
     nock.admin(setup, {
       route: 'status',
       type: 'admin',
+      persist: true,
     });
     const { plugins } = await new SidekickTest({
       browser,
@@ -121,6 +123,7 @@ describe('Test bulk publish plugin', () => {
     nock.admin(setup, {
       route: 'status',
       type: 'admin',
+      persist: true,
     });
     const { notification } = await new SidekickTest({
       browser,
@@ -150,6 +153,7 @@ describe('Test bulk publish plugin', () => {
       nock.admin(setup, {
         route: 'status',
         type: 'admin',
+        persist: true,
       });
       nock.admin(setup, {
         route: 'preview',
@@ -181,6 +185,7 @@ describe('Test bulk publish plugin', () => {
       nock.admin(setup, {
         route: 'status',
         type: 'admin',
+        persist: true,
       });
       nock.admin(setup, {
         route: 'preview',
@@ -243,6 +248,7 @@ describe('Test bulk publish plugin', () => {
     nock.admin(setup, {
       route: 'status',
       type: 'admin',
+      persist: true,
     });
     nock.admin(setup, {
       route: 'preview',
@@ -273,6 +279,7 @@ describe('Test bulk publish plugin', () => {
     nock.admin(setup, {
       route: 'status',
       type: 'admin',
+      persist: true,
     });
     nock.admin(setup, {
       route: 'preview',
