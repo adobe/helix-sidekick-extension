@@ -96,6 +96,7 @@ describe('Test bulk copy URLs plugin', () => {
     nock.admin(setup, {
       route: 'status',
       type: 'admin',
+      persist: true,
     });
     nock.sidekick(setup);
     const { plugins } = await new SidekickTest({
@@ -121,6 +122,7 @@ describe('Test bulk copy URLs plugin', () => {
     nock.admin(setup, {
       route: 'status',
       type: 'admin',
+      persist: true,
     });
     const { notification } = await new SidekickTest({
       browser,
@@ -143,6 +145,7 @@ describe('Test bulk copy URLs plugin', () => {
     nock.admin(setup, {
       route: 'status',
       type: 'admin',
+      persist: true,
     });
     const { plugins } = await new SidekickTest({
       browser,
@@ -164,6 +167,7 @@ describe('Test bulk copy URLs plugin', () => {
     nock.sidekick(setup);
     nock('https://admin.hlx.page/status')
       .get(/.*/)
+      .twice()
       .reply(200, {
         ...setup.apiResponse('admin'),
         webPath: '/', // root folder
@@ -197,6 +201,7 @@ describe('Test bulk copy URLs plugin', () => {
     nock.admin(setup, {
       route: 'status',
       type: 'admin',
+      persist: true,
     });
     const { checkPageResult: clipboardText } = await new SidekickTest({
       browser,
@@ -233,6 +238,7 @@ describe('Test bulk copy URLs plugin', () => {
       nock.admin(setup, {
         route: 'status',
         type: 'admin',
+        persist: true,
       });
       const { checkPageResult: clipboardText } = await new SidekickTest({
         browser,
@@ -264,6 +270,7 @@ describe('Test bulk copy URLs plugin', () => {
       nock.admin(setup, {
         route: 'status',
         type: 'admin',
+        persist: true,
       });
       const { checkPageResult: clipboardText } = await new SidekickTest({
         browser,
@@ -304,6 +311,7 @@ describe('Test bulk copy URLs plugin', () => {
       nock.admin(setup, {
         route: 'status',
         type: 'admin',
+        persist: true,
       });
       const { checkPageResult: clipboardText } = await new SidekickTest({
         browser,
@@ -336,6 +344,7 @@ describe('Test bulk copy URLs plugin', () => {
       nock.admin(setup, {
         route: 'status',
         type: 'admin',
+        persist: true,
       });
       const { checkPageResult: clipboardText } = await new SidekickTest({
         browser,
