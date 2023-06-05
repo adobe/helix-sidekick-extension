@@ -171,6 +171,8 @@ function editProject(i) {
           document.querySelector('#edit-mountpoints').value,
         ],
         project: document.querySelector('#edit-project').value,
+        previewHost: document.querySelector('#edit-previewHost').value,
+        liveHost: document.querySelector('#edit-liveHost').value,
         host: document.querySelector('#edit-host').value,
         devMode: document.querySelector('#edit-devMode').checked,
         devOrigin: document.querySelector('#edit-devOrigin').value,

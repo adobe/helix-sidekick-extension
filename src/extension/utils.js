@@ -337,7 +337,19 @@ export async function getProjectEnv({
     log.warn(`unable to retrieve project config: ${e}`);
   }
   if (res && res.ok) {
-    const { prod, project, contentSourceUrl } = await res.json();
+    const {
+      preview,
+      live,
+      prod,
+      project,
+      contentSourceUrl,
+    } = await res.json();
+    if (preview && preview.host) {
+      env.previewHost = preview.host;
+    }
+    if (live && live.host) {
+      env.liveHost = live.host;
+    }
     if (prod && prod.host) {
       env.host = prod.host;
     }
