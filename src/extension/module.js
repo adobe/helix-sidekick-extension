@@ -1408,6 +1408,14 @@
       }
     };
 
+    const isChangedUrl = () => {
+      const $test = document.getElementById('sidekick_test_location');
+      if ($test) {
+        return $test.value !== sk.location.href;
+      }
+      return window.location.href !== sk.location.href;
+    };
+
     const updateBulkInfo = () => {
       if (!sk.isAdmin()) {
         return;
@@ -1425,7 +1433,7 @@
       }
       // show/hide bulk buttons
       const filesSelected = sel.length > 0;
-      if (window.location.href !== sk.location.href) {
+      if (isChangedUrl()) {
         // refresh location
         sk.location = getLocation();
       }
@@ -1456,14 +1464,6 @@
       return i18n(sk, i18nKey)
         .replace('$1', num)
         .replace('$2', total);
-    };
-
-    const isChangedUrl = () => {
-      const $test = document.getElementById('sidekick_test_location');
-      if ($test) {
-        return $test.value !== sk.location.href;
-      }
-      return window.location.href !== sk.location.href;
     };
 
     const doBulkOperation = async (operation, method, concurrency, host) => {
@@ -1567,15 +1567,10 @@
             sk.showModal(confirmText);
           } else if (window.confirm(confirmText)) {
             sk.showWait();
-            if (isChangedUrl()) {
-              // url changed, refetch status
-              sk.addEventListener('statusfetched', () => {
-                doBulkOperation('preview', 'update', 2, sk.config.innerHost);
-              }, { once: true });
-              sk.fetchStatus(true);
-            } else {
+            sk.addEventListener('statusfetched', () => {
               doBulkOperation('preview', 'update', 2, sk.config.innerHost);
-            }
+            }, { once: true });
+            sk.fetchStatus(true);
           }
         },
         isEnabled: (s) => s.isAuthorized('preview', 'write') && s.status.webPath,
@@ -1594,15 +1589,10 @@
             sk.showModal(confirmText);
           } else if (window.confirm(confirmText)) {
             sk.showWait();
-            if (isChangedUrl()) {
-              // url changed, refetch status
-              sk.addEventListener('statusfetched', () => {
-                doBulkOperation('publish', 'publish', 40, sk.config.host || sk.config.outerHost);
-              }, { once: true });
-              sk.fetchStatus(true);
-            } else {
+            sk.addEventListener('statusfetched', () => {
               doBulkOperation('publish', 'publish', 40, sk.config.host || sk.config.outerHost);
-            }
+            }, { once: true });
+            sk.fetchStatus(true);
           }
         },
         isEnabled: (s) => s.isAuthorized('live', 'write') && s.status.webPath,
@@ -1649,15 +1639,10 @@
               sk.showModal(emptyText);
             } else {
               sk.showWait();
-              if (isChangedUrl()) {
-                // url changed, refetch status
-                sk.addEventListener('statusfetched', () => {
-                  doBulkCopyUrls(hostProperty);
-                }, { once: true });
-                sk.fetchStatus(true);
-              } else {
+              sk.addEventListener('statusfetched', () => {
                 doBulkCopyUrls(hostProperty);
-              }
+              }, { once: true });
+              sk.fetchStatus(true);
             }
           },
         },
