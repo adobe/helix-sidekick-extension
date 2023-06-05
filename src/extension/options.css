@@ -205,6 +205,45 @@ section {
 	margin-bottom: 24px;
 }
 
+#config_filter {
+  position: relative;
+  margin: 20px 0;
+}
+
+#config_filter input {
+  width: calc(100% - 10px);
+}
+
+#config_filter button {
+  position: absolute;
+  cursor: pointer;
+  border: none;
+  top: -4px;
+  right: 0;
+  min-width: 27px;
+  height: 27px;
+  color: var(--text-color);
+  background-color: transparent;
+}
+
+#config_filter button::before,
+#config_filter button::after {
+  content: "";
+  font-size: 0;
+  display: block;
+  position: absolute;
+  width: 16px;
+  height: 2px;
+  background: currentColor;
+  transform: rotate(45deg);
+  top: 12px;
+  left: 5px;
+}
+
+#config_filter button::after {
+  transform: rotate(-45deg);
+}
+
 section:last-of-type {
   margin-bottom: 0;
 }
@@ -255,7 +294,7 @@ p.mandatory::after {
 }
 
 .hidden {
-  display: none;
+  display: none !important;
 }
 
 section > div {
