@@ -54,6 +54,15 @@ const CONFIGS = [
     host: '5.foo.bar',
     mountpoints: ['https://foo.custom/sites/foo/Shared%20Documents/root1'],
   },
+  {
+    owner: 'foo',
+    repo: 'bar6',
+    ref: 'main',
+    previewHost: '6-preview.foo.bar',
+    liveHost: '6-live.foo.bar',
+    host: '6.foo.bar',
+    mountpoints: ['https://foo.sharepoint.com/sites/foo/Shared%20Documents/root1'],
+  },
 ];
 
 window.chrome = chromeMock;
@@ -193,8 +202,12 @@ describe('Test extension utils', () => {
     expect((await utils.getProjectMatches(CONFIGS, 'https://main--bar1--foo.hlx.page/')).length).to.equal(1);
     // match preview URL with any ref
     expect((await utils.getProjectMatches(CONFIGS, 'https://baz--bar1--foo.hlx.page/')).length).to.equal(1);
+    // match custom preview URL
+    expect((await utils.getProjectMatches(CONFIGS, 'https://6-preview.foo.bar/')).length).to.equal(1);
     // match live URL
     expect((await utils.getProjectMatches(CONFIGS, 'https://main--bar1--foo.hlx.live/')).length).to.equal(1);
+    // match custom live URL
+    expect((await utils.getProjectMatches(CONFIGS, 'https://6-live.foo.bar/')).length).to.equal(1);
     // match production host
     expect((await utils.getProjectMatches(CONFIGS, 'https://1.foo.bar/')).length).to.equal(1);
     // ignore disabled config
