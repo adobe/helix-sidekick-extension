@@ -229,10 +229,12 @@ export async function getProjectMatches(configs, tabUrl) {
       owner,
       repo,
       host: prodHost,
-      outerHost,
+      previewHost,
+      liveHost,
     } = cfg;
     return checkHost === prodHost // production host
-      || checkHost === outerHost // custom outer
+      || checkHost === previewHost // custom inner
+      || checkHost === liveHost // custom outer
       || checkHost.split('.hlx.')[0].endsWith(`${repo}--${owner}`); // inner or outer
   });
 
