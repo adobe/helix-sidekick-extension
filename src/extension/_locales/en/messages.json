@@ -126,6 +126,14 @@
   "config_export_description": {
     "message": "Back up your configuration to your computer."
   },
+  "config_filter": {
+    "message": "Search ...",
+    "description": "Filter projects"
+  },
+  "config_filter_clear": {
+    "message": "Reset",
+    "description": "Reset project filter"
+  },
   "config_import": {
     "message": "Import configuration"
   },

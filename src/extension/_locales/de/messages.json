@@ -126,6 +126,14 @@
   "config_export_description": {
     "message": "Erstelle eine Sicherungskopie deiner Konfiguration auf deinen Computer."
   },
+  "config_filter": {
+    "message": "Suchen ...",
+    "description": "Filter projects"
+  },
+  "config_filter_clear": {
+    "message": "Zurücksetzen",
+    "description": "Reset project filter"
+  },
   "config_import": {
     "message": "Konfiguration importieren"
   },

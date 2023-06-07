@@ -137,6 +137,7 @@ describe('Test bulk preview plugin', () => {
       nock.admin(setup, {
         route: 'status',
         type: 'admin',
+        persist: true,
       });
       nock.admin(setup, {
         route: 'preview',
@@ -152,6 +153,7 @@ describe('Test bulk preview plugin', () => {
         configJson: setup.configJson,
         url: setup.getUrl('edit', 'admin'),
         plugin: 'bulk-preview',
+        pluginSleep: 500,
         loadModule: true,
         acceptDialogs: true,
       }).run();
@@ -167,6 +169,7 @@ describe('Test bulk preview plugin', () => {
       nock.admin(setup, {
         route: 'status',
         type: 'admin',
+        persist: true,
       });
       nock.admin(setup, {
         route: 'preview',
@@ -228,6 +231,7 @@ describe('Test bulk preview plugin', () => {
     nock.admin(setup, {
       route: 'status',
       type: 'admin',
+      persist: true,
     });
     nock.admin(setup, {
       route: 'preview',
@@ -257,6 +261,7 @@ describe('Test bulk preview plugin', () => {
     nock.admin(setup, {
       route: 'status',
       type: 'admin',
+      persist: true,
     });
     nock.admin(setup, {
       route: 'preview',

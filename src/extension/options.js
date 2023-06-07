@@ -66,7 +66,7 @@ function drawProjects() {
     const container = document.getElementById('configs');
     container.innerHTML = '';
     projects.forEach(({
-      owner, repo, ref, mountpoints = [], project, host, disabled,
+      owner, repo, ref, mountpoints = [], project, previewHost, host, disabled,
     }, i) => {
       const innerHost = getInnerHost(owner, repo, ref);
       const section = document.createElement('section');
@@ -81,7 +81,7 @@ function drawProjects() {
       <input type="checkbox" ${disabled ? '' : 'checked'} title="${i18n(disabled ? 'config_project_enable' : 'config_project_disable')}">
       ${project ? sanitize(project) : 'Project'}
     </h4>
-    <p><span class="property">${i18n('config_project_innerhost')}</span>${drawLink(innerHost)}</p>
+    <p><span class="property">${i18n('config_project_innerhost')}</span>${drawLink(previewHost || innerHost)}</p>
     ${mountpoints.length
     ? `<p><span class="property">${i18n('config_project_mountpoints')}</span>${mountpoints.map((mp) => drawLink(mp)).join(' ')}</p>`
     : ''}
@@ -115,6 +115,50 @@ function drawProjects() {
       const { owner, repo } = projects[i];
       button.addEventListener('click', () => deleteProject(`${owner}/${repo}`, drawProjects));
     });
+    if (projects.length > 5) {
+      const filterPanel = document.querySelector('#config_filter');
+      filterPanel.classList.remove('hidden');
+      const filter = filterPanel.querySelector('input');
+      const filterConfigs = () => {
+        const configs = container.querySelectorAll('section');
+        if (filter.value.length > 0) {
+          configs.forEach((cfg) => {
+            if (!cfg.textContent.toLowerCase().includes(filter.value.toLowerCase())) {
+              cfg.classList.add('hidden');
+            } else {
+              cfg.classList.remove('hidden');
+            }
+          });
+          window.localStorage.setItem('hlxSidekickConfigFilter', filter.value);
+        } else {
+          configs.forEach((cfg) => cfg.classList.remove('hidden'));
+        }
+        clearButton.classList[filter.value ? 'remove' : 'add']('hidden');
+      };
+
+      const clearFilter = () => {
+        window.localStorage.removeItem('hlxSidekickConfigFilter');
+        filter.value = '';
+        filter.focus();
+        filterConfigs();
+      };
+      const clearButton = filterPanel.querySelector('button');
+      clearButton.addEventListener('click', clearFilter);
+
+      filter.addEventListener('keyup', filterConfigs);
+      const lastFilter = window.localStorage.getItem('hlxSidekickConfigFilter');
+      if (lastFilter) {
+        filter.value = lastFilter;
+        filterConfigs();
+      }
+      filter.focus();
+
+      document.addEventListener('keyup', ({ key }) => {
+        if (key === 'Escape' && filter.value) {
+          clearFilter();
+        }
+      });
+    }
   });
 }
 
@@ -171,6 +215,8 @@ function editProject(i) {
           document.querySelector('#edit-mountpoints').value,
         ],
         project: document.querySelector('#edit-project').value,
+        previewHost: document.querySelector('#edit-previewHost').value,
+        liveHost: document.querySelector('#edit-liveHost').value,
         host: document.querySelector('#edit-host').value,
         devMode: document.querySelector('#edit-devMode').checked,
         devOrigin: document.querySelector('#edit-devOrigin').value,

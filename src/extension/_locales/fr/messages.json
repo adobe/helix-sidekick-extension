@@ -126,6 +126,14 @@
   "config_export_description": {
     "message": "Sauvegarder la configuration actuelle sur votre ordinateur."
   },
+  "config_filter": {
+    "message": "Chercher ...",
+    "description": "Filter projects"
+  },
+  "config_filter_clear": {
+    "message": "Effacer",
+    "description": "Reset project filter"
+  },
   "config_import": {
     "message": "Importer une configuration"
   },

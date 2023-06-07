@@ -1,3 +1,18 @@
+# [6.21.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.20.0...v6.21.0) (2023-06-06)
+
+
+### Bug Fixes
+
+* **admin:** wrong webpath after navigation ([bbe21e3](https://github.com/adobe/helix-sidekick-extension/commit/bbe21e36b00517ae3aa10410df4f04e90e243cb9))
+* project matching ignores previewHost/liveHost ([6c21af7](https://github.com/adobe/helix-sidekick-extension/commit/6c21af76a7847450fce5fba75d8e27523e1b222e))
+* publish from local dev purges browser cache for wrong url ([a2ca527](https://github.com/adobe/helix-sidekick-extension/commit/a2ca527b9d28ee401d4181f320934011a86c2cfb))
+
+
+### Features
+
+* **options:** configurable previewHost/liveHost ([6ff0b26](https://github.com/adobe/helix-sidekick-extension/commit/6ff0b2604de502fbd8fc1cd387cfedae199155d0))
+* **options:** custom previewHost/liveHost ([4abf167](https://github.com/adobe/helix-sidekick-extension/commit/4abf167c4489f5c8797f010a659a78ee1d56ce4f))
+
 # [6.20.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.19.2...v6.20.0) (2023-05-31)
 
 

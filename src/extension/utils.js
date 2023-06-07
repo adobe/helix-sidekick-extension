@@ -229,10 +229,12 @@ export async function getProjectMatches(configs, tabUrl) {
       owner,
       repo,
       host: prodHost,
-      outerHost,
+      previewHost,
+      liveHost,
     } = cfg;
     return checkHost === prodHost // production host
-      || checkHost === outerHost // custom outer
+      || checkHost === previewHost // custom inner
+      || checkHost === liveHost // custom outer
       || checkHost.split('.hlx.')[0].endsWith(`${repo}--${owner}`); // inner or outer
   });
 
@@ -337,7 +339,19 @@ export async function getProjectEnv({
     log.warn(`unable to retrieve project config: ${e}`);
   }
   if (res && res.ok) {
-    const { prod, project, contentSourceUrl } = await res.json();
+    const {
+      preview,
+      live,
+      prod,
+      project,
+      contentSourceUrl,
+    } = await res.json();
+    if (preview && preview.host) {
+      env.previewHost = preview.host;
+    }
+    if (live && live.host) {
+      env.liveHost = live.host;
+    }
     if (prod && prod.host) {
       env.host = prod.host;
     }
@@ -361,7 +375,8 @@ export async function assembleProject({
   mountpoints,
   project,
   host,
-  outerHost,
+  previewHost,
+  liveHost,
   devMode,
   devOrigin,
   disabled,
@@ -380,8 +395,9 @@ export async function assembleProject({
   return {
     id,
     project,
+    previewHost,
+    liveHost,
     host,
-    outerHost,
     devMode,
     devOrigin,
     disabled,

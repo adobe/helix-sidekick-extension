@@ -15,6 +15,12 @@ const HELIX_ENV_JSON = {
     host: 'business.adobe.com',
     routes: [],
   },
+  preview: {
+    host: 'preview.example.com',
+  },
+  live: {
+    host: 'live.example.com',
+  },
   project: 'Adobe Business Website',
   contentSourceUrl: 'https://adobe.sharepoint.com/:f:/s/Dummy/Alk9MSH25LpBuUWA_N6DOL8BuI6Vrdyrr87gne56dz3QeQ',
   contentSourceType: 'onedrive',
