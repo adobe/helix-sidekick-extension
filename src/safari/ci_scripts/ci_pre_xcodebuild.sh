@@ -12,7 +12,7 @@ npm run build:safari
 if [ $CI_BRANCH != "main" ]; then
   # use test version
   PBX_FILE="$CI_WORKSPACE/src/safari/helix-sidekick-extension.xcodeproj/project.pbxproj"
-  sed -E -i "s/\"[0-9]+\.[0-9]+\.[0-9]+\";/"0.0.0";/g" "$PBX_FILE"
+  sed -E -i "" "s/[0-9]+\.[0-9]+\.[0-9]+/0.0.0/g" "$PBX_FILE"
   echo `cat "$PBX_FILE" | grep MARKETING_VERSION`
 
   # use test icon
