@@ -17,7 +17,7 @@ if [ $CI_BRANCH != "main" ]; then
   TEST_VERSION=`./increment_version.sh -p $VERSION`
   echo "VERSION: $VERSION"
   echo "TEST_VERSION: $TEST_VERSION"
-  sed -E -i "" "$VERSION/$TEST_VERSION/g" "$PBX_FILE"
+  sed -i "" "$VERSION/$TEST_VERSION/g" "$PBX_FILE"
   echo `cat "$PBX_FILE" | grep MARKETING_VERSION`
 
   # use test icon
