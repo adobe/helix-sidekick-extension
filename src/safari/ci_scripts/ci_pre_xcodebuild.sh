@@ -16,7 +16,7 @@ if [ $CI_BRANCH != "main" ]; then
   TEST_VERSION=`$CI_WORKSPACE/src/safari/ci_scripts/increment_version.sh -p $VERSION`
   echo "VERSION: $VERSION"
   echo "TEST_VERSION: $TEST_VERSION"
-  sed -i "" "$VERSION/$TEST_VERSION/g" "$PBX_FILE"
+  sed -i "" "s/$VERSION/$TEST_VERSION/g" "$PBX_FILE"
   echo `cat "$PBX_FILE" | grep MARKETING_VERSION`
 
   # use test icon
