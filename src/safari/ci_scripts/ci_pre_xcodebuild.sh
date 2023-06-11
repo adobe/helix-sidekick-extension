@@ -11,10 +11,9 @@ npm run build:safari
 
 if [ $CI_BRANCH != "main" ]; then
   # use test version
-  echo "CI_PROJECT_FILE_PATH: $CI_PROJECT_FILE_PATH"
-  PBX_FILE="$CI_WORKSPACE/src/safari/helix-sidekick-extension.xcodeproj/project.pbxproj"
-  VERSION=`cat "$CI_WORKSPACE/src/extension/manifest.json" | jq -r ".version"`
-  TEST_VERSION=`./increment_version.sh -p $VERSION`
+  PBX_FILE="$CI_PROJECT_FILE_PATH/project.pbxproj"
+  VERSION=`cat "$CI_WORKSPACE/src/extension/manifest.json" | grep -e "\"version\"" | sed -n "s/[^0-9.]//gp"
+  TEST_VERSION=`$CI_WORKSPACE/src/safari/ci_scripts/increment_version.sh -p $VERSION`
   echo "VERSION: $VERSION"
   echo "TEST_VERSION: $TEST_VERSION"
   sed -i "" "$VERSION/$TEST_VERSION/g" "$PBX_FILE"
