@@ -248,6 +248,12 @@
     'en',
     'de',
     'fr',
+    'it',
+    'ja',
+    'ko-kr',
+    'pt-br',
+    'zh-cn',
+    'zh-tw',
   ];
 
   /**
@@ -414,8 +420,9 @@
    * @return {string} The language
    */
   function getLanguage() {
-    const userLangs = navigator.languages.map((lang) => lang.split('-')[0]);
-    return userLangs.find((lang) => LANGS.includes(lang)) || LANGS[0];
+    return navigator.languages
+      .map((prefLang) => LANGS.find((lang) => prefLang.startsWith(lang)))
+      .filter((lang) => !!lang)[0] || LANGS[0];
   }
 
   /**
@@ -527,6 +534,7 @@
     }
     const devUrl = new URL(devOrigin);
     const lang = getLanguage();
+    console.log(lang);
     // define elements to push down
     const pushDownElements = [];
     if (pushDown) {
