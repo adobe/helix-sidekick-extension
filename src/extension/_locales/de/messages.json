@@ -233,6 +233,9 @@
   "error_status_invalid": {
     "message": "Ungültige Serverantwort. Prüfe deine Sidekick-Konfiguration oder URL."
   },
+  "error_status_fatal": {
+    "message": "Bitte entschuldigen Sie, wir scheinen zur Zeit Probleme zu haben. Hier finden Sie mehr Informationen:"
+  },
   "error_login_timeout": {
     "message": "Zeitüberschreitung bei der Anmeldung. Bitte versuche es später noch einmal."
   },
