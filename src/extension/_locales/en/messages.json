@@ -345,6 +345,9 @@
   "error_status_504": {
     "message": "504 Gateway timeout: Failed to fetch the page status. Please try again later."
   },
+  "error_status_fatal": {
+    "message": "Apologies, we seem to be having problems at the moment. Please check here for more information:"
+  },
   "error_status_invalid": {
     "message": "Invalid server response. Check your Sidekick configuration or URL."
   },
