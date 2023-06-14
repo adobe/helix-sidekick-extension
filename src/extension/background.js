@@ -296,9 +296,10 @@ function toggle(id) {
  * @return {string} The language
  */
 function getLanguage() {
-  return navigator.languages
+  const preferred = navigator.languages
     .map((prefLang) => LANGS.find((lang) => prefLang.startsWith(lang)))
-    .filter((lang) => !!lang)[0] || LANGS[0];
+    .filter((lang) => !!lang);
+  return preferred.length && preferred[0] !== LANGS[0] ? `/${preferred[0]}` : '';
 }
 
 /**
