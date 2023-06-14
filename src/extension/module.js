@@ -408,7 +408,7 @@
     owner, repo, ref, adminVersion,
   }, api, path = '') {
     const adminUrl = new URL([
-      'https://hadmin.hlx.page/',
+      'https://admin.hlx.page/',
       api,
       `/${owner}`,
       `/${repo}`,
