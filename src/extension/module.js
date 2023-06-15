@@ -422,7 +422,7 @@
    */
   function getLanguage() {
     return navigator.languages
-      .map((prefLang) => LANGS.find((lang) => prefLang.startsWith(lang)))
+      .map((prefLang) => LANGS.find((lang) => prefLang.toLowerCase().startsWith(lang)))
       .filter((lang) => !!lang)[0] || LANGS[0];
   }
 
