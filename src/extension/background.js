@@ -41,6 +41,7 @@ import {
 const LANGS = [
   'en',
   'de',
+  'es',
   'fr',
   'it',
   'ja',
@@ -296,10 +297,9 @@ function toggle(id) {
  * @return {string} The language
  */
 function getLanguage() {
-  const preferred = navigator.languages
+  return navigator.languages
     .map((prefLang) => LANGS.find((lang) => prefLang.startsWith(lang)))
-    .filter((lang) => !!lang);
-  return preferred.length && preferred[0] !== LANGS[0] ? `/${preferred[0]}` : '';
+    .filter((lang) => !!lang)[0] || LANGS[0];
 }
 
 /**
@@ -310,7 +310,7 @@ async function updateHelpContent() {
   const hlxSidekickHelpContent = await getConfig('sync', 'hlxSidekickHelpContent') || [];
   log.debug('existing help content', hlxSidekickHelpContent);
   const lang = getLanguage();
-  const resp = await fetch(`https://www.hlx.live${lang}/tools/sidekick/help.json`);
+  const resp = await fetch(`https://www.hlx.live/tools/sidekick/${lang}/help.json`);
   if (resp.ok) {
     try {
       const [major, minor, patch] = MANIFEST.version.split('.');

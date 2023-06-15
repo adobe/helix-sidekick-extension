@@ -247,6 +247,7 @@
   const LANGS = [
     'en',
     'de',
+    'es',
     'fr',
     'it',
     'ja',
@@ -534,7 +535,6 @@
     }
     const devUrl = new URL(devOrigin);
     const lang = getLanguage();
-    console.log(lang);
     // define elements to push down
     const pushDownElements = [];
     if (pushDown) {
