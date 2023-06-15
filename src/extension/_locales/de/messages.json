@@ -46,7 +46,7 @@
     "message": "In Ordnernamen sind nur normalisierte, kleine lateinische Buchstaben, Ziffern und Bindestriche zulässig"
   },
   "bulk_result_preview_single_error_no_docx": {
-    "message": "Microsoft Word-Dokument, muss zuerst in ein Google-Dokument konvertiert werden"
+    "message": "Microsoft Word-Dokument, muss zunächst in ein Google-Dokument konvertiert werden"
   },
   "bulk_result_preview_single_error_no_xlsx": {
     "message": "Microsoft Excel-Dokument, muss zunächst in eine Google-Tabelle konvertiert werden"
@@ -346,7 +346,7 @@
     "message": "504 Gateway-Timeout: Der Seitenstatus konnte nicht abgerufen werden. Bitte versuchen Sie es später erneut."
   },
   "error_status_fatal": {
-    "message": "Entschuldigung, wir scheinen momentan Probleme zu haben. Weitere Informationen erhalten Sie hier:"
+    "message": "Leider scheinen wir im Moment Probleme zu haben. Hier finden Sie weitere Informationen."
   },
   "error_status_invalid": {
     "message": "Ungültige Server-Antwort. Überprüfen Sie die Sidekick-Konfiguration oder URL."
