@@ -346,7 +346,7 @@
     "message": "504 Gateway-Timeout: Der Seitenstatus konnte nicht abgerufen werden. Bitte versuchen Sie es später erneut."
   },
   "error_status_fatal": {
-    "message": "Leider scheinen wir im Moment Probleme zu haben. Hier finden Sie weitere Informationen."
+    "message": "Leider scheinen wir im Moment Probleme zu haben. Hier finden Sie weitere Informationen:"
   },
   "error_status_invalid": {
     "message": "Ungültige Server-Antwort. Überprüfen Sie die Sidekick-Konfiguration oder URL."
