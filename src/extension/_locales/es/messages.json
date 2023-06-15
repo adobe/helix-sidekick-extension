@@ -346,7 +346,7 @@
     "message": "504 Tiempo de espera de la puerta de enlace: No se pudo recuperar el estado de la página. Inténtelo de nuevo más tarde."
   },
   "error_status_fatal": {
-    "message": "Disculpas, parece que estamos teniendo problemas en este momento. Consulte aquí para obtener más información:"
+    "message": "Le pedimos disculpas, parece que tenemos problemas en este momento. Consulte aquí para obtener más información:"
   },
   "error_status_invalid": {
     "message": "Respuesta del servidor no válida. Verifique la configuración o la URL de su Sidekick."

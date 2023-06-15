@@ -346,7 +346,7 @@
     "message": "504 - Timeout gateway: impossibile recuperare lo stato della pagina. Riprova più tardi."
   },
   "error_status_fatal": {
-    "message": "Scusate, sembra che al momento abbiamo dei problemi. Per ulteriori informazioni, vedere qui:"
+    "message": "Sembra che al momento ci siano dei problemi, ci scusiamo per l’inconveniente. Per ulteriori informazioni, verifica qui:"
   },
   "error_status_invalid": {
     "message": "Risposta del server non valida. Controlla la configurazione o l’URL di Sidekick."

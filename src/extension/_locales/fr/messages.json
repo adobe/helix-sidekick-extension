@@ -346,7 +346,7 @@
     "message": "504 Délai d'expiration de la passerelle : échec de la récupération du statut de la page. Réessayez plus tard."
   },
   "error_status_fatal": {
-    "message": "Excusez-moi, nous avons des problèmes en ce moment. Pour plus d'informations, consultez ce lien :"
+    "message": "Nous vous prions de nous excuser pour les problèmes rencontrés actuellement. Vous trouverez plus d’informations ici :"
   },
   "error_status_invalid": {
     "message": "Réponse du serveur non valide. Vérifiez la configuration ou l'URL de Sidekick."

@@ -346,7 +346,7 @@
     "message": "504 网关超时：获取页面状态失败。请稍后再试。"
   },
   "error_status_fatal": {
-    "message": "抱歉，我们目前似乎遇到了问题。有关更多信息，请参阅此处："
+    "message": "抱歉，我们目前似乎遇到了问题。请在此处查看更多信息："
   },
   "error_status_invalid": {
     "message": "服务器响应无效。检查您的 Sidekick 配置或 URL。"

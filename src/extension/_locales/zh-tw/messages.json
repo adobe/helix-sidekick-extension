@@ -346,7 +346,7 @@
     "message": "504 閘道逾時：擷取頁面狀態失敗。請稍後再試。"
   },
   "error_status_fatal": {
-    "message": "抱歉，我們現在似乎有點問題。如需詳細資訊，請參閱這裡："
+    "message": "抱歉，我們目前似乎遇到問題。請在這裡查看更多資訊："
   },
   "error_status_invalid": {
     "message": "伺服器回應無效。請檢查您的 Sidekick 設定或 URL。"

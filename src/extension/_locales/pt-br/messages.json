@@ -346,7 +346,7 @@
     "message": "504 Tempo limite do gateway: falha ao buscar o status da página. Tente novamente mais tarde."
   },
   "error_status_fatal": {
-    "message": "Desculpe, parece que estamos tendo problemas no momento. Clique aqui para obter mais informações:"
+    "message": "Desculpe, estamos com problemas no momento. Clique aqui para obter mais informações:"
   },
   "error_status_invalid": {
     "message": "Resposta do servidor inválida. Verifique sua configuração Sidekick ou o URL."
