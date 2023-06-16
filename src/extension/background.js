@@ -203,6 +203,48 @@ async function checkContextMenu({ url: tabUrl, id }, configs = []) {
   }
 }
 
+async function injectContentScript(tabId, matches) {
+  try {
+    // execute content script
+    await chrome.scripting.executeScript({
+      target: { tabId },
+      files: ['./content.js'],
+    });
+    // send config matches to tab
+    await chrome.tabs.sendMessage(tabId, {
+      projectMatches: matches,
+    });
+  } catch (e) {
+    log.error('error injecting content script', tabId, e);
+  }
+}
+
+async function injectPassiveEnabler(tabId) {
+  try {
+    // execute content script
+    chrome.scripting.executeScript({
+      target: { tabId },
+      func: () => {
+        // ensure hlx namespace
+        window.hlx = window.hlx || {};
+        if (!window.hlx.sidekickEnabler) {
+          document.addEventListener('sidekick-enable', ({ detail }) => {
+            const { owner, repo } = detail;
+            chrome.runtime.sendMessage({
+              enableSidekick: true,
+              owner,
+              repo,
+            });
+          });
+          window.hlx.sidekickEnabler = true;
+        }
+      },
+    });
+  } catch (e) {
+    log.error('error injecting content script', tabId, e);
+  }
+}
+
 /**
  * Checks a tab and enables/disables the extension.
  * @param {number} id The ID of the tab
@@ -243,20 +285,9 @@ function checkTab(id) {
       const matches = await getProjectMatches(projects, checkUrl);
       log.debug('checking', id, checkUrl, matches);
       if (matches.length > 0) {
-        try {
-          // execute content script
-          chrome.scripting.executeScript({
-            target: { tabId: id },
-            files: ['./content.js'],
-          }, () => {
-            // send config matches to tab
-            chrome.tabs.sendMessage(id, {
-              projectMatches: matches,
-            });
-          });
-        } catch (e) {
-          log.error('error enabling extension', id, e);
-        }
+        injectContentScript(id, matches);
+      } else {
+        injectPassiveEnabler(id);
       }
     });
   });
@@ -462,13 +493,40 @@ async function storeAuthToken(owner, repo, token) {
  * Adds the listeners for the extension.
  */
 (async () => {
-  // register message listener
+  // listener for storing auth token
   chrome.runtime.onMessageExternal.addListener(async (message, sender, sendResponse) => {
-    log.info('sidekick got external message', message);
-    const { owner, repo, authToken } = message;
-    await storeAuthToken(owner, repo, authToken);
-    // inform caller to close the window
-    await sendResponse('close');
+    const {
+      authToken,
+      owner,
+      repo,
+    } = message;
+    if (authToken !== undefined && owner && repo) {
+      await storeAuthToken(owner, repo, authToken);
+      // inform caller to close the window
+      await sendResponse('close');
+    }
+  });
+
+  // listener for passively enabling sidekick
+  chrome.runtime.onMessage.addListener(async (message, { tab, url }, sendResponse) => {
+    const {
+      enableSidekick,
+      owner,
+      repo,
+    } = message;
+    if (enableSidekick && owner && repo) {
+      getState(({ projects }) => {
+        const match = projects.find((p) => p.owner === owner && p.repo === repo);
+        if (match) {
+          log.info(`enabling sidekick for project ${owner}/${repo} on ${url}`);
+          injectContentScript(tab.id, [match]);
+          sendResponse(true);
+        } else {
+          log.warn(`unknown project ${owner}/${repo}, not enabling sidekick on ${url}`);
+          sendResponse(false);
+        }
+      });
+    }
   });
 
   // actions for context menu items and install helper
