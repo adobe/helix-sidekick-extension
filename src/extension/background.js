@@ -39,7 +39,7 @@ import {
  * @type {string[]}
  */
 const LANGS = [
-  'en',
+  'en', // default language, do not reorder
   'de',
   'es',
   'fr',
