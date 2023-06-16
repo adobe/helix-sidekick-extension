@@ -39,6 +39,8 @@ export default async function injectSidekick(config, display) {
         'owner',
         'repo',
         'ref',
+        'previewHost',
+        'liveHost',
         'host',
         'devMode',
         'devOrigin',

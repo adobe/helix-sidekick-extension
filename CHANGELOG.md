@@ -1,3 +1,10 @@
+## [6.21.1](https://github.com/adobe/helix-sidekick-extension/compare/v6.21.0...v6.21.1) (2023-06-08)
+
+
+### Bug Fixes
+
+* wrong previewHost/liveHost handling ([d5af488](https://github.com/adobe/helix-sidekick-extension/commit/d5af4885a6981d3db631e4241e2f1bf39cf5d039))
+
 # [6.21.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.20.0...v6.21.0) (2023-06-06)
 
 
