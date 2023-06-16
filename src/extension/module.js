@@ -2737,7 +2737,10 @@
             window.hlx.sidekick.setAttribute('status', JSON.stringify(this.status));
           }
           const modal = {
-            message: message.startsWith('error_') ? i18n(this, message) : message,
+            message: message.startsWith('error_') ? i18n(this, message) : [
+              i18n(this, 'error_status_fatal'),
+              'https://status.hlx.live/',
+            ],
             sticky: true,
             level: 0,
             callback: () => {
