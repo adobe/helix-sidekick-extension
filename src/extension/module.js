@@ -512,6 +512,7 @@
     }
 
     const {
+      lang,
       previewHost,
       liveHost,
       outerHost: legacyLiveHost,
@@ -528,7 +529,6 @@
     const stdInnerHost = hostPrefix ? `${hostPrefix}.hlx.page` : null;
     const stdOuterHost = hostPrefix ? `${hostPrefix}.hlx.live` : null;
     const devUrl = new URL(devOrigin);
-    const lang = getLanguage();
     // define elements to push down
     const pushDownElements = [];
     if (pushDown) {
@@ -566,7 +566,7 @@
       pushDownElements,
       specialView,
       devUrl,
-      lang,
+      lang: lang || getLanguage(),
     };
   }
 
