@@ -2479,12 +2479,12 @@
    * Fetches the dictionary for a language.
    * @private
    * @param {Sidekick} sk The sidekick
+   * @param {string} lang The language
    * @returns {Object} The dictionary
    */
-  async function fetchDict(sk) {
+  async function fetchDict(sk, lang) {
     const dict = {};
-    const { lang } = sk.config;
-    const dictPath = `${sk.config.scriptRoot}/_locales/${lang}/messages.json`;
+    const dictPath = `${sk.config.scriptRoot}/_locales/${lang || sk.config.lang}/messages.json`;
     try {
       const res = await fetch(dictPath);
       const messages = await res.json();
