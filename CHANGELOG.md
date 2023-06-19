@@ -1,3 +1,15 @@
+# [6.22.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.21.1...v6.22.0) (2023-06-19)
+
+
+### Bug Fixes
+
+* missing page encoding [skip ci] ([f066330](https://github.com/adobe/helix-sidekick-extension/commit/f066330845ef341baf95fae4580c31c11f7d04e7))
+
+
+### Features
+
+* respect preferred user languages ([3a9d977](https://github.com/adobe/helix-sidekick-extension/commit/3a9d9773f8bab90fd0c7808877ca8fadd8349a25))
+
 ## [6.21.1](https://github.com/adobe/helix-sidekick-extension/compare/v6.21.0...v6.21.1) (2023-06-08)
 
 
