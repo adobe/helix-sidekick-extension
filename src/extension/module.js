@@ -240,6 +240,24 @@
    */
 
   /**
+   * Supported sidekick languages.
+   * @private
+   * @type {string[]}
+   */
+  const LANGS = [
+    'en', // default language, do not reorder
+    'de',
+    'es',
+    'fr',
+    'it',
+    'ja',
+    'ko-kr',
+    'pt-br',
+    'zh-cn',
+    'zh-tw',
+  ];
+
+  /**
    * Mapping between the plugin IDs that will be treated as environments
    * and their corresponding host properties in the config.
    * @private
@@ -397,6 +415,18 @@
   }
 
   /**
+   * Retrieves the sidekick language preferred by the user.
+   * The default language is <code>en</code>.
+   * @private
+   * @return {string} The language
+   */
+  function getLanguage() {
+    return navigator.languages
+      .map((prefLang) => LANGS.find((lang) => prefLang.toLowerCase().startsWith(lang)))
+      .filter((lang) => !!lang)[0] || LANGS[0];
+  }
+
+  /**
    * Creates an Admin URL for an API and path.
    * @private
    * @param {Object} config The sidekick configuration
@@ -482,11 +512,12 @@
     }
 
     const {
+      lang,
       previewHost,
       liveHost,
       outerHost: legacyLiveHost,
       host,
-      project,
+      project = '',
       pushDown,
       pushDownSelector,
       specialViews,
@@ -531,10 +562,11 @@
       stdOuterHost,
       scriptRoot,
       host: publicHost,
-      project: project || '',
+      project,
       pushDownElements,
       specialView,
       devUrl,
+      lang: lang || getLanguage(),
     };
   }
 
@@ -1654,8 +1686,7 @@
    * @param {Sidekick} sk The sidekick
    */
   function addCustomPlugins(sk) {
-    const { location, config: { plugins, innerHost } = {} } = sk;
-    const language = navigator.language.split('-')[0];
+    const { location, config: { lang, plugins, innerHost } = {} } = sk;
     if (plugins && Array.isArray(plugins)) {
       plugins.forEach((cfg, i) => {
         if (typeof (cfg.button && cfg.button.action) === 'function'
@@ -1712,7 +1743,7 @@
             id: id || `custom-plugin-${i}`,
             condition,
             button: {
-              text: (titleI18n && titleI18n[language]) || title || '',
+              text: (titleI18n && titleI18n[lang]) || title || '',
               action: () => {
                 if (url) {
                   const target = url.startsWith('/') ? new URL(url, `https://${innerHost}/`) : new URL(url);
@@ -1755,7 +1786,7 @@
                       });
                       const titleBar = appendTag(palette, {
                         tag: 'div',
-                        text: (titleI18n && titleI18n[language]) || title,
+                        text: (titleI18n && titleI18n[lang]) || title,
                         attrs: {
                           class: 'palette-title',
                         },
@@ -2453,7 +2484,7 @@
    */
   async function fetchDict(sk, lang) {
     const dict = {};
-    const dictPath = `${sk.config.scriptRoot}/_locales/${lang}/messages.json`;
+    const dictPath = `${sk.config.scriptRoot}/_locales/${lang || sk.config.lang}/messages.json`;
     try {
       const res = await fetch(dictPath);
       const messages = await res.json();
@@ -2706,7 +2737,10 @@
             window.hlx.sidekick.setAttribute('status', JSON.stringify(this.status));
           }
           const modal = {
-            message: message.startsWith('error_') ? i18n(this, message) : message,
+            message: message.startsWith('error_') ? i18n(this, message) : [
+              i18n(this, 'error_status_fatal'),
+              'https://status.hlx.live/',
+            ],
             sticky: true,
             level: 0,
             callback: () => {
@@ -2735,8 +2769,7 @@
       this.config = await initConfig(cfg, this.location);
 
       // load dictionary based on user language
-      const lang = this.config.lang || navigator.language.split('-')[0];
-      this.dict = await fetchDict(this, lang);
+      this.dict = await fetchDict(this);
       if (!this.dict.title) {
         // unsupported language, default to english
         this.dict = await fetchDict(this, 'en');

@@ -34,6 +34,24 @@ import {
 } from './utils.js';
 
 /**
+ * Supported sidekick help languages.
+ * @private
+ * @type {string[]}
+ */
+const LANGS = [
+  'en', // default language, do not reorder
+  'de',
+  'es',
+  'fr',
+  'it',
+  'ja',
+  'ko-kr',
+  'pt-br',
+  'zh-cn',
+  'zh-tw',
+];
+
+/**
  * Tries to retrieve a project config from a tab.
  * @param string} tabUrl The URL of the tab
  * @returns {object} The config object
@@ -273,14 +291,26 @@ function toggle(id) {
 }
 
 /**
+ * Retrieves the sidekick language preferred by the user.
+ * The default language is <code>en</code>.
+ * @private
+ * @return {string} The language
+ */
+function getLanguage() {
+  return navigator.languages
+    .map((prefLang) => LANGS.find((lang) => prefLang.toLowerCase().startsWith(lang)))
+    .filter((lang) => !!lang)[0] || LANGS[0];
+}
+
+/**
  * Updates the help content according to the browser language
  * while respecting previous user acknowledgements.
  */
 async function updateHelpContent() {
   const hlxSidekickHelpContent = await getConfig('sync', 'hlxSidekickHelpContent') || [];
   log.debug('existing help content', hlxSidekickHelpContent);
-  const lang = navigator.language.startsWith('en') ? '' : `/${navigator.language.split('-')[0]}`;
-  const resp = await fetch(`https://www.hlx.live${lang}/tools/sidekick/help.json`);
+  const lang = getLanguage();
+  const resp = await fetch(`https://www.hlx.live/tools/sidekick/${lang}/help.json`);
   if (resp.ok) {
     try {
       const [major, minor, patch] = MANIFEST.version.split('.');
