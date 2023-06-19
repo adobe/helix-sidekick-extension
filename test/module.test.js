@@ -1193,10 +1193,26 @@ describe('Test sidekick', () => {
           page,
           loadModule,
           checkPage: (p) => p.evaluate(() => window.hlx.sidekick.shadowRoot
-            .querySelector('.hlx-sk .feature-container .user .dropdown-container')
-            .classList.contains('highlight')),
+            .querySelector('.hlx-sk .feature-container user.dropdown')
+            .classList.contains('dropdown-expanded')),
         }).run();
         assert.ok(checkPageResult, 'Did not show login dialog on 401');
+      });
+
+      it('Encourages user to log in', async () => {
+        nock('https://admin.hlx.page')
+          .get(/.*/)
+          .twice()
+          .reply(401);
+        const { notification } = await new SidekickTest({
+          browser,
+          page,
+          loadModule,
+          post: (p) => p.evaluate(() => window.hlx.sidekick.shadowRoot
+            .querySelector('.plugin-container-overlay')
+            .dispatchEvent(new MouseEvent('click', { screenX: 20, screenY: 10 }))),
+        }).run();
+        assert.ok(notification.message.startsWith('You need to sign in'), 'Did not show login dialog on 401');
       });
     });
   }
