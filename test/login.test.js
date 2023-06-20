@@ -49,7 +49,6 @@ describe('Test sidekick login', () => {
       page,
       pluginSleep: 2000,
       plugin: 'user-login',
-      // sleep: 1000,
       loadModule: true,
     });
 
