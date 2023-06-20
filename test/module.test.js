@@ -1193,7 +1193,7 @@ describe('Test sidekick', () => {
           page,
           loadModule,
           checkPage: (p) => p.evaluate(() => window.hlx.sidekick.shadowRoot
-            .querySelector('.hlx-sk .feature-container user.dropdown')
+            .querySelector('.hlx-sk .feature-container .user.dropdown')
             .classList.contains('dropdown-expanded')),
         }).run();
         assert.ok(checkPageResult, 'Did not show login dialog on 401');
