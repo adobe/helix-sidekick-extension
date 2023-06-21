@@ -190,9 +190,21 @@ const debounce = (func, wait, immed) => {
 };
 
 /**
+ * Replaces all i18n messages in an element
+ * @param {HTMLElement} elem The element
+ */
+const localize = (elem) => {
+  const find = /__MSG_(.*)__/g;
+  const replace = (match, value) => (value ? chrome.i18n.getMessage(value) : '');
+  elem.innerHTML = elem.innerHTML.replace(find, replace);
+};
+
+/**
  * Initial setup
  */
 const load = async () => {
+  localize(document.documentElement);
+
   const tab = await getCurrentTab();
 
   await chrome.scripting.executeScript({
