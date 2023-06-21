@@ -1386,7 +1386,8 @@
     let bulkSelection = [];
 
     const isSharePoint = (location) => /\w+\.sharepoint.com$/.test(location.host)
-      && location.pathname.endsWith('/Forms/AllItems.aspx');
+      && (location.pathname.endsWith('/Forms/AllItems.aspx')
+      || location.pathname.endsWith('/onedrive.aspx'));
 
     const toWebPath = (folder, item) => {
       const { path, type } = item;
@@ -1399,6 +1400,10 @@
       if (type === 'xlsx' || type.includes('vnd.google-apps.spreadsheet')) {
         // use json extension for spreadsheets
         ext = 'json';
+      }
+      if (file === 'index') {
+        // folder root
+        file = '';
       }
       file = file
         .toLowerCase()
@@ -3031,7 +3036,8 @@
       const { location } = this;
       return (location.host === 'drive.google.com')
         || (/\w+\.sharepoint.com$/.test(location.host)
-        && location.pathname.endsWith('/Forms/AllItems.aspx'));
+        && (location.pathname.endsWith('/Forms/AllItems.aspx')
+        || location.pathname.endsWith('/onedrive.aspx')));
     }
 
     /**
