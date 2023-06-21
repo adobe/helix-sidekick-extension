@@ -203,7 +203,7 @@ const localize = (elem) => {
  * Initial setup
  */
 const load = async () => {
-  localize(document.documentElement);
+  localize(document.body);
 
   const tab = await getCurrentTab();
 
