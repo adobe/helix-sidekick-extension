@@ -27,7 +27,12 @@
     "page": "background.html",
     "persistent": false
   },
-  "externally_connectable": {
+  "__chrome__externally_connectable": {
+    "matches": [
+      "https://*/*"
+    ]
+  },
+  "__safari__externally_connectable": {
     "matches": [
       "https://admin.hlx.page/*"
     ]

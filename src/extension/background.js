@@ -219,32 +219,6 @@ async function injectContentScript(tabId, matches) {
   }
 }
 
-async function injectPassiveEnabler(tabId) {
-  try {
-    // execute content script
-    chrome.scripting.executeScript({
-      target: { tabId },
-      func: () => {
-        // ensure hlx namespace
-        window.hlx = window.hlx || {};
-        if (!window.hlx.sidekickEnabler) {
-          document.addEventListener('sidekick-enable', ({ detail }) => {
-            const { owner, repo } = detail;
-            chrome.runtime.sendMessage({
-              enableSidekick: true,
-              owner,
-              repo,
-            });
-          });
-          window.hlx.sidekickEnabler = true;
-        }
-      },
-    });
-  } catch (e) {
-    log.error('error injecting content script', tabId, e);
-  }
-}
-
 /**
  * Checks a tab and enables/disables the extension.
  * @param {number} id The ID of the tab
@@ -286,8 +260,6 @@ function checkTab(id) {
       log.debug('checking', id, checkUrl, matches);
       if (matches.length > 0) {
         injectContentScript(id, matches);
-      } else {
-        injectPassiveEnabler(id);
       }
     });
   });
@@ -493,43 +465,81 @@ async function storeAuthToken(owner, repo, token) {
  * Adds the listeners for the extension.
  */
 (async () => {
-  // listener for storing auth token
-  chrome.runtime.onMessageExternal.addListener(async (message, sender, sendResponse) => {
-    const {
-      authToken,
-      owner,
-      repo,
-    } = message;
-    if (authToken !== undefined && owner && repo) {
-      await storeAuthToken(owner, repo, authToken);
-      // inform caller to close the window
-      await sendResponse('close');
-    }
-  });
-
-  // listener for passively enabling sidekick
-  chrome.runtime.onMessage.addListener(async (message, { tab, url }, sendResponse) => {
-    const {
-      enableSidekick,
-      owner,
-      repo,
-    } = message;
-    if (enableSidekick && owner && repo) {
-      getState(({ projects }) => {
-        const match = projects.find((p) => p.owner === owner && p.repo === repo);
-        if (match) {
-          log.info(`enabling sidekick for project ${owner}/${repo} on ${url}`);
-          injectContentScript(tab.id, [match]);
-          sendResponse(true);
-        } else {
-          log.warn(`unknown project ${owner}/${repo}, not enabling sidekick on ${url}`);
-          sendResponse(false);
+  // actions for external messaging API
+  const externalActions = {
+    // updates a project's auth token (admin only)
+    updateAuthToken: async ({ authToken, owner, repo }, { url }) => {
+      let resp = '';
+      try {
+        if (!url || new URL(url).origin !== 'https://admin.hlx.page') {
+          resp = 'unauthorized sender url';
+        } else if (authToken !== undefined && owner && repo) {
+          await storeAuthToken(owner, repo, authToken);
+          resp = 'auth token updated';
         }
-      });
+      } catch (e) {
+        resp = 'invalid message';
+      }
+      return resp;
+    },
+    // opens the sidekick if the project is configured
+    openSidekick: async ({ owner, repo }, { tab, url }) => {
+      let resp = false;
+      if (owner && repo) {
+        resp = await new Promise((resolve) => {
+          getState(async ({ projects }) => {
+            const match = projects.find((p) => p.owner === owner && p.repo === repo);
+            if (match) {
+              log.info(`enabling sidekick for project ${owner}/${repo} on ${url}`);
+              await injectContentScript(tab.id, [match]);
+              resolve(true);
+            } else {
+              log.warn(`unknown project ${owner}/${repo}, not enabling sidekick on ${url}`);
+              resolve(false);
+            }
+          });
+        });
+      }
+      return resp;
+    },
+    // returns the sidekick status for the current tab
+    getStatus: async ({ owner, repo }, { tab }) => {
+      let resp = null;
+      if (owner && repo && tab?.id) {
+        resp = await new Promise((resolve) => {
+          // inject status retriever
+          chrome.scripting.executeScript({
+            target: { tabId: tab.id },
+            func: () => {
+              const status = window.hlx && window.hlx.sidekick && window.hlx.sidekick.status;
+              chrome.runtime.sendMessage({ status });
+            },
+          });
+          // listen for status response from tab
+          const listener = ({ status }) => {
+            if (typeof status === 'object') {
+              chrome.runtime.onMessage.removeListener(listener);
+              resolve(status);
+            }
+          };
+          chrome.runtime.onMessage.addListener(listener);
+        });
+      }
+      return resp;
+    },
+  };
+
+  // external messaging API for pages to communicate with sidekick
+  chrome.runtime.onMessageExternal.addListener(async (message, sender, sendResponse) => {
+    const { action } = message;
+    let resp = null;
+    if (externalActions[action]) {
+      resp = await externalActions[action](message, sender);
     }
+    sendResponse(resp);
   });
 
-  // actions for context menu items and install helper
+  // actions for context menu items and internal messaging API
   const actions = {
     addRemoveProject: async ({ id, url }) => {
       getState(async ({ projects = [] }) => {
