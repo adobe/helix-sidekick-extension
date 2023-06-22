@@ -482,8 +482,8 @@ async function storeAuthToken(owner, repo, token) {
       }
       return resp;
     },
-    // opens the sidekick if the project is configured
-    openSidekick: async ({ owner, repo }, { tab, url }) => {
+    // loads the sidekick if the project is configured
+    loadSidekick: async ({ owner, repo }, { tab, url }) => {
       let resp = false;
       if (owner && repo) {
         resp = await new Promise((resolve) => {
