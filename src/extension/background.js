@@ -511,14 +511,16 @@ async function storeAuthToken(owner, repo, token) {
           chrome.scripting.executeScript({
             target: { tabId: tab.id },
             func: () => {
-              const status = window.hlx && window.hlx.sidekick && window.hlx.sidekick.status;
+              const fullStatus = window.hlx && window.hlx.sidekick && window.hlx.sidekick.status;
+              const status = JSON.parse(JSON.stringify(fullStatus || {}));
+              delete status.profile;
               chrome.runtime.sendMessage({ status });
             },
           });
           // listen for status response from tab
           const listener = ({ status }) => {
+            chrome.runtime.onMessage.removeListener(listener);
             if (typeof status === 'object') {
-              chrome.runtime.onMessage.removeListener(listener);
               resolve(status);
             }
           };
