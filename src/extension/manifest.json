@@ -29,6 +29,7 @@
   },
   "__chrome__externally_connectable": {
     "matches": [
+      "http://localhost:3000/*",
       "https://*/*"
     ]
   },
