@@ -258,6 +258,9 @@
   "copied_urls": {
     "message": "URLs copied to clipboard."
   },
+  "copy": {
+    "message": "Copy"
+  },
   "copy_live_url": {
     "message": "Copy Live URL"
   },
