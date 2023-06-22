@@ -1,3 +1,16 @@
+# [6.23.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.22.0...v6.23.0) (2023-06-22)
+
+
+### Bug Fixes
+
+* detect admin env in personal folder ([080a23f](https://github.com/adobe/helix-sidekick-extension/commit/080a23f3a1fb1938e22df5902c46f393ff1a3df8))
+* **view-doc-source:** missing i18n ([20371ce](https://github.com/adobe/helix-sidekick-extension/commit/20371cebbbf2f07e29e7e7a530fadc8119576726))
+
+
+### Features
+
+* encourage user to login ([d992a62](https://github.com/adobe/helix-sidekick-extension/commit/d992a62938c8cb43a52941b55e62fe33b33f5979))
+
 # [6.22.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.21.1...v6.22.0) (2023-06-19)
 
 
