@@ -475,7 +475,7 @@ async function storeAuthToken(owner, repo, token) {
           resp = 'unauthorized sender url';
         } else if (authToken !== undefined && owner && repo) {
           await storeAuthToken(owner, repo, authToken);
-          resp = 'auth token updated';
+          resp = 'close';
         }
       } catch (e) {
         resp = 'invalid message';
