@@ -2605,6 +2605,10 @@
         pushDownContent(this);
         // show special view
         showSpecialView(this);
+
+        // announce to the document that the sidekick is ready
+        document.dispatchEvent(new CustomEvent('sidekick-ready'));
+        document.dispatchEvent(new CustomEvent('helix-sidekick-ready')); // legacy
       }, { once: true });
       this.addEventListener('statusfetched', () => {
         checkUserState(this);
@@ -3569,10 +3573,6 @@
       window.hlx.sidekick = document.createElement('helix-sidekick');
       document.body.prepend(window.hlx.sidekick);
       window.hlx.sidekick.show();
-
-      // announce to the document that the sidekick is ready
-      document.dispatchEvent(new CustomEvent('sidekick-ready'));
-      document.dispatchEvent(new CustomEvent('helix-sidekick-ready')); // legacy
     } else {
       // toggle sidekick
       window.hlx.sidekick.toggle();
