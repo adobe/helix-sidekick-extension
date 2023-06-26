@@ -1,3 +1,10 @@
+# [6.24.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.23.0...v6.24.0) (2023-06-26)
+
+
+### Features
+
+* messaging API ([#439](https://github.com/adobe/helix-sidekick-extension/issues/439)) ([92d7a8b](https://github.com/adobe/helix-sidekick-extension/commit/92d7a8b934e2bae703bce40d4fb1efc2d8838875))
+
 # [6.23.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.22.0...v6.23.0) (2023-06-22)
 
 
