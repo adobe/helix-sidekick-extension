@@ -71,7 +71,7 @@ describe('Test sidekick login', () => {
         }
         return [401, '{ "status": 401 }', { 'content-type': 'application/json' }];
       })
-      .get('/login/adobe/blog/main?loginRedirect=https%3A%2F%2Fwww.hlx.live%2Ftools%2Fsidekick%2Flogin-success')
+      .get('/login/adobe/blog/main?extensionId=cookie')
       .reply(200, '<html>logged in<script>setTimeout(() => self.close(), 500)</script></html>', {
         'set-cookie': 'auth_token=foobar; Path=/; HttpOnly; Secure; SameSite=None',
       })
@@ -107,7 +107,7 @@ describe('Test sidekick login', () => {
       .reply(401)
       .get('/status/adobe/blog/main/en/topics/bla?editUrl=auto')
       .reply(401, '{ "status": 401 }', { 'content-type': 'application/json' })
-      .get('/login/adobe/blog/main?loginRedirect=https%3A%2F%2Fwww.hlx.live%2Ftools%2Fsidekick%2Flogin-success')
+      .get('/login/adobe/blog/main?extensionId=cookie')
       .reply(200, '<html>not logged in!<script>setTimeout(() => self.close(), 500)</script></html>')
       .get('/profile/adobe/blog/main')
       .times(5)
