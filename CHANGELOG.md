@@ -1,3 +1,10 @@
+# [6.25.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.24.0...v6.25.0) (2023-06-27)
+
+
+### Features
+
+* do not use loginRedirect ([50abdc3](https://github.com/adobe/helix-sidekick-extension/commit/50abdc32bede54bf4da2e0424c44543c58b1c280))
+
 # [6.24.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.23.0...v6.24.0) (2023-06-26)
 
 
