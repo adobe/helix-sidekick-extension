@@ -1,3 +1,10 @@
+## [6.25.1](https://github.com/adobe/helix-sidekick-extension/compare/v6.25.0...v6.25.1) (2023-06-29)
+
+
+### Bug Fixes
+
+* hardcoded english strings in delete/unpublish ([9633403](https://github.com/adobe/helix-sidekick-extension/commit/9633403731465a8861894736ef3da01d61b01c5a))
+
 # [6.25.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.24.0...v6.25.0) (2023-06-27)
 
 
