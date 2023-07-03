@@ -1,6 +1,4 @@
 function show(platform, enabled, useSettingsInsteadOfPreferences) {
-    document.body.classList.add(`platform-${platform}`);
-
     if (typeof enabled === "boolean") {
         document.body.classList.toggle(`state-on`, enabled);
         document.body.classList.toggle(`state-off`, !enabled);
@@ -8,6 +6,8 @@ function show(platform, enabled, useSettingsInsteadOfPreferences) {
         document.body.classList.remove(`state-on`);
         document.body.classList.remove(`state-off`);
     }
+    document.body.classList.add(`platform-${platform}`);
+    document.body.classList.add('appear');
 }
 
 function openPreferences() {
