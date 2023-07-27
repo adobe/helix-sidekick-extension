@@ -6,7 +6,7 @@
   "scripts": {
     "lint": "eslint .",
     "test:mocha": "c8 mocha",
-    "test:mocha-ci": "c8 mocha --reporter xunit --reporter-options output=./junit/test-results.xml",
+    "test:mocha-ci": "c8 mocha",
     "test:wtr": "wtr \"./test/unit/*.test.js\" \"./test/extension/*.test.js\" \"./test/view-doc-source/*.test.js\"",
     "test:wtr:watch": "npm run test:wtr -- --watch",
     "test": "npm run test:mocha && npm run test:wtr",
@@ -36,11 +36,13 @@
   "mocha": {
     "require": [
       "test/setup-env.js"
-    ]
+    ],
+    "reporter": "mocha-multi-reporters",
+    "reporter-options": "configFile=.mocha-multi.json"
   },
   "devDependencies": {
-    "@adobe/fetch": "4.0.13",
     "@adobe/eslint-config-helix": "2.0.2",
+    "@adobe/fetch": "4.0.13",
     "@babel/eslint-parser": "7.22.9",
     "@esm-bundle/chai": "4.3.4-fix.0",
     "@semantic-release/changelog": "6.0.3",
@@ -59,6 +61,7 @@
     "lint-staged": "13.2.3",
     "mime": "3.0.0",
     "mocha": "10.2.0",
+    "mocha-multi-reporters": "1.5.1",
     "nock": "13.3.2",
     "puppeteer": "20.9.0",
     "puppeteer-core": "20.9.0",

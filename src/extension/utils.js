@@ -36,7 +36,8 @@ function alert(msg) {
   window.console.log(window.navigator.userAgent);
   if (typeof window !== 'undefined' && !/HeadlessChrome/.test(window.navigator.userAgent)) {
     // eslint-disable-next-line no-alert
-    return window.alert(msg);
+    // return window.alert(msg);
+    window.console.log(msg);
   }
   return null;
 }
