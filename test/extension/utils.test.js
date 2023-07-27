@@ -249,7 +249,7 @@ describe('Test extension utils', () => {
     const added = await new Promise((resolve) => {
       utils.addProject({
         giturl: 'https://github.com/test/project',
-      }, resolve);
+      }, resolve, true);
     });
     expect(added).to.be.true;
     expect(spy.calledWith({
@@ -259,7 +259,7 @@ describe('Test extension utils', () => {
     const addedWithAuth = await new Promise((resolve) => {
       utils.addProject({
         giturl: 'https://github.com/test/auth-project',
-      }, resolve);
+      }, resolve, true);
     });
     expect(addedWithAuth).to.be.true;
     expect(spy.calledWith({
@@ -269,7 +269,7 @@ describe('Test extension utils', () => {
     const addedExisting = await new Promise((resolve) => {
       utils.addProject({
         giturl: 'https://github.com/test/project',
-      }, resolve);
+      }, resolve, true);
     });
     expect(addedExisting).to.be.false;
   });
