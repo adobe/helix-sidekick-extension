@@ -33,6 +33,7 @@ export const log = {
 
 // shows a window.alert (noop if headless)
 function alert(msg) {
+  window.console.log(window.navigator.userAgent);
   if (typeof window !== 'undefined' && !/HeadlessChrome/.test(window.navigator.userAgent)) {
     // eslint-disable-next-line no-alert
     return window.alert(msg);
