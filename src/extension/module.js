@@ -540,7 +540,7 @@
     const defaultSpecialViews = [
       {
         path: '**.json',
-        js: `${scriptRoot}/view/json.js`,
+        view: `${scriptRoot}/view/json.html`,
       },
     ];
     // try custom views first
@@ -2368,13 +2368,13 @@
   }
 
   /**
-   * Creates and/or returns a special view.
+   * Creates and/or returns a special view overlay.
    * @private
    * @param {Sidekick} sk The sidekick
    * @param {boolean} create Create the special view if none exists
-   * @returns {HTMLELement} The special view
+   * @returns {HTMLELement} The special view overlay
    */
-  function getSpecialView(sk, create) {
+  function getSpecialViewOverlay(sk, create) {
     const view = sk.shadowRoot.querySelector('.hlx-sk-special-view')
       || (create
         ? appendTag(sk.shadowRoot, {
@@ -2396,7 +2396,7 @@
         lstnrs: { click: () => hideSpecialView(sk) },
       });
       appendTag(view, {
-        tag: 'div',
+        tag: 'iframe',
         attrs: {
           class: 'container',
         },
@@ -2417,63 +2417,26 @@
         pushDownElements,
       },
       location: {
-        href,
         pathname,
       },
     } = sk;
-    if (specialView && !getSpecialView(sk)) {
-      try {
-        const resp = await fetch(href);
-        if (!resp.ok) {
-          return;
-        }
-        const { js, css, cssLoaded } = specialView;
-        if (css && !cssLoaded) {
-          if (css.startsWith('https://') || css.startsWith('/')) {
-            // load external css file
-            sk.loadCSS(css);
-          } else {
-            // load inline css
-            const style = appendTag(sk.shadowRoot, {
-              tag: 'style',
-              attrs: {
-                type: 'text/css',
-              },
-            });
-            style.textContent = css;
+    if (specialView && !getSpecialViewOverlay(sk)) {
+      // hide original content
+      [...sk.parentElement.children].forEach((el) => {
+        if (el !== sk) {
+          try {
+            el.style.display = 'none';
+          } catch (e) {
+            // ignore
           }
-          specialView.cssLoaded = true;
         }
-
-        // hide original content
-        [...sk.parentElement.children].forEach((el) => {
-          if (el !== sk) {
-            try {
-              el.style.display = 'none';
-            } catch (e) {
-              // ignore
-            }
-          }
-        });
-
-        const view = getSpecialView(sk, true);
-        view.classList.add(pathname.split('.').pop());
-        pushDownElements.push(view);
-
-        const data = await resp.text();
-        let callback;
-        if (typeof js === 'function') {
-          callback = js;
-        } else if (typeof js === 'string') {
-          // load external module
-          const mod = await import(js);
-          callback = mod.default;
-        } else {
-          throw new Error('invalid view callback');
-        }
-        callback(view.querySelector(':scope .container'), data);
-      } catch (e) {
-        console.log('failed to draw view', e);
+      });
+      const { view } = specialView;
+      if (view) {
+        const viewOverlay = getSpecialViewOverlay(sk, true);
+        viewOverlay.querySelector('.container')
+          .setAttribute('src', `${view}?path=${pathname}`);
+        pushDownElements.push(viewOverlay);
       }
     }
   }
@@ -2485,10 +2448,10 @@
    */
   function hideSpecialView(sk) {
     const { config } = sk;
-    const view = getSpecialView(sk);
-    if (view) {
-      config.pushDownElements = config.pushDownElements.filter((el) => el !== view);
-      view.replaceWith('');
+    const viewOverlay = getSpecialViewOverlay(sk);
+    if (viewOverlay) {
+      config.pushDownElements = config.pushDownElements.filter((el) => el !== viewOverlay);
+      viewOverlay.replaceWith('');
 
       // show original content
       [...sk.parentElement.children].forEach((el) => {
