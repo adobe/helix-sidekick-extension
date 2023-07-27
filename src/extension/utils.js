@@ -36,8 +36,7 @@ function alert(msg) {
   window.console.log(window.navigator.userAgent);
   if (typeof window !== 'undefined' && !/HeadlessChrome/.test(window.navigator.userAgent)) {
     // eslint-disable-next-line no-alert
-    // return window.alert(msg);
-    window.console.log(msg);
+    return window.alert(msg);
   }
   return null;
 }
@@ -522,9 +521,10 @@ export async function setProject(project, cb) {
  * Adds a project configuration.
  * @param {Object} input The project settings
  * @param {Function} cb The function to call with a boolean when done
+ * @param {boolean} unattended {@code true} if no user interaction required (e.g. headless)
  * @returns {Promise<void>}
  */
-export async function addProject(input, cb) {
+export async function addProject(input, cb, unattended) {
   const config = assembleProject(input);
   const { owner, repo, ref } = config;
   const env = await getProjectEnv(config);
@@ -551,11 +551,11 @@ export async function addProject(input, cb) {
   if (!project) {
     await setProject({ ...config, ...env });
     log.info('added project', config);
-    alert(i18n('config_add_success'));
+    if (!unattended) alert(i18n('config_add_success'));
     if (typeof cb === 'function') cb(true);
   } else {
     log.info('project already exists', project);
-    alert(i18n('config_project_exists'));
+    if (!unattended) alert(i18n('config_project_exists'));
     if (typeof cb === 'function') cb(false);
   }
 }
