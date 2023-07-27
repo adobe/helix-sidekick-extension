@@ -108,19 +108,6 @@ describe('Test extension utils', () => {
     expect(spy.calledWith('/foo')).to.be.true;
   });
 
-  it('checkLastError', async () => {
-    chrome.runtime.lastError = new Error('foo');
-    const lastError = utils.checkLastError();
-    expect(lastError).to.exist;
-    expect(lastError).to.equal('foo');
-    chrome.runtime.lastError = null;
-  });
-
-  it('getMountpoints', async () => {
-    const [mp] = await utils.getMountpoints('adobe', 'helix-project-boilerplate', 'main');
-    expect(mp).to.equal('https://drive.google.com/drive/u/0/folders/1MGzOt7ubUh3gu7zhZIPb7R7dyRzG371j');
-  });
-
   it('getGitHubSettings', async () => {
     const { owner, repo, ref } = utils.getGitHubSettings('https://github.com/foo/bar/tree/baz');
     expect(owner).to.equal('foo');
@@ -132,18 +119,6 @@ describe('Test extension utils', () => {
     // clone url
     const { repo: noDotGit } = utils.getGitHubSettings('https://github.com/foo/bar.git');
     expect(noDotGit).to.equal('bar');
-  });
-
-  it('getShareSettings', async () => {
-    const { giturl, project } = utils.getShareSettings('https://www.hlx.live/tools/sidekick/?giturl=https%3A%2F%2Fgithub.com%2Ffoo%2Fbar&project=bar');
-    expect(giturl).to.equal('https://github.com/foo/bar');
-    expect(project).to.equal('bar');
-    expect(Object.keys(utils.getShareSettings('https://www.hlx.live/tools/sidekick/?giturl=https%3A%2F%2Fgithub.com')).length).to.equal(0);
-  });
-
-  it('isValidShareURL', async () => {
-    const res = utils.isValidShareURL('https://www.hlx.live/tools/sidekick/?giturl=https%3A%2F%2Fgithub.com%2Ffoo%2Fbar');
-    expect(res).to.be.true;
   });
 
   it('getConfig', async () => {
@@ -183,35 +158,55 @@ describe('Test extension utils', () => {
     expect(Object.keys(state).length).to.equal(4);
   });
 
-  it('getProjectMatches', async () => {
+  it('getShareSettings', async () => {
+    const { giturl, project } = utils.getShareSettings('https://www.hlx.live/tools/sidekick/?giturl=https%3A%2F%2Fgithub.com%2Ffoo%2Fbar&project=bar');
+    expect(giturl).to.equal('https://github.com/foo/bar');
+    expect(project).to.equal('bar');
+    expect(Object.keys(utils.getShareSettings('https://www.hlx.live/tools/sidekick/?giturl=https%3A%2F%2Fgithub.com')).length).to.equal(0);
+  });
+
+  it('isValidShareURL', async () => {
+    const res = utils.isValidShareURL('https://www.hlx.live/tools/sidekick/?giturl=https%3A%2F%2Fgithub.com%2Ffoo%2Fbar');
+    expect(res).to.be.true;
+  });
+
+  it('populateDiscoveryCache', async () => {
     const spy = sandbox.spy(window, 'fetch');
+    // sharepoint: 3 calls
+    await utils.populateDiscoveryCache('https://foo.sharepoint.com/:w:/r/sites/foo/_layouts/15/Doc.aspx?sourcedoc=%7BBFD9A19C-4A68-4DBF-8641-DA2F1283C895%7D&file=index.docx&action=default&mobileredirect=true');
+    // gdrive: 1 call
+    await utils.populateDiscoveryCache('https://docs.google.com/document/d/1234567890/edit');
+    expect(spy.callCount).to.equal(4);
+  });
+
+  it('queryDiscoveryCache', async () => {
+    // known url
+    let results = await utils.queryDiscoveryCache('https://foo.sharepoint.com/:w:/r/sites/foo/_layouts/15/Doc.aspx?sourcedoc=%7BBFD9A19C-4A68-4DBF-8641-DA2F1283C895%7D&file=index.docx&action=default&mobileredirect=true');
+    expect(results.length).to.equal(1);
+    // unknown url
+    results = await utils.queryDiscoveryCache('https://foo.sharepoint.com/:x:/r/sites/foo/_layouts/15/Doc.aspx?sourcedoc=%7ABFD9A19C-4A68-4DBF-8641-DA2F1283C895%7D&file=index.xlsx&action=default&mobileredirect=true');
+    expect(results.length).to.equal(0);
+  });
+
+  it('getProjectMatches', async () => {
     // match sharepoint URL (docx)
-    expect((await utils.getProjectMatches(CONFIGS, 'https://foo.sharepoint.com/:w:/r/sites/foo/_layouts/15/Doc.aspx?sourcedoc=%7BBFD9A19C-4A68-4DBF-8641-DA2F1283C895%7D&file=index.docx&action=default&mobileredirect=true')).length).to.equal(1);
-    expect(spy.callCount).to.equal(3);
+    expect((utils.getProjectMatches(CONFIGS, 'https://foo.sharepoint.com/:w:/r/sites/foo/_layouts/15/Doc.aspx?sourcedoc=%7BBFD9A19C-4A68-4DBF-8641-DA2F1283C895%7D&file=index.docx&action=default&mobileredirect=true')).length).to.equal(1);
     // match gdrive URL
-    expect((await utils.getProjectMatches(CONFIGS, 'https://docs.google.com/document/d/1234567890/edit')).length).to.equal(1);
-    expect(spy.callCount).to.equal(4);
-    // reuse match from cache
-    await utils.getProjectMatches(CONFIGS, 'https://docs.google.com/document/d/1234567890/edit');
-    expect(spy.callCount).to.equal(4);
-    // refreshes expired match in cache
-    sandbox.stub(Date, 'now').returns(Date.now() + 7205000); // fast-forward 2 days and 5 seconds
-    await utils.getProjectMatches(CONFIGS, 'https://docs.google.com/document/d/1234567890/edit');
-    expect(spy.callCount).to.equal(5);
+    expect((utils.getProjectMatches(CONFIGS, 'https://docs.google.com/document/d/1234567890/edit')).length).to.equal(1);
     // match preview URL
-    expect((await utils.getProjectMatches(CONFIGS, 'https://main--bar1--foo.hlx.page/')).length).to.equal(1);
+    expect((utils.getProjectMatches(CONFIGS, 'https://main--bar1--foo.hlx.page/')).length).to.equal(1);
     // match preview URL with any ref
-    expect((await utils.getProjectMatches(CONFIGS, 'https://baz--bar1--foo.hlx.page/')).length).to.equal(1);
+    expect((utils.getProjectMatches(CONFIGS, 'https://baz--bar1--foo.hlx.page/')).length).to.equal(1);
     // match custom preview URL
-    expect((await utils.getProjectMatches(CONFIGS, 'https://6-preview.foo.bar/')).length).to.equal(1);
+    expect((utils.getProjectMatches(CONFIGS, 'https://6-preview.foo.bar/')).length).to.equal(1);
     // match live URL
-    expect((await utils.getProjectMatches(CONFIGS, 'https://main--bar1--foo.hlx.live/')).length).to.equal(1);
+    expect((utils.getProjectMatches(CONFIGS, 'https://main--bar1--foo.hlx.live/')).length).to.equal(1);
     // match custom live URL
-    expect((await utils.getProjectMatches(CONFIGS, 'https://6-live.foo.bar/')).length).to.equal(1);
+    expect((utils.getProjectMatches(CONFIGS, 'https://6-live.foo.bar/')).length).to.equal(1);
     // match production host
-    expect((await utils.getProjectMatches(CONFIGS, 'https://1.foo.bar/')).length).to.equal(1);
+    expect((utils.getProjectMatches(CONFIGS, 'https://1.foo.bar/')).length).to.equal(1);
     // ignore disabled config
-    expect((await utils.getProjectMatches(CONFIGS, 'https://main--bar2--foo.hlx.live/')).length).to.equal(0);
+    expect((utils.getProjectMatches(CONFIGS, 'https://main--bar2--foo.hlx.live/')).length).to.equal(0);
   });
 
   it('getProjectEnv', async () => {
@@ -229,7 +224,7 @@ describe('Test extension utils', () => {
   it('assembleProject with giturl', async () => {
     const {
       owner, repo, ref,
-    } = await utils.assembleProject({
+    } = utils.assembleProject({
       giturl: 'https://github.com/adobe/business-website/tree/main',
     });
     expect(owner).to.equal('adobe');
@@ -240,7 +235,7 @@ describe('Test extension utils', () => {
   it('assembleProject with owner and repo', async () => {
     const {
       giturl,
-    } = await utils.assembleProject({
+    } = utils.assembleProject({
       owner: 'adobe',
       repo: 'business-website',
       ref: 'test',
