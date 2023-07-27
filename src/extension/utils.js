@@ -33,7 +33,6 @@ export const log = {
 
 // shows a window.alert (noop if headless)
 function alert(msg) {
-  window.console.log(window.navigator.userAgent);
   if (typeof window !== 'undefined' && !/HeadlessChrome/.test(window.navigator.userAgent)) {
     // eslint-disable-next-line no-alert
     return window.alert(msg);
@@ -539,7 +538,7 @@ export async function addProject(input, cb, unattended) {
       if (message.authToken && owner === message.owner && repo === message.repo) {
         await chrome.tabs.remove(loginTabId);
         config.authToken = message.authToken;
-        await addProject(config, cb);
+        await addProject(config, cb, unattended);
       }
       // clean up
       chrome.runtime.onMessageExternal.removeListener(retryAddProjectListener);
