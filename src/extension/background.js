@@ -14,11 +14,9 @@ import {
   GH_URL,
   SHARE_PREFIX,
   DEV_URL,
-  DISCOVERY_CACHE,
   MANIFEST,
   log,
   i18n,
-  checkLastError,
   getState,
   getProjectMatches,
   toggleDisplay,
@@ -31,6 +29,8 @@ import {
   setConfig,
   getConfig,
   updateProjectConfigs,
+  populateDiscoveryCache,
+  queryDiscoveryCache,
 } from './utils.js';
 
 /**
@@ -80,16 +80,14 @@ function getConfigFromTabUrl(tabUrl) {
         };
       } else {
         // check if url is known in discovery cache
-        const discoveryCache = DISCOVERY_CACHE.find(({ url: cacheUrl }) => cacheUrl === tabUrl);
-        if (discoveryCache) {
-          const { owner, repo } = discoveryCache.results.find((r) => r.originalRepository) || {};
-          if (owner && repo) {
-            return {
-              owner,
-              repo,
-              ref: 'main',
-            };
-          }
+        const discoveryCache = queryDiscoveryCache(tabUrl);
+        const { owner, repo } = discoveryCache.find((r) => r.originalRepository) || {};
+        if (owner && repo) {
+          return {
+            owner,
+            repo,
+            ref: 'main',
+          };
         }
       }
     } catch (e) {
@@ -171,7 +169,7 @@ async function checkContextMenu({ url: tabUrl, id, active }, configs = []) {
     // clear context menu
     chrome.contextMenus.removeAll(() => {
       // check if add project is applicable
-      if (configs && !checkLastError()) {
+      if (configs) {
         const { owner, repo } = getConfigFromTabUrl(tabUrl);
         if (owner && repo) {
           const config = configs.find((c) => c.owner === owner && c.repo === repo);
@@ -244,13 +242,33 @@ async function injectContentScript(tabId, matches) {
 }
 
 /**
+ * Removes the sidekick from the tab.
+ * @param {number} tabId The ID of the tab
+ */
+async function removeSidekick(tabId) {
+  try {
+    await chrome.scripting.executeScript({
+      target: { tabId },
+      func: () => {
+        if (window.hlx && window.hlx.sidekick) {
+          window.hlx.sidekick.hide();
+          window.hlx.sidekick.replaceWith(''); // remove() doesn't work for custom element
+          delete window.hlx.sidekick;
+        }
+      },
+    });
+  } catch (e) {
+    log.error('error destroying sidekick', tabId, e);
+  }
+}
+
+/**
  * Checks a tab and enables/disables the extension.
  * @param {number} id The ID of the tab
  */
 function checkTab(id) {
   getState(({ projects = [] }) => {
     chrome.tabs.get(id, async (tab = {}) => {
-      checkLastError();
       if (!tab.url) return;
       let checkUrl = tab.url;
       // check if active tab has a local dev URL
@@ -265,6 +283,7 @@ function checkTab(id) {
         log.debug('local dev url detected, retrieve proxy url');
         checkUrl = await getProxyUrl(tab);
       }
+      await populateDiscoveryCache(checkUrl);
       if (tab.active) {
         checkContextMenu(tab, projects);
       }
@@ -280,10 +299,12 @@ function checkTab(id) {
           log.error('error instrumenting generator page', id, e);
         }
       }
-      const matches = await getProjectMatches(projects, checkUrl);
+      const matches = getProjectMatches(projects, checkUrl);
       log.debug('checking', id, checkUrl, matches);
       if (matches.length > 0) {
         injectContentScript(id, matches);
+      } else {
+        removeSidekick(id);
       }
     });
   });
@@ -578,7 +599,7 @@ const internalActions = {
       const reload = () => chrome.tabs.reload(id, { bypassCache: true });
       const project = projects.find((p) => p.owner === owner && p.repo === repo);
       if (!project) {
-        addProject(cfg, reload);
+        addProject(cfg, reload, true);
       } else {
         deleteProject(`${owner}/${repo}`, reload);
       }
