@@ -78,7 +78,9 @@
    * @typedef {Object} ViewConfig
    * @description A custom view configuration.
    * @prop {string} path The path or globbing pattern where to apply this view
-   * @prop {string} css The URL of a CSS file or inline CSS to render this view (optional)
+   * @prop {string} title The view title (optional)
+   * @prop {Object} titleI18n={} A map of translated view titles
+   * @prop {string} viewer The URL to render this view
    */
 
   /**
@@ -2383,12 +2385,15 @@
         })
         : null);
     if (create && view) {
-      const description = appendTag(view, {
+      const header = appendTag(view, {
         tag: 'div',
-        text: i18n(sk, 'json_view_description'),
-        attrs: { class: 'description' },
+        attrs: { class: 'header' },
       });
-      appendTag(description, {
+      appendTag(header, {
+        tag: 'span',
+        attrs: { class: 'title' },
+      });
+      appendTag(header, {
         tag: 'button',
         text: i18n(sk, 'close'),
         attrs: { class: 'close' },
@@ -2431,11 +2436,13 @@
           }
         }
       });
-      const { viewer } = specialView;
+      const { viewer, title } = specialView;
       if (viewer) {
         const viewUrl = new URL(viewer, origin);
         viewUrl.searchParams.set('url', href);
         const viewOverlay = getSpecialViewOverlay(sk, true);
+        viewOverlay.querySelector('.title')
+          .textContent = title || i18n(sk, 'json_view_description');
         viewOverlay.querySelector('.container')
           .setAttribute('src', viewUrl.toString());
       }
