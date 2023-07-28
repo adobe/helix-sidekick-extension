@@ -540,7 +540,7 @@
     const defaultSpecialViews = [
       {
         path: '**.json',
-        view: `${scriptRoot}/view/json.html`,
+        viewer: `${scriptRoot}/view/json/json.html`,
       },
     ];
     // try custom views first
@@ -2414,10 +2414,10 @@
     const {
       config: {
         specialView,
-        pushDownElements,
       },
       location: {
-        pathname,
+        origin,
+        href,
       },
     } = sk;
     if (specialView && !getSpecialViewOverlay(sk)) {
@@ -2431,12 +2431,13 @@
           }
         }
       });
-      const { view } = specialView;
-      if (view) {
+      const { viewer } = specialView;
+      if (viewer) {
+        const viewUrl = new URL(viewer, origin);
+        viewUrl.searchParams.set('url', href);
         const viewOverlay = getSpecialViewOverlay(sk, true);
         viewOverlay.querySelector('.container')
-          .setAttribute('src', `${view}?path=${pathname}`);
-        pushDownElements.push(viewOverlay);
+          .setAttribute('src', viewUrl.toString());
       }
     }
   }
@@ -2447,10 +2448,8 @@
    * @param {Sidekick} sk The sidekick
    */
   function hideSpecialView(sk) {
-    const { config } = sk;
     const viewOverlay = getSpecialViewOverlay(sk);
     if (viewOverlay) {
-      config.pushDownElements = config.pushDownElements.filter((el) => el !== viewOverlay);
       viewOverlay.replaceWith('');
 
       // show original content

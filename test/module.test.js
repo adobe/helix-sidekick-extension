@@ -1102,6 +1102,35 @@ describe('Test sidekick', () => {
         assert.ok(checkPageResult, 'Did not suppress data view for JSON file');
       }).timeout(IT_DEFAULT_TIMEOUT);
 
+      it('Shows custom view for JSON file', async () => {
+        const checkString = 'custom JSON viewer';
+        const setup = new Setup('blog');
+        nock.sidekick(setup, {
+          configJson: {
+            specialViews: [
+              {
+                path: '**.json',
+                viewer: '/tools/sidekick/json/json.html',
+              },
+            ],
+          },
+        });
+        nock.admin(setup);
+        nock('https://main--blog--adobe.hlx.page')
+          .get('/tools/sidekick/json/json.html?url=https%3A%2F%2Fmain--blog--adobe.hlx.page%2Fen%2Fbla.json')
+          .reply(200, checkString);
+        const { checkPageResult } = await new SidekickTest({
+          browser,
+          page,
+          loadModule,
+          type: 'json',
+          checkPage: (p) => p.evaluate(() => window.hlx.sidekick.shadowRoot
+            .querySelector('.hlx-sk-special-view .container')
+            .contentWindow.document.body.textContent),
+        }).run();
+        assert.strictEqual(checkPageResult, checkString, 'Did not show custom view for JSON file');
+      }).timeout(IT_DEFAULT_TIMEOUT);
+
       it('Shows help content', async () => {
         const { notification } = await new SidekickTest({
           browser,
