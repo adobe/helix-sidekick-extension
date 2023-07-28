@@ -266,6 +266,9 @@ export class SidekickTest extends EventEmitter {
           return -1;
         }
       }
+      if (url.endsWith('/favicon.ico')) {
+        return { status: 404 };
+      }
       if (url.startsWith('http')) {
         if (url.startsWith('https://rum.hlx.page/')) {
           // dummy response for rum requests

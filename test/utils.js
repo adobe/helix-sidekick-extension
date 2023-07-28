@@ -521,19 +521,23 @@ export class TestBrowser {
         }
 
         try {
-          let res = await this.requestHandler?.(request);
-          if (res === -1) {
-            if (DEBUG_LOGS) {
-              // eslint-disable-next-line no-console
-              console.log('[pup] request aborted', request.url);
+          let res;
+          if (request.url.endsWith('/favicon.ico')) {
+            res = { status: 404 };
+          } else {
+            res = await this.requestHandler?.(request);
+            if (res === -1) {
+              if (DEBUG_LOGS) {
+                // eslint-disable-next-line no-console
+                console.log('[pup] request aborted', request.url);
+              }
+              await innerSession.send('Fetch.failRequest', {
+                requestId: evt.requestId,
+                errorReason: 'Aborted',
+              });
+              return;
             }
-            await innerSession.send('Fetch.failRequest', {
-              requestId: evt.requestId,
-              errorReason: 'Aborted',
-            });
-            return;
           }
-
           if (!res && request.url.startsWith('file://')) {
             // let file requests through
             if (DEBUG_LOGS) {
@@ -608,12 +612,13 @@ export class TestBrowser {
     };
     const browser = await puppeteer.launch({
       devtools: DEBUG || process.env.HLX_SK_TEST_DEBUG,
-      // headless: false,
+      headless: 'new',
       args: [
         '--disable-popup-blocking',
         '--disable-web-security',
         '-no-sandbox',
         '-disable-setuid-sandbox',
+        '--user-agent="HeadlessChrome"',
       ],
       slowMo: false,
     });
