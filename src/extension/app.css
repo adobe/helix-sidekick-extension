@@ -758,16 +758,15 @@
   font-family: var(--hlx-sk-font-family);
   font-size: var(--hlx-sk-font-size);
   color: var(--hlx-sk-color);
-  padding: 60px 0 0;
+  padding: 49px 0 0;
 }
 
-.hlx-sk-special-view .description {
-  margin-bottom: 10px;
+.hlx-sk-special-view .header {
   padding: 0 20px;
-  height: 18px;
+  height: 32px;
 }
 
-.hlx-sk-special-view .description button {
+.hlx-sk-special-view .header button {
   background-color: transparent;
   border: none;
   font-family: var(--hlx-sk-font-family);
@@ -782,7 +781,7 @@
   box-sizing: border-box;
   border: none;
   width: 100%;
-  height: calc(100% - 76px);
+  height: calc(100% - 81px);
   overflow: auto;
 }
 
