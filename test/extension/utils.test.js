@@ -288,6 +288,24 @@ describe('Test extension utils', () => {
     expect(addedExisting).to.be.false;
   });
 
+  it('setProject', async () => {
+    const spy = sandbox.spy(window.chrome.storage.sync, 'set');
+    // set project
+    const project = {
+      owner: 'test',
+      repo: 'project',
+      ref: 'main',
+      project: 'Test',
+    };
+    const updated = await new Promise((resolve) => {
+      utils.setProject(project, resolve);
+    });
+    expect(updated).to.equal(project);
+    expect(spy.calledWith({
+      'test/project': project,
+    })).to.be.true;
+  });
+
   it('deleteProject', async () => {
     const spy = sandbox.spy(window.chrome.storage.sync, 'set');
     const deleted = await new Promise((resolve) => {
