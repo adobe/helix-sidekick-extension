@@ -173,8 +173,7 @@ async function fetchSharePointEditInfo(tabUrl) {
   spUrl.pathname = `/_api/v2.0/shares/${shareLink}/driveItem`;
   let resp = await fetch(spUrl);
   if (!resp.ok) {
-    // eslint-disable-next-line no-console
-    console.warn('unable to resolve edit url: ', resp.status);
+    log.warn('unable to resolve edit url: ', resp.status);
     return null;
   }
   const data = await resp.json();
@@ -183,8 +182,7 @@ async function fetchSharePointEditInfo(tabUrl) {
   spUrl.pathname = `/_api/v2.0/drives/${data.parentReference.driveId}`;
   resp = await fetch(spUrl);
   if (!resp.ok) {
-    // eslint-disable-next-line no-console
-    console.warn('unable to load root url: ', resp.status);
+    log.warn('unable to load root url: ', resp.status);
     return null;
   }
   const rootData = await resp.json();
@@ -289,10 +287,11 @@ export async function populateDiscoveryCache(tabUrl) {
           results,
           expiry: Date.now() + ttl,
         };
-        const index = DISCOVERY_CACHE.indexOf(entry);
-        if (index >= 0) {
+        const existingEntry = DISCOVERY_CACHE.find((e) => e.url === entry.url);
+        if (existingEntry) {
           // update expired cache entry
           log.debug('updating discovery cache', entry);
+          const index = DISCOVERY_CACHE.indexOf(existingEntry);
           DISCOVERY_CACHE.splice(index, 1, entry);
         } else {
           // add cache entry
