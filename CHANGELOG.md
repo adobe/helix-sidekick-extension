@@ -1,3 +1,14 @@
+## [6.25.2](https://github.com/adobe/helix-sidekick-extension/compare/v6.25.1...v6.25.2) (2023-07-28)
+
+
+### Bug Fixes
+
+* **deps:** downgrade chrome installer ([5db0636](https://github.com/adobe/helix-sidekick-extension/commit/5db0636dac1313904c3d8ae5522c1ec1f7b35616))
+* enable mocha-multi ([07dfd8a](https://github.com/adobe/helix-sidekick-extension/commit/07dfd8ad1d9b73ff71b880b8434cfec4497c9097))
+* lookup from discovery cache ([9f56ec0](https://github.com/adobe/helix-sidekick-extension/commit/9f56ec095b482aa6ccc54ceb1f5905b8c17d707c))
+* refresh discovery cache ([30c693d](https://github.com/adobe/helix-sidekick-extension/commit/30c693d1523210ba2afd6f48c4617ed609fb0db4))
+* show user agent ([94b8d2e](https://github.com/adobe/helix-sidekick-extension/commit/94b8d2edec9225177b0143f97a2752a900cea81b))
+
 ## [6.25.1](https://github.com/adobe/helix-sidekick-extension/compare/v6.25.0...v6.25.1) (2023-06-29)
 
 
