@@ -2418,6 +2418,7 @@
   async function showSpecialView(sk) {
     const {
       config: {
+        lang,
         specialView,
       },
       location: {
@@ -2436,13 +2437,13 @@
           }
         }
       });
-      const { viewer, title } = specialView;
+      const { viewer, title, titleI18n } = specialView;
       if (viewer) {
         const viewUrl = new URL(viewer, origin);
         viewUrl.searchParams.set('url', href);
         const viewOverlay = getSpecialViewOverlay(sk, true);
-        viewOverlay.querySelector('.title')
-          .textContent = title || i18n(sk, 'json_view_description');
+        viewOverlay.querySelector('.title').textContent = (titleI18n && titleI18n[lang])
+          || title || i18n(sk, 'json_view_description');
         viewOverlay.querySelector('.container')
           .setAttribute('src', viewUrl.toString());
       }
