@@ -18,7 +18,7 @@ export const GH_URL = 'https://github.com/';
 
 export const DEV_URL = 'http://localhost:3000';
 
-export const DISCOVERY_CACHE = [];
+const DISCOVERY_CACHE = [];
 const DISCOVERY_CACHE_TTL = 7200000;
 
 export const log = {
@@ -50,34 +50,11 @@ export function url(path) {
   return chrome.runtime.getURL(path);
 }
 
-export function checkLastError() {
-  if (chrome.runtime.lastError) {
-    log.debug('chrome.runtime.lastError', chrome.runtime.lastError.message);
-    return chrome.runtime.lastError.message;
-  }
-  return null;
-}
-
-export async function getMountpoints(owner, repo, ref) {
-  const fstab = `https://raw.githubusercontent.com/${owner}/${repo}/${ref}/fstab.yaml`;
-  const res = await fetch(fstab);
-  if (res.ok) {
-    await import('./lib/js-yaml.min.js');
-    try {
-      const { mountpoints = {} } = jsyaml.load(await res.text());
-      return Object.values(mountpoints).map((mp) => {
-        if (typeof mp === 'object') {
-          return mp.url;
-        }
-        return mp;
-      });
-    } catch (e) {
-      log.error('error getting mountpoints from fstab.yaml', e);
-    }
-  }
-  return [];
-}
-
+/**
+ * Extracts the settings from a GitHub URL.
+ * @param {string} giturl The GitHub URL
+ * @returns {Objct} The GitHub settings
+ */
 export function getGitHubSettings(giturl) {
   if (typeof giturl === 'string' && giturl.startsWith(GH_URL)) {
     const [owner, repository,, ref = 'main'] = new URL(giturl).pathname.toLowerCase()
@@ -94,6 +71,12 @@ export function getGitHubSettings(giturl) {
   return {};
 }
 
+/**
+ * Retrieves a configuration from a given storage type.
+ * @param {string} type The storage type
+ * @param {string} prop The property name
+ * @returns {Promise<*>} The configuration
+ */
 export async function getConfig(type, prop) {
   const cfg = await new Promise((resolve) => {
     chrome.storage[type].get(prop, resolve);
@@ -101,10 +84,16 @@ export async function getConfig(type, prop) {
   return prop ? cfg[prop] : cfg;
 }
 
+/**
+ * Changes a configuration in a given storage type.
+ * @param {string} type The storage type
+ * @param {Object} obj The configuration object with the property/properties to change
+ * @returns {Promise<void>}
+ */
 export async function setConfig(type, obj) {
   const p = new Promise((resolve) => {
     chrome.storage[type].set(obj, () => {
-      const error = checkLastError();
+      const error = chrome.runtime.lastError;
       if (error) {
         log.error('setConfig failed', error);
       }
@@ -114,18 +103,34 @@ export async function setConfig(type, obj) {
   return p;
 }
 
+/**
+ * Removes a configuration from a given storage type.
+ * @param {string} type The storage type
+ * @param {string} prop The property name
+ * @returns {Promise<void>}
+ */
 export async function removeConfig(type, prop) {
   return new Promise((resolve) => {
     chrome.storage[type].remove(prop, resolve);
   });
 }
 
+/**
+ * Removes all configurations from a given storage type.
+ * @param {string} type The storage type
+ * @returns {Promise<void>}
+ */
 export async function clearConfig(type) {
   return new Promise((resolve) => {
     chrome.storage[type].clear(resolve);
   });
 }
 
+/**
+ * Assembles a state object from multiple storage types.
+ * @param {Function} cb The function to call with the state object
+ * @returns {Promise<void>}
+ */
 export async function getState(cb) {
   if (typeof cb === 'function') {
     const display = await getConfig('local', 'hlxSidekickDisplay') || false;
@@ -145,10 +150,10 @@ export async function getState(cb) {
 
 /**
  * Encodes the url to be used in the `/shares/` msgraph API call
- * @param {string} sharingUrl
- * @returns {string}
+ * @param {string} sharingUrl The sharing URL
+ * @returns {string} The encoded sharing URL
  */
-export function encodeSharingUrl(sharingUrl) {
+function encodeSharingUrl(sharingUrl) {
   const base64 = btoa(sharingUrl)
     .replace(/=/, '')
     .replace(/\//, '_')
@@ -157,20 +162,18 @@ export function encodeSharingUrl(sharingUrl) {
 }
 
 /**
- * Fetches the sharepoint edit info directly from sharepoint
+ * Fetches the edit info from Microsoft SharePoint.
  * @todo also use fstab information to figure out the resource path etc.
- *
- * @param {string} tabUrl
- * @returns {Promise<object>}
+ * @param {string} tabUrl The tab ID
+ * @returns {Promise<Object>} The edit info
  */
-export async function fetchSharePointEditInfo(tabUrl) {
+async function fetchSharePointEditInfo(tabUrl) {
   const shareLink = encodeSharingUrl(tabUrl);
   const spUrl = new URL(tabUrl);
   spUrl.pathname = `/_api/v2.0/shares/${shareLink}/driveItem`;
   let resp = await fetch(spUrl);
   if (!resp.ok) {
-    // eslint-disable-next-line no-console
-    console.warn('unable to resolve edit url: ', resp.status);
+    log.warn('unable to resolve edit url: ', resp.status);
     return null;
   }
   const data = await resp.json();
@@ -179,8 +182,7 @@ export async function fetchSharePointEditInfo(tabUrl) {
   spUrl.pathname = `/_api/v2.0/drives/${data.parentReference.driveId}`;
   resp = await fetch(spUrl);
   if (!resp.ok) {
-    // eslint-disable-next-line no-console
-    console.warn('unable to load root url: ', resp.status);
+    log.warn('unable to load root url: ', resp.status);
     return null;
   }
   const rootData = await resp.json();
@@ -203,22 +205,111 @@ export async function fetchSharePointEditInfo(tabUrl) {
   return info;
 }
 
-export async function fetchGoogleEditInfo(tabUrl) {
-  // todo: fetch from gdrive ?
+/**
+ * Fetches the edit info from Google Drive.
+ * @todo implement
+ * @param {string} tabUrl The tab ID
+ * @returns {Promise<Object>} The edit info
+ */
+async function fetchGoogleDriveEditInfo(tabUrl) {
   return {
     url: tabUrl,
   };
 }
 
-export function isSharePointHost(host) {
+/**
+ * Determines if a URL has a Microsoft SharePoint host.
+ * @param {string} tabUrl The tab URL
+ * @returns {boolean} {@code true} if SharePoint host, else {@code false}
+ */
+function isSharePointHost(tabUrl) {
+  const { host } = new URL(tabUrl);
   return /^[a-z-]+\.sharepoint\.com$/.test(host);
 }
 
-export function isGoogleDriveHost(host) {
+/**
+ * Determines if a URL has a Google Drive host.
+ * @param {string} tabUrl The tab URL
+ * @returns {boolean} {@code true} if Google Drive host, else {@code false}
+ */
+function isGoogleDriveHost(tabUrl) {
+  const { host } = new URL(tabUrl);
   return /^(docs|drive)\.google\.com$/.test(host);
 }
 
-export async function getProjectMatches(configs, tabUrl) {
+/**
+ * Looks up a URL in the discovery cache and returns its project results.
+ * @param {string} tabUrl The tab URL
+ * @returns {Object[]} The project results from the cached entry
+ */
+export function queryDiscoveryCache(tabUrl) {
+  // check cache
+  const entry = DISCOVERY_CACHE.find((e) => e.url === tabUrl);
+  if (entry && entry.expiry > Date.now()) {
+    // reuse fresh entry from cache
+    log.debug(`discovery cache entry found for ${tabUrl}`, entry);
+    return entry.results;
+  }
+  return [];
+}
+
+/**
+ * Populates or refreshes the discovery cache for a Microsoft SharePoint or Google Drive URL.
+ * Cache entries are invalidated after 2 hours, or when the browser session ends.
+ * @param {string} tabUrl The tab URL
+ * @returns {Promise<void>}
+ */
+export async function populateDiscoveryCache(tabUrl) {
+  if (!isSharePointHost(tabUrl) && !isGoogleDriveHost(tabUrl)) {
+    return;
+  }
+  if (queryDiscoveryCache(tabUrl).length === 0) {
+    const info = isSharePointHost(tabUrl)
+      ? await fetchSharePointEditInfo(tabUrl)
+      : await fetchGoogleDriveEditInfo(tabUrl);
+    log.debug('resource edit info', info);
+
+    let results = [];
+    // discover project details from edit url
+    const discoveryUrl = new URL('https://admin.hlx.page/discover/');
+    discoveryUrl.searchParams.append('url', info?.url || tabUrl);
+    const resp = await fetch(discoveryUrl);
+    if (resp.ok) {
+      results = await resp.json();
+      if (results.length > 0) {
+        // when switching back to a sharepoint tab it can happen that the fetch call to the
+        // sharepoint API is no longer authenticated, thus the info returned is null.
+        // in this case, we don't want to cache a potentially incomplete discovery response.
+        // otherwise cache for 2h.
+        const ttl = info ? DISCOVERY_CACHE_TTL : 0;
+        const entry = {
+          url: tabUrl,
+          results,
+          expiry: Date.now() + ttl,
+        };
+        const existingIndex = DISCOVERY_CACHE.findIndex((e) => e.url === entry.url);
+        if (existingIndex >= 0) {
+          // update expired cache entry
+          log.debug('updating discovery cache', entry);
+          DISCOVERY_CACHE.splice(existingIndex, 1, entry);
+        } else {
+          // add cache entry
+          log.debug('extending discovery cache', entry);
+          DISCOVERY_CACHE.push(entry);
+        }
+      }
+    }
+    log.debug('discovery cache', DISCOVERY_CACHE);
+  }
+}
+
+/**
+ * Returns matching configured projects for a given URL.
+ * @param {Object[]} configs The project configurations
+ * @param {string} tabUrl The tab URL
+ * @returns {Object[]} The matches
+ */
+export function getProjectMatches(configs, tabUrl) {
   const {
     host: checkHost,
   } = new URL(tabUrl);
@@ -235,65 +326,18 @@ export async function getProjectMatches(configs, tabUrl) {
     return checkHost === prodHost // production host
       || checkHost === previewHost // custom inner
       || checkHost === liveHost // custom outer
-      || checkHost.split('.hlx.')[0].endsWith(`${repo}--${owner}`); // inner or outer
+      || checkHost.split('.hlx.')[0].endsWith(`${repo}--${owner}`) // inner or outer
+      || queryDiscoveryCache(tabUrl).find((e) => e.owner === owner && e.repo === repo);
   });
-
-  if (matches.length === 0 && (isSharePointHost(checkHost) || isGoogleDriveHost(checkHost))) {
-    let results = [];
-    // check cache
-    log.debug('discovery cache', DISCOVERY_CACHE);
-    const entry = DISCOVERY_CACHE.find((e) => e.url === tabUrl);
-    if (entry && entry.expiry > Date.now()) {
-      // reuse fresh entry from cache
-      results = entry.results;
-    } else {
-      const info = isSharePointHost(checkHost)
-        ? await fetchSharePointEditInfo(tabUrl)
-        : await fetchGoogleEditInfo(tabUrl);
-      // eslint-disable-next-line no-console
-      console.debug('resource edit info', info);
-
-      // discover project details from edit url
-      const discoverUrl = new URL('https://admin.hlx.page/discover/');
-      discoverUrl.searchParams.append('url', info?.url || tabUrl);
-      const resp = await fetch(discoverUrl);
-      if (resp.ok) {
-        results = await resp.json();
-        if (results.length > 0) {
-          // when switching back to a sharepoint tab if can happen that the fetch call to the
-          // sharepoint API is no longer authenticated, this the info returns null.
-          // in this case, we don't want to cache a potentially incomplete discovery response.
-          // cache for 2h
-          const ttl = info ? DISCOVERY_CACHE_TTL : 0;
-          const newEntry = {
-            url: tabUrl,
-            results,
-            expiry: Date.now() + ttl,
-          };
-          const index = DISCOVERY_CACHE.indexOf(entry);
-          if (index >= 0) {
-            // update expired cache entry
-            log.debug('updating discovery cache', newEntry);
-            DISCOVERY_CACHE.splice(index, 1, newEntry);
-          } else {
-            // add cache entry
-            log.debug('extending discovery cache', newEntry);
-            DISCOVERY_CACHE.push(newEntry);
-          }
-        }
-      }
-    }
-    // check results for config matches
-    results.forEach(({ owner, repo }) => {
-      const match = configs.find((cfg) => cfg.owner === owner && cfg.repo === repo);
-      if (match) {
-        matches.push(match);
-      }
-    });
-  }
+  log.debug(`${matches.length} project match(es) found for ${tabUrl}`, matches);
   return matches;
 }
 
+/**
+ * Extracts the settings from a share URL.
+ * @param {string} shareurl The share URL
+ * @returns {Object} The share settings
+ */
 export function getShareSettings(shareurl) {
   if (typeof shareurl === 'string' && new URL(shareurl).pathname === SHARE_PREFIX) {
     try {
@@ -316,10 +360,23 @@ export function getShareSettings(shareurl) {
   return {};
 }
 
+/**
+ * Determines whether a URL is a valid sidekick share URL.
+ * @param {string} shareurl The share URL
+ * @returns {boolean} {@code true} if valid share URL, else {@code false}
+ */
 export function isValidShareURL(shareurl) {
   return Object.keys(getShareSettings(shareurl)).length > 1;
 }
 
+/**
+ * Returns the environment configuration for a given project.
+ * @param {Object} config The config
+ * @param {string} config.owner The owner
+ * @param {string} config.repo The repository
+ * @param {string} config.ref=main The ref or branch
+ * @returns {Promise<Object>} The project environment
+ */
 export async function getProjectEnv({
   owner,
   repo,
@@ -367,7 +424,12 @@ export async function getProjectEnv({
   return env;
 }
 
-export async function assembleProject({
+/**
+ * Completes a project configuration based on a GitHub URL and/or existing settings.
+ * @param {Object} obj The project settings
+ * @returns {Object>} The assembled project configuration
+ */
+export function assembleProject({
   giturl,
   owner,
   repo,
@@ -410,11 +472,22 @@ export async function assembleProject({
   };
 }
 
+/**
+ * Returns an existing project configuration.
+ * @param {Object} project The project settings
+ * @returns {Promise<Object>} The project configuration
+ */
 export async function getProject(project) {
   const { owner, repo } = project;
   return getConfig('sync', `${owner}/${repo}`);
 }
 
+/**
+ * Adds or updates a project configuration.
+ * @param {Object} project The project settings
+ * @param {Function} cb The function to call with the project configuration when done
+ * @returns {Promise<void>}
+ */
 export async function setProject(project, cb) {
   const { owner, repo } = project;
   // sanitize input
@@ -441,8 +514,15 @@ export async function setProject(project, cb) {
   }
 }
 
-export async function addProject(input, cb) {
-  const config = await assembleProject(input);
+/**
+ * Adds a project configuration.
+ * @param {Object} input The project settings
+ * @param {Function} cb The function to call with a boolean when done
+ * @param {boolean} unattended {@code true} if no user interaction required (e.g. headless)
+ * @returns {Promise<void>}
+ */
+export async function addProject(input, cb, unattended) {
+  const config = assembleProject(input);
   const { owner, repo, ref } = config;
   const env = await getProjectEnv(config);
   if (env.unauthorized && !input.authToken) {
@@ -456,7 +536,7 @@ export async function addProject(input, cb) {
       if (message.authToken && owner === message.owner && repo === message.repo) {
         await chrome.tabs.remove(loginTabId);
         config.authToken = message.authToken;
-        await addProject(config, cb);
+        await addProject(config, cb, unattended);
       }
       // clean up
       chrome.runtime.onMessageExternal.removeListener(retryAddProjectListener);
@@ -468,15 +548,21 @@ export async function addProject(input, cb) {
   if (!project) {
     await setProject({ ...config, ...env });
     log.info('added project', config);
-    alert(i18n('config_add_success'));
+    if (!unattended) alert(i18n('config_add_success'));
     if (typeof cb === 'function') cb(true);
   } else {
     log.info('project already exists', project);
-    alert(i18n('config_project_exists'));
+    if (!unattended) alert(i18n('config_project_exists'));
     if (typeof cb === 'function') cb(false);
   }
 }
 
+/**
+ * Deletes a project configuration.
+ * @param {string} handle The project handle ({@code "owner/repo"})
+ * @param {Function} cb The function to call with a boolean when done
+ * @returns {Promise<void>}
+ */
 export async function deleteProject(handle, cb) {
   if (handle) {
     const projects = await getConfig('sync', 'hlxSidekickProjects') || [];
@@ -504,6 +590,12 @@ export async function deleteProject(handle, cb) {
   }
 }
 
+/**
+ * Changes the sidekick's display status.
+ * @param {boolean} display {@code true} if sidekick should be shown, else {@code false}
+ * @param {Function} cb The function to call with the display value when done
+ * @returns {Promise<void>}
+ */
 export async function setDisplay(display, cb) {
   setConfig('local', {
     hlxSidekickDisplay: display,
@@ -514,12 +606,22 @@ export async function setDisplay(display, cb) {
     .catch((e) => log.error('error setting display', e));
 }
 
+/**
+ * Toggles the sidekick's display status.
+ * @param {Function} cb The function to call with the display value when done
+ * @returns {Promise<void>}
+ */
 export function toggleDisplay(cb) {
   getState(({ display }) => {
     setDisplay(!display, cb);
   });
 }
 
+/**
+ * Updates the legacy project configurations to the new format.
+ * @deprecated
+ * @todo remove
+ */
 export async function updateProjectConfigs() {
   const configs = await getConfig('sync', 'hlxSidekickConfigs');
   const projects = await getConfig('sync', 'hlxSidekickProjects');
