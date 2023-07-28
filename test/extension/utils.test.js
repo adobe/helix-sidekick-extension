@@ -172,11 +172,25 @@ describe('Test extension utils', () => {
 
   it('populateDiscoveryCache', async () => {
     const spy = sandbox.spy(window, 'fetch');
+    // any url: 0 calls
+    await utils.populateDiscoveryCache('https://www.hlx.live/');
+    expect(spy.callCount).to.equal(0);
     // sharepoint: 3 calls
     await utils.populateDiscoveryCache('https://foo.sharepoint.com/:w:/r/sites/foo/_layouts/15/Doc.aspx?sourcedoc=%7BBFD9A19C-4A68-4DBF-8641-DA2F1283C895%7D&file=index.docx&action=default&mobileredirect=true');
     // gdrive: 1 call
     await utils.populateDiscoveryCache('https://docs.google.com/document/d/1234567890/edit');
     expect(spy.callCount).to.equal(4);
+
+    // cache: add new entry
+    await utils.populateDiscoveryCache('https://docs.google.com/document/d/0987654321/edit');
+    expect(spy.callCount).to.equal(5);
+    // cache: reuse match, 0 calls
+    await utils.populateDiscoveryCache('https://docs.google.com/document/d/0987654321/edit');
+    expect(spy.callCount).to.equal(5);
+    // cache: refresh expired match, 1 call
+    sandbox.stub(Date, 'now').returns(Date.now() + 7205000); // fast-forward 2 days and 5 seconds
+    await utils.populateDiscoveryCache('https://docs.google.com/document/d/0987654321/edit');
+    expect(spy.callCount).to.equal(6);
   });
 
   it('queryDiscoveryCache', async () => {
