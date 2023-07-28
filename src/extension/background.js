@@ -601,7 +601,7 @@ const internalActions = {
       const reload = () => chrome.tabs.reload(id, { bypassCache: true });
       const project = projects.find((p) => p.owner === owner && p.repo === repo);
       if (!project) {
-        addProject(cfg, reload);
+        addProject(cfg, reload, true);
       } else {
         deleteProject(`${owner}/${repo}`, reload);
       }
