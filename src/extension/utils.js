@@ -271,9 +271,9 @@ export async function populateDiscoveryCache(tabUrl) {
 
     let results = [];
     // discover project details from edit url
-    const discoUrl = new URL('https://admin.hlx.page/discover/');
-    discoUrl.searchParams.append('url', info?.url || tabUrl);
-    const resp = await fetch(discoUrl);
+    const discoveryUrl = new URL('https://admin.hlx.page/discover/');
+    discoveryUrl.searchParams.append('url', info?.url || tabUrl);
+    const resp = await fetch(discoveryUrl);
     if (resp.ok) {
       results = await resp.json();
       if (results.length > 0) {
@@ -287,12 +287,11 @@ export async function populateDiscoveryCache(tabUrl) {
           results,
           expiry: Date.now() + ttl,
         };
-        const existingEntry = DISCOVERY_CACHE.find((e) => e.url === entry.url);
-        if (existingEntry) {
+        const existingIndex = DISCOVERY_CACHE.findIndex((e) => e.url === entry.url);
+        if (existingIndex >= 0) {
           // update expired cache entry
           log.debug('updating discovery cache', entry);
-          const index = DISCOVERY_CACHE.indexOf(existingEntry);
-          DISCOVERY_CACHE.splice(index, 1, entry);
+          DISCOVERY_CACHE.splice(existingIndex, 1, entry);
         } else {
           // add cache entry
           log.debug('extending discovery cache', entry);

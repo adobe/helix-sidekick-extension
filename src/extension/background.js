@@ -81,15 +81,13 @@ function getConfigFromTabUrl(tabUrl) {
       } else {
         // check if url is known in discovery cache
         const discoveryCache = queryDiscoveryCache(tabUrl);
-        if (discoveryCache.length > 0) {
-          const { owner, repo } = discoveryCache.find((r) => r.originalRepository) || {};
-          if (owner && repo) {
-            return {
-              owner,
-              repo,
-              ref: 'main',
-            };
-          }
+        const { owner, repo } = discoveryCache.find((r) => r.originalRepository) || {};
+        if (owner && repo) {
+          return {
+            owner,
+            repo,
+            ref: 'main',
+          };
         }
       }
     } catch (e) {
