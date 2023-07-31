@@ -14,6 +14,7 @@
 
 import sinon from 'sinon';
 import { expect } from '@esm-bundle/chai';
+import { setUserAgent } from '@web/test-runner-commands';
 import chromeMock from '../mocks/chromeMock.js';
 import fetchMock from '../mocks/fetchMock.js';
 
@@ -78,6 +79,7 @@ describe('Test extension utils', () => {
     utils = {
       ...exports,
     };
+    await setUserAgent('HeadlessChrome');
   });
 
   afterEach(() => {
