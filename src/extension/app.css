@@ -762,8 +762,10 @@
 }
 
 .hlx-sk-special-view .header {
+  box-sizing: border-box;
   padding: 0 20px;
   height: 32px;
+  line-height: 32px;
 }
 
 .hlx-sk-special-view .header button {

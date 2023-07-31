@@ -1,7 +1,8 @@
 .hlx-sk-view {
   background-color: var(--hlx-sk-bg);
   color: var(--hlx-sk-color);
-  padding: 20px;
+  padding: 10px 20px;
+  margin: 0;
 }
 
 .hlx-sk-view h2 {
