@@ -612,7 +612,7 @@ export class TestBrowser {
     };
     const browser = await puppeteer.launch({
       devtools: DEBUG || process.env.HLX_SK_TEST_DEBUG,
-      headless: 'new',
+      headless: DEBUG || process.env.HLX_SK_TEST_DEBUG ? false : 'new',
       args: [
         '--disable-popup-blocking',
         '--disable-web-security',
