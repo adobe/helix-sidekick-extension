@@ -12,43 +12,44 @@
 /* eslint-disable no-unused-expressions */
 /* global describe it before */
 
-import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
+import fetchMock from '../mocks/fetchMock.js';
 
-document.body.innerHTML = '<div id="container"></div>';
+window.fetch = fetchMock;
+const container = document.body;
 
-describe('Test special view for JSON', () => {
-  let singleSheet;
-  let multiSheet;
-  let defaultExport;
+const load = async (sheetUrl) => {
+  // add sheet url as query parameter
+  const testUrl = new URL(window.location.href);
+  testUrl.searchParams.set('url', sheetUrl);
+  window.history.pushState({}, null, testUrl.toString());
+  // clear container
+  container.innerHTML = '';
+  // import json.js
+  await import('../../src/extension/view/json/json.js');
+  // wait 0.5s
+  await new Promise((resolve) => {
+    window.setTimeout(resolve, 500);
+  });
+};
 
-  const container = document.body;
-  const drawJsonView = (data) => {
-    container.innerHTML = ''; // reset container
-    defaultExport(data);
-  };
-
+describe('Test special view for JSON (single sheet)', () => {
   before(async () => {
-    singleSheet = JSON.parse(await readFile({ path: '../fixtures/singlesheet.json' }));
-    multiSheet = JSON.parse(await readFile({ path: '../fixtures/multisheet.json' }));
-    defaultExport = (await import('../../src/extension/view/json/json.js')).default;
+    await load('https://main--bar--foo.hlx.page/singlesheet.json');
   });
 
   it('Draws table', async () => {
-    drawJsonView(singleSheet);
     expect(container.querySelector('table')).to.exist;
     expect(container.querySelectorAll('tbody > tr').length).to.equal(4);
   });
 
   it('Detects Excel date and formats as UTC date', async () => {
-    drawJsonView(singleSheet);
     const dataContainer = container.querySelector('tbody > tr > td:nth-of-type(1) > div');
     expect(dataContainer.className).to.equal('date');
     expect(dataContainer.textContent).to.equal('Thu, 20 Jan 2022 00:00:00 GMT');
   });
 
   it('Detects image URL and shows image', async () => {
-    drawJsonView(singleSheet);
     const dataContainer = container.querySelector('tbody > tr > td:nth-of-type(2) > div');
     expect(dataContainer.className).to.equal('image');
     expect(dataContainer.querySelector('img').getAttribute('src'))
@@ -56,14 +57,12 @@ describe('Test special view for JSON', () => {
   });
 
   it('Detects link and shows as anchor', async () => {
-    drawJsonView(singleSheet);
     const dataContainer = container.querySelector('tbody > tr > td:nth-of-type(3) > div');
     expect(dataContainer.querySelector('a').getAttribute('href'))
       .to.equal('/en/publish/2022/01/20/adobe-is-helping-government-agencies-modernize-grants-management');
   });
 
   it('Detects array and formats as unordered list', async () => {
-    drawJsonView(singleSheet);
     const dataContainer = container.querySelector('tbody > tr > td:nth-of-type(7) > div');
     expect(dataContainer.className).to.equal('list');
     expect(dataContainer.querySelector('ul')).to.exist;
@@ -71,29 +70,20 @@ describe('Test special view for JSON', () => {
   });
 
   it('Detects number as string', async () => {
-    drawJsonView(singleSheet);
     const dataContainer = container.querySelector('tbody > tr > td:nth-of-type(9) > div');
     expect(dataContainer.className).to.equal('number');
     expect(dataContainer.textContent).to.equal('0');
   });
 
   it('Detects number as number', async () => {
-    drawJsonView(singleSheet);
     const dataContainer = container.querySelector('tbody > tr > td:nth-of-type(10) > div');
     expect(dataContainer.className).to.equal('number');
     expect(dataContainer.textContent).to.equal('1234');
   });
 
   it('Detects timestamp and formats as UTC date', async () => {
-    drawJsonView(singleSheet);
     const dataContainer = container.querySelector('tbody > tr > td:nth-of-type(11) > div');
     expect(dataContainer.className).to.equal('date');
     expect(dataContainer.textContent).to.equal('Thu, 20 Jan 2022 01:46:50 GMT');
-  });
-
-  it('Draws tables for multiple sheets', async () => {
-    drawJsonView(multiSheet);
-    expect(container.querySelectorAll('table').length).to.equal(2);
-    expect(container.querySelector('h2').textContent).to.equal('sheet1');
   });
 });

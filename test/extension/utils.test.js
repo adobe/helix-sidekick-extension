@@ -14,8 +14,8 @@
 
 import sinon from 'sinon';
 import { expect } from '@esm-bundle/chai';
-import chromeMock from './chromeMock.js';
-import fetchMock from './fetchMock.js';
+import chromeMock from '../mocks/chromeMock.js';
+import fetchMock from '../mocks/fetchMock.js';
 
 const CONFIGS = [
   {
