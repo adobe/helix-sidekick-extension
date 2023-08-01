@@ -1052,7 +1052,7 @@ describe('Test sidekick', () => {
         assert.strictEqual(checkPageResult, '', 'Pushed down content');
       }).timeout(IT_DEFAULT_TIMEOUT);
 
-      it.skip('Shows special view for JSON file', async () => {
+      it('Shows special view for JSON file', async () => {
         const setup = new Setup('blog');
         nock.sidekick(setup);
         nock.admin(setup);
@@ -1084,33 +1084,31 @@ describe('Test sidekick', () => {
         assert.ok(checkPageResult, 'Did not suppress data view for JSON file');
       }).timeout(IT_DEFAULT_TIMEOUT);
 
-      it('Shows custom view for JSON file', async () => {
-        const checkString = 'custom JSON viewer';
+      it('Shows custom view for PDF file', async () => {
         const setup = new Setup('blog');
         nock.sidekick(setup, {
           configJson: {
             specialViews: [
               {
-                path: '**.json',
-                viewer: '/tools/sidekick/json/json.html',
+                path: '**.pdf',
+                viewer: '/tools/sidekick/pdf/index.html',
               },
             ],
           },
         });
         nock.admin(setup);
         nock('https://main--blog--adobe.hlx.page')
-          .get('/tools/sidekick/json/json.html?url=https%3A%2F%2Fmain--blog--adobe.hlx.page%2Fen%2Fbla.json')
-          .reply(200, checkString);
+          .get('/tools/sidekick/pdf/index.html?url=https%3A%2F%2Fmain--blog--adobe.hlx.page%2Fen%2Fbla.pdf')
+          .reply(200, 'custom PDF viewer');
         const { checkPageResult } = await new SidekickTest({
           browser,
           page,
           loadModule,
-          type: 'json',
-          checkPage: (p) => p.evaluate(() => window.hlx.sidekick.shadowRoot
-            .querySelector('.hlx-sk-special-view .container')
-            .contentWindow.document.body.textContent),
-        }).run();
-        assert.strictEqual(checkPageResult, checkString, 'Did not show custom view for JSON file');
+          checkPage: (p) => p.evaluate(() => window.hlx.sidekick
+            .shadowRoot
+            .querySelector('.hlx-sk-special-view')),
+        }).run('https://main--blog--adobe.hlx.page/en/bla.pdf');
+        assert.ok(checkPageResult, 'Did not show custom view for PDF file');
       }).timeout(IT_DEFAULT_TIMEOUT);
 
       it('Shows help content', async () => {
