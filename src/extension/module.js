@@ -2404,6 +2404,7 @@
         tag: 'iframe',
         attrs: {
           class: 'container',
+          allow: 'clipboard-write *',
         },
       });
     }
