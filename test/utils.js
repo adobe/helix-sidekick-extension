@@ -17,7 +17,6 @@ import { h1 } from '@adobe/fetch';
 import nock from 'nock';
 import puppeteer from 'puppeteer';
 import { CDPBrowser } from 'puppeteer-core';
-import pti from 'puppeteer-to-istanbul';
 import mime from 'mime';
 import { fileURLToPath } from 'url';
 import { promises as fs } from 'fs';
@@ -633,7 +632,7 @@ export class TestBrowser {
    */
   async openPage() {
     const page = await this.browser.newPage();
-    await page.coverage.startJSCoverage();
+    await page.coverage.startJSCoverage({ includeRawScriptCoverage: true });
     await page.coverage.startCSSCoverage();
     return page;
   }
@@ -650,14 +649,21 @@ export class TestBrowser {
         const url = page.url();
         if (url.startsWith('file:///')) {
           // only get coverage from file urls
-          const [jsCoverage, cssCoverage] = await Promise.all([
+          const [jsCoverage] = await Promise.all([
             page.coverage.stopJSCoverage(),
-            page.coverage.stopCSSCoverage(),
           ]);
-          pti.write([...jsCoverage, ...cssCoverage], {
-            includeHostname: true,
-            storagePath: './.nyc_output',
-          });
+
+          const coverage = jsCoverage.map(({ rawScriptCoverage: it }) => ({
+            ...it,
+            scriptId: String(it.scriptId),
+            url: it.url,
+          }));
+
+          // Export coverage data
+          await Promise.all(coverage.map(async (it, idx) => fs.writeFile(
+            `${process.env.NODE_V8_COVERAGE}/coverage-${Date.now()}-${idx}.json`,
+            JSON.stringify({ result: [it] }),
+          )));
         }
         if (url !== 'about:blank') {
           await page.close();
