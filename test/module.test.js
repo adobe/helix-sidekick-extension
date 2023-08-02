@@ -796,7 +796,7 @@ describe('Test sidekick', () => {
             .innerText),
         }).run();
         assert.ok(
-          checkPageResult.includes('Jun 18, 2021'),
+          checkPageResult.includes('Jun 18, 2021') || checkPageResult.includes('18 Jun 2021'),
           `Dates not displayed by info plugin: ${checkPageResult}`,
         );
       }).timeout(IT_DEFAULT_TIMEOUT);
