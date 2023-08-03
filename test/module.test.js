@@ -796,7 +796,7 @@ describe('Test sidekick', () => {
             .innerText),
         }).run();
         assert.ok(
-          checkPageResult.includes('Jun 18, 2021'),
+          checkPageResult.includes('Jun 18, 2021') || checkPageResult.includes('18 Jun 2021'),
           `Dates not displayed by info plugin: ${checkPageResult}`,
         );
       }).timeout(IT_DEFAULT_TIMEOUT);
@@ -1056,24 +1056,6 @@ describe('Test sidekick', () => {
         const setup = new Setup('blog');
         nock.sidekick(setup);
         nock.admin(setup);
-        nock('https://main--blog--adobe.hlx.page')
-          .get('/en/bla.json')
-          .reply(200, JSON.stringify({
-            total: 13,
-            offset: 0,
-            limit: 1,
-            data: [
-              {
-                date: 44917,
-                path: '/en/publish/2022/12/22/test',
-                title: 'Test post',
-                author: 'Adobe',
-                tags: '["Foo","Bar","Digital Transformation"]',
-                robots: '0',
-                lastModified: '1671668578',
-              },
-            ],
-          }));
         const { checkPageResult } = await new SidekickTest({
           browser,
           page,
@@ -1100,6 +1082,33 @@ describe('Test sidekick', () => {
             .querySelector('.hlx-sk-special-view')),
         }).run();
         assert.ok(checkPageResult, 'Did not suppress data view for JSON file');
+      }).timeout(IT_DEFAULT_TIMEOUT);
+
+      it('Shows custom view for PDF file', async () => {
+        const setup = new Setup('blog');
+        nock.sidekick(setup, {
+          configJson: {
+            specialViews: [
+              {
+                path: '**.pdf',
+                viewer: '/tools/sidekick/pdf/index.html',
+              },
+            ],
+          },
+        });
+        nock.admin(setup);
+        nock('https://main--blog--adobe.hlx.page')
+          .get('/tools/sidekick/pdf/index.html?url=https%3A%2F%2Fmain--blog--adobe.hlx.page%2Fen%2Fbla.pdf')
+          .reply(200, 'custom PDF viewer');
+        const { checkPageResult } = await new SidekickTest({
+          browser,
+          page,
+          loadModule,
+          checkPage: (p) => p.evaluate(() => window.hlx.sidekick
+            .shadowRoot
+            .querySelector('.hlx-sk-special-view')),
+        }).run('https://main--blog--adobe.hlx.page/en/bla.pdf');
+        assert.ok(checkPageResult, 'Did not show custom view for PDF file');
       }).timeout(IT_DEFAULT_TIMEOUT);
 
       it('Shows help content', async () => {
