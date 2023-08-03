@@ -2734,13 +2734,11 @@
         })
         .then((json) => {
           this.status = json;
-          this.setAttribute('status', JSON.stringify(json));
           return json;
         })
         .then((json) => fireEvent(this, 'statusfetched', json))
         .catch(({ message }) => {
           this.status.error = message;
-          this.setAttribute('status', JSON.stringify(this.status));
           const modal = {
             message: message.startsWith('error_') ? i18n(this, message) : [
               i18n(this, 'error_status_fatal'),
