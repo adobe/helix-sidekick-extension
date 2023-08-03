@@ -518,10 +518,9 @@ export async function setProject(project, cb) {
  * Adds a project configuration.
  * @param {Object} input The project settings
  * @param {Function} cb The function to call with a boolean when done
- * @param {boolean} unattended {@code true} if no user interaction required (e.g. headless)
  * @returns {Promise<void>}
  */
-export async function addProject(input, cb, unattended) {
+export async function addProject(input, cb) {
   const config = assembleProject(input);
   const { owner, repo, ref } = config;
   const env = await getProjectEnv(config);
@@ -536,7 +535,7 @@ export async function addProject(input, cb, unattended) {
       if (message.authToken && owner === message.owner && repo === message.repo) {
         await chrome.tabs.remove(loginTabId);
         config.authToken = message.authToken;
-        await addProject(config, cb, unattended);
+        await addProject(config, cb);
       }
       // clean up
       chrome.runtime.onMessageExternal.removeListener(retryAddProjectListener);
@@ -548,11 +547,11 @@ export async function addProject(input, cb, unattended) {
   if (!project) {
     await setProject({ ...config, ...env });
     log.info('added project', config);
-    if (!unattended) alert(i18n('config_add_success'));
+    alert(i18n('config_add_success'));
     if (typeof cb === 'function') cb(true);
   } else {
     log.info('project already exists', project);
-    if (!unattended) alert(i18n('config_project_exists'));
+    alert(i18n('config_project_exists'));
     if (typeof cb === 'function') cb(false);
   }
 }
