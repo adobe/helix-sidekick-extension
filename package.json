@@ -1,12 +1,12 @@
 {
   "name": "@adobe/helix-sidekick-extension",
-  "version": "6.23.0",
+  "version": "6.25.2",
   "description": "AEM Sidekick Extension",
   "type": "module",
   "scripts": {
     "lint": "eslint .",
     "test:mocha": "c8 mocha",
-    "test:mocha-ci": "c8 mocha --reporter xunit --reporter-options output=./junit/test-results.xml",
+    "test:mocha-ci": "c8 mocha",
     "test:wtr": "wtr \"./test/unit/*.test.js\" \"./test/extension/*.test.js\" \"./test/view-doc-source/*.test.js\"",
     "test:wtr:watch": "npm run test:wtr -- --watch",
     "test": "npm run test:mocha && npm run test:wtr",
@@ -36,37 +36,40 @@
   "mocha": {
     "require": [
       "test/setup-env.js"
-    ]
+    ],
+    "reporter": "mocha-multi-reporters",
+    "reporter-options": "configFile=.mocha-multi.json"
   },
   "devDependencies": {
-    "@adobe/fetch": "4.0.13",
     "@adobe/eslint-config-helix": "2.0.2",
-    "@babel/eslint-parser": "7.22.5",
+    "@adobe/fetch": "4.0.13",
+    "@babel/eslint-parser": "7.22.9",
     "@esm-bundle/chai": "4.3.4-fix.0",
     "@semantic-release/changelog": "6.0.3",
     "@semantic-release/exec": "6.0.3",
     "@semantic-release/git": "10.0.1",
-    "@web/test-runner": "0.16.1",
-    "@web/test-runner-commands": "0.7.0",
+    "@web/test-runner": "0.17.0",
+    "@web/test-runner-commands": "0.8.0",
     "ajv": "8.12.0",
     "archiver": "5.3.1",
-    "c8": "8.0.0",
+    "c8": "8.0.1",
     "codecov": "3.8.3",
-    "eslint": "8.43.0",
+    "eslint": "8.46.0",
     "express": "4.18.2",
     "husky": "8.0.3",
     "jsdoc-to-markdown": "8.0.0",
-    "lint-staged": "13.2.2",
+    "lint-staged": "13.2.3",
     "mime": "3.0.0",
     "mocha": "10.2.0",
-    "nock": "13.3.1",
-    "puppeteer": "20.7.2",
-    "puppeteer-core": "20.7.2",
+    "mocha-multi-reporters": "1.5.1",
+    "nock": "13.3.2",
+    "puppeteer": "20.9.0",
+    "puppeteer-core": "20.9.0",
     "puppeteer-to-istanbul": "1.4.0",
-    "semantic-release": "21.0.5",
+    "semantic-release": "21.0.7",
     "semantic-release-react-native": "1.8.0",
     "shelljs": "0.8.5",
-    "sinon": "15.1.2"
+    "sinon": "15.2.0"
   },
   "lint-staged": {
     "*.js": "eslint"

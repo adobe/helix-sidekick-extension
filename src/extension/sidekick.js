@@ -49,7 +49,7 @@ export default async function injectSidekick(config, display) {
         'authToken',
       ].includes(k)));
     curatedConfig.scriptUrl = url('module.js');
-    [curatedConfig.mountpoint] = config.mountpoints;
+    [curatedConfig.mountpoint] = config.mountpoints || [];
     log.debug('sidekick.js: curated config', curatedConfig);
 
     // inject sidekick

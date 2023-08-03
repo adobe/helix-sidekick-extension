@@ -82,8 +82,7 @@ function drawBody(table, data) {
   });
 }
 
-export default function draw(viewContainer, rawData) {
-  const json = JSON.parse(rawData);
+export default function draw(json) {
   const sheets = {};
   if (json[':type'] === 'multi-sheet' && json[':names']) {
     json[':names'].forEach((name) => {
@@ -100,10 +99,34 @@ export default function draw(viewContainer, rawData) {
   }
   Object.keys(sheets).forEach((name) => {
     const sheet = sheets[name];
-    const title = viewContainer.appendChild(document.createElement('h2'));
+    const title = document.body.appendChild(document.createElement('h2'));
     title.textContent = name;
-    const table = viewContainer.appendChild(document.createElement('table'));
+    const table = document.body.appendChild(document.createElement('table'));
     drawHeader(table, sheet[0]);
     drawBody(table, sheet);
   });
 }
+
+(async () => {
+  try {
+    const url = new URL(window.location.href).searchParams.get('url');
+    if (url) {
+      const res = await fetch(url);
+      if (res.ok) {
+        const text = await res.text();
+        let json = {};
+        try {
+          json = JSON.parse(text);
+        } catch (e) {
+          throw new Error(`invalid json found at ${url}`);
+        }
+        draw(json);
+      } else {
+        throw new Error(`failed to load ${url}: ${res.status}`);
+      }
+    }
+  } catch (e) {
+    // eslint-disable-next-line no-console
+    console.error('error rendering view', e);
+  }
+})();

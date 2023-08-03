@@ -223,7 +223,7 @@ function editProject(i) {
       };
       projects[i] = {
         ...project,
-        ...await assembleProject(input),
+        ...assembleProject(input),
       };
       // unregister esc handler
       window.removeEventListener('keyup', keyHandler);

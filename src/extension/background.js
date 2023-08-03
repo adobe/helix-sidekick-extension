@@ -14,11 +14,9 @@ import {
   GH_URL,
   SHARE_PREFIX,
   DEV_URL,
-  DISCOVERY_CACHE,
   MANIFEST,
   log,
   i18n,
-  checkLastError,
   getState,
   getProjectMatches,
   toggleDisplay,
@@ -31,6 +29,9 @@ import {
   setConfig,
   getConfig,
   updateProjectConfigs,
+  populateDiscoveryCache,
+  queryDiscoveryCache,
+  setDisplay,
 } from './utils.js';
 
 /**
@@ -80,16 +81,14 @@ function getConfigFromTabUrl(tabUrl) {
         };
       } else {
         // check if url is known in discovery cache
-        const discoveryCache = DISCOVERY_CACHE.find(({ url: cacheUrl }) => cacheUrl === tabUrl);
-        if (discoveryCache) {
-          const { owner, repo } = discoveryCache.results.find((r) => r.originalRepository) || {};
-          if (owner && repo) {
-            return {
-              owner,
-              repo,
-              ref: 'main',
-            };
-          }
+        const discoveryCache = queryDiscoveryCache(tabUrl);
+        const { owner, repo } = discoveryCache.find((r) => r.originalRepository) || {};
+        if (owner && repo) {
+          return {
+            owner,
+            repo,
+            ref: 'main',
+          };
         }
       }
     } catch (e) {
@@ -165,12 +164,13 @@ async function guessIfFranklinSite({ id }) {
  * @param {Object} tab The tab
  * @param {Object[]} configs The existing configurations
  */
-async function checkContextMenu({ url: tabUrl, id }, configs = []) {
+async function checkContextMenu({ url: tabUrl, id, active }, configs = []) {
+  if (!active) return; // ignore inactive tabs to avoid collisions
   if (chrome.contextMenus) {
     // clear context menu
     chrome.contextMenus.removeAll(() => {
       // check if add project is applicable
-      if (configs && !checkLastError()) {
+      if (configs) {
         const { owner, repo } = getConfigFromTabUrl(tabUrl);
         if (owner && repo) {
           const config = configs.find((c) => c.owner === owner && c.repo === repo);
@@ -222,13 +222,54 @@ async function checkContextMenu({ url: tabUrl, id }, configs = []) {
 }
 
 /**
+ * Injects the content script into a tab
+ * @param {number} tabId The ID of the tab
+ * @param {Object[]} matches The project matches found
+ */
+async function injectContentScript(tabId, matches) {
+  try {
+    // execute content script
+    await chrome.scripting.executeScript({
+      target: { tabId },
+      files: ['./content.js'],
+    });
+    // send config matches to tab
+    await chrome.tabs.sendMessage(tabId, {
+      projectMatches: matches,
+    });
+  } catch (e) {
+    log.error('error injecting content script', tabId, e);
+  }
+}
+
+/**
+ * Removes the sidekick from the tab.
+ * @param {number} tabId The ID of the tab
+ */
+async function removeSidekick(tabId) {
+  try {
+    await chrome.scripting.executeScript({
+      target: { tabId },
+      func: () => {
+        if (window.hlx && window.hlx.sidekick) {
+          window.hlx.sidekick.hide();
+          window.hlx.sidekick.replaceWith(''); // remove() doesn't work for custom element
+          delete window.hlx.sidekick;
+        }
+      },
+    });
+  } catch (e) {
+    log.error('error destroying sidekick', tabId, e);
+  }
+}
+
+/**
  * Checks a tab and enables/disables the extension.
  * @param {number} id The ID of the tab
  */
 function checkTab(id) {
   getState(({ projects = [] }) => {
     chrome.tabs.get(id, async (tab = {}) => {
-      checkLastError();
       if (!tab.url) return;
       let checkUrl = tab.url;
       // check if active tab has a local dev URL
@@ -243,6 +284,7 @@ function checkTab(id) {
         log.debug('local dev url detected, retrieve proxy url');
         checkUrl = await getProxyUrl(tab);
       }
+      await populateDiscoveryCache(checkUrl);
       if (tab.active) {
         checkContextMenu(tab, projects);
       }
@@ -258,23 +300,12 @@ function checkTab(id) {
           log.error('error instrumenting generator page', id, e);
         }
       }
-      const matches = await getProjectMatches(projects, checkUrl);
+      const matches = getProjectMatches(projects, checkUrl);
       log.debug('checking', id, checkUrl, matches);
       if (matches.length > 0) {
-        try {
-          // execute content script
-          chrome.scripting.executeScript({
-            target: { tabId: id },
-            files: ['./content.js'],
-          }, () => {
-            // send config matches to tab
-            chrome.tabs.sendMessage(id, {
-              projectMatches: matches,
-            });
-          });
-        } catch (e) {
-          log.error('error enabling extension', id, e);
-        }
+        injectContentScript(id, matches);
+      } else {
+        removeSidekick(id);
       }
     });
   });
@@ -489,58 +520,132 @@ async function storeAuthToken(owner, repo, token) {
 }
 
 /**
+ * Actions for external use via messaging API
+ * @type {Object}
+ */
+const externalActions = {
+  // updates a project's auth token (admin only)
+  updateAuthToken: async ({ authToken, owner, repo }, { url }) => {
+    let resp = '';
+    try {
+      if (!url || new URL(url).origin !== 'https://admin.hlx.page') {
+        resp = 'unauthorized sender url';
+      } else if (authToken !== undefined && owner && repo) {
+        await storeAuthToken(owner, repo, authToken);
+        resp = 'close';
+      }
+    } catch (e) {
+      resp = 'invalid message';
+    }
+    return resp;
+  },
+  // loads the sidekick if the project is configured
+  loadSidekick: async ({ owner, repo }, { tab, url }) => {
+    let resp = false;
+    if (owner && repo) {
+      resp = await new Promise((resolve) => {
+        getState(async ({ projects }) => {
+          const match = projects.find((p) => p.owner === owner && p.repo === repo);
+          if (match) {
+            log.info(`enabling sidekick for project ${owner}/${repo} on ${url}`);
+            await setDisplay(true);
+            await injectContentScript(tab.id, [match]);
+            resolve(true);
+          } else {
+            log.warn(`unknown project ${owner}/${repo}, not enabling sidekick on ${url}`);
+            resolve(false);
+          }
+        });
+      });
+    }
+    return resp;
+  },
+  // returns the sidekick status for the current tab
+  getStatus: async ({ owner, repo }, { tab }) => {
+    let resp = null;
+    if (owner && repo && tab?.id) {
+      resp = await new Promise((resolve) => {
+        // inject status retriever
+        chrome.scripting.executeScript({
+          target: { tabId: tab.id },
+          func: () => {
+            const fullStatus = window.hlx && window.hlx.sidekick && window.hlx.sidekick.status;
+            const status = JSON.parse(JSON.stringify(fullStatus || {}));
+            delete status.profile;
+            chrome.runtime.sendMessage({ status });
+          },
+        });
+        // listen for status response from tab
+        const listener = ({ status }) => {
+          chrome.runtime.onMessage.removeListener(listener);
+          if (typeof status === 'object') {
+            resolve(status);
+          }
+        };
+        chrome.runtime.onMessage.addListener(listener);
+      });
+    }
+    return resp;
+  },
+};
+
+/**
+ * Actions for internal use (context menu, install helper)
+ * @type {Object}
+ */
+const internalActions = {
+  addRemoveProject: async ({ id, url }) => {
+    getState(async ({ projects = [] }) => {
+      const cfg = getConfigFromTabUrl(url);
+      const { owner, repo } = cfg;
+      const reload = () => chrome.tabs.reload(id, { bypassCache: true });
+      const project = projects.find((p) => p.owner === owner && p.repo === repo);
+      if (!project) {
+        addProject(cfg, reload);
+      } else {
+        deleteProject(`${owner}/${repo}`, reload);
+      }
+    });
+  },
+  enableDisableProject: async ({ id, url }) => {
+    const cfg = getConfigFromTabUrl(url);
+    const project = await getProject(cfg);
+    if (project) {
+      project.disabled = !project.disabled;
+      await setProject(project);
+      chrome.tabs.reload(id, { bypassCache: true });
+    }
+  },
+  openViewDocSource: async ({ id }) => openViewDocSource(id),
+  openPreview: ({ url }) => {
+    const { owner, repo, ref = 'main' } = getGitHubSettings(url);
+    if (owner && repo) {
+      chrome.tabs.create({
+        url: `https://${ref}--${repo}--${owner}.hlx.page/`,
+      });
+    }
+  },
+};
+
+/**
  * Adds the listeners for the extension.
  */
 (async () => {
-  // register message listener
+  // external messaging API for projects to communicate with sidekick
   chrome.runtime.onMessageExternal.addListener(async (message, sender, sendResponse) => {
-    log.info('sidekick got external message', message);
-    const { owner, repo, authToken } = message;
-    await storeAuthToken(owner, repo, authToken);
-    // inform caller to close the window
-    await sendResponse('close');
+    const { action } = message;
+    let resp = null;
+    if (externalActions[action]) {
+      resp = await externalActions[action](message, sender);
+    }
+    sendResponse(resp);
   });
 
-  // actions for context menu items and install helper
-  const actions = {
-    addRemoveProject: async ({ id, url }) => {
-      getState(async ({ projects = [] }) => {
-        const cfg = getConfigFromTabUrl(url);
-        const { owner, repo } = cfg;
-        const reload = () => chrome.tabs.reload(id, { bypassCache: true });
-        const project = projects.find((p) => p.owner === owner && p.repo === repo);
-        if (!project) {
-          addProject(cfg, reload);
-        } else {
-          deleteProject(`${owner}/${repo}`, reload);
-        }
-      });
-    },
-    enableDisableProject: async ({ id, url }) => {
-      const cfg = getConfigFromTabUrl(url);
-      const project = await getProject(cfg);
-      if (project) {
-        project.disabled = !project.disabled;
-        await setProject(project);
-        chrome.tabs.reload(id, { bypassCache: true });
-      }
-    },
-    openViewDocSource: async ({ id }) => openViewDocSource(id),
-    openPreview: ({ url }) => {
-      const { owner, repo, ref = 'main' } = getGitHubSettings(url);
-      if (owner && repo) {
-        chrome.tabs.create({
-          url: `https://${ref}--${repo}--${owner}.hlx.page/`,
-        });
-      }
-    },
-  };
-
+  // add listener for clicks on context menu item
   if (chrome.contextMenus) {
-    // add listener for clicks on context menu item
     chrome.contextMenus.onClicked.addListener(async ({ menuItemId }, tab) => {
       if (!tab.url) return;
-      actions[menuItemId](tab);
+      internalActions[menuItemId](tab);
     });
   }
 
@@ -575,8 +680,8 @@ async function storeAuthToken(owner, repo, token) {
   chrome.runtime.onMessage.addListener(({ action: actionFromTab }, { tab }) => {
     // check if message contains action and is sent from right tab
     if (tab && tab.url && new URL(tab.url).pathname.startsWith(SHARE_PREFIX)
-      && actionFromTab && typeof actions[actionFromTab] === 'function') {
-      actions[actionFromTab](tab);
+      && actionFromTab && typeof internalActions[actionFromTab] === 'function') {
+      internalActions[actionFromTab](tab);
     }
   });
 

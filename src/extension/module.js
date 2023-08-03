@@ -78,7 +78,9 @@
    * @typedef {Object} ViewConfig
    * @description A custom view configuration.
    * @prop {string} path The path or globbing pattern where to apply this view
-   * @prop {string} css The URL of a CSS file or inline CSS to render this view (optional)
+   * @prop {string} title The view title (optional)
+   * @prop {Object} titleI18n={} A map of translated view titles
+   * @prop {string} viewer The URL to render this view
    */
 
   /**
@@ -540,7 +542,7 @@
     const defaultSpecialViews = [
       {
         path: '**.json',
-        js: `${scriptRoot}/view/json.js`,
+        viewer: `${scriptRoot}/view/json/json.html`,
       },
     ];
     // try custom views first
@@ -1253,14 +1255,14 @@
           // double check
           if (status.edit && status.edit.url) {
             window.alert(sk.isContent()
-              ? 'This page still has a source document and cannot be deleted.'
-              : 'This file still exists in the repository and cannot be deleted.');
+              ? i18n(sk, 'delete_page_source_exists')
+              : i18n(sk, 'delete_file_source_exists'));
             return;
           }
           // have user confirm deletion
-          if (window.confirm(`${sk.isContent()
-            ? 'This page no longer has a source document'
-            : 'This file no longer exists in the repository'}, deleting it cannot be undone!\n\nAre you sure you want to delete it?`)) {
+          if (window.confirm(sk.isContent()
+            ? i18n(sk, 'delete_page_confirm')
+            : i18n(sk, 'delete_file_confirm'))) {
             try {
               const resp = await sk.delete();
               if (!resp.ok && resp.status >= 400) {
@@ -1347,11 +1349,11 @@
           const { status } = sk;
           // double check
           if (status.edit && status.edit.url) {
-            window.alert('This page has a source document and cannot be unpublished.');
+            window.alert(i18n(sk, 'unpublish_page_source_exists'));
             return;
           }
           // have user confirm unpublishing
-          if (window.confirm('This page no longer has a source document, unpublishing it cannot be undone!\n\nAre you sure you want to unpublish it?')) {
+          if (window.confirm(i18n(sk, 'unpublish_page_confirm'))) {
             const path = status.webPath;
             try {
               const resp = await sk.unpublish();
@@ -1906,16 +1908,11 @@
   function login(sk, selectAccount) {
     sk.showWait();
     const loginUrl = getAdminUrl(sk.config, 'login');
-    const extensionId = window.chrome?.runtime?.id;
-    const authHeaderEnabled = extensionId && !window.navigator.vendor.includes('Apple');
-    if (authHeaderEnabled) {
-      loginUrl.searchParams.set('extensionId', extensionId);
-    } else {
-      loginUrl.searchParams.set(
-        'loginRedirect',
-        'https://www.hlx.live/tools/sidekick/login-success',
-      );
+    let extensionId = window.chrome?.runtime?.id;
+    if (!extensionId || window.navigator.vendor.includes('Apple')) { // exclude safari
+      extensionId = 'cookie';
     }
+    loginUrl.searchParams.set('extensionId', extensionId);
     if (selectAccount) {
       loginUrl.searchParams.set('selectAccount', true);
     }
@@ -1964,15 +1961,11 @@
   function logout(sk) {
     sk.showWait();
     const logoutUrl = getAdminUrl(sk.config, 'logout');
-    const extensionId = window.chrome?.runtime?.id;
-    if (extensionId && !window.navigator.vendor.includes('Apple')) { // exclude safari
-      logoutUrl.searchParams.set('extensionId', extensionId);
-    } else {
-      logoutUrl.searchParams.set(
-        'logoutRedirect',
-        'https://www.hlx.live/tools/sidekick/logout-success',
-      );
+    let extensionId = window.chrome?.runtime?.id;
+    if (!extensionId || window.navigator.vendor.includes('Apple')) { // exclude safari
+      extensionId = 'cookie';
     }
+    logoutUrl.searchParams.set('extensionId', extensionId);
     const logoutWindow = window.open(logoutUrl.toString());
 
     let attempts = 0;
@@ -2377,13 +2370,13 @@
   }
 
   /**
-   * Creates and/or returns a special view.
+   * Creates and/or returns a special view overlay.
    * @private
    * @param {Sidekick} sk The sidekick
    * @param {boolean} create Create the special view if none exists
-   * @returns {HTMLELement} The special view
+   * @returns {HTMLELement} The special view overlay
    */
-  function getSpecialView(sk, create) {
+  function getSpecialViewOverlay(sk, create) {
     const view = sk.shadowRoot.querySelector('.hlx-sk-special-view')
       || (create
         ? appendTag(sk.shadowRoot, {
@@ -2392,12 +2385,15 @@
         })
         : null);
     if (create && view) {
-      const description = appendTag(view, {
+      const header = appendTag(view, {
         tag: 'div',
-        text: i18n(sk, 'json_view_description'),
-        attrs: { class: 'description' },
+        attrs: { class: 'header' },
       });
-      appendTag(description, {
+      appendTag(header, {
+        tag: 'span',
+        attrs: { class: 'title' },
+      });
+      appendTag(header, {
         tag: 'button',
         text: i18n(sk, 'close'),
         attrs: { class: 'close' },
@@ -2405,9 +2401,10 @@
         lstnrs: { click: () => hideSpecialView(sk) },
       });
       appendTag(view, {
-        tag: 'div',
+        tag: 'iframe',
         attrs: {
           class: 'container',
+          allow: 'clipboard-write *',
         },
       });
     }
@@ -2422,67 +2419,34 @@
   async function showSpecialView(sk) {
     const {
       config: {
+        lang,
         specialView,
-        pushDownElements,
       },
       location: {
+        origin,
         href,
-        pathname,
       },
     } = sk;
-    if (specialView && !getSpecialView(sk)) {
-      try {
-        const resp = await fetch(href);
-        if (!resp.ok) {
-          return;
-        }
-        const { js, css, cssLoaded } = specialView;
-        if (css && !cssLoaded) {
-          if (css.startsWith('https://') || css.startsWith('/')) {
-            // load external css file
-            sk.loadCSS(css);
-          } else {
-            // load inline css
-            const style = appendTag(sk.shadowRoot, {
-              tag: 'style',
-              attrs: {
-                type: 'text/css',
-              },
-            });
-            style.textContent = css;
+    if (specialView && !getSpecialViewOverlay(sk)) {
+      // hide original content
+      [...sk.parentElement.children].forEach((el) => {
+        if (el !== sk) {
+          try {
+            el.style.display = 'none';
+          } catch (e) {
+            // ignore
           }
-          specialView.cssLoaded = true;
         }
-
-        // hide original content
-        [...sk.parentElement.children].forEach((el) => {
-          if (el !== sk) {
-            try {
-              el.style.display = 'none';
-            } catch (e) {
-              // ignore
-            }
-          }
-        });
-
-        const view = getSpecialView(sk, true);
-        view.classList.add(pathname.split('.').pop());
-        pushDownElements.push(view);
-
-        const data = await resp.text();
-        let callback;
-        if (typeof js === 'function') {
-          callback = js;
-        } else if (typeof js === 'string') {
-          // load external module
-          const mod = await import(js);
-          callback = mod.default;
-        } else {
-          throw new Error('invalid view callback');
-        }
-        callback(view.querySelector(':scope .container'), data);
-      } catch (e) {
-        console.log('failed to draw view', e);
+      });
+      const { viewer, title, titleI18n } = specialView;
+      if (viewer) {
+        const viewUrl = new URL(viewer, origin);
+        viewUrl.searchParams.set('url', href);
+        const viewOverlay = getSpecialViewOverlay(sk, true);
+        viewOverlay.querySelector('.title').textContent = (titleI18n && titleI18n[lang])
+          || title || i18n(sk, 'json_view_description');
+        viewOverlay.querySelector('.container')
+          .setAttribute('src', viewUrl.toString());
       }
     }
   }
@@ -2493,11 +2457,9 @@
    * @param {Sidekick} sk The sidekick
    */
   function hideSpecialView(sk) {
-    const { config } = sk;
-    const view = getSpecialView(sk);
-    if (view) {
-      config.pushDownElements = config.pushDownElements.filter((el) => el !== view);
-      view.replaceWith('');
+    const viewOverlay = getSpecialViewOverlay(sk);
+    if (viewOverlay) {
+      viewOverlay.replaceWith('');
 
       // show original content
       [...sk.parentElement.children].forEach((el) => {
@@ -2679,6 +2641,10 @@
         pushDownContent(this);
         // show special view
         showSpecialView(this);
+
+        // announce to the document that the sidekick is ready
+        document.dispatchEvent(new CustomEvent('sidekick-ready'));
+        document.dispatchEvent(new CustomEvent('helix-sidekick-ready')); // legacy
       }, { once: true });
       this.addEventListener('statusfetched', () => {
         checkUserState(this);
@@ -2768,17 +2734,11 @@
         })
         .then((json) => {
           this.status = json;
-          if (window.hlx.sidekick) {
-            window.hlx.sidekick.setAttribute('status', JSON.stringify(json));
-          }
           return json;
         })
         .then((json) => fireEvent(this, 'statusfetched', json))
         .catch(({ message }) => {
           this.status.error = message;
-          if (window.hlx.sidekick) {
-            window.hlx.sidekick.setAttribute('status', JSON.stringify(this.status));
-          }
           const modal = {
             message: message.startsWith('error_') ? i18n(this, message) : [
               i18n(this, 'error_status_fatal'),
@@ -3652,10 +3612,6 @@
       window.hlx.sidekick = document.createElement('helix-sidekick');
       document.body.prepend(window.hlx.sidekick);
       window.hlx.sidekick.show();
-
-      // announce to the document that the sidekick is ready
-      document.dispatchEvent(new CustomEvent('sidekick-ready'));
-      document.dispatchEvent(new CustomEvent('helix-sidekick-ready')); // legacy
     } else {
       // toggle sidekick
       window.hlx.sidekick.toggle();

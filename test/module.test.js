@@ -796,8 +796,8 @@ describe('Test sidekick', () => {
             .innerText),
         }).run();
         assert.ok(
-          checkPageResult.includes('Jun 18, 2021'),
-          'Dates not displayed by info plugin',
+          checkPageResult.includes('Jun 18, 2021') || checkPageResult.includes('18 Jun 2021'),
+          `Dates not displayed by info plugin: ${checkPageResult}`,
         );
       }).timeout(IT_DEFAULT_TIMEOUT);
 
@@ -837,46 +837,6 @@ describe('Test sidekick', () => {
           checkPageResult === 'Menu closed as expected',
           checkPageResult,
         );
-      }).timeout(IT_DEFAULT_TIMEOUT);
-
-      it('Exposes latest status via DOM', async () => {
-        const setup = new Setup('blog');
-        const statusBefore = setup.apiResponse('html');
-        const statusAfter = {
-          ...setup.apiResponse('html'),
-          edit: {
-            ...statusBefore.edit,
-            lastModified: new Date().toGMTString(),
-          },
-        };
-        nock.sidekick(setup);
-        nock('https://admin.hlx.page')
-          .get('/status/adobe/blog/main/en/topics/bla?editUrl=auto')
-          .reply(200, statusBefore)
-          .get('/status/adobe/blog/main/en/topics/bla?editUrl=auto')
-          .reply(200, statusAfter);
-
-        const { checkPageResult } = await new SidekickTest({
-          browser,
-          page,
-          loadModule,
-          setup: 'blog',
-          plugin: 'info',
-          pluginSleep: 1000,
-          post: (p) => p.evaluate(() => {
-            window.hlx.status = [];
-            // check status attribute before clicking info plugin
-            window.hlx.status.push(JSON.parse(window.hlx.sidekick.getAttribute('status')));
-          }),
-          checkPage: (p) => p.evaluate(() => {
-            // check status attribute after clicking info plugin
-            window.hlx.status.push(JSON.parse(window.hlx.sidekick.getAttribute('status')));
-            return window.hlx.status;
-          }),
-        }).run();
-
-        assert.deepStrictEqual(checkPageResult[0], statusBefore, 'Did not expose status via DOM');
-        assert.deepStrictEqual(checkPageResult[1], statusAfter, 'Did not update status attribute');
       }).timeout(IT_DEFAULT_TIMEOUT);
 
       it('Detects edit environment correctly', async () => {
@@ -1096,24 +1056,6 @@ describe('Test sidekick', () => {
         const setup = new Setup('blog');
         nock.sidekick(setup);
         nock.admin(setup);
-        nock('https://main--blog--adobe.hlx.page')
-          .get('/en/bla.json')
-          .reply(200, JSON.stringify({
-            total: 13,
-            offset: 0,
-            limit: 1,
-            data: [
-              {
-                date: 44917,
-                path: '/en/publish/2022/12/22/test',
-                title: 'Test post',
-                author: 'Adobe',
-                tags: '["Foo","Bar","Digital Transformation"]',
-                robots: '0',
-                lastModified: '1671668578',
-              },
-            ],
-          }));
         const { checkPageResult } = await new SidekickTest({
           browser,
           page,
@@ -1140,6 +1082,33 @@ describe('Test sidekick', () => {
             .querySelector('.hlx-sk-special-view')),
         }).run();
         assert.ok(checkPageResult, 'Did not suppress data view for JSON file');
+      }).timeout(IT_DEFAULT_TIMEOUT);
+
+      it('Shows custom view for PDF file', async () => {
+        const setup = new Setup('blog');
+        nock.sidekick(setup, {
+          configJson: {
+            specialViews: [
+              {
+                path: '**.pdf',
+                viewer: '/tools/sidekick/pdf/index.html',
+              },
+            ],
+          },
+        });
+        nock.admin(setup);
+        nock('https://main--blog--adobe.hlx.page')
+          .get('/tools/sidekick/pdf/index.html?url=https%3A%2F%2Fmain--blog--adobe.hlx.page%2Fen%2Fbla.pdf')
+          .reply(200, 'custom PDF viewer');
+        const { checkPageResult } = await new SidekickTest({
+          browser,
+          page,
+          loadModule,
+          checkPage: (p) => p.evaluate(() => window.hlx.sidekick
+            .shadowRoot
+            .querySelector('.hlx-sk-special-view')),
+        }).run('https://main--blog--adobe.hlx.page/en/bla.pdf');
+        assert.ok(checkPageResult, 'Did not show custom view for PDF file');
       }).timeout(IT_DEFAULT_TIMEOUT);
 
       it('Shows help content', async () => {

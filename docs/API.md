@@ -567,10 +567,12 @@ A custom view configuration.
 **Kind**: global typedef  
 **Properties**
 
-| Name | Type | Description |
-| --- | --- | --- |
-| path | <code>string</code> | The path or globbing pattern where to apply this view |
-| css | <code>string</code> | The URL of a CSS file or inline CSS to render this view (optional) |
+| Name | Type | Default | Description |
+| --- | --- | --- | --- |
+| path | <code>string</code> |  | The path or globbing pattern where to apply this view |
+| title | <code>string</code> |  | The view title (optional) |
+| titleI18n | <code>Object</code> | <code>{}</code> | A map of translated view titles |
+| viewer | <code>string</code> |  | The URL to render this view |
 
 <a name="HelpStep"></a>
 

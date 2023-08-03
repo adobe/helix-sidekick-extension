@@ -79,7 +79,7 @@ describe('Test bulk preview plugin', () => {
     );
   }).timeout(IT_DEFAULT_TIMEOUT);
 
-  it('Bulk publish plugin hidden via project config', async () => {
+  it('Bulk preview plugin hidden via project config', async () => {
     const { setup } = TESTS[0];
     nock.sidekick(setup, {
       configJson: `{

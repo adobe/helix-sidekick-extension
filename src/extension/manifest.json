@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "__MSG_title__",
-  "version": "6.23.0",
+  "version": "6.25.2",
   "author": "Adobe",
   "homepage_url": "https://www.hlx.live/tools/sidekick/",
   "default_locale": "en",
@@ -27,7 +27,13 @@
     "page": "background.html",
     "persistent": false
   },
-  "externally_connectable": {
+  "__chrome__externally_connectable": {
+    "matches": [
+      "http://localhost:3000/*",
+      "https://*/*"
+    ]
+  },
+  "__safari__externally_connectable": {
     "matches": [
       "https://admin.hlx.page/*"
     ]
@@ -46,7 +52,7 @@
         "module.js",
         "sidekick.js",
         "utils.js",
-        "view/json.js",
+        "view/json/json.html",
         "view-doc-source/js/content.js"
       ],
       "matches": [
