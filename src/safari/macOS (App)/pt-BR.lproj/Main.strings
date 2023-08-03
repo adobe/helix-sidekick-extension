@@ -1,0 +1,36 @@
+/* Class = "NSMenuItem"; title = "AEM Sidekick"; ObjectID = "1Xt-HY-uBw"; */
+"1Xt-HY-uBw.title" = "AEM Sidekick";
+
+/* Class = "NSMenuItem"; title = "Quit AEM Sidekick"; ObjectID = "4sb-4s-VLi"; */
+"4sb-4s-VLi.title" = "Sair do AEM Sidekick";
+
+/* Class = "NSMenuItem"; title = "About AEM Sidekick"; ObjectID = "5kV-Vb-QxS"; */
+"5kV-Vb-QxS.title" = "Sobre o AEM Sidekick";
+
+/* Class = "NSMenu"; title = "Main Menu"; ObjectID = "AYu-sK-qS6"; */
+"AYu-sK-qS6.title" = "Menu principal";
+
+/* Class = "NSMenu"; title = "Help"; ObjectID = "F2S-fz-NVQ"; */
+"F2S-fz-NVQ.title" = "Ajuda";
+
+/* Class = "NSMenuItem"; title = "AEM Sidekick Help"; ObjectID = "FKE-Sm-Kum"; */
+"FKE-Sm-Kum.title" = "Ajuda do AEM Sidekick";
+
+/* Class = "NSWindow"; title = "AEM Sidekick"; ObjectID = "IQv-IB-iLA"; */
+"IQv-IB-iLA.title" = "AEM Sidekick";
+
+/* Class = "NSMenuItem"; title = "Show All"; ObjectID = "Kd2-mp-pUS"; */
+"Kd2-mp-pUS.title" = "Mostrar tudo";
+
+/* Class = "NSMenuItem"; title = "Hide AEM Sidekick"; ObjectID = "Olw-nP-bQN"; */
+"Olw-nP-bQN.title" = "Ocultar o AEM Sidekick";
+
+/* Class = "NSMenu"; title = "AEM Sidekick"; ObjectID = "uQy-DD-JDr"; */
+"uQy-DD-JDr.title" = "AEM Sidekick";
+
+/* Class = "NSMenuItem"; title = "Hide Others"; ObjectID = "Vdr-fp-XzO"; */
+"Vdr-fp-XzO.title" = "Ocultar outros";
+
+/* Class = "NSMenuItem"; title = "Help"; ObjectID = "wpr-3q-Mcd"; */
+"wpr-3q-Mcd.title" = "Ajuda";
+
