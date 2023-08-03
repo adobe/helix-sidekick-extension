@@ -14,6 +14,7 @@ module.exports = {
   port: 2000,
   coverage: true,
   coverageConfig: {
+    include: ['./src/**'],
     report: true,
     reportDir: 'coverage-wtr',
   },
