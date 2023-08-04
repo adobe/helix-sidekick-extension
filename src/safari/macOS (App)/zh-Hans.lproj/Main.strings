@@ -1,0 +1,36 @@
+/* Class = "NSMenuItem"; title = "AEM Sidekick"; ObjectID = "1Xt-HY-uBw"; */
+"1Xt-HY-uBw.title" = "AEM Sidekick";
+
+/* Class = "NSMenuItem"; title = "Quit AEM Sidekick"; ObjectID = "4sb-4s-VLi"; */
+"4sb-4s-VLi.title" = "退出 AEM Sidekick";
+
+/* Class = "NSMenuItem"; title = "About AEM Sidekick"; ObjectID = "5kV-Vb-QxS"; */
+"5kV-Vb-QxS.title" = "关于 AEM Sidekick";
+
+/* Class = "NSMenu"; title = "Main Menu"; ObjectID = "AYu-sK-qS6"; */
+"AYu-sK-qS6.title" = "主菜单";
+
+/* Class = "NSMenu"; title = "Help"; ObjectID = "F2S-fz-NVQ"; */
+"F2S-fz-NVQ.title" = "帮助";
+
+/* Class = "NSMenuItem"; title = "AEM Sidekick Help"; ObjectID = "FKE-Sm-Kum"; */
+"FKE-Sm-Kum.title" = "AEM Sidekick 帮助";
+
+/* Class = "NSWindow"; title = "AEM Sidekick"; ObjectID = "IQv-IB-iLA"; */
+"IQv-IB-iLA.title" = "AEM Sidekick";
+
+/* Class = "NSMenuItem"; title = "Show All"; ObjectID = "Kd2-mp-pUS"; */
+"Kd2-mp-pUS.title" = "显示全部";
+
+/* Class = "NSMenuItem"; title = "Hide AEM Sidekick"; ObjectID = "Olw-nP-bQN"; */
+"Olw-nP-bQN.title" = "隐藏 AEM Sidekick";
+
+/* Class = "NSMenu"; title = "AEM Sidekick"; ObjectID = "uQy-DD-JDr"; */
+"uQy-DD-JDr.title" = "AEM Sidekick";
+
+/* Class = "NSMenuItem"; title = "Hide Others"; ObjectID = "Vdr-fp-XzO"; */
+"Vdr-fp-XzO.title" = "隐藏其他";
+
+/* Class = "NSMenuItem"; title = "Help"; ObjectID = "wpr-3q-Mcd"; */
+"wpr-3q-Mcd.title" = "帮助";
+

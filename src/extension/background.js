@@ -31,6 +31,7 @@ import {
   updateProjectConfigs,
   populateDiscoveryCache,
   queryDiscoveryCache,
+  setDisplay,
 } from './utils.js';
 
 /**
@@ -547,6 +548,7 @@ const externalActions = {
           const match = projects.find((p) => p.owner === owner && p.repo === repo);
           if (match) {
             log.info(`enabling sidekick for project ${owner}/${repo} on ${url}`);
+            await setDisplay(true);
             await injectContentScript(tab.id, [match]);
             resolve(true);
           } else {
@@ -599,7 +601,7 @@ const internalActions = {
       const reload = () => chrome.tabs.reload(id, { bypassCache: true });
       const project = projects.find((p) => p.owner === owner && p.repo === repo);
       if (!project) {
-        addProject(cfg, reload, true);
+        addProject(cfg, reload);
       } else {
         deleteProject(`${owner}/${repo}`, reload);
       }

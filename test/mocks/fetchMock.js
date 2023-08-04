@@ -9,6 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+
+import { readFile } from '@web/test-runner-commands';
+
 const HELIX_ENV_JSON = {
   version: 1,
   prod: {
@@ -51,6 +54,9 @@ const ROOT_ITEM_JSON = {
   webUrl: 'https://foo.sharepoint.com/sites/foo/Shared Documents',
 };
 
+const SINGLE_SHEET_JSON_STRING = await readFile({ path: '../fixtures/singlesheet.json' });
+const MULTI_SHEET_JSON_STRING = await readFile({ path: '../fixtures/multisheet.json' });
+
 class ResponseMock {
   constructor(res) {
     this.body = res.body || res || '';
@@ -86,6 +92,10 @@ export default async function fetchMock(url, options = {}) {
     return new ResponseMock(JSON.stringify(DRIVE_ITEM_JSON));
   } else if (path.startsWith('/_api/v2.0/drives/1234')) {
     return new ResponseMock(JSON.stringify(ROOT_ITEM_JSON));
+  } else if (path.endsWith('/singlesheet.json')) {
+    return new ResponseMock(SINGLE_SHEET_JSON_STRING);
+  } else if (path.endsWith('/multisheet.json')) {
+    return new ResponseMock(MULTI_SHEET_JSON_STRING);
   }
   // eslint-disable-next-line no-console
   console.log(`unmocked url, returning empty string for ${url}`);

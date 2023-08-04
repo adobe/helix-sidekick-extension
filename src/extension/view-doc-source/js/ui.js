@@ -43,11 +43,14 @@ const sendMessage = async (message) => {
 
 const getEditorElement = () => document.getElementById('editor');
 
+const getHTMLForCopy = (html) => html.replace(/<hr>/gm, '---');
+
 /**
  * Copies the provided HTML to clipboard
  * @param {String} action The html to copy to clipboard
  */
 const copyHTMLToClipboard = (html) => {
+  html = getHTMLForCopy(html);
   const callback = (e) => {
     e.clipboardData.setData('text/html', html);
     e.clipboardData.setData('text/plain', html);
