@@ -1,3 +1,19 @@
+# [6.26.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.25.2...v6.26.0) (2023-08-04)
+
+
+### Bug Fixes
+
+* convert hr to 3 dashes on copy ([b933c21](https://github.com/adobe/helix-sidekick-extension/commit/b933c2178aec762e6a22e9fb31ab532e22f45441))
+* missing mountpoint causes js error ([82fbad0](https://github.com/adobe/helix-sidekick-extension/commit/82fbad0e4b874b2c87cf2a2ba381fa60eee7d661))
+
+
+### Features
+
+* display the sidekick when loading via the API ([689a8f5](https://github.com/adobe/helix-sidekick-extension/commit/689a8f5568ee6c0685cfd7b330d5eec713454e13))
+* support custom view titles ([0b9980a](https://github.com/adobe/helix-sidekick-extension/commit/0b9980a7cc3d8822353a2c79b654c5bee2ab591e))
+* support custom view titles ([df60c99](https://github.com/adobe/helix-sidekick-extension/commit/df60c997a29cec29f3cc54afc51fccd785906ed6))
+* support custom viewers ([569ec15](https://github.com/adobe/helix-sidekick-extension/commit/569ec1540562d18c9e640910323b2281bac4ce62))
+
 ## [6.25.2](https://github.com/adobe/helix-sidekick-extension/compare/v6.25.1...v6.25.2) (2023-07-28)
 
 
