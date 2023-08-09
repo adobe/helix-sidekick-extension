@@ -1818,10 +1818,7 @@
                           target: sk.status.webPath,
                         });
                       }
-                    const iframe = palette.querySelector('iframe');
-                      if (iframe) {
-                        handlePostMessage();
-                    };
+                      handlePostMessage();
                     };
                     if (!palette) {
                       // draw palette
@@ -2508,14 +2505,14 @@
 
     /**
    * Event listner for postMessage events.
-   * @param {Event} evt The event
    */
 
-  async function handlePostMessage(evt) {
-    const iframe = document.querySelector('iframe');
-    if (evt.source === iframe.contentWindow) {
-      iframe.contentWindow.postMessage(evt.data, '*');
-    } 
+  async function handlePostMessage() {
+    window.addEventListener('message', evt => {
+      if (evt.origin !== iframe.contentWindow.origin) {
+        return;
+      }
+  });
 }
 
   /**
