@@ -1818,6 +1818,10 @@
                           target: sk.status.webPath,
                         });
                       }
+                    const iframe = palette.querySelector('iframe');
+                      if (iframe) {
+                        handlePostMessage();
+                    };
                     };
                     if (!palette) {
                       // draw palette
@@ -2501,6 +2505,18 @@
     }
     return dict;
   }
+
+    /**
+   * Event listner for postMessage events.
+   * @param {Event} evt The event
+   */
+
+  async function handlePostMessage(evt) {
+    const iframe = document.querySelector('iframe');
+    if (evt.source === iframe.contentWindow) {
+      iframe.contentWindow.postMessage(evt.data, '*');
+    } 
+}
 
   /**
    * The sidekick provides helper tools for authors.
