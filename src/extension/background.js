@@ -53,6 +53,13 @@ const LANGS = [
 ];
 
 /**
+ * The list of URLs where the sidekick was triggered to load.
+ * @private
+ * @type {string[]}
+ */
+const externallyLoaded = [];
+
+/**
  * Tries to retrieve a project config from a tab.
  * @param string} tabUrl The URL of the tab
  * @returns {object} The config object
@@ -304,7 +311,7 @@ function checkTab(id) {
       log.debug('checking', id, checkUrl, matches);
       if (matches.length > 0) {
         injectContentScript(id, matches);
-      } else {
+      } else if (!externallyLoaded.includes(checkUrl)) {
         removeSidekick(id);
       }
     });
@@ -550,6 +557,9 @@ const externalActions = {
             log.info(`enabling sidekick for project ${owner}/${repo} on ${url}`);
             await setDisplay(true);
             await injectContentScript(tab.id, [match]);
+            if (!externallyLoaded.includes(url)) {
+              externallyLoaded.push(url);
+            }
             resolve(true);
           } else {
             log.warn(`unknown project ${owner}/${repo}, not enabling sidekick on ${url}`);
