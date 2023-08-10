@@ -1726,6 +1726,19 @@
   }
 
   /**
+   * Event listner for postMessage events.
+   * @param {Object} options The options
+   */
+
+  async function handlePostMessage(options) {
+    chrome.runtime.onMessage.addListener(async (message) => {
+      if (options[message.action]) {
+        options[message.action]();
+      }
+    });
+  }
+
+  /**
    * Adds custom plugins to the sidekick.
    * @private
    * @param {Sidekick} sk The sidekick
@@ -1818,8 +1831,8 @@
                           target: sk.status.webPath,
                         });
                       }
-                      handlePostMessage();
                     };
+                    handlePostMessage({ closePalette: togglePalette });
                     if (!palette) {
                       // draw palette
                       palette = appendTag(sk.root, {
@@ -2502,18 +2515,6 @@
     }
     return dict;
   }
-
-    /**
-   * Event listner for postMessage events.
-   */
-
-  async function handlePostMessage() {
-    window.addEventListener('message', evt => {
-      if (evt.origin !== iframe.contentWindow.origin) {
-        return;
-      }
-  });
-}
 
   /**
    * The sidekick provides helper tools for authors.

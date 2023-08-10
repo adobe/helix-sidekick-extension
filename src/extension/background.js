@@ -627,6 +627,13 @@ const internalActions = {
   },
 };
 
+function sendMessageToTabs(tabs) {
+  for (const tab of tabs) {
+    chrome.tabs
+      .sendMessage(tab.id, { action: 'closePalette' });
+  }
+}
+
 /**
  * Adds the listeners for the extension.
  */
@@ -634,6 +641,16 @@ const internalActions = {
   // external messaging API for projects to communicate with sidekick
   chrome.runtime.onMessageExternal.addListener(async (message, sender, sendResponse) => {
     const { action } = message;
+    if (action === 'closePalette') {
+      chrome.tabs
+        .query({
+          currentWindow: true,
+          active: true,
+        })
+        .then(sendMessageToTabs)
+        .then(() => { sendResponse(true); });
+      return;
+    }
     let resp = null;
     if (externalActions[action]) {
       resp = await externalActions[action](message, sender);
