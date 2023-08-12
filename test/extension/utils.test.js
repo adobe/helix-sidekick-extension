@@ -175,7 +175,7 @@ describe('Test extension utils', () => {
   it('populateUrlCache', async () => {
     const fetchSpy = sandbox.spy(window, 'fetch');
     const storageSpy = sandbox.spy(window.chrome.storage.session, 'set');
-    // any url without config: 0 calls
+    // static url without config: 0 calls
     await utils.populateUrlCache('https://www.hlx.live/');
     expect(fetchSpy.callCount).to.equal(0);
     expect(storageSpy.callCount).to.equal(0);
@@ -198,10 +198,14 @@ describe('Test extension utils', () => {
     await utils.populateUrlCache('https://docs.google.com/document/d/0987654321/edit');
     expect(fetchSpy.callCount).to.equal(6);
     expect(storageSpy.callCount).to.equal(4);
-    // any url with config: 0 fetchSpy calls, 1 storageSpy call
+    // static url with config: 0 fetchSpy calls, 1 storageSpy call
     await utils.populateUrlCache('https://random.foo.bar/', { owner: 'foo', repo: 'random' });
     expect(fetchSpy.callCount).to.equal(6);
     expect(storageSpy.callCount).to.equal(5);
+    // update static url with config: 0 fetchSpy calls, 1 storageSpy call
+    await utils.populateUrlCache('https://random.foo.bar/', { owner: 'bar', repo: 'random' });
+    expect(fetchSpy.callCount).to.equal(6);
+    expect(storageSpy.callCount).to.equal(6);
   });
 
   it('queryUrlCache', async () => {
