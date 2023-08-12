@@ -78,6 +78,9 @@ export default {
       hlxSidekickDisplay: true,
       test: 'test',
     }),
+    session: new StorageMock({
+      hlxSidekickUrlCache: [],
+    }),
   },
   declarativeNetRequest: {
     getSessionRules: async () => ([]),
