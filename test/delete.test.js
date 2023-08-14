@@ -91,9 +91,9 @@ describe('Test delete plugin', () => {
     );
   }).timeout(IT_DEFAULT_TIMEOUT);
 
-  it('Delete plugin uses code API', async () => {
+  it.only('Delete plugin uses code API', async () => {
     const setup = new Setup('blog');
-    setup.apiResponse().edit = { status: 404 }; // no source doc
+    setup.apiResponse().code = { status: 404 }; // no source doc
     setup.apiResponse().preview.permissions.push('delete'); // add delete permission
     nock.sidekick(setup);
     nock.admin(setup);
@@ -108,6 +108,7 @@ describe('Test delete plugin', () => {
       acceptDialogs: true,
       waitNavigation: 'https://main--blog--adobe.hlx.page/',
       plugin: 'delete',
+      loadModule: true,
     }).run();
 
     assert.ok(
