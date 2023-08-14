@@ -91,7 +91,7 @@ describe('Test delete plugin', () => {
     );
   }).timeout(IT_DEFAULT_TIMEOUT);
 
-  it.only('Delete plugin uses code API', async () => {
+  it('Delete plugin uses code API', async () => {
     const setup = new Setup('blog');
     setup.apiResponse().code = { status: 404 }; // no source doc
     setup.apiResponse().preview.permissions.push('delete'); // add delete permission
