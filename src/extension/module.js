@@ -1245,31 +1245,36 @@
     sk.add({
       id: 'delete',
       condition: (s) => s.isProject()
-        && s.isAuthorized('preview', 'delete')
-        && (s.isAuthenticated() || !s.status.edit || !s.status.edit.url) // logged in or no edit url
-        && (s.status.preview && s.status.preview.status !== 404) // preview exists
+        && s.isAuthorized('preview', 'delete') // show only if authorized and
+        && s.status.preview.status !== 404 // preview exists
         && !RESTRICTED_PATHS.includes(s.location.pathname),
       button: {
         text: i18n(sk, 'delete'),
         action: async () => {
           const { location, status } = sk;
           // double check
-          if (status.edit && status.edit.url) {
+          if (!sk.isAuthenticated() && status.edit && status.edit.status === 200) {
             window.alert(sk.isContent()
               ? i18n(sk, 'delete_page_source_exists')
               : i18n(sk, 'delete_file_source_exists'));
             return;
           }
           // have user confirm deletion
-          if (window.confirm(sk.isContent()
-            ? i18n(sk, 'delete_page_confirm')
-            : i18n(sk, 'delete_file_confirm'))) {
+          const confirmMsg = sk.isContent()
+            ? i18n(sk, sk.status.edit.status === 200 ? 'delete_page_confirm' : 'delete_page_no_source_confirm')
+            : i18n(sk, sk.status.code.status === 200 ? 'delete_file_confirm' : 'delete_file_no_source_confirm');
+          if (window.confirm(confirmMsg)) {
             try {
               const resp = await sk.delete();
               if (!resp.ok && resp.status >= 400) {
                 console.error(resp);
                 throw new Error(resp);
               }
+              // show confirmation
+              sk.remove('delete');
+              sk.showModal(sk.isContent()
+                ? i18n(sk, 'delete_page_success')
+                : i18n(sk, 'delete_file_success'));
               console.log(`redirecting to ${location.origin}/`);
               window.location.href = `${location.origin}/`;
             } catch (e) {
@@ -1341,21 +1346,23 @@
     sk.add({
       id: 'unpublish',
       condition: (s) => s.isProject() && s.isContent()
-        && s.isAuthorized('live', 'delete')
-        && (s.isAuthenticated() || !s.status.edit || !s.status.edit.url) // logged in or no edit url
-        && (s.status.live && s.status.live.lastModified) // published
+        && s.isAuthorized('live', 'delete') // show only if authorized and
+        && s.status.live.status !== 404 // published
         && !RESTRICTED_PATHS.includes(s.location.pathname),
       button: {
         text: i18n(sk, 'unpublish'),
         action: async () => {
           const { status } = sk;
           // double check
-          if (status.edit && status.edit.url) {
+          if (!sk.isAuthenticated() && status.edit && status.edit.status === 200) {
             window.alert(i18n(sk, 'unpublish_page_source_exists'));
             return;
           }
           // have user confirm unpublishing
-          if (window.confirm(i18n(sk, 'unpublish_page_confirm'))) {
+          const confirmMsg = status.edit.status === 200
+            ? i18n(sk, 'unpublish_page_confirm')
+            : i18n(sk, 'unpublish_page_no_source_confirm');
+          if (window.confirm(confirmMsg)) {
             const path = status.webPath;
             try {
               const resp = await sk.unpublish();
@@ -1363,10 +1370,14 @@
                 console.error(resp);
                 throw new Error(resp);
               }
+              // show confirmation
+              sk.showModal(i18n(sk, 'unpublish_page_success'));
               if (!sk.isInner()) {
                 const newPath = `${path.substring(0, path.lastIndexOf('/'))}/`;
                 console.log(`redirecting to ${newPath}`);
                 window.location.href = newPath;
+              } else {
+                sk.remove('unpublish');
               }
             } catch (e) {
               sk.showModal({
