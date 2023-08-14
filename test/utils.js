@@ -81,14 +81,12 @@ const SETUPS = {
           permissions: [
             'read',
             'write',
-            'delete',
           ],
         },
         live: {
           permissions: [
             'read',
             'write',
-            'delete',
           ],
         },
       },
@@ -115,20 +113,18 @@ const SETUPS = {
           url: 'https://main--blog--adobe.hlx.live/en/topics/bla',
           status: 200,
           lastModified: 'Fri, 18 Jun 2021 09:57:02 GMT',
-          permisions: [
+          permissions: [
             'read',
             'write',
-            'delete',
           ],
         },
         preview: {
           url: 'https://main--blog--adobe.hlx.page/en/topics/bla',
           status: 200,
           lastModified: 'Fri, 18 Jun 2021 09:57:01 GMT',
-          permisions: [
+          permissions: [
             'read',
             'write',
-            'delete',
           ],
         },
         edit: {
@@ -177,9 +173,8 @@ const SETUPS = {
         },
         edit: {
           url: 'https://raw.githubusercontent.com/adobe/blog/main/en/bla.xml',
-          lastModified: 'Tue, 09 Nov 2021 14:17:13 GMT',
         },
-        source: {
+        code: {
           status: 200,
           contentType: 'application/xml',
           lastModified: 'Thu, 09 Dec 2021 08:01:27 GMT',
@@ -198,14 +193,12 @@ const SETUPS = {
           permissions: [
             'read',
             'write',
-            'delete',
           ],
         },
         live: {
           permissions: [
             'read',
             'write',
-            'delete',
           ],
         },
       },
