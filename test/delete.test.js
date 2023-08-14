@@ -134,4 +134,51 @@ describe('Test delete plugin', () => {
     }).run();
     assert.ok(!plugins.find((p) => p.id === 'delete'), 'Unexpected delete plugin found');
   }).timeout(IT_DEFAULT_TIMEOUT);
+
+  it('Delete plugin if source document still exists but user is authenticated', async () => {
+    const setup = new Setup('blog');
+    nock.login();
+    nock('https://admin.hlx.page')
+      .get('/sidekick/adobe/blog/main/config.json')
+      .twice()
+      .reply(function req() {
+        if (this.req.headers.cookie === 'auth_token=foobar') {
+          return [200, '{}', { 'content-type': 'application/json' }];
+        }
+        return [401];
+      })
+      .get('/status/adobe/blog/main/en/topics/bla?editUrl=auto')
+      .twice()
+      .reply(function req() {
+        if (this.req.headers.cookie === 'auth_token=foobar') {
+          return [200, JSON.stringify(setup.apiResponse()), { 'content-type': 'application/json' }];
+        }
+        return [401, '{ "status": 401 }', { 'content-type': 'application/json' }];
+      })
+      .get('/login/adobe/blog/main?extensionId=cookie')
+      .twice()
+      .reply(200, '<html>logged in<script>setTimeout(() => self.close(), 500)</script></html>', {
+        'set-cookie': 'auth_token=foobar; Path=/; HttpOnly; Secure; SameSite=None',
+      })
+      .get('/profile/adobe/blog/main')
+      .reply(function req() {
+        if (this.req.headers.cookie === 'auth_token=foobar') {
+          return [200, '{ "status": 200 }', { 'content-type': 'application/json' }];
+        }
+        return [401, '{ "status": 401 }', { 'content-type': 'application/json' }];
+      })
+      // in debug mode, the browser requests /favicon.ico
+      .get('/favicon.ico')
+      .optionally()
+      .reply(404);
+
+    const { plugins } = await new SidekickTest({
+      browser,
+      page,
+      plugin: 'user-login',
+      pluginSleep: 2000,
+      loadModule: true,
+    }).run();
+    assert.ok(plugins.find((p) => p.id === 'delete'), 'Delete plugin not found');
+  }).timeout(IT_DEFAULT_TIMEOUT);
 });

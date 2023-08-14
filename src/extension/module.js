@@ -1244,10 +1244,11 @@
   function addDeletePlugin(sk) {
     sk.add({
       id: 'delete',
-      condition: (sidekick) => sidekick.isAuthorized('preview', 'delete') && sidekick.isProject()
-        && (!sidekick.status.edit || !sidekick.status.edit.url) // show only if no edit url and
-        && (sidekick.status.preview && sidekick.status.preview.status !== 404) // preview exists
-        && !RESTRICTED_PATHS.includes(sidekick.location.pathname),
+      condition: (s) => s.isProject()
+        && s.isAuthorized('preview', 'delete')
+        && (s.isAuthenticated() || !s.status.edit || !s.status.edit.url) // logged in or no edit url
+        && (s.status.preview && s.status.preview.status !== 404) // preview exists
+        && !RESTRICTED_PATHS.includes(s.location.pathname),
       button: {
         text: i18n(sk, 'delete'),
         action: async () => {
@@ -1339,10 +1340,11 @@
   function addUnpublishPlugin(sk) {
     sk.add({
       id: 'unpublish',
-      condition: (sidekick) => sidekick.isAuthorized('live', 'delete') && sidekick.isProject()
-        && (!sidekick.status.edit || !sidekick.status.edit.url) // show only if no edit url and
-        && sidekick.status.live && sidekick.status.live.lastModified // published
-        && sk.isContent() && !RESTRICTED_PATHS.includes(sidekick.location.pathname),
+      condition: (s) => s.isProject() && s.isContent()
+        && s.isAuthorized('live', 'delete')
+        && (s.isAuthenticated() || !s.status.edit || !s.status.edit.url) // logged in or no edit url
+        && (s.status.live && s.status.live.lastModified) // published
+        && !RESTRICTED_PATHS.includes(s.location.pathname),
       button: {
         text: i18n(sk, 'unpublish'),
         action: async () => {
