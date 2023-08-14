@@ -172,57 +172,73 @@ describe('Test extension utils', () => {
     expect(res).to.be.true;
   });
 
-  it('populateDiscoveryCache', async () => {
-    const spy = sandbox.spy(window, 'fetch');
-    // any url: 0 calls
-    await utils.populateDiscoveryCache('https://www.hlx.live/');
-    expect(spy.callCount).to.equal(0);
-    // sharepoint: 3 calls
-    await utils.populateDiscoveryCache('https://foo.sharepoint.com/:w:/r/sites/foo/_layouts/15/Doc.aspx?sourcedoc=%7BBFD9A19C-4A68-4DBF-8641-DA2F1283C895%7D&file=index.docx&action=default&mobileredirect=true');
-    // gdrive: 1 call
-    await utils.populateDiscoveryCache('https://docs.google.com/document/d/1234567890/edit');
-    expect(spy.callCount).to.equal(4);
-
-    // cache: add new entry
-    await utils.populateDiscoveryCache('https://docs.google.com/document/d/0987654321/edit');
-    expect(spy.callCount).to.equal(5);
-    // cache: reuse match, 0 calls
-    await utils.populateDiscoveryCache('https://docs.google.com/document/d/0987654321/edit');
-    expect(spy.callCount).to.equal(5);
-    // cache: refresh expired match, 1 call
+  it('populateUrlCache', async () => {
+    const fetchSpy = sandbox.spy(window, 'fetch');
+    const storageSpy = sandbox.spy(window.chrome.storage.session, 'set');
+    // static url without config: 0 calls
+    await utils.populateUrlCache('https://www.hlx.live/');
+    expect(fetchSpy.callCount).to.equal(0);
+    expect(storageSpy.callCount).to.equal(0);
+    // sharepoint: 3 fetchSpy calls, 1 storageSpy call
+    await utils.populateUrlCache('https://foo.sharepoint.com/:w:/r/sites/foo/_layouts/15/Doc.aspx?sourcedoc=%7BBFD9A19C-4A68-4DBF-8641-DA2F1283C895%7D&file=index.docx&action=default&mobileredirect=true');
+    // gdrive: 1 fetchSpy call, 1 storageSpy call
+    await utils.populateUrlCache('https://docs.google.com/document/d/1234567890/edit');
+    expect(fetchSpy.callCount).to.equal(4);
+    expect(storageSpy.callCount).to.equal(2);
+    // cache: add new entry: 1 fetchSpy call, 1 storageSpy call
+    await utils.populateUrlCache('https://docs.google.com/document/d/0987654321/edit');
+    expect(fetchSpy.callCount).to.equal(5);
+    expect(storageSpy.callCount).to.equal(3);
+    // cache: reuse existing match: 0 calls
+    await utils.populateUrlCache('https://docs.google.com/document/d/0987654321/edit');
+    expect(fetchSpy.callCount).to.equal(5);
+    expect(storageSpy.callCount).to.equal(3);
+    // cache: refresh expired match: 1 fetchSpy call, 1 storageSpy call
     sandbox.stub(Date, 'now').returns(Date.now() + 7205000); // fast-forward 2 days and 5 seconds
-    await utils.populateDiscoveryCache('https://docs.google.com/document/d/0987654321/edit');
-    expect(spy.callCount).to.equal(6);
+    await utils.populateUrlCache('https://docs.google.com/document/d/0987654321/edit');
+    expect(fetchSpy.callCount).to.equal(6);
+    expect(storageSpy.callCount).to.equal(4);
+    // static url with config: 0 fetchSpy calls, 1 storageSpy call
+    await utils.populateUrlCache('https://random.foo.bar/', { owner: 'foo', repo: 'random' });
+    expect(fetchSpy.callCount).to.equal(6);
+    expect(storageSpy.callCount).to.equal(5);
+    // update static url with config: 0 fetchSpy calls, 1 storageSpy call
+    await utils.populateUrlCache('https://random.foo.bar/', { owner: 'bar', repo: 'random' });
+    expect(fetchSpy.callCount).to.equal(6);
+    expect(storageSpy.callCount).to.equal(6);
   });
 
-  it('queryDiscoveryCache', async () => {
+  it('queryUrlCache', async () => {
     // known url
-    let results = await utils.queryDiscoveryCache('https://foo.sharepoint.com/:w:/r/sites/foo/_layouts/15/Doc.aspx?sourcedoc=%7BBFD9A19C-4A68-4DBF-8641-DA2F1283C895%7D&file=index.docx&action=default&mobileredirect=true');
+    let results = await utils.queryUrlCache('https://foo.sharepoint.com/:w:/r/sites/foo/_layouts/15/Doc.aspx?sourcedoc=%7BBFD9A19C-4A68-4DBF-8641-DA2F1283C895%7D&file=index.docx&action=default&mobileredirect=true');
     expect(results.length).to.equal(1);
     // unknown url
-    results = await utils.queryDiscoveryCache('https://foo.sharepoint.com/:x:/r/sites/foo/_layouts/15/Doc.aspx?sourcedoc=%7ABFD9A19C-4A68-4DBF-8641-DA2F1283C895%7D&file=index.xlsx&action=default&mobileredirect=true');
+    results = await utils.queryUrlCache('https://foo.sharepoint.com/:x:/r/sites/foo/_layouts/15/Doc.aspx?sourcedoc=%7ABFD9A19C-4A68-4DBF-8641-DA2F1283C895%7D&file=index.xlsx&action=default&mobileredirect=true');
     expect(results.length).to.equal(0);
+    // static url
+    results = await utils.queryUrlCache('https://random.foo.bar/');
+    expect(results.length).to.equal(1);
   });
 
   it('getProjectMatches', async () => {
     // match sharepoint URL (docx)
-    expect((utils.getProjectMatches(CONFIGS, 'https://foo.sharepoint.com/:w:/r/sites/foo/_layouts/15/Doc.aspx?sourcedoc=%7BBFD9A19C-4A68-4DBF-8641-DA2F1283C895%7D&file=index.docx&action=default&mobileredirect=true')).length).to.equal(1);
+    expect((await utils.getProjectMatches(CONFIGS, 'https://foo.sharepoint.com/:w:/r/sites/foo/_layouts/15/Doc.aspx?sourcedoc=%7BBFD9A19C-4A68-4DBF-8641-DA2F1283C895%7D&file=index.docx&action=default&mobileredirect=true')).length).to.equal(1);
     // match gdrive URL
-    expect((utils.getProjectMatches(CONFIGS, 'https://docs.google.com/document/d/1234567890/edit')).length).to.equal(1);
+    expect((await utils.getProjectMatches(CONFIGS, 'https://docs.google.com/document/d/1234567890/edit')).length).to.equal(1);
     // match preview URL
-    expect((utils.getProjectMatches(CONFIGS, 'https://main--bar1--foo.hlx.page/')).length).to.equal(1);
+    expect((await utils.getProjectMatches(CONFIGS, 'https://main--bar1--foo.hlx.page/')).length).to.equal(1);
     // match preview URL with any ref
-    expect((utils.getProjectMatches(CONFIGS, 'https://baz--bar1--foo.hlx.page/')).length).to.equal(1);
+    expect((await utils.getProjectMatches(CONFIGS, 'https://baz--bar1--foo.hlx.page/')).length).to.equal(1);
     // match custom preview URL
-    expect((utils.getProjectMatches(CONFIGS, 'https://6-preview.foo.bar/')).length).to.equal(1);
+    expect((await utils.getProjectMatches(CONFIGS, 'https://6-preview.foo.bar/')).length).to.equal(1);
     // match live URL
-    expect((utils.getProjectMatches(CONFIGS, 'https://main--bar1--foo.hlx.live/')).length).to.equal(1);
+    expect((await utils.getProjectMatches(CONFIGS, 'https://main--bar1--foo.hlx.live/')).length).to.equal(1);
     // match custom live URL
-    expect((utils.getProjectMatches(CONFIGS, 'https://6-live.foo.bar/')).length).to.equal(1);
+    expect((await utils.getProjectMatches(CONFIGS, 'https://6-live.foo.bar/')).length).to.equal(1);
     // match production host
-    expect((utils.getProjectMatches(CONFIGS, 'https://1.foo.bar/')).length).to.equal(1);
+    expect((await utils.getProjectMatches(CONFIGS, 'https://1.foo.bar/')).length).to.equal(1);
     // ignore disabled config
-    expect((utils.getProjectMatches(CONFIGS, 'https://main--bar2--foo.hlx.live/')).length).to.equal(0);
+    expect((await utils.getProjectMatches(CONFIGS, 'https://main--bar2--foo.hlx.live/')).length).to.equal(0);
   });
 
   it('getProjectEnv', async () => {
