@@ -1,3 +1,16 @@
+# [6.27.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.26.0...v6.27.0) (2023-08-14)
+
+
+### Bug Fixes
+
+* do not close sidekick if loaded externally ([b3ecbac](https://github.com/adobe/helix-sidekick-extension/commit/b3ecbacbca7729679f7da4e242e141a9a1d62a9d))
+
+
+### Features
+
+* allow direct delete/unpublish if auth'd ([3c5adea](https://github.com/adobe/helix-sidekick-extension/commit/3c5adeadcad77cf73d9c6c260d2002d357aa977e))
+* allow direct delete/unpublish if auth'd ([e9087a5](https://github.com/adobe/helix-sidekick-extension/commit/e9087a5b12fc98c00d09b39ffa1a15f13b9ad303))
+
 # [6.26.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.25.2...v6.26.0) (2023-08-04)
 
 
