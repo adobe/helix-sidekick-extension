@@ -18,7 +18,6 @@ export const GH_URL = 'https://github.com/';
 
 export const DEV_URL = 'http://localhost:3000';
 
-const DISCOVERY_CACHE = [];
 const DISCOVERY_CACHE_TTL = 7200000;
 
 export const log = {
@@ -238,69 +237,106 @@ function isGoogleDriveHost(tabUrl) {
 }
 
 /**
- * Looks up a URL in the discovery cache and returns its project results.
+ * Looks up a URL in the URL cache and returns its associated projects.
  * @param {string} tabUrl The tab URL
  * @returns {Object[]} The project results from the cached entry
  */
-export function queryDiscoveryCache(tabUrl) {
-  // check cache
-  const entry = DISCOVERY_CACHE.find((e) => e.url === tabUrl);
-  if (entry && entry.expiry > Date.now()) {
-    // reuse fresh entry from cache
-    log.debug(`discovery cache entry found for ${tabUrl}`, entry);
+export async function queryUrlCache(tabUrl) {
+  const urlCache = await getConfig('session', 'hlxSidekickUrlCache') || [];
+  const entry = urlCache.find((e) => e.url === tabUrl);
+  if (entry && (!entry.expiry || entry.expiry > Date.now())) {
+    // return results from fresh cache entry
+    log.debug(`url cache entry found for ${tabUrl}`, entry);
     return entry.results;
   }
   return [];
 }
 
 /**
- * Populates or refreshes the discovery cache for a Microsoft SharePoint or Google Drive URL.
- * Cache entries are invalidated after 2 hours, or when the browser session ends.
+ * Populates or refreshes the URL cache for the duration of the browser session.
+ * Microsoft SharePoint or Google Drive URLs will be looked up in the Franklin Admin Service
+ * and expire after 2 hours.
  * @param {string} tabUrl The tab URL
+ * @param {Object} config={} The project config (optional)
+ * @param {string} config.owner The owner
+ * @param {string} config.repo The repository
  * @returns {Promise<void>}
  */
-export async function populateDiscoveryCache(tabUrl) {
-  if (!isSharePointHost(tabUrl) && !isGoogleDriveHost(tabUrl)) {
-    return;
-  }
-  if (queryDiscoveryCache(tabUrl).length === 0) {
-    const info = isSharePointHost(tabUrl)
-      ? await fetchSharePointEditInfo(tabUrl)
-      : await fetchGoogleDriveEditInfo(tabUrl);
-    log.debug('resource edit info', info);
+export async function populateUrlCache(tabUrl, { owner, repo } = {}) {
+  const createCacheEntry = (cacheUrl, results = [], expiry = false) => {
+    const entry = { url: cacheUrl, results };
+    if (expiry) {
+      entry.expiry = expiry;
+    }
+    return entry;
+  };
+  const urlCache = await getConfig('session', 'hlxSidekickUrlCache') || [];
+  if (owner && repo) {
+    // static entry
+    const entry = createCacheEntry(
+      tabUrl,
+      [{
+        owner,
+        repo,
+        originalRepository: true,
+      }],
+    );
+    const existingIndex = urlCache.findIndex((e) => e.url === tabUrl);
+    if (existingIndex >= 0) {
+      // update existing entry
+      log.debug(`updating sttaic loaded entry for ${tabUrl}`, entry);
+      urlCache.splice(existingIndex, 1, entry);
+    } else {
+      // add new entry
+      log.debug(`adding static entry for ${tabUrl}`, entry);
+      urlCache.push(entry);
+    }
+  } else {
+    // lookup (for sharepoint and google drive only)
+    if (!isSharePointHost(tabUrl) && !isGoogleDriveHost(tabUrl)) {
+      return;
+    }
+    if ((await queryUrlCache(tabUrl)).length === 0) {
+      const info = isSharePointHost(tabUrl)
+        ? await fetchSharePointEditInfo(tabUrl)
+        : await fetchGoogleDriveEditInfo(tabUrl);
+      log.debug('resource edit info', info);
 
-    let results = [];
-    // discover project details from edit url
-    const discoveryUrl = new URL('https://admin.hlx.page/discover/');
-    discoveryUrl.searchParams.append('url', info?.url || tabUrl);
-    const resp = await fetch(discoveryUrl);
-    if (resp.ok) {
-      results = await resp.json();
-      if (results.length > 0) {
-        // when switching back to a sharepoint tab it can happen that the fetch call to the
-        // sharepoint API is no longer authenticated, thus the info returned is null.
-        // in this case, we don't want to cache a potentially incomplete discovery response.
-        // otherwise cache for 2h.
-        const ttl = info ? DISCOVERY_CACHE_TTL : 0;
-        const entry = {
-          url: tabUrl,
-          results,
-          expiry: Date.now() + ttl,
-        };
-        const existingIndex = DISCOVERY_CACHE.findIndex((e) => e.url === entry.url);
-        if (existingIndex >= 0) {
-          // update expired cache entry
-          log.debug('updating discovery cache', entry);
-          DISCOVERY_CACHE.splice(existingIndex, 1, entry);
-        } else {
-          // add cache entry
-          log.debug('extending discovery cache', entry);
-          DISCOVERY_CACHE.push(entry);
+      let results = [];
+      // discover project details from edit url
+      const discoveryUrl = new URL('https://admin.hlx.page/discover/');
+      discoveryUrl.searchParams.append('url', info?.url || tabUrl);
+      const resp = await fetch(discoveryUrl);
+      if (resp.ok) {
+        results = await resp.json();
+        if (results.length > 0) {
+          // when switching back to a sharepoint tab it can happen that the fetch call to the
+          // sharepoint API is no longer authenticated, thus the info returned is null.
+          // in this case, we don't want to cache a potentially incomplete discovery response.
+          // otherwise cache for 2h.
+          const ttl = info ? DISCOVERY_CACHE_TTL : 0;
+          const entry = createCacheEntry(tabUrl, results, Date.now() + ttl);
+          const existingIndex = urlCache.findIndex((e) => e.url === entry.url);
+          if (existingIndex >= 0) {
+            // update expired cache entry
+            log.debug('updating discovery cache', entry);
+            urlCache.splice(existingIndex, 1, entry);
+          } else {
+            // add cache entry
+            log.debug('extending discovery cache', entry);
+            urlCache.push(entry);
+          }
         }
       }
+    } else {
+      // existing match in cache
+      return;
     }
-    log.debug('discovery cache', DISCOVERY_CACHE);
   }
+  await setConfig('session', {
+    hlxSidekickUrlCache: urlCache,
+  });
+  log.debug('url cache', urlCache);
 }
 
 /**
@@ -309,13 +345,13 @@ export async function populateDiscoveryCache(tabUrl) {
  * @param {string} tabUrl The tab URL
  * @returns {Object[]} The matches
  */
-export function getProjectMatches(configs, tabUrl) {
+export async function getProjectMatches(configs, tabUrl) {
   const {
     host: checkHost,
   } = new URL(tabUrl);
   // exclude disabled configs
   configs = configs.filter((cfg) => !cfg.disabled);
-  const matches = configs.filter((cfg) => {
+  let matches = configs.filter((cfg) => {
     const {
       owner,
       repo,
@@ -326,8 +362,20 @@ export function getProjectMatches(configs, tabUrl) {
     return checkHost === prodHost // production host
       || checkHost === previewHost // custom inner
       || checkHost === liveHost // custom outer
-      || checkHost.split('.hlx.')[0].endsWith(`${repo}--${owner}`) // inner or outer
-      || queryDiscoveryCache(tabUrl).find((e) => e.owner === owner && e.repo === repo);
+      || checkHost.split('.hlx.')[0].endsWith(`${repo}--${owner}`); // inner or outer
+  });
+  (await queryUrlCache(tabUrl)).forEach((e) => {
+    // add non-duplicate matches from url cache
+    const filteredByUrlCache = configs.filter(({ owner, repo }) => {
+      if (e.owner === owner && e.repo === repo) {
+        // avoid duplicates
+        if (!matches.find((m) => m.owner === owner && m.repo === repo)) {
+          return true;
+        }
+      }
+      return false;
+    });
+    matches = matches.concat(filteredByUrlCache);
   });
   log.debug(`${matches.length} project match(es) found for ${tabUrl}`, matches);
   return matches;

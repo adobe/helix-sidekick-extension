@@ -29,8 +29,8 @@ import {
   setConfig,
   getConfig,
   updateProjectConfigs,
-  populateDiscoveryCache,
-  queryDiscoveryCache,
+  populateUrlCache,
+  queryUrlCache,
   setDisplay,
 } from './utils.js';
 
@@ -57,7 +57,7 @@ const LANGS = [
  * @param string} tabUrl The URL of the tab
  * @returns {object} The config object
  */
-function getConfigFromTabUrl(tabUrl) {
+async function getConfigFromTabUrl(tabUrl) {
   if (!tabUrl) {
     return {};
   }
@@ -80,9 +80,9 @@ function getConfigFromTabUrl(tabUrl) {
           ref: res[1],
         };
       } else {
-        // check if url is known in discovery cache
-        const discoveryCache = queryDiscoveryCache(tabUrl);
-        const { owner, repo } = discoveryCache.find((r) => r.originalRepository) || {};
+        // check if url is known in url cache
+        const { owner, repo } = (await queryUrlCache(tabUrl))
+          .find((r) => r.originalRepository) || {};
         if (owner && repo) {
           return {
             owner,
@@ -168,13 +168,14 @@ async function checkContextMenu({ url: tabUrl, id, active }, configs = []) {
   if (!active) return; // ignore inactive tabs to avoid collisions
   if (chrome.contextMenus) {
     // clear context menu
-    chrome.contextMenus.removeAll(() => {
+    chrome.contextMenus.removeAll(async () => {
       // check if add project is applicable
       if (configs) {
-        const { owner, repo } = getConfigFromTabUrl(tabUrl);
+        const { owner, repo } = await getConfigFromTabUrl(tabUrl);
         if (owner && repo) {
           const config = configs.find((c) => c.owner === owner && c.repo === repo);
           // add context menu item for adding/removing project config
+          log.debug(`checkContextMenu: addRemoveProject for ${tabUrl}`);
           chrome.contextMenus.create({
             id: 'addRemoveProject',
             title: config ? i18n('config_project_remove') : i18n('config_project_add'),
@@ -252,7 +253,6 @@ async function removeSidekick(tabId) {
       target: { tabId },
       func: () => {
         if (window.hlx && window.hlx.sidekick) {
-          window.hlx.sidekick.hide();
           window.hlx.sidekick.replaceWith(''); // remove() doesn't work for custom element
           delete window.hlx.sidekick;
         }
@@ -284,9 +284,9 @@ function checkTab(id) {
         log.debug('local dev url detected, retrieve proxy url');
         checkUrl = await getProxyUrl(tab);
       }
-      await populateDiscoveryCache(checkUrl);
+      await populateUrlCache(checkUrl);
       if (tab.active) {
-        checkContextMenu(tab, projects);
+        await checkContextMenu(tab, projects);
       }
       if (new URL(checkUrl).pathname === SHARE_PREFIX) {
         log.debug('share url detected, inject install helper');
@@ -300,7 +300,7 @@ function checkTab(id) {
           log.error('error instrumenting generator page', id, e);
         }
       }
-      const matches = getProjectMatches(projects, checkUrl);
+      const matches = await getProjectMatches(projects, checkUrl);
       log.debug('checking', id, checkUrl, matches);
       if (matches.length > 0) {
         injectContentScript(id, matches);
@@ -549,6 +549,7 @@ const externalActions = {
           if (match) {
             log.info(`enabling sidekick for project ${owner}/${repo} on ${url}`);
             await setDisplay(true);
+            await populateUrlCache(url, { owner, repo });
             await injectContentScript(tab.id, [match]);
             resolve(true);
           } else {
@@ -596,7 +597,7 @@ const externalActions = {
 const internalActions = {
   addRemoveProject: async ({ id, url }) => {
     getState(async ({ projects = [] }) => {
-      const cfg = getConfigFromTabUrl(url);
+      const cfg = await getConfigFromTabUrl(url);
       const { owner, repo } = cfg;
       const reload = () => chrome.tabs.reload(id, { bypassCache: true });
       const project = projects.find((p) => p.owner === owner && p.repo === repo);
@@ -608,7 +609,7 @@ const internalActions = {
     });
   },
   enableDisableProject: async ({ id, url }) => {
-    const cfg = getConfigFromTabUrl(url);
+    const cfg = await getConfigFromTabUrl(url);
     const project = await getProject(cfg);
     if (project) {
       project.disabled = !project.disabled;
