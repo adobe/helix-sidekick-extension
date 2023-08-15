@@ -539,6 +539,13 @@ const externalActions = {
     }
     return resp;
   },
+  // close palette on form submit
+  closePalette: async (_, { tab }) => {
+    chrome.tabs.sendMessage(tab.id, { action: 'closePalette Adaa' });
+
+    return Promise.resolve(' palette closed 546');
+  },
+
   // loads the sidekick if the project is configured
   loadSidekick: async ({ owner, repo }, { tab, url }) => {
     let resp = false;
@@ -627,13 +634,6 @@ const internalActions = {
   },
 };
 
-function sendMessageToTabs(tabs) {
-  for (const tab of tabs) {
-    chrome.tabs
-      .sendMessage(tab.id, { action: 'closePalette' });
-  }
-}
-
 /**
  * Adds the listeners for the extension.
  */
@@ -641,16 +641,6 @@ function sendMessageToTabs(tabs) {
   // external messaging API for projects to communicate with sidekick
   chrome.runtime.onMessageExternal.addListener(async (message, sender, sendResponse) => {
     const { action } = message;
-    if (action === 'closePalette') {
-      chrome.tabs
-        .query({
-          currentWindow: true,
-          active: true,
-        })
-        .then(sendMessageToTabs)
-        .then(() => { sendResponse(true); });
-      return;
-    }
     let resp = null;
     if (externalActions[action]) {
       resp = await externalActions[action](message, sender);

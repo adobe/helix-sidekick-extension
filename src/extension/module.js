@@ -1768,6 +1768,14 @@
             containerId,
             isContainer,
           } = cfg;
+          const closePalette = () => {
+            // const palette = sk.shadowRoot.getElementById(`hlx-sk-palette-${id}`);
+            // const button = sk.get(id).querySelector('button');
+            // if (!palette.classList.contains('hlx-sk-hidden')) {
+            //   palette.classList.add('hlx-sk-hidden');
+            //   button.classList.remove('pressed');
+            // }
+          };
           const condition = (s) => {
             let excluded = false;
             const pathSearchHash = s.location.href.replace(s.location.origin, '');
@@ -1803,6 +1811,8 @@
             button: {
               text: (titleI18n && titleI18n[lang]) || title || '',
               action: () => {
+                const actionHandler = {};
+                actionHandler.closePalette = closePalette;
                 if (url) {
                   const target = url.startsWith('/') ? new URL(url, `https://${innerHost}/`) : new URL(url);
                   if (passConfig) {
@@ -1832,7 +1842,6 @@
                         });
                       }
                     };
-                    handlePostMessage({ closePalette: togglePalette });
                     if (!palette) {
                       // draw palette
                       palette = appendTag(sk.root, {
@@ -1881,6 +1890,7 @@
                   }
                 } else if (eventName) {
                   // fire custom event
+                  handlePostMessage(actionHandler);
                   fireEvent(sk, `custom:${eventName}`);
                 }
               },
