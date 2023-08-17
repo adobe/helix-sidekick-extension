@@ -167,12 +167,20 @@ function encodeSharingUrl(sharingUrl) {
  * @returns {Promise<Object>} The edit info
  */
 async function fetchSharePointEditInfo(tabUrl) {
-  const shareLink = encodeSharingUrl(tabUrl);
   const spUrl = new URL(tabUrl);
+  // sometimes sharepoint redirects to an url with a search param `RootFolder` instead of `id`
+  // and then the sharelink can't be resolved. so we convert it to `id`
+  const rootFolder = spUrl.searchParams.get('RootFolder');
+  if (rootFolder) {
+    spUrl.searchParams.set('id', rootFolder);
+    spUrl.searchParams.delete('RootFolder');
+  }
+  const shareLink = encodeSharingUrl(spUrl.href);
   spUrl.pathname = `/_api/v2.0/shares/${shareLink}/driveItem`;
+  spUrl.search = '';
   let resp = await fetch(spUrl);
   if (!resp.ok) {
-    log.warn('unable to resolve edit url: ', resp.status);
+    log.warn('unable to resolve edit url: ', resp.status, await resp.text());
     return null;
   }
   const data = await resp.json();
@@ -181,7 +189,7 @@ async function fetchSharePointEditInfo(tabUrl) {
   spUrl.pathname = `/_api/v2.0/drives/${data.parentReference.driveId}`;
   resp = await fetch(spUrl);
   if (!resp.ok) {
-    log.warn('unable to load root url: ', resp.status);
+    log.warn('unable to load root url: ', resp.status, await resp.text());
     return null;
   }
   const rootData = await resp.json();
