@@ -1,3 +1,10 @@
+## [6.27.1](https://github.com/adobe/helix-sidekick-extension/compare/v6.27.0...v6.27.1) (2023-08-17)
+
+
+### Bug Fixes
+
+* adjust sharelink for rootfolder requests ([#489](https://github.com/adobe/helix-sidekick-extension/issues/489)) ([fce1b16](https://github.com/adobe/helix-sidekick-extension/commit/fce1b16c43050cddf5f2457264cb035d1b130b02)), closes [#488](https://github.com/adobe/helix-sidekick-extension/issues/488)
+
 # [6.27.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.26.0...v6.27.0) (2023-08-14)
 
 
