@@ -72,6 +72,20 @@ async function getConfigFromTabUrl(tabUrl) {
     try {
       // check if hlx.page or hlx.live url
       const url = new URL(tabUrl);
+
+      // ALEX
+      // TODO move regex to config
+      const match = url.hostname.match(/^((?<reviewId>.*)-)?(?<repo>.*)-(?<ref>.*)-(?<env>.*)\..*\.(?<owner>.*)$/);
+      if (match && match.groups) {
+        const { owner, repo, ref } = match.groups;
+        return {
+          owner,
+          repo,
+          ref,
+        };
+      }
+      // END ALEX
+
       const res = /(.*)--(.*)--(.*)\.hlx\.[page|live]/.exec(url.hostname);
       if (res && res.length === 4) {
         return {

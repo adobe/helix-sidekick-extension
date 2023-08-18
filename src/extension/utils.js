@@ -367,6 +367,21 @@ export async function getProjectMatches(configs, tabUrl) {
       previewHost,
       liveHost,
     } = cfg;
+
+    /* ALEX */
+    // TODO move regex to config
+    const match = checkHost.match(/^((?<reviewId>.*)-)?(?<repo>.*)-(?<ref>.*)-(?<env>.*)\..*\.(?<owner>.*)$/);
+    if (match && match.groups) {
+      const { owner: o, repo: r } = match.groups;
+      if (owner === o && repo === r) {
+        if (match.groups.env) {
+          cfg.env = match.groups.env;
+        }
+        return true;
+      }
+    }
+    /* END ALEX */
+
     return checkHost === prodHost // production host
       || checkHost === previewHost // custom inner
       || checkHost === liveHost // custom outer
