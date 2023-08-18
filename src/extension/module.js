@@ -1726,19 +1726,6 @@
   }
 
   /**
-   * Event listner for postMessage events.
-   * @param {Object} options The options
-   */
-
-  async function handlePostMessage(options) {
-    chrome.runtime.onMessage.addListener(async (message) => {
-      if (options[message.action]) {
-        options[message.action]();
-      }
-    });
-  }
-
-  /**
    * Adds custom plugins to the sidekick.
    * @private
    * @param {Sidekick} sk The sidekick
@@ -1768,14 +1755,6 @@
             containerId,
             isContainer,
           } = cfg;
-          const closePalette = () => {
-            // const palette = sk.shadowRoot.getElementById(`hlx-sk-palette-${id}`);
-            // const button = sk.get(id).querySelector('button');
-            // if (!palette.classList.contains('hlx-sk-hidden')) {
-            //   palette.classList.add('hlx-sk-hidden');
-            //   button.classList.remove('pressed');
-            // }
-          };
           const condition = (s) => {
             let excluded = false;
             const pathSearchHash = s.location.href.replace(s.location.origin, '');
@@ -1811,8 +1790,6 @@
             button: {
               text: (titleI18n && titleI18n[lang]) || title || '',
               action: () => {
-                const actionHandler = {};
-                actionHandler.closePalette = closePalette;
                 if (url) {
                   const target = url.startsWith('/') ? new URL(url, `https://${innerHost}/`) : new URL(url);
                   if (passConfig) {
@@ -1890,7 +1867,6 @@
                   }
                 } else if (eventName) {
                   // fire custom event
-                  handlePostMessage(actionHandler);
                   fireEvent(sk, `custom:${eventName}`);
                 }
               },

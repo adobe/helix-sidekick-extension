@@ -539,13 +539,20 @@ const externalActions = {
     }
     return resp;
   },
-  // close palette on form submit
-  closePalette: async (_, { tab }) => {
-    chrome.tabs.sendMessage(tab.id, { action: 'closePalette Adaa' });
-
-    return Promise.resolve(' palette closed 546');
+  // close palette with given id
+  closePalette: async ({ id }, { tab }) => {
+    await chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      args: [id],
+      func: (paletteId) => {
+        const palette = document.querySelector('helix-sidekick')
+          ?.shadowRoot?.getElementById(`hlx-sk-palette-${paletteId}`);
+        if (palette) {
+          palette.classList.add('hlx-sk-hidden');
+        }
+      },
+    });
   },
-
   // loads the sidekick if the project is configured
   loadSidekick: async ({ owner, repo }, { tab, url }) => {
     let resp = false;
