@@ -83,7 +83,7 @@ describe('Test unpublish plugin', () => {
     assert.ok(!plugins.find((p) => p.id === 'unpublish'), 'Unexpected unpublish plugin found');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
-  it('Unpublish plugin if source document still exists but user is authenticated', async () => {
+  it('Unpublish plugin hidden if source document still exists but user is authenticated', async () => {
     const setup = new Setup('blog');
     nock.login();
     nock('https://admin.hlx.page')
@@ -128,6 +128,9 @@ describe('Test unpublish plugin', () => {
       pluginSleep: 2000,
       loadModule: true,
     }).run();
-    assert.ok(plugins.find((p) => p.id === 'unpublish'), 'Unpublish plugin not found');
+    assert.ok(
+      plugins.find((p) => p.id === 'unpublish' && p.classes.includes('hlx-sk-advanced-only')),
+      'Unpublish plugin not found',
+    );
   }).timeout(IT_DEFAULT_TIMEOUT);
 });
