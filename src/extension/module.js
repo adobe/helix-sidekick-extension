@@ -1246,7 +1246,8 @@
       id: 'delete',
       condition: (s) => s.isProject()
         && s.isAuthorized('preview', 'delete') // show only if authorized and
-        && s.status.preview.status !== 404 // preview exists
+        && s.status.preview.status !== 404 // preview exists and
+        && s.status.code !== 200 // not code
         && !RESTRICTED_PATHS.includes(s.location.pathname),
       advanced: (s) => s.status.edit.url, // keep hidden if source still exists
       button: {
@@ -1348,7 +1349,8 @@
       id: 'unpublish',
       condition: (s) => s.isProject() && s.isContent()
         && s.isAuthorized('live', 'delete') // show only if authorized and
-        && s.status.live.status !== 404 // published
+        && s.status.live.status !== 404 // published and
+        && s.status.code !== 200 // not code
         && !RESTRICTED_PATHS.includes(s.location.pathname),
       advanced: (s) => s.status.edit.url, // keep hidden if source still exists
       button: {
