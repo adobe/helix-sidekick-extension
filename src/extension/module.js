@@ -282,7 +282,7 @@
   /**
    * Enumeration of view types.
    * @private
-   * @type {Object<number}}
+   * @type {Object<number>}
    */
   const VIEWS = {
     DEFAULT: 0,
