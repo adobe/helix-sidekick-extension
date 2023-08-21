@@ -1184,7 +1184,7 @@ describe('Test sidekick', () => {
         assert.ok(notification.message.startsWith('You need to sign in'), 'Did not show login dialog on 401');
       });
 
-      it.only('Reveals and hides advanced plugins when alt key is pushed and released', async () => {
+      it('Reveals and hides advanced plugins when alt key is pushed and released', async () => {
         const setup = new Setup('blog');
         nock.sidekick(setup);
         nock.admin(setup);
