@@ -1805,7 +1805,6 @@
                   if (isPalette) {
                     let palette = sk.shadowRoot.getElementById(`hlx-sk-palette-${id}`);
                     const togglePalette = () => {
-                      palette.focus();
                       const button = sk.get(id).querySelector('button');
                       if (!palette.classList.contains('hlx-sk-hidden')) {
                         palette.classList.add('hlx-sk-hidden');
