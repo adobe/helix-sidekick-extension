@@ -1805,6 +1805,7 @@
                   if (isPalette) {
                     let palette = sk.shadowRoot.getElementById(`hlx-sk-palette-${id}`);
                     const togglePalette = () => {
+                      palette.focus();
                       const button = sk.get(id).querySelector('button');
                       if (!palette.classList.contains('hlx-sk-hidden')) {
                         palette.classList.add('hlx-sk-hidden');
@@ -1827,7 +1828,13 @@
                           id: `hlx-sk-palette-${id}`,
                           class: 'hlx-sk-palette hlx-sk-hidden',
                           style: paletteRect || '',
+                          tabindex: '0',
                         },
+                      });
+                      palette.addEventListener('keydown', async (e) => {
+                        if (e.key === 'Escape') {
+                          palette.classList.add('hlx-sk-hidden');
+                        }
                       });
                       const titleBar = appendTag(palette, {
                         tag: 'div',

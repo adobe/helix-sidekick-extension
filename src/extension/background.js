@@ -541,17 +541,21 @@ const externalActions = {
   },
   // close palette with given id
   closePalette: async ({ id }, { tab }) => {
-    await chrome.scripting.executeScript({
-      target: { tabId: tab.id },
-      args: [id],
-      func: (paletteId) => {
-        const palette = document.querySelector('helix-sidekick')
-          ?.shadowRoot?.getElementById(`hlx-sk-palette-${paletteId}`);
-        if (palette) {
-          palette.classList.add('hlx-sk-hidden');
-        }
-      },
-    });
+    try {
+      await chrome.scripting.executeScript({
+        target: { tabId: tab.id },
+        args: [id],
+        func: (paletteId) => {
+          const palette = document.querySelector('helix-sidekick')
+            ?.shadowRoot?.getElementById(`hlx-sk-palette-${paletteId}`);
+          if (palette) {
+            palette.classList.add('hlx-sk-hidden');
+          }
+        },
+      });
+    } catch (e) {
+      log.error('error closing palette', e);
+    }
   },
   // loads the sidekick if the project is configured
   loadSidekick: async ({ owner, repo }, { tab, url }) => {
