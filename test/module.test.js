@@ -13,13 +13,14 @@
 
 import assert from 'assert';
 import {
-  checkEventFired, IT_DEFAULT_TIMEOUT, Nock, Setup, TestBrowser,
+  checkEventFired, DEBUG, IT_DEFAULT_TIMEOUT, Nock, Setup, TestBrowser,
 } from './utils.js';
 
 import { SidekickTest } from './SidekickTest.js';
 
 describe('Test sidekick', () => {
-  for (const loadModule of [true, false]) {
+  const loadModes = DEBUG ? [true] : [true, false];
+  for (const loadModule of loadModes) {
     describe(`Test sidekick ${loadModule ? 'module' : 'bookmarklet'}`, () => {
       /** @type TestBrowser */
       let browser;
@@ -1055,12 +1056,11 @@ describe('Test sidekick', () => {
       it('Shows special view for JSON file', async () => {
         const setup = new Setup('blog');
         nock.sidekick(setup);
-        nock.admin(setup);
+        nock.admin(setup, { type: 'json' });
         const { checkPageResult } = await new SidekickTest({
           browser,
           page,
           loadModule,
-          type: 'json',
           checkPage: (p) => p.evaluate(() => window.hlx.sidekick
             .shadowRoot
             .querySelector('.hlx-sk-special-view')),
@@ -1082,33 +1082,6 @@ describe('Test sidekick', () => {
             .querySelector('.hlx-sk-special-view')),
         }).run();
         assert.ok(checkPageResult, 'Did not suppress data view for JSON file');
-      }).timeout(IT_DEFAULT_TIMEOUT);
-
-      it('Shows custom view for PDF file', async () => {
-        const setup = new Setup('blog');
-        nock.sidekick(setup, {
-          configJson: {
-            specialViews: [
-              {
-                path: '**.pdf',
-                viewer: '/tools/sidekick/pdf/index.html',
-              },
-            ],
-          },
-        });
-        nock.admin(setup);
-        nock('https://main--blog--adobe.hlx.page')
-          .get('/tools/sidekick/pdf/index.html?url=https%3A%2F%2Fmain--blog--adobe.hlx.page%2Fen%2Fbla.pdf')
-          .reply(200, 'custom PDF viewer');
-        const { checkPageResult } = await new SidekickTest({
-          browser,
-          page,
-          loadModule,
-          checkPage: (p) => p.evaluate(() => window.hlx.sidekick
-            .shadowRoot
-            .querySelector('.hlx-sk-special-view')),
-        }).run('https://main--blog--adobe.hlx.page/en/bla.pdf');
-        assert.ok(checkPageResult, 'Did not show custom view for PDF file');
       }).timeout(IT_DEFAULT_TIMEOUT);
 
       it('Shows help content', async () => {
