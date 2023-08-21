@@ -1,3 +1,15 @@
+# [6.28.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.27.1...v6.28.0) (2023-08-21)
+
+
+### Bug Fixes
+
+* don't show delete/unpublish for code ([9e4ffd2](https://github.com/adobe/helix-sidekick-extension/commit/9e4ffd2b954f754ac23a9044d48f0d1d38b3e1ad))
+
+
+### Features
+
+* make delete/unpublish advanced features ([2d67d2b](https://github.com/adobe/helix-sidekick-extension/commit/2d67d2bf1c6192f135d0b628596bd40961074964))
+
 ## [6.27.1](https://github.com/adobe/helix-sidekick-extension/compare/v6.27.0...v6.27.1) (2023-08-17)
 
 
