@@ -940,6 +940,24 @@ describe('Test sidekick', () => {
         assert.ok((await test.run()).checkPageResult, 'Did not detect production URL');
       }).timeout(IT_DEFAULT_TIMEOUT);
 
+      it('Detects resource proxy URL correctly', async () => {
+        const setup = new Setup('blog');
+        nock.sidekick(setup);
+        nock.admin(setup);
+        const test = new SidekickTest({
+          browser,
+          page,
+          loadModule,
+          url: 'https://main--blog--adobe.hlx.page/tools/sidekick/json/index.html?sidekickResource=%2Fen%2Ftopics%2Fbla',
+          checkPage: async (p) => p.evaluate(() => window.hlx.sidekick.location.href),
+        });
+        assert.strictEqual(
+          (await test.run()).checkPageResult,
+          'https://main--blog--adobe.hlx.page/en/topics/bla',
+          'Did not detect resource proxy URL',
+        );
+      }).timeout(IT_DEFAULT_TIMEOUT);
+
       it('Does not push down page content by default', async () => {
         const setup = new Setup('blog');
         nock.sidekick(setup);
