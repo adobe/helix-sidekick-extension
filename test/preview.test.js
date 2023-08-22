@@ -161,7 +161,7 @@ describe('Test preview plugin', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Preview plugin switches to custom viewer', async () => {
-    nock('https://main--pages--adobe.hlx.page')
+    nock('https://main--blog--adobe.hlx.page')
       .get('/tools/sidekick/json/index.html?sidekickResource=%2Fen%2Fbla.json')
       .reply(200, 'custom PDF viewer');
     const setup = new Setup('blog');
