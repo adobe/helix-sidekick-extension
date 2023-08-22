@@ -616,39 +616,26 @@
    * @returns {Location} The location object
    */
   function getLocation() {
+    // use window location by default
+    let url = new URL(window.location);
     // first check if there is a test location
     const $test = document.getElementById('sidekick_test_location');
     if ($test) {
       try {
-        return new URL($test.value);
+        url = new URL($test.value);
       } catch (e) {
         return null;
       }
     }
-
-    const {
-      hash, host, hostname, href, origin, pathname, port, protocol, search,
-    } = window.location;
-
-    // check for sidekick resource
+    const { origin, search } = url;
+    // check for resource proxy url
     const searchParams = new URLSearchParams(search);
     const resource = searchParams.get('sidekickResource');
+    console.log(resource, new URL(resource, origin).toString());
     if (resource) {
       return new URL(resource, origin);
     }
-
-    // fall back to window location
-    return {
-      hash,
-      host,
-      hostname,
-      href,
-      origin,
-      pathname,
-      port,
-      protocol,
-      search,
-    };
+    return url;
   }
 
   /**
