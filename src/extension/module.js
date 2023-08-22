@@ -631,7 +631,6 @@
     // check for resource proxy url
     const searchParams = new URLSearchParams(search);
     const resource = searchParams.get('sidekickResource');
-    console.log(resource, new URL(resource, origin).toString());
     if (resource) {
       return new URL(resource, origin);
     }
