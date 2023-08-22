@@ -384,6 +384,11 @@ describe('Test sidekick', () => {
             content,
           };
         });
+        const paletteHidden = await page.evaluate(() => {
+          const $p = window.hlx.sidekick.shadowRoot.querySelector('.hlx-sk-palette');
+          $p.querySelector('button.close').click();
+          return $p.className.includes('hlx-sk-hidden');
+        });
         assert.ok(configLoaded, 'Did not load project config');
         assert.ok(plugins.find((p) => p.id === 'bar'), 'Did not load plugins from project');
         assert.ok(palette, 'Did not show palette');
@@ -391,6 +396,7 @@ describe('Test sidekick', () => {
           title: 'Bar<button title="Close" class="close" tabindex="0"></button>',
           content: '<iframe src="https://www.adobe.com/" allow="clipboard-write *"></iframe>',
         });
+        assert.ok(paletteHidden, 'Did not hide palette');
       }).timeout(IT_DEFAULT_TIMEOUT);
 
       it('Plugin fires custom event', async () => {
@@ -938,6 +944,24 @@ describe('Test sidekick', () => {
           checkPage: async (p) => p.evaluate(() => window.hlx.sidekick.isProd()),
         });
         assert.ok((await test.run()).checkPageResult, 'Did not detect production URL');
+      }).timeout(IT_DEFAULT_TIMEOUT);
+
+      it('Switches to live instead of production without host', async () => {
+        const setup = new Setup('blog');
+        nock.sidekick(setup, {
+          configJson: '{}',
+        });
+        nock.admin(setup);
+        const test = new SidekickTest({
+          browser,
+          page,
+          loadModule,
+          waitNavigation: 'https://main--blog--adobe.hlx.live/en/topics/bla',
+          post: async (p) => p.evaluate(() => window.hlx.sidekick.switchEnv('prod')),
+          checkPage: (p) => p.evaluate(() => window.hlx && !!window.hlx.sidekick),
+        });
+        const { checkPageResult } = await test.run();
+        assert.ok(checkPageResult, 'Did not switch to live');
       }).timeout(IT_DEFAULT_TIMEOUT);
 
       it('Detects resource proxy URL correctly', async () => {
