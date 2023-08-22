@@ -162,7 +162,7 @@ describe('Test preview plugin', () => {
 
   it('Preview plugin switches to custom viewer', async () => {
     nock('https://main--blog--adobe.hlx.page')
-      .get('/tools/sidekick/json/index.html?sidekickResource=%2Fen%2Fbla.json')
+      .get('/tools/sidekick/json/index.html?path=%2Fen%2Fbla.json')
       .reply(200, 'custom PDF viewer');
     const setup = new Setup('blog');
     nock.sidekick(setup, {
@@ -185,7 +185,7 @@ describe('Test preview plugin', () => {
     }).run();
     assert.strictEqual(
       popupOpened,
-      'https://main--blog--adobe.hlx.page/tools/sidekick/json/index.html?sidekickResource=%2Fen%2Fbla.json',
+      'https://main--blog--adobe.hlx.page/tools/sidekick/json/index.html?path=%2Fen%2Fbla.json',
       'Preview URL not opened',
     );
   }).timeout(IT_DEFAULT_TIMEOUT);

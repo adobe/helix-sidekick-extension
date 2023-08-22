@@ -110,7 +110,7 @@
         },
         "viewer": {
           "type": "string",
-          "description": "The URL of the special view. The resource URL will be passed to it via 'sidekickResource' parameter",
+          "description": "The URL of the special view. The resource path will be passed to it via 'path' parameter",
           "examples": [
             "/tools/sidekick/foo/index.html"
           ]

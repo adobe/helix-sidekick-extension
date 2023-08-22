@@ -630,7 +630,7 @@
     const { origin, search } = url;
     // check for resource proxy url
     const searchParams = new URLSearchParams(search);
-    const resource = searchParams.get('sidekickResource');
+    const resource = searchParams.get('path');
     if (resource) {
       return new URL(resource, origin);
     }
@@ -2456,7 +2456,7 @@
       },
     } = sk;
     const searchParams = new URLSearchParams(window.location.search);
-    if (searchParams.get('sidekickResource')) {
+    if (searchParams.get('path')) {
       // custom view
       return;
     }
@@ -3469,7 +3469,7 @@
       const [customView] = findViews(this, VIEWS.CUSTOM);
       if (customView) {
         const customViewUrl = new URL(customView.viewer, envUrl);
-        customViewUrl.searchParams.set('sidekickResource', status.webPath);
+        customViewUrl.searchParams.set('path', status.webPath);
         envUrl = customViewUrl;
       }
       // switch or open env
