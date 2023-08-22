@@ -1351,7 +1351,7 @@
             const redirectHost = config.host || config.outerHost;
             const prodURL = `https://${redirectHost}${path}`;
             console.log(`redirecting to ${prodURL}`);
-            sk.switchEnv('live', newTab(evt));
+            sk.switchEnv('prod', newTab(evt));
           } else {
             console.error(results);
             sk.showModal({
@@ -3455,10 +3455,15 @@
      * @returns {Sidekick} The sidekick
      */
     async switchEnv(targetEnv, open) {
-      const hostType = ENVS[targetEnv];
+      let hostType = ENVS[targetEnv];
       if (!hostType) {
-        console.error('invalid environment', targetEnv);
-        return this;
+        if (targetEnv === 'prod') {
+          // no prod host yet, use live instead
+          hostType = ENVS.live;
+        } else {
+          console.error('invalid environment', targetEnv);
+          return this;
+        }
       }
       if (this.status.error) {
         return this;
