@@ -546,7 +546,6 @@ const externalActions = {
         target: { tabId: tab.id },
         args: [id],
         func: (paletteId) => {
-          // const palette = document.querySelector('helix-sidekick')
           const palette = window.hlx && window.hlx.sidekick
             && window.hlx.sidekick.shadowRoot.getElementById(`hlx-sk-palette-${paletteId}`);
           if (palette) {
