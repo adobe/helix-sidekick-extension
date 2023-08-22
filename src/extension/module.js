@@ -3441,27 +3441,27 @@
      * @returns {Sidekick} The sidekick
      */
     async switchEnv(targetEnv, open) {
-      let hostType = ENVS[targetEnv];
+      this.showWait();
+      const hostType = ENVS[targetEnv];
       if (!hostType) {
-        if (targetEnv === 'prod') {
-          // no prod host yet, use live instead
-          hostType = ENVS.live;
-        } else {
-          console.error('invalid environment', targetEnv);
-          return this;
-        }
+        console.error('invalid environment', targetEnv);
+        return this;
       }
       if (this.status.error) {
         return this;
       }
       const { config, location: { href, search, hash }, status } = this;
-      this.showWait();
+      let envHost = config[hostType];
+      if (targetEnv === 'prod' && !envHost) {
+        // no production host defined yet, use live instead
+        envHost = config.outerHost;
+      }
       if (!status.webPath) {
         console.log('not ready yet, trying again in a second ...');
         window.setTimeout(() => this.switchEnv(targetEnv, open), 1000);
         return this;
       }
-      const envOrigin = targetEnv === 'dev' ? config.devUrl.origin : `https://${config[hostType]}`;
+      const envOrigin = targetEnv === 'dev' ? config.devUrl.origin : `https://${envHost}`;
       let envUrl = `${envOrigin}${status.webPath}`;
       if (!this.isEditor()) {
         envUrl += `${search}${hash}`;
@@ -3472,10 +3472,6 @@
         customViewUrl.searchParams.set('sidekickResource', status.webPath);
         envUrl = customViewUrl;
       }
-      fireEvent(this, 'envswitched', {
-        sourceUrl: href,
-        targetUrl: envUrl,
-      });
       // switch or open env
       if (open || this.isEditor()) {
         window.open(envUrl, open
@@ -3484,6 +3480,10 @@
       } else {
         window.location.href = envUrl;
       }
+      fireEvent(this, 'envswitched', {
+        sourceUrl: href,
+        targetUrl: envUrl,
+      });
       return this;
     }
 
