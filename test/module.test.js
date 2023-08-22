@@ -972,7 +972,7 @@ describe('Test sidekick', () => {
           browser,
           page,
           loadModule,
-          url: 'https://main--blog--adobe.hlx.page/tools/sidekick/json/index.html?sidekickResource=%2Fen%2Ftopics%2Fbla',
+          url: 'https://main--blog--adobe.hlx.page/tools/sidekick/json/index.html?path=%2Fen%2Ftopics%2Fbla',
           checkPage: async (p) => p.evaluate(() => window.hlx.sidekick.location.href),
         });
         assert.strictEqual(
