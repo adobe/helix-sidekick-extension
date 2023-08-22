@@ -1198,6 +1198,30 @@ describe('Test sidekick', () => {
         }).run();
         assert.ok(notification.message.startsWith('You need to sign in'), 'Did not show login dialog on 401');
       });
+
+      it('Reveals and hides advanced plugins when alt key is pushed and released', async () => {
+        const setup = new Setup('blog');
+        nock.sidekick(setup);
+        nock.admin(setup);
+        const { checkPageResult } = await new SidekickTest({
+          browser,
+          page,
+          loadModule,
+          checkPage: (p) => p.evaluate(() => {
+            const skClasses = [];
+            const skRoot = window.hlx.sidekick.shadowRoot.querySelector('.hlx-sk');
+            // push alt key
+            document.dispatchEvent(new KeyboardEvent('keydown', { altKey: true }));
+            skClasses.push(skRoot.className);
+            // release alt key
+            document.dispatchEvent(new KeyboardEvent('keyup'));
+            skClasses.push(skRoot.className);
+            return skClasses;
+          }),
+        }).run();
+        assert.ok(checkPageResult[0].includes('hlx-sk-advanced'), 'Did not reveal advanced plugins');
+        assert.ok(!checkPageResult[1].includes('hlx-sk-advanced'), 'Did not hide advanced plugins');
+      });
     });
   }
 });

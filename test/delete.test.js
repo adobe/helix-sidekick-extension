@@ -140,7 +140,7 @@ describe('Test delete plugin', () => {
     assert.ok(!plugins.find((p) => p.id === 'delete'), 'Unexpected delete plugin found');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
-  it('Delete plugin if source document still exists but user is authenticated', async () => {
+  it('Delete plugin hidden if source document still exists but user is authenticated', async () => {
     const setup = new Setup('blog');
     nock.login();
     nock('https://admin.hlx.page')
@@ -185,6 +185,9 @@ describe('Test delete plugin', () => {
       pluginSleep: 2000,
       loadModule: true,
     }).run();
-    assert.ok(plugins.find((p) => p.id === 'delete'), 'Delete plugin not found');
+    assert.ok(
+      plugins.find((p) => p.id === 'delete' && p.classes.includes('hlx-sk-advanced-only')),
+      'Delete plugin not found',
+    );
   }).timeout(IT_DEFAULT_TIMEOUT);
 });
