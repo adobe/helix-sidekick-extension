@@ -458,6 +458,7 @@ export class TestBrowser {
     this.browser = browser;
     // track frames to detect navigation requests
     // this.frames = {};
+    this.includeCoverage = (!!process.env.NODE_V8_COVERAGE);
   }
 
   onRequestHandler(handler) {
@@ -625,8 +626,10 @@ export class TestBrowser {
    */
   async openPage() {
     const page = await this.browser.newPage();
-    await page.coverage.startJSCoverage({ includeRawScriptCoverage: true });
-    await page.coverage.startCSSCoverage();
+    if (this.includeCoverage) {
+      await page.coverage.startJSCoverage({ includeRawScriptCoverage: true });
+      await page.coverage.startCSSCoverage();
+    }
     return page;
   }
 
@@ -638,9 +641,10 @@ export class TestBrowser {
 
   async closeAllPages() {
     if (!(DEBUG || process.env.HLX_SK_TEST_DEBUG)) {
+      const { includeCoverage } = this;
       await Promise.all((await this.browser.pages()).map(async (page) => {
         const url = page.url();
-        if (url.startsWith('file:///')) {
+        if (includeCoverage && url.startsWith('file:///')) {
           // only get coverage from file urls
           const [jsCoverage] = await Promise.all([
             page.coverage.stopJSCoverage(),
