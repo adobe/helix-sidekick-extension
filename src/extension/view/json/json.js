@@ -94,7 +94,7 @@ export default function draw(json) {
   } else {
     const { data } = json;
     if (data && data.length > 0) {
-      sheets['helix-default'] = data;
+      sheets['shared-default'] = data;
     }
   }
   Object.keys(sheets).forEach((name) => {
