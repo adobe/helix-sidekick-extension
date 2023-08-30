@@ -383,7 +383,7 @@
       return true;
     }
     // matching project domains
-    const projectDomains = ['page', 'hlx.live'];
+    const projectDomains = ['.aem.page', '.aem.live', '.hlx.page', '.hlx.live'];
     if (!projectDomains.find((domain) => baseHost.endsWith(domain)
       && host.endsWith(domain))) {
       return false;
@@ -528,8 +528,10 @@
     } = config;
     const publicHost = host && host.startsWith('http') ? new URL(host).host : host;
     const hostPrefix = owner && repo ? `${ref}--${repo}--${owner}` : null;
-    const stdInnerHost = hostPrefix ? `${hostPrefix}.hlx.page` : null;
-    const stdOuterHost = hostPrefix ? `${hostPrefix}.hlx.live` : null;
+    const domain = /.*\.aem\.["page"|"live"]+/.test(location.host) ? 'aem' : 'hlx';
+    console.log(location.host, domain);
+    const stdInnerHost = hostPrefix ? `${hostPrefix}.${domain}.page` : null;
+    const stdOuterHost = hostPrefix ? `${hostPrefix}.${domain}.live` : null;
     const devUrl = new URL(devOrigin);
     // define elements to push down
     const pushDownElements = [];

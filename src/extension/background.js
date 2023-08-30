@@ -70,9 +70,9 @@ async function getConfigFromTabUrl(tabUrl) {
     return getGitHubSettings(tabUrl);
   } else {
     try {
-      // check if hlx.page or hlx.live url
+      // check if hlx.page, hlx.live, aem.page or aem.live url
       const url = new URL(tabUrl);
-      const res = /(.*)--(.*)--(.*)\.hlx\.[page|live]/.exec(url.hostname);
+      const res = /(.*)--(.*)--(.*)\.["aem"|"hlx"]+\.["page"|"live"]+/.exec(url.hostname);
       if (res && res.length === 4) {
         return {
           owner: res[3],
