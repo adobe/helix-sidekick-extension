@@ -480,14 +480,18 @@
    * @private
    * @param {Sidekick} sk The sidekick
    * @param {number} viewType An optional view type (see {@link VIEWS})
+   * @param {string} testPath An optional test path (default: status.webPath)
    * @returns {Object[]} The views
    */
-  function findViews(sk, viewType) {
+  function findViews(sk, viewType, testPath) {
     const { config } = sk;
     // find view based on resource path
-    const { webPath } = sk.status;
-    if (!webPath) {
-      return [];
+    if (!testPath) {
+      const { webPath } = sk.status;
+      if (!webPath) {
+        return [];
+      }
+      testPath = webPath;
     }
     const { views, scriptRoot } = config;
     const defaultOnly = viewType === VIEWS.DEFAULT;
@@ -495,8 +499,8 @@
     return views.filter(({
       path,
       viewer,
-    }) => globToRegExp(path).test(webPath)
-      && !RESTRICTED_PATHS.includes(webPath)
+    }) => globToRegExp(path).test(testPath)
+      && !RESTRICTED_PATHS.includes(testPath)
       && (!defaultOnly || viewer.startsWith(scriptRoot))
       && (!customOnly || !viewer.startsWith(scriptRoot)));
   }
@@ -1550,7 +1554,13 @@
       const ok = results.filter((res) => res.ok);
       if (ok.length > 0) {
         lines.push(getBulkText([ok.length], 'result', operation, 'success'));
-        lines.push(createTag({
+        const buttonGroup = createTag({
+          tag: 'span',
+          attrs: {
+            class: 'hlx-sk-modal-button-group',
+          },
+        });
+        buttonGroup.append(createTag({
           tag: 'button',
           text: i18n(sk, ok.length === 1 ? 'copy_url' : 'copy_urls'),
           lstnrs: {
@@ -1562,6 +1572,30 @@
             },
           },
         }));
+        buttonGroup.append(createTag({
+          tag: 'button',
+          text: i18n(sk, ok.length === 1 ? 'open_url' : 'open_urls'),
+          lstnrs: {
+            click: (evt) => {
+              evt.stopPropagation();
+              if (ok.length <= 20 || window.confirm(i18n(sk, 'open_urls_confirm').replace('$1', ok.length))) {
+                ok.forEach((item) => {
+                  const url = `https://${host}${item.path}`;
+                  const [{ viewer } = {}] = findViews(sk, VIEWS.CUSTOM, item.path);
+                  if (viewer) {
+                    const viewUrl = new URL(viewer, url);
+                    viewUrl.searchParams.set('url', url);
+                    window.open(viewUrl.toString());
+                  } else {
+                    window.open(url);
+                  }
+                });
+                sk.hideModal();
+              }
+            },
+          },
+        }));
+        lines.push(buttonGroup);
       }
       const failed = results.filter((res) => !res.ok);
       if (failed.length > 0) {
@@ -2460,7 +2494,7 @@
       },
     } = sk;
     const searchParams = new URLSearchParams(window.location.search);
-    if (searchParams.get('path')) {
+    if (searchParams.get('url')) {
       // custom view
       return;
     }
