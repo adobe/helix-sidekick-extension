@@ -43,8 +43,8 @@ describe('Test special view for JSON (single sheet)', () => {
     expect(container.querySelectorAll('tbody > tr').length).to.equal(4);
   });
 
-  it('Draws table - Default sheet name is labeled shared-default', async () => {
-    expect(container.querySelector('h2').textContent).to.equal('shared-default');
+  it('Draws table - Single sheets should not render a title', async () => {
+    expect(container.querySelector('h2')).to.not.exist;
   });
 
   it('Detects Excel date and formats as UTC date', async () => {
