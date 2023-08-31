@@ -528,8 +528,7 @@
     } = config;
     const publicHost = host && host.startsWith('http') ? new URL(host).host : host;
     const hostPrefix = owner && repo ? `${ref}--${repo}--${owner}` : null;
-    const domain = /.*\.aem\.["page"|"live"]+/.test(location.host) ? 'aem' : 'hlx';
-    console.log(location.host, domain);
+    const domain = /.*\.aem\.(page|live)/.test(location.host) ? 'aem' : 'hlx';
     const stdInnerHost = hostPrefix ? `${hostPrefix}.${domain}.page` : null;
     const stdOuterHost = hostPrefix ? `${hostPrefix}.${domain}.live` : null;
     const devUrl = new URL(devOrigin);

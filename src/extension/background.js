@@ -72,12 +72,13 @@ async function getConfigFromTabUrl(tabUrl) {
     try {
       // check if hlx.page, hlx.live, aem.page or aem.live url
       const url = new URL(tabUrl);
-      const res = /(.*)--(.*)--(.*)\.["aem"|"hlx"]+\.["page"|"live"]+/.exec(url.hostname);
-      if (res && res.length === 4) {
+      const res = /(.*)--(.*)--(.*)\.(aem|hlx)\.(page|live)/.exec(url.hostname);
+      const [, urlRef, urlRepo, urlOwner] = res || [];
+      if (urlOwner && urlRepo && urlRef) {
         return {
-          owner: res[3],
-          repo: res[2],
-          ref: res[1],
+          owner: urlOwner,
+          repo: urlRepo,
+          ref: urlRef,
         };
       } else {
         // check if url is known in url cache
