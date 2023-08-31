@@ -2494,7 +2494,7 @@
       },
     } = sk;
     const searchParams = new URLSearchParams(window.location.search);
-    if (searchParams.get('url')) {
+    if (searchParams.get('path')) {
       // custom view
       return;
     }
