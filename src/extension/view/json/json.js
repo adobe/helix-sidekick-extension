@@ -47,7 +47,14 @@ function drawValue(cell, value, url) {
     link.href = target;
     link.title = value;
     link.target = '_blank';
-    if (value.includes('media_')) {
+    if (value.endsWith('.mp4')) {
+      // linked mp4 video
+      valueContainer.classList.add('video');
+      const video = link.appendChild(document.createElement('video'));
+      const source = video.appendChild(document.createElement('source'));
+      source.src = target;
+      source.type = 'video/mp4';
+    } else if (value.includes('media_')) {
       // linked image
       valueContainer.classList.add('image');
       const img = link.appendChild(document.createElement('img'));
