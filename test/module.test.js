@@ -900,7 +900,9 @@ describe('Test sidekick', () => {
           'Did not detect preview URL with different ref',
         );
         // check again with aem.page
-        nock.sidekick(setup);
+        nock.sidekick(setup, {
+          configJson: '{"hlx5":true}',
+        });
         nock.admin(setup);
         assert.ok(
           (await test.run('https://main--blog--adobe.aem.page/')).checkPageResult,
@@ -909,6 +911,9 @@ describe('Test sidekick', () => {
       }).timeout(IT_DEFAULT_TIMEOUT);
 
       it('Detects live environment correctly', async () => {
+        const setup = new Setup('blog');
+        nock.sidekick(setup);
+        nock.admin(setup);
         const test = new SidekickTest({
           browser,
           page,
@@ -918,11 +923,17 @@ describe('Test sidekick', () => {
         });
         assert.ok((await test.run()).checkPageResult, 'Did not detect live URL with hlx.live');
         // check again with aem.live
+        nock.sidekick(setup, {
+          configJson: '{"hlx5":true}',
+        });
+        nock.admin(setup);
         assert.ok(
           (await test.run('https://test--blog--adobe.aem.live/')).checkPageResult,
           'Did not detect live URL with aem.live',
         );
         // check again with different ref
+        nock.sidekick(setup);
+        nock.admin(setup);
         assert.ok(
           (await test.run('https://test--blog--adobe.hlx.live/')).checkPageResult,
           'Did not detect live URL witn different ref',

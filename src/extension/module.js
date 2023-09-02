@@ -523,12 +523,13 @@
       pushDown,
       pushDownSelector,
       specialViews,
+      hlx5,
       scriptUrl = 'https://www.hlx.live/tools/sidekick/module.js',
       scriptRoot = scriptUrl.split('/').filter((_, i, arr) => i < arr.length - 1).join('/'),
     } = config;
     const publicHost = host && host.startsWith('http') ? new URL(host).host : host;
     const hostPrefix = owner && repo ? `${ref}--${repo}--${owner}` : null;
-    const domain = /.*\.aem\.(page|live)/.test(location.host) ? 'aem' : 'hlx';
+    const domain = hlx5 ? 'aem' : 'hlx';
     const stdInnerHost = hostPrefix ? `${hostPrefix}.${domain}.page` : null;
     const stdOuterHost = hostPrefix ? `${hostPrefix}.${domain}.live` : null;
     const devUrl = new URL(devOrigin);
