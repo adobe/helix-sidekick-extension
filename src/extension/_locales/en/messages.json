@@ -541,6 +541,9 @@
   "unpublish_page_success": {
     "message": "Page successfully unpublished."
   },
+  "update_project": {
+    "message": "Update this project"
+  },
   "user_login": {
     "message": "Sign in"
   },

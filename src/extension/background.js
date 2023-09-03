@@ -184,8 +184,17 @@ async function checkContextMenu({ url: tabUrl, id, active }, configs = []) {
             ],
           });
           if (config) {
-            // add context menu item for enabling/disabling project config
             const { disabled } = config;
+            // add context menu item for refreshing project config
+            chrome.contextMenus.create({
+              id: 'updateProject',
+              title: i18n('update_project'),
+              contexts: [
+                'action',
+              ],
+              visible: !disabled,
+            });
+            // enable/disable project config
             chrome.contextMenus.create({
               id: 'enableDisableProject',
               title: disabled ? i18n('config_project_enable') : i18n('config_project_disable'),
@@ -633,6 +642,22 @@ const internalActions = {
       project.disabled = !project.disabled;
       await setProject(project);
       chrome.tabs.reload(id, { bypassCache: true });
+    }
+  },
+  updateProject: async ({ id, url }) => {
+    const cfg = await getConfigFromTabUrl(url);
+    const projectConfig = await getProject(cfg);
+    if (projectConfig) {
+      const {
+        project, owner, repo, ref,
+      } = projectConfig;
+      await deleteProject(`${owner}/${repo}`);
+      await addProject(
+        {
+          project, owner, repo, ref,
+        },
+        () => chrome.tabs.reload(id, { bypassCache: true }),
+      );
     }
   },
   openViewDocSource: async ({ id }) => openViewDocSource(id),
