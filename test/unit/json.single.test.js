@@ -43,6 +43,10 @@ describe('Test special view for JSON (single sheet)', () => {
     expect(container.querySelectorAll('tbody > tr').length).to.equal(4);
   });
 
+  it('Draws table - Single sheets should not render a title', async () => {
+    expect(container.querySelector('h2')).to.not.exist;
+  });
+
   it('Detects Excel date and formats as UTC date', async () => {
     const dataContainer = container.querySelector('tbody > tr > td:nth-of-type(1) > div');
     expect(dataContainer.className).to.equal('date');

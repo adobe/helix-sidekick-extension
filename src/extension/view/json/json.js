@@ -84,7 +84,8 @@ function drawBody(table, data) {
 
 export default function draw(json) {
   const sheets = {};
-  if (json[':type'] === 'multi-sheet' && json[':names']) {
+  const multiSheet = json[':type'] === 'multi-sheet' && json[':names'];
+  if (multiSheet) {
     json[':names'].forEach((name) => {
       const { data } = json[name];
       if (data && data.length > 0) {
@@ -94,13 +95,15 @@ export default function draw(json) {
   } else {
     const { data } = json;
     if (data && data.length > 0) {
-      sheets['helix-default'] = data;
+      sheets['shared-default'] = data;
     }
   }
   Object.keys(sheets).forEach((name) => {
     const sheet = sheets[name];
-    const title = document.body.appendChild(document.createElement('h2'));
-    title.textContent = name;
+    if (multiSheet) {
+      const title = document.body.appendChild(document.createElement('h2'));
+      title.textContent = name;
+    }
     const table = document.body.appendChild(document.createElement('table'));
     drawHeader(table, sheet[0]);
     drawBody(table, sheet);
