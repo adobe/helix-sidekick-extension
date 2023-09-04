@@ -1,3 +1,12 @@
+## [6.29.1](https://github.com/adobe/helix-sidekick-extension/compare/v6.29.0...v6.29.1) (2023-09-04)
+
+
+### Bug Fixes
+
+* add test for single sheets being labelled shared-default ([da831ab](https://github.com/adobe/helix-sidekick-extension/commit/da831abaf2227c359b49c63804b3ea9f7c1d6a94))
+* do not render a title for single sheet responses ([a403ea9](https://github.com/adobe/helix-sidekick-extension/commit/a403ea97a5e49e9dd6739d58b57c4c157f47fd1d))
+* When rendering sheets, name the default sheet shared-default instead of helix-default ([ca90ce2](https://github.com/adobe/helix-sidekick-extension/commit/ca90ce2634ae94a9745634f93b8784783d191d17))
+
 # [6.29.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.28.0...v6.29.0) (2023-08-25)
 
 
