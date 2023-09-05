@@ -1173,15 +1173,16 @@ describe('Test sidekick', () => {
           .get(/.*/)
           .twice()
           .reply(401);
-        const { notification } = await new SidekickTest({
+        const { checkPageResult } = await new SidekickTest({
           browser,
           page,
           loadModule,
-          post: (p) => p.evaluate(() => window.hlx.sidekick.shadowRoot
-            .querySelector('.plugin-container-overlay')
-            .dispatchEvent(new MouseEvent('click', { screenX: 20, screenY: 10 }))),
+          checkPage: (p) => p.evaluate(() => {
+            const sk = window.hlx.sidekick;
+            return sk.get('user-login').parentElement === sk.pluginContainer;
+          }),
         }).run();
-        assert.ok(notification.message.startsWith('You need to sign in'), 'Did not show login dialog on 401');
+        assert.ok(checkPageResult, 'Did not show login dialog on 401');
       });
 
       it('Reveals and hides advanced plugins when alt key is pushed and released', async () => {
