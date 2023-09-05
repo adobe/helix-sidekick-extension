@@ -220,6 +220,11 @@
   flex-wrap: wrap;
   justify-content: start;
   row-gap: 8px;
+  opacity: 1;
+}
+
+.hlx-sk .plugin-container.hlx-sk-concealed {
+  opacity: 0;
 }
 
 .hlx-sk .plugin-container.loading::before,

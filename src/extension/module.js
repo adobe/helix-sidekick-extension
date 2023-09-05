@@ -2304,6 +2304,7 @@
    * @param {Sidekick} sk The sidekick
    */
   function checkPlugins(sk) {
+    sk.pluginContainer.classList.remove('hlx-sk-concealed');
     window.setTimeout(() => {
       if (!sk.pluginContainer.querySelector(':scope div.plugin')) {
         // add empty text
@@ -2538,7 +2539,7 @@
         this.pluginContainer = appendTag(this.root, {
           tag: 'div',
           attrs: {
-            class: 'plugin-container',
+            class: 'plugin-container hlx-sk-concealed',
           },
         });
         this.pluginContainer.append(createTag({
