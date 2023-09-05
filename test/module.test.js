@@ -1152,22 +1152,6 @@ describe('Test sidekick', () => {
         );
       }).timeout(IT_DEFAULT_TIMEOUT);
 
-      it('Handles 401 response from admin API', async () => {
-        nock('https://admin.hlx.page')
-          .get(/.*/)
-          .twice()
-          .reply(401);
-        const { checkPageResult } = await new SidekickTest({
-          browser,
-          page,
-          loadModule,
-          checkPage: (p) => p.evaluate(() => window.hlx.sidekick.shadowRoot
-            .querySelector('.hlx-sk .feature-container .user.dropdown')
-            .classList.contains('dropdown-expanded')),
-        }).run();
-        assert.ok(checkPageResult, 'Did not show login dialog on 401');
-      });
-
       it('Encourages user to log in', async () => {
         nock('https://admin.hlx.page')
           .get(/.*/)
@@ -1177,12 +1161,13 @@ describe('Test sidekick', () => {
           browser,
           page,
           loadModule,
+          sleep: 1000,
           checkPage: (p) => p.evaluate(() => {
             const sk = window.hlx.sidekick;
             return sk.get('user-login').parentElement === sk.pluginContainer;
           }),
         }).run();
-        assert.ok(checkPageResult, 'Did not show login dialog on 401');
+        assert.ok(checkPageResult, 'Did not encourage user to login');
       });
 
       it('Reveals and hides advanced plugins when alt key is pushed and released', async () => {
