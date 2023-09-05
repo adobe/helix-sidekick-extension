@@ -18,6 +18,7 @@
   --hlx-sk-logo-position: 10px 12px;
   --hlx-sk-color: #505050;
   --hlx-sk-accent: #1473e6;
+  --hlx-sk-accent-hover: #0054b6;
   --hlx-sk-border: none;
   --hlx-sk-border-radius: 10px;
   --hlx-sk-font-family: arial, helvetica, sans-serif;
@@ -45,7 +46,7 @@
   --hlx-sk-button-disabled-hover-bg: transparent;
   --hlx-sk-button-accent-bg: var(--hlx-sk-accent);
   --hlx-sk-button-accent-color: #fff;
-  --hlx-sk-button-accent-hover-bg: #0054b6;
+  --hlx-sk-button-accent-hover-bg: var(--hlx-sk-accent-hover);
   --hlx-sk-button-accent-hover-color: var(--hlx-sk-button-accent-color);
   --hlx-sk-button-badge: #F15B3A;
   --hlx-sk-button-badge-hover: #FFC40E;
@@ -189,6 +190,7 @@
 .hlx-sk button.accent:hover {
   background-color: var(--hlx-sk-button-accent-hover-bg);
   border-color: var(--hlx-sk-button-accent-hover-bg);
+  color: var(--hlx-sk-button-accent-hover-color);
 }
 
 .hlx-sk .update button {
