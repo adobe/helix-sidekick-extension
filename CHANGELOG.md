@@ -1,3 +1,23 @@
+# [6.30.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.29.2...v6.30.0) (2023-09-06)
+
+
+### Bug Fixes
+
+* default view on custom view ([5ea036f](https://github.com/adobe/helix-sidekick-extension/commit/5ea036f6094c11a0998ed9299d569efc69a5336c))
+* fallback to live if prod host is missing ([b4d54dd](https://github.com/adobe/helix-sidekick-extension/commit/b4d54dd814d720a476df0d469c94a54c7d3f55b7))
+* fallback to live if prod host is missing ([e75c346](https://github.com/adobe/helix-sidekick-extension/commit/e75c3464a8b0fbe08b652fea20e512f91afa8f91))
+* regex ([4558bf9](https://github.com/adobe/helix-sidekick-extension/commit/4558bf9151d371a83fdf8d9a8a1c49a00c0c6c24))
+* sidekick loaded but invisible ([22a8986](https://github.com/adobe/helix-sidekick-extension/commit/22a8986db92d714edceba2e6e3f4feeba19a8b15))
+* use path instead of url ([6413a01](https://github.com/adobe/helix-sidekick-extension/commit/6413a019828561a877de8454be593fef64e3d70c))
+
+
+### Features
+
+* make login more discoverable ([4170d2a](https://github.com/adobe/helix-sidekick-extension/commit/4170d2a162a7af882aa585f40573ce51eacedcc6))
+* open url(s) after bulk preview/publish ([3af54ef](https://github.com/adobe/helix-sidekick-extension/commit/3af54eff48c1d344d8db8e3c8a745c8c54855000))
+* simplify custom viewers ([d45aeec](https://github.com/adobe/helix-sidekick-extension/commit/d45aeecb6bde5fedbceb6791c488ca51306dabc0))
+* support aem.page and aem.live ([82f8775](https://github.com/adobe/helix-sidekick-extension/commit/82f8775201a8cba082be0b7a7b4c042eae9791f3))
+
 ## [6.29.2](https://github.com/adobe/helix-sidekick-extension/compare/v6.29.1...v6.29.2) (2023-09-06)
 
 
