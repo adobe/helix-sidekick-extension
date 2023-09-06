@@ -1152,7 +1152,7 @@ describe('Test sidekick', () => {
         );
       }).timeout(IT_DEFAULT_TIMEOUT);
 
-      it.only('Encourages user to log in', async () => {
+      it('Encourages user to log in', async () => {
         nock('https://admin.hlx.page')
           .get(/.*/)
           .reply(401)
