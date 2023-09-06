@@ -160,6 +160,10 @@
     "plugins": {
       "type": "array",
       "items": { "$ref": "#/$defs/plugin" }
+    },
+    "redirect": {
+      "type": "url",
+      "description": "Loads the sidekick configuration from a different URL"
     }
    },
    "additionalProperties": false
