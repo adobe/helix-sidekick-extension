@@ -1,3 +1,10 @@
+## [6.29.2](https://github.com/adobe/helix-sidekick-extension/compare/v6.29.1...v6.29.2) (2023-09-06)
+
+
+### Bug Fixes
+
+* correct urls in json rendition ([#513](https://github.com/adobe/helix-sidekick-extension/issues/513)) ([0dc20a4](https://github.com/adobe/helix-sidekick-extension/commit/0dc20a46206af2393a13c0836d15ca512adb1081))
+
 ## [6.29.1](https://github.com/adobe/helix-sidekick-extension/compare/v6.29.0...v6.29.1) (2023-09-04)
 
 
