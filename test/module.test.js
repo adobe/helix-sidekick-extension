@@ -1152,11 +1152,11 @@ describe('Test sidekick', () => {
         );
       }).timeout(IT_DEFAULT_TIMEOUT);
 
-      it('Encourages user to log in', async () => {
+      it.only('Encourages user to log in', async () => {
         nock('https://admin.hlx.page')
           .get(/.*/)
-          .twice()
-          .reply(401);
+          .reply(401)
+          .persist();
         const { checkPageResult } = await new SidekickTest({
           browser,
           page,
@@ -1165,6 +1165,10 @@ describe('Test sidekick', () => {
           checkPage: (p) => p.evaluate(() => {
             const sk = window.hlx.sidekick;
             return sk.get('user-login').parentElement === sk.pluginContainer;
+          }),
+          post: (p) => p.evaluate(() => {
+            // make sure login is only encouraged once
+            window.hlx.sidekick.fetchStatus();
           }),
         }).run();
         assert.ok(checkPageResult, 'Did not encourage user to login');
