@@ -1584,7 +1584,7 @@
                   const [{ viewer } = {}] = findViews(sk, VIEWS.CUSTOM, item.path);
                   if (viewer) {
                     const viewUrl = new URL(viewer, url);
-                    viewUrl.searchParams.set('url', url);
+                    viewUrl.searchParams.set('path', item.path);
                     window.open(viewUrl.toString());
                   } else {
                     window.open(url);
