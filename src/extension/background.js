@@ -567,8 +567,12 @@ const externalActions = {
           if (match) {
             log.info(`enabling sidekick for project ${owner}/${repo} on ${url}`);
             await setDisplay(true);
-            await populateUrlCache(url, { owner, repo });
-            await injectContentScript(tab.id, [match]);
+            // only load sidekick if not already being loaded for this specific url
+            const matches = await queryUrlCache(url);
+            if (matches.length === 0) {
+              await populateUrlCache(url, { owner, repo });
+              await checkTab(tab.id);
+            }
             resolve(true);
           } else {
             log.warn(`unknown project ${owner}/${repo}, not enabling sidekick on ${url}`);

@@ -78,8 +78,6 @@
    * @typedef {Object} ViewConfig
    * @description A custom view configuration.
    * @prop {string} path The path or globbing pattern where to apply this view
-   * @prop {string} title The view title (optional)
-   * @prop {Object} titleI18n={} A map of translated view titles
    * @prop {string} viewer The URL to render this view
    */
 
@@ -282,6 +280,16 @@
   ];
 
   /**
+   * Enumeration of view types.
+   * @private
+   * @type {Object<number>}
+   */
+  const VIEWS = {
+    DEFAULT: 0,
+    CUSTOM: 1,
+  };
+
+  /**
    * Log RUM for sidekick telemetry.
    * @private
    * @param {string} checkpoint identifies the checkpoint in funnel
@@ -468,13 +476,53 @@
   }
 
   /**
+   * Checks for configured views for the current resource.
+   * @private
+   * @param {Sidekick} sk The sidekick
+   * @param {number} viewType An optional view type (see {@link VIEWS})
+   * @param {string} testPath An optional test path (default: status.webPath)
+   * @returns {Object[]} The views
+   */
+  function findViews(sk, viewType, testPath) {
+    const { config } = sk;
+    // find view based on resource path
+    if (!testPath) {
+      const { webPath } = sk.status;
+      if (!webPath) {
+        return [];
+      }
+      testPath = webPath;
+    }
+    const { views, scriptRoot } = config;
+    const defaultOnly = viewType === VIEWS.DEFAULT;
+    const customOnly = viewType === VIEWS.CUSTOM;
+    return views.filter(({
+      path,
+      viewer,
+    }) => globToRegExp(path).test(testPath)
+      && !RESTRICTED_PATHS.includes(testPath)
+      && (!defaultOnly || viewer.startsWith(scriptRoot))
+      && (!customOnly || !viewer.startsWith(scriptRoot)));
+  }
+
+  /**
+   * Retrieves a string from the dictionary in the user's language.
+   * @private
+   * @param {Sidekick} sk The sidekick
+   * @param {string} key The dictionary key
+   * @returns {string} The string in the user's language
+   */
+  function i18n(sk, key) {
+    return sk.dict ? (sk.dict[key] || '') : '';
+  }
+
+  /**
    * Returns the sidekick configuration.
    * @private
    * @param {SidekickConfig} cfg The sidekick config (defaults to {@link window.hlx.sidekickConfig})
-   * @param {Location} location The current location
    * @returns {Object} The sidekick configuration
    */
-  async function initConfig(cfg, location) {
+  async function initConfig(cfg) {
     let config = cfg || (window.hlx && window.hlx.sidekickConfig) || {};
     const {
       owner,
@@ -539,21 +587,15 @@
       ).forEach((elem) => pushDownElements.push(elem));
     }
     // default views
-    const defaultSpecialViews = [
+    let views = [
       {
         path: '**.json',
         viewer: `${scriptRoot}/view/json/json.html`,
+        title: (sk) => i18n(sk, 'json_view_description'),
       },
     ];
-    // try custom views first
-    const allSpecialViews = Array.isArray(specialViews)
-      ? specialViews.concat(defaultSpecialViews)
-      : defaultSpecialViews;
-    // find view based on path
-    const { pathname } = location;
-    const specialView = allSpecialViews.find(({
-      path,
-    }) => !RESTRICTED_PATHS.includes(pathname) && globToRegExp(path).test(pathname));
+    // prepend custom views
+    views = (specialViews || []).concat(views);
 
     return {
       ...config,
@@ -566,7 +608,7 @@
       host: publicHost,
       project,
       pushDownElements,
-      specialView,
+      views,
       devUrl,
       lang: lang || getLanguage(),
     };
@@ -578,31 +620,25 @@
    * @returns {Location} The location object
    */
   function getLocation() {
+    // use window location by default
+    let url = new URL(window.location);
     // first check if there is a test location
     const $test = document.getElementById('sidekick_test_location');
     if ($test) {
       try {
-        return new URL($test.value);
+        url = new URL($test.value);
       } catch (e) {
         return null;
       }
     }
-    // fall back to window location
-    const {
-      hash, host, hostname, href, origin, pathname, port, protocol, search,
-    } = window.location;
-
-    return {
-      hash,
-      host,
-      hostname,
-      href,
-      origin,
-      pathname,
-      port,
-      protocol,
-      search,
-    };
+    const { origin, search } = url;
+    // check for resource proxy url
+    const searchParams = new URLSearchParams(search);
+    const resource = searchParams.get('path');
+    if (resource) {
+      return new URL(resource, origin);
+    }
+    return url;
   }
 
   /**
@@ -677,17 +713,6 @@
     return makeAccessible(before
       ? parent.insertBefore(tag, before)
       : parent.appendChild(tag));
-  }
-
-  /**
-   * Retrieves a string from the dictionary in the user's language.
-   * @private
-   * @param {Sidekick} sk The sidekick
-   * @param {string} key The dictionary key
-   * @returns {string} The string in the user's language
-   */
-  function i18n(sk, key) {
-    return sk.dict ? (sk.dict[key] || '') : '';
   }
 
   /**
@@ -1318,12 +1343,7 @@
             const redirectHost = config.host || config.outerHost;
             const prodURL = `https://${redirectHost}${path}`;
             console.log(`redirecting to ${prodURL}`);
-            if (newTab(evt)) {
-              window.open(prodURL);
-              sk.hideModal();
-            } else {
-              window.location.href = prodURL;
-            }
+            sk.switchEnv('prod', newTab(evt));
           } else {
             console.error(results);
             sk.showModal({
@@ -1534,7 +1554,13 @@
       const ok = results.filter((res) => res.ok);
       if (ok.length > 0) {
         lines.push(getBulkText([ok.length], 'result', operation, 'success'));
-        lines.push(createTag({
+        const buttonGroup = createTag({
+          tag: 'span',
+          attrs: {
+            class: 'hlx-sk-modal-button-group',
+          },
+        });
+        buttonGroup.append(createTag({
           tag: 'button',
           text: i18n(sk, ok.length === 1 ? 'copy_url' : 'copy_urls'),
           lstnrs: {
@@ -1546,6 +1572,30 @@
             },
           },
         }));
+        buttonGroup.append(createTag({
+          tag: 'button',
+          text: i18n(sk, ok.length === 1 ? 'open_url' : 'open_urls'),
+          lstnrs: {
+            click: (evt) => {
+              evt.stopPropagation();
+              if (ok.length <= 20 || window.confirm(i18n(sk, 'open_urls_confirm').replace('$1', ok.length))) {
+                ok.forEach((item) => {
+                  const url = `https://${host}${item.path}`;
+                  const [{ viewer } = {}] = findViews(sk, VIEWS.CUSTOM, item.path);
+                  if (viewer) {
+                    const viewUrl = new URL(viewer, url);
+                    viewUrl.searchParams.set('path', item.path);
+                    window.open(viewUrl.toString());
+                  } else {
+                    window.open(url);
+                  }
+                });
+                sk.hideModal();
+              }
+            },
+          },
+        }));
+        lines.push(buttonGroup);
       }
       const failed = results.filter((res) => !res.ok);
       if (failed.length > 0) {
@@ -2393,13 +2443,13 @@
   }
 
   /**
-   * Creates and/or returns a special view overlay.
+   * Creates and/or returns a view overlay.
    * @private
    * @param {Sidekick} sk The sidekick
-   * @param {boolean} create Create the special view if none exists
-   * @returns {HTMLELement} The special view overlay
+   * @param {boolean} create Create the view if none exists
+   * @returns {HTMLELement} The view overlay
    */
-  function getSpecialViewOverlay(sk, create) {
+  function getViewOverlay(sk, create) {
     const view = sk.shadowRoot.querySelector('.hlx-sk-special-view')
       || (create
         ? appendTag(sk.shadowRoot, {
@@ -2421,7 +2471,7 @@
         text: i18n(sk, 'close'),
         attrs: { class: 'close' },
         // eslint-disable-next-line no-use-before-define
-        lstnrs: { click: () => hideSpecialView(sk) },
+        lstnrs: { click: () => hideView(sk, true) },
       });
       appendTag(view, {
         tag: 'iframe',
@@ -2439,37 +2489,41 @@
    * @private
    * @param {Sidekick} sk The sidekick
    */
-  async function showSpecialView(sk) {
+  async function showView(sk) {
+    if (!sk.isProject()) {
+      return;
+    }
     const {
-      config: {
-        lang,
-        specialView,
-      },
       location: {
         origin,
         href,
       },
     } = sk;
-    if (specialView && !getSpecialViewOverlay(sk)) {
-      // hide original content
-      [...sk.parentElement.children].forEach((el) => {
-        if (el !== sk) {
-          try {
-            el.style.display = 'none';
-          } catch (e) {
-            // ignore
-          }
-        }
-      });
-      const { viewer, title, titleI18n } = specialView;
+    const searchParams = new URLSearchParams(window.location.search);
+    if (searchParams.get('path')) {
+      // custom view
+      return;
+    }
+    const [view] = findViews(sk, VIEWS.DEFAULT);
+    if (view && !getViewOverlay(sk)) {
+      const { viewer, title } = view;
       if (viewer) {
         const viewUrl = new URL(viewer, origin);
         viewUrl.searchParams.set('url', href);
-        const viewOverlay = getSpecialViewOverlay(sk, true);
-        viewOverlay.querySelector('.title').textContent = (titleI18n && titleI18n[lang])
-          || title || i18n(sk, 'json_view_description');
+        const viewOverlay = getViewOverlay(sk, true);
+        viewOverlay.querySelector('.title').textContent = title(sk);
         viewOverlay.querySelector('.container')
           .setAttribute('src', viewUrl.toString());
+        // hide original content
+        [...sk.parentElement.children].forEach((el) => {
+          if (el !== sk) {
+            try {
+              el.style.display = 'none';
+            } catch (e) {
+              // ignore
+            }
+          }
+        });
       }
     }
   }
@@ -2478,9 +2532,10 @@
    * Hides the special view.
    * @private
    * @param {Sidekick} sk The sidekick
+   * @param {boolean} click {@code true} if triggered by user
    */
-  function hideSpecialView(sk) {
-    const viewOverlay = getSpecialViewOverlay(sk);
+  function hideView(sk, userAction) {
+    const viewOverlay = getViewOverlay(sk);
     if (viewOverlay) {
       viewOverlay.replaceWith('');
 
@@ -2494,9 +2549,10 @@
           }
         }
       });
-
+    }
+    if (userAction) {
       // log telemetry
-      sampleRUM('sidekick:specialviewhidden', {
+      sampleRUM('sidekick:viewhidden', {
         source: sk.location.href,
         target: sk.status.webPath,
       });
@@ -2648,8 +2704,6 @@
         this.fetchStatus();
         // push down content
         pushDownContent(this);
-        // show special view
-        showSpecialView(this);
 
         // reveal advanced features via alt key
         document.addEventListener('keydown', ({ altKey }) => {
@@ -2669,6 +2723,7 @@
         document.dispatchEvent(new CustomEvent('helix-sidekick-ready')); // legacy
       }, { once: true });
       this.addEventListener('statusfetched', () => {
+        showView(this);
         checkUserState(this);
         checkPlugins(this);
         checkLastModified(this);
@@ -2678,7 +2733,7 @@
         pushDownContent(this);
       });
       this.addEventListener('hidden', () => {
-        hideSpecialView(this);
+        hideView(this);
         revertPushDownContent(this);
       });
       this.status = {};
@@ -3429,6 +3484,7 @@
      * @returns {Sidekick} The sidekick
      */
     async switchEnv(targetEnv, open) {
+      this.showWait();
       const hostType = ENVS[targetEnv];
       if (!hostType) {
         console.error('invalid environment', targetEnv);
@@ -3438,21 +3494,27 @@
         return this;
       }
       const { config, location: { href, search, hash }, status } = this;
-      this.showWait();
+      let envHost = config[hostType];
+      if (targetEnv === 'prod' && !envHost) {
+        // no production host defined yet, use live instead
+        envHost = config.outerHost;
+      }
       if (!status.webPath) {
         console.log('not ready yet, trying again in a second ...');
         window.setTimeout(() => this.switchEnv(targetEnv, open), 1000);
         return this;
       }
-      const envOrigin = targetEnv === 'dev' ? config.devUrl.origin : `https://${config[hostType]}`;
+      const envOrigin = targetEnv === 'dev' ? config.devUrl.origin : `https://${envHost}`;
       let envUrl = `${envOrigin}${status.webPath}`;
       if (!this.isEditor()) {
         envUrl += `${search}${hash}`;
       }
-      fireEvent(this, 'envswitched', {
-        sourceUrl: href,
-        targetUrl: envUrl,
-      });
+      const [customView] = findViews(this, VIEWS.CUSTOM);
+      if (customView) {
+        const customViewUrl = new URL(customView.viewer, envUrl);
+        customViewUrl.searchParams.set('path', status.webPath);
+        envUrl = customViewUrl;
+      }
       // switch or open env
       if (open || this.isEditor()) {
         window.open(envUrl, open
@@ -3461,6 +3523,10 @@
       } else {
         window.location.href = envUrl;
       }
+      fireEvent(this, 'envswitched', {
+        sourceUrl: href,
+        targetUrl: envUrl,
+      });
       return this;
     }
 

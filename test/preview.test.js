@@ -159,4 +159,34 @@ describe('Test preview plugin', () => {
       'Unexpected editor query parameters forwarded',
     );
   }).timeout(IT_DEFAULT_TIMEOUT);
+
+  it('Preview plugin switches to custom viewer', async () => {
+    nock('https://main--blog--adobe.hlx.page')
+      .get('/tools/sidekick/json/index.html?path=%2Fen%2Fbla.json')
+      .reply(200, 'custom PDF viewer');
+    const setup = new Setup('blog');
+    nock.sidekick(setup, {
+      configJson: {
+        specialViews: [
+          {
+            path: '**.json',
+            viewer: '/tools/sidekick/json/index.html',
+          },
+        ],
+      },
+    });
+    nock.admin(setup, { type: 'json' });
+    const { popupOpened } = await new SidekickTest({
+      browser,
+      page,
+      url: 'https://docs.google.com/document/d/2E1PNphAhTZAZrDjevM0BX7CZr7KjomuBO6xE1TUo9NU/edit',
+      plugin: 'preview',
+      waitPopup: 2000,
+    }).run();
+    assert.strictEqual(
+      popupOpened,
+      'https://main--blog--adobe.hlx.page/tools/sidekick/json/index.html?path=%2Fen%2Fbla.json',
+      'Preview URL not opened',
+    );
+  }).timeout(IT_DEFAULT_TIMEOUT);
 });

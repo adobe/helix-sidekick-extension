@@ -163,7 +163,7 @@ describe('Test bulk preview plugin', () => {
       assert.ok(updateReq, `Preview URL not updated in ${env}`);
     }).timeout(IT_DEFAULT_TIMEOUT);
 
-    it(`Bulk preview plugin previews user selection in ${env} and copies preview URLs to clipboard`, async () => {
+    it(`Bulk preview plugin previews user selection in ${env}, copies preview URLs to clipboard and opens them`, async () => {
       const { owner, repo, ref } = setup.sidekickConfig;
       nock.sidekick();
       nock.admin(setup, {
@@ -177,7 +177,7 @@ describe('Test bulk preview plugin', () => {
         method: 'post',
         persist: true,
       });
-      const { requestsMade, checkPageResult: clipboardText } = await new SidekickTest({
+      const { requestsMade, checkPageResult } = await new SidekickTest({
         browser,
         page,
         fixture,
@@ -196,13 +196,15 @@ describe('Test bulk preview plugin', () => {
           window.navigator.clipboard.writeText = (text) => {
             window.hlx.clipboardText = text;
           };
-          // user clicks copy URLs button
+          window.hlx.openedWindows = [];
+          window.open = (url) => window.hlx.openedWindows.push(url);
+          // user clicks copy and open URLs buttons
           // eslint-disable-next-line no-underscore-dangle
-          window.hlx.sidekick._modal.querySelector('button').click();
-          // wait 500ms gthen get clipboard text
+          window.hlx.sidekick._modal.querySelectorAll('button').forEach((b) => b.click());
+          // wait 500ms, then get clipboard text and opened windows
           return new Promise((resolve) => {
             setTimeout(() => {
-              resolve(window.hlx.clipboardText);
+              resolve([window.hlx.clipboardText, window.hlx.openedWindows]);
             }, 500);
           });
         }),
@@ -212,6 +214,7 @@ describe('Test bulk preview plugin', () => {
       const updateReqs = requestsMade
         .filter((r) => r.method === 'POST')
         .map((r) => r.url);
+      const [clipboardText, openedWindows] = checkPageResult;
       assert.deepEqual(
         updateReqs,
         [
@@ -221,7 +224,8 @@ describe('Test bulk preview plugin', () => {
         ],
         `User selection not recognized in ${env}`,
       );
-      assert.ok(clipboardText !== 'dummy', `URLs not copied to clipboard in ${env}`);
+      assert.strictEqual(clipboardText.split('\n').length, 3, `3 URLs not copied to clipboard in ${env}: \n${clipboardText}`);
+      assert.strictEqual(openedWindows.length, 3, `3 URLs not opened in ${env}: \n${openedWindows.join('\n')}`);
     }).timeout(IT_DEFAULT_TIMEOUT);
   });
 
