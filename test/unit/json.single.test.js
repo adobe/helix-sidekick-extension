@@ -57,13 +57,20 @@ describe('Test special view for JSON (single sheet)', () => {
     const dataContainer = container.querySelector('tbody > tr > td:nth-of-type(2) > div');
     expect(dataContainer.className).to.equal('image');
     expect(dataContainer.querySelector('img').getAttribute('src'))
-      .to.equal('/test/fixtures/media_0000.png?width=1200&format=pjpg&optimize=medium');
+      .to.equal('https://main--bar--foo.hlx.page/test/fixtures/media_0000.png?width=1200&format=pjpg&optimize=medium');
+  });
+
+  it('Detects mp4 and shows video', async () => {
+    const dataContainer = container.querySelector('tbody > tr > td:nth-of-type(12) > div');
+    expect(dataContainer.className).to.equal('video');
+    expect(dataContainer.querySelector('source').getAttribute('src'))
+      .to.equal('https://main--bar--foo.hlx.page/test/fixtures/video.mp4');
   });
 
   it('Detects link and shows as anchor', async () => {
     const dataContainer = container.querySelector('tbody > tr > td:nth-of-type(3) > div');
     expect(dataContainer.querySelector('a').getAttribute('href'))
-      .to.equal('/en/publish/2022/01/20/adobe-is-helping-government-agencies-modernize-grants-management');
+      .to.equal('https://main--bar--foo.hlx.page/en/publish/2022/01/20/adobe-is-helping-government-agencies-modernize-grants-management');
   });
 
   it('Detects array and formats as unordered list', async () => {
