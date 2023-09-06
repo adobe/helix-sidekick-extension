@@ -1771,13 +1771,13 @@
         return;
       }
       // hide all plugins and only show login
-      plugins.querySelectorAll('.plugin').forEach((p) => p.classList.add('hlx-sk-hidden'));
+      plugins.classList.add('hlx-sk-login-only');
       loginPlugin.firstElementChild.classList.add('accent');
       loginPlugin.firstElementChild.title = i18n(sk, 'user_login_hint');
       plugins.append(loginPlugin);
     } else {
       // unhide plugins
-      plugins.querySelectorAll('.plugin').forEach((p) => p.classList.remove('hlx-sk-hidden'));
+      plugins.classList.remove('hlx-sk-login-only');
     }
   }
 
