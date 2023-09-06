@@ -1757,40 +1757,27 @@
   }
 
   /**
-   * Adds UI to encourage eusers to log in.
+   * Adds UI to encourage users to log in.
    * @private
    * @param {Sidekick} sk The sidekick
    * @param {boolean} show Whether to show the login encouragement or not
-   * @param {HTMLElement} toggle The user menu toggle
    */
-  function encourageLogin(sk, show, toggle) {
-    const openUserMenu = () => {
-      if (toggle) {
-        toggle.click();
-      }
-    };
+  function encourageLogin(sk, show) {
+    const loginPlugin = sk.get('user-login');
+    const plugins = sk.pluginContainer;
     if (show) {
-      openUserMenu();
-      // add overlay
-      sk.pluginContainer.append(createTag({
-        tag: 'div',
-        attrs: {
-          class: 'plugin-container-overlay',
-        },
-        lstnrs: {
-          click: () => {
-            if (sk.status.status === 401) {
-              sk.showModal({
-                message: i18n(sk, 'user_login_hint'),
-                callback: () => openUserMenu(),
-              });
-            }
-          },
-        },
-      }));
+      if (loginPlugin.parentElement === plugins) {
+        // login already encouraged
+        return;
+      }
+      // hide all plugins and only show login
+      plugins.querySelectorAll('.plugin').forEach((p) => p.classList.add('hlx-sk-hidden'));
+      loginPlugin.firstElementChild.classList.add('accent');
+      loginPlugin.firstElementChild.title = i18n(sk, 'user_login_hint');
+      plugins.append(loginPlugin);
     } else {
-      // remove overlay
-      sk.pluginContainer.querySelector('.plugin-container-overlay')?.remove();
+      // unhide plugins
+      plugins.querySelectorAll('.plugin').forEach((p) => p.classList.remove('hlx-sk-hidden'));
     }
   }
 
@@ -2197,7 +2184,7 @@
       });
       if (!sk.status.loggedOut && sk.status.status === 401 && !sk.isAuthenticated()) {
         // encourage login
-        encourageLogin(sk, true, toggle);
+        encourageLogin(sk, true);
       }
     }
   }
@@ -2369,6 +2356,7 @@
    * @param {Sidekick} sk The sidekick
    */
   function checkPlugins(sk) {
+    sk.pluginContainer.classList.remove('hlx-sk-concealed');
     window.setTimeout(() => {
       if (!sk.pluginContainer.querySelector(':scope div.plugin')) {
         // add empty text
@@ -2609,7 +2597,7 @@
         this.pluginContainer = appendTag(this.root, {
           tag: 'div',
           attrs: {
-            class: 'plugin-container',
+            class: 'plugin-container hlx-sk-concealed',
           },
         });
         this.pluginContainer.append(createTag({

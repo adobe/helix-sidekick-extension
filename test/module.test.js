@@ -1183,36 +1183,26 @@ describe('Test sidekick', () => {
         );
       }).timeout(IT_DEFAULT_TIMEOUT);
 
-      it('Handles 401 response from admin API', async () => {
+      it('Encourages user to log in', async () => {
         nock('https://admin.hlx.page')
           .get(/.*/)
-          .twice()
-          .reply(401);
+          .reply(401)
+          .persist();
         const { checkPageResult } = await new SidekickTest({
           browser,
           page,
           loadModule,
-          checkPage: (p) => p.evaluate(() => window.hlx.sidekick.shadowRoot
-            .querySelector('.hlx-sk .feature-container .user.dropdown')
-            .classList.contains('dropdown-expanded')),
+          sleep: 1000,
+          checkPage: (p) => p.evaluate(() => {
+            const sk = window.hlx.sidekick;
+            return sk.get('user-login').parentElement === sk.pluginContainer;
+          }),
+          post: (p) => p.evaluate(() => {
+            // make sure login is only encouraged once
+            window.hlx.sidekick.fetchStatus();
+          }),
         }).run();
-        assert.ok(checkPageResult, 'Did not show login dialog on 401');
-      });
-
-      it('Encourages user to log in', async () => {
-        nock('https://admin.hlx.page')
-          .get(/.*/)
-          .twice()
-          .reply(401);
-        const { notification } = await new SidekickTest({
-          browser,
-          page,
-          loadModule,
-          post: (p) => p.evaluate(() => window.hlx.sidekick.shadowRoot
-            .querySelector('.plugin-container-overlay')
-            .dispatchEvent(new MouseEvent('click', { screenX: 20, screenY: 10 }))),
-        }).run();
-        assert.ok(notification.message.startsWith('You need to sign in'), 'Did not show login dialog on 401');
+        assert.ok(checkPageResult, 'Did not encourage user to login');
       });
 
       it('Reveals and hides advanced plugins when alt key is pushed and released', async () => {
