@@ -13,13 +13,14 @@
 
 import assert from 'assert';
 import {
-  checkEventFired, IT_DEFAULT_TIMEOUT, Nock, Setup, TestBrowser,
+  checkEventFired, DEBUG, IT_DEFAULT_TIMEOUT, Nock, Setup, TestBrowser,
 } from './utils.js';
 
 import { SidekickTest } from './SidekickTest.js';
 
 describe('Test sidekick', () => {
-  for (const loadModule of [true, false]) {
+  const loadModes = DEBUG ? [true] : [true, false];
+  for (const loadModule of loadModes) {
     describe(`Test sidekick ${loadModule ? 'module' : 'bookmarklet'}`, () => {
       /** @type TestBrowser */
       let browser;
@@ -383,6 +384,11 @@ describe('Test sidekick', () => {
             content,
           };
         });
+        const paletteHidden = await page.evaluate(() => {
+          const $p = window.hlx.sidekick.shadowRoot.querySelector('.hlx-sk-palette');
+          $p.querySelector('button.close').click();
+          return $p.className.includes('hlx-sk-hidden');
+        });
         assert.ok(configLoaded, 'Did not load project config');
         assert.ok(plugins.find((p) => p.id === 'bar'), 'Did not load plugins from project');
         assert.ok(palette, 'Did not show palette');
@@ -390,6 +396,7 @@ describe('Test sidekick', () => {
           title: 'Bar<button title="Close" class="close" tabindex="0"></button>',
           content: '<iframe src="https://www.adobe.com/" allow="clipboard-write *"></iframe>',
         });
+        assert.ok(paletteHidden, 'Did not hide palette');
       }).timeout(IT_DEFAULT_TIMEOUT);
 
       it('Plugin fires custom event', async () => {
@@ -891,7 +898,7 @@ describe('Test sidekick', () => {
           loadModule,
           checkPage: async (p) => p.evaluate(() => window.hlx.sidekick.isInner()),
         });
-        assert.ok((await test.run()).checkPageResult, 'Did not detect preview URL');
+        assert.ok((await test.run()).checkPageResult, 'Did not detect preview URL with hlx.page');
         // check again with different ref
         nock.sidekick(setup);
         nock.admin(setup);
@@ -899,16 +906,21 @@ describe('Test sidekick', () => {
           (await test.run('https://test--blog--adobe.hlx.page/')).checkPageResult,
           'Did not detect preview URL with different ref',
         );
-        // check again with hlx3.page
-        nock.sidekick(setup);
+        // check again with aem.page
+        nock.sidekick(setup, {
+          configJson: '{"hlx5":true}',
+        });
         nock.admin(setup);
         assert.ok(
-          (await test.run('https://main--blog--adobe.hlx3.page/')).checkPageResult,
-          'Did not detect preview URL with hlx3.page',
+          (await test.run('https://main--blog--adobe.aem.page/')).checkPageResult,
+          'Did not detect preview URL with aem.page',
         );
       }).timeout(IT_DEFAULT_TIMEOUT);
 
       it('Detects live environment correctly', async () => {
+        const setup = new Setup('blog');
+        nock.sidekick(setup);
+        nock.admin(setup);
         const test = new SidekickTest({
           browser,
           page,
@@ -916,8 +928,19 @@ describe('Test sidekick', () => {
           url: 'https://main--blog--adobe.hlx.live/',
           checkPage: async (p) => p.evaluate(() => window.hlx.sidekick.isOuter()),
         });
-        assert.ok((await test.run()).checkPageResult, 'Did not detect live URL');
+        assert.ok((await test.run()).checkPageResult, 'Did not detect live URL with hlx.live');
+        // check again with aem.live
+        nock.sidekick(setup, {
+          configJson: '{"hlx5":true}',
+        });
+        nock.admin(setup);
+        assert.ok(
+          (await test.run('https://test--blog--adobe.aem.live/')).checkPageResult,
+          'Did not detect live URL with aem.live',
+        );
         // check again with different ref
+        nock.sidekick(setup);
+        nock.admin(setup);
         assert.ok(
           (await test.run('https://test--blog--adobe.hlx.live/')).checkPageResult,
           'Did not detect live URL witn different ref',
@@ -937,6 +960,42 @@ describe('Test sidekick', () => {
           checkPage: async (p) => p.evaluate(() => window.hlx.sidekick.isProd()),
         });
         assert.ok((await test.run()).checkPageResult, 'Did not detect production URL');
+      }).timeout(IT_DEFAULT_TIMEOUT);
+
+      it('Switches to live instead of production without host', async () => {
+        const setup = new Setup('blog');
+        nock.sidekick(setup, {
+          configJson: '{}',
+        });
+        nock.admin(setup);
+        const test = new SidekickTest({
+          browser,
+          page,
+          loadModule,
+          waitNavigation: 'https://main--blog--adobe.hlx.live/en/topics/bla',
+          post: async (p) => p.evaluate(() => window.hlx.sidekick.switchEnv('prod')),
+          checkPage: (p) => p.evaluate(() => window.hlx && !!window.hlx.sidekick),
+        });
+        const { checkPageResult } = await test.run();
+        assert.ok(checkPageResult, 'Did not switch to live');
+      }).timeout(IT_DEFAULT_TIMEOUT);
+
+      it('Detects resource proxy URL correctly', async () => {
+        const setup = new Setup('blog');
+        nock.sidekick(setup);
+        nock.admin(setup);
+        const test = new SidekickTest({
+          browser,
+          page,
+          loadModule,
+          url: 'https://main--blog--adobe.hlx.page/tools/sidekick/json/index.html?path=%2Fen%2Ftopics%2Fbla',
+          checkPage: async (p) => p.evaluate(() => window.hlx.sidekick.location.href),
+        });
+        assert.strictEqual(
+          (await test.run()).checkPageResult,
+          'https://main--blog--adobe.hlx.page/en/topics/bla',
+          'Did not detect resource proxy URL',
+        );
       }).timeout(IT_DEFAULT_TIMEOUT);
 
       it('Does not push down page content by default', async () => {
@@ -1055,12 +1114,11 @@ describe('Test sidekick', () => {
       it('Shows special view for JSON file', async () => {
         const setup = new Setup('blog');
         nock.sidekick(setup);
-        nock.admin(setup);
+        nock.admin(setup, { type: 'json' });
         const { checkPageResult } = await new SidekickTest({
           browser,
           page,
           loadModule,
-          type: 'json',
           checkPage: (p) => p.evaluate(() => window.hlx.sidekick
             .shadowRoot
             .querySelector('.hlx-sk-special-view')),
@@ -1082,33 +1140,6 @@ describe('Test sidekick', () => {
             .querySelector('.hlx-sk-special-view')),
         }).run();
         assert.ok(checkPageResult, 'Did not suppress data view for JSON file');
-      }).timeout(IT_DEFAULT_TIMEOUT);
-
-      it('Shows custom view for PDF file', async () => {
-        const setup = new Setup('blog');
-        nock.sidekick(setup, {
-          configJson: {
-            specialViews: [
-              {
-                path: '**.pdf',
-                viewer: '/tools/sidekick/pdf/index.html',
-              },
-            ],
-          },
-        });
-        nock.admin(setup);
-        nock('https://main--blog--adobe.hlx.page')
-          .get('/tools/sidekick/pdf/index.html?url=https%3A%2F%2Fmain--blog--adobe.hlx.page%2Fen%2Fbla.pdf')
-          .reply(200, 'custom PDF viewer');
-        const { checkPageResult } = await new SidekickTest({
-          browser,
-          page,
-          loadModule,
-          checkPage: (p) => p.evaluate(() => window.hlx.sidekick
-            .shadowRoot
-            .querySelector('.hlx-sk-special-view')),
-        }).run('https://main--blog--adobe.hlx.page/en/bla.pdf');
-        assert.ok(checkPageResult, 'Did not show custom view for PDF file');
       }).timeout(IT_DEFAULT_TIMEOUT);
 
       it('Shows help content', async () => {
@@ -1152,36 +1183,26 @@ describe('Test sidekick', () => {
         );
       }).timeout(IT_DEFAULT_TIMEOUT);
 
-      it('Handles 401 response from admin API', async () => {
+      it('Encourages user to log in', async () => {
         nock('https://admin.hlx.page')
           .get(/.*/)
-          .twice()
-          .reply(401);
+          .reply(401)
+          .persist();
         const { checkPageResult } = await new SidekickTest({
           browser,
           page,
           loadModule,
-          checkPage: (p) => p.evaluate(() => window.hlx.sidekick.shadowRoot
-            .querySelector('.hlx-sk .feature-container .user.dropdown')
-            .classList.contains('dropdown-expanded')),
+          sleep: 1000,
+          checkPage: (p) => p.evaluate(() => {
+            const sk = window.hlx.sidekick;
+            return sk.get('user-login').parentElement === sk.pluginContainer;
+          }),
+          post: (p) => p.evaluate(() => {
+            // make sure login is only encouraged once
+            window.hlx.sidekick.fetchStatus();
+          }),
         }).run();
-        assert.ok(checkPageResult, 'Did not show login dialog on 401');
-      });
-
-      it('Encourages user to log in', async () => {
-        nock('https://admin.hlx.page')
-          .get(/.*/)
-          .twice()
-          .reply(401);
-        const { notification } = await new SidekickTest({
-          browser,
-          page,
-          loadModule,
-          post: (p) => p.evaluate(() => window.hlx.sidekick.shadowRoot
-            .querySelector('.plugin-container-overlay')
-            .dispatchEvent(new MouseEvent('click', { screenX: 20, screenY: 10 }))),
-        }).run();
-        assert.ok(notification.message.startsWith('You need to sign in'), 'Did not show login dialog on 401');
+        assert.ok(checkPageResult, 'Did not encourage user to login');
       });
 
       it('Reveals and hides advanced plugins when alt key is pushed and released', async () => {

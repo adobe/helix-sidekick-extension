@@ -70,14 +70,15 @@ async function getConfigFromTabUrl(tabUrl) {
     return getGitHubSettings(tabUrl);
   } else {
     try {
-      // check if hlx.page or hlx.live url
+      // check if hlx.page, hlx.live, aem.page or aem.live url
       const url = new URL(tabUrl);
-      const res = /(.*)--(.*)--(.*)\.hlx\.[page|live]/.exec(url.hostname);
-      if (res && res.length === 4) {
+      const res = /(.*)--(.*)--(.*)\.(aem|hlx)\.(page|live)/.exec(url.hostname);
+      const [, urlRef, urlRepo, urlOwner] = res || [];
+      if (urlOwner && urlRepo && urlRef) {
         return {
-          owner: res[3],
-          repo: res[2],
-          ref: res[1],
+          owner: urlOwner,
+          repo: urlRepo,
+          ref: urlRef,
         };
       } else {
         // check if url is known in url cache
@@ -567,8 +568,12 @@ const externalActions = {
           if (match) {
             log.info(`enabling sidekick for project ${owner}/${repo} on ${url}`);
             await setDisplay(true);
-            await populateUrlCache(url, { owner, repo });
-            await injectContentScript(tab.id, [match]);
+            // only load sidekick if not already being loaded for this specific url
+            const matches = await queryUrlCache(url);
+            if (matches.length === 0) {
+              await populateUrlCache(url, { owner, repo });
+              await checkTab(tab.id);
+            }
             resolve(true);
           } else {
             log.warn(`unknown project ${owner}/${repo}, not enabling sidekick on ${url}`);

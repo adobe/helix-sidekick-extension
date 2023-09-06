@@ -48,7 +48,7 @@ const SETUPS = {
       repo: 'pages',
       ref: 'main',
     },
-    configJs: 'window.hlx.initSidekick({host:"pages.adobe.com","hlx3":true});',
+    configJs: 'window.hlx.initSidekick({host:"pages.adobe.com"});',
     configJson: '{"host":"pages.adobe.com"}',
     api: {
       html: {
@@ -101,7 +101,6 @@ const SETUPS = {
       owner: 'adobe',
       repo: 'blog',
       ref: 'main',
-      hlx3: true,
     },
     configJs: 'window.hlx.initSidekick({host:"blog.adobe.com"});',
     configJson: '{"host":"blog.adobe.com"}',
