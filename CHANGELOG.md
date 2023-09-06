@@ -1,3 +1,23 @@
+## [6.29.1](https://github.com/adobe/helix-sidekick-extension/compare/v6.29.0...v6.29.1) (2023-09-04)
+
+
+### Bug Fixes
+
+* add test for single sheets being labelled shared-default ([da831ab](https://github.com/adobe/helix-sidekick-extension/commit/da831abaf2227c359b49c63804b3ea9f7c1d6a94))
+* do not render a title for single sheet responses ([a403ea9](https://github.com/adobe/helix-sidekick-extension/commit/a403ea97a5e49e9dd6739d58b57c4c157f47fd1d))
+* When rendering sheets, name the default sheet shared-default instead of helix-default ([ca90ce2](https://github.com/adobe/helix-sidekick-extension/commit/ca90ce2634ae94a9745634f93b8784783d191d17))
+
+# [6.29.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.28.0...v6.29.0) (2023-08-25)
+
+
+### Features
+
+* closePalette API ([ff7824f](https://github.com/adobe/helix-sidekick-extension/commit/ff7824fac8c5cb8353461e502ce5a7e5b439a91d))
+* closePalette API ([53f3700](https://github.com/adobe/helix-sidekick-extension/commit/53f3700c281cc855d2cf3a1113ca2d157a0fbc43))
+* closePalette API ([77b06c9](https://github.com/adobe/helix-sidekick-extension/commit/77b06c9edb6d490da7e5868ae47fe911623c4f83))
+* closePalette API ([5100d30](https://github.com/adobe/helix-sidekick-extension/commit/5100d303e4f8a227757ba25857471c217f03f774))
+* closePalette API ([08274a3](https://github.com/adobe/helix-sidekick-extension/commit/08274a30305da977963aa156c7226d453cae5b39))
+
 # [6.28.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.27.1...v6.28.0) (2023-08-21)
 
 

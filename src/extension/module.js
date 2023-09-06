@@ -1894,7 +1894,13 @@
                           id: `hlx-sk-palette-${id}`,
                           class: 'hlx-sk-palette hlx-sk-hidden',
                           style: paletteRect || '',
+                          tabindex: '0',
                         },
+                      });
+                      palette.addEventListener('keydown', async (e) => {
+                        if (e.key === 'Escape') {
+                          palette.classList.add('hlx-sk-hidden');
+                        }
                       });
                       const titleBar = appendTag(palette, {
                         tag: 'div',
