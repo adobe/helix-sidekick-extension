@@ -227,7 +227,7 @@
   opacity: 0;
 }
 
-.hlx-sk .plugin-container.hlx-sk-login-only .plugin:not(.user-login) {
+.hlx-sk .plugin-container.hlx-sk-login-only > *:not(.user-login) {
   display: none;
 }
 
