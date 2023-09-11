@@ -890,8 +890,8 @@
     try {
       const { config, location, status } = sk;
       data = data || {
+        // turn complex into simple objects for event listener
         config: JSON.parse(JSON.stringify(config)),
-        // turn into simple object for event listener
         location: {
           hash: location.hash,
           host: location.host,
