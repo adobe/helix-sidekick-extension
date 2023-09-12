@@ -888,14 +888,25 @@
    */
   function fireEvent(sk, name, data) {
     try {
-      sk.dispatchEvent(new CustomEvent(name, {
-        detail: {
-          data: data || {
-            config: JSON.parse(JSON.stringify(sk.config)),
-            location: sk.location,
-            status: sk.status,
-          },
+      const { config, location, status } = sk;
+      data = data || {
+        // turn complex into simple objects for event listener
+        config: JSON.parse(JSON.stringify(config)),
+        location: {
+          hash: location.hash,
+          host: location.host,
+          hostname: location.hostname,
+          href: location.href,
+          origin: location.origin,
+          pathname: location.pathname,
+          port: location.port,
+          protocol: location.protocol,
+          search: location.search,
         },
+        status,
+      };
+      sk.dispatchEvent(new CustomEvent(name, {
+        detail: { data },
       }));
       const userEvents = [
         'shown',
