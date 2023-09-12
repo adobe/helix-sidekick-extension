@@ -1,3 +1,11 @@
+## [6.30.1](https://github.com/adobe/helix-sidekick-extension/compare/v6.30.0...v6.30.1) (2023-09-12)
+
+
+### Bug Fixes
+
+* missing placeholders ([93ad5da](https://github.com/adobe/helix-sidekick-extension/commit/93ad5dae27aceeb09eac8268a7a2b0e1fb7997aa))
+* send detail object to custom event listeners ([2d83e34](https://github.com/adobe/helix-sidekick-extension/commit/2d83e34f52e631250b54cc3322a783e28092b2dc))
+
 # [6.30.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.29.2...v6.30.0) (2023-09-06)
 
 
