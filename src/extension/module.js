@@ -318,7 +318,13 @@
       const sk = window.hlx.sidekick;
       if (!window.hlx.rum) {
         const usp = new URLSearchParams(sk.location.search);
-        const weight = (usp.get('hlx-sk-rum') === 'on') ? 1 : 10; // with parameter, weight is 1. Defaults to 10.
+        const cond = usp.get('hlx-sk-rum') === 'on';
+        let weight;
+        if (checkpoint.startsWith('sidekick:')) {
+          weight = cond ? 1 : 2;
+        } else {
+          weight = cond ? 1 : 10; // with parameter, weight is 1. Defaults to 10.
+        }
         // eslint-disable-next-line no-bitwise
         const hashCode = (s) => s.split('').reduce((a, b) => (((a << 5) - a) + b.charCodeAt(0)) | 0, 0);
         const id = `${hashCode(sk.location.href)}-${new Date().getTime()}-${Math.random().toString(16).substr(2, 14)}`;
