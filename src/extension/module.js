@@ -408,6 +408,21 @@
   }
 
   /**
+   * Recognizes a SharePoint folder URL.
+   * @private
+   * @param {URL} url The URL
+   * @returns {boolean} {@code true} if URL is SharePoint folder, else {@code false}
+   */
+  function isSharePointFolder(url) {
+    return /\w+\.sharepoint.com$/.test(url.host)
+      && (url.pathname.endsWith('/Forms/AllItems.aspx')
+      || url.pathname.endsWith('/onedrive.aspx'))
+      && !(new URLSearchParams(url.search)
+        .get('id')?.split('/').pop()
+        .includes('.')); // check last path segment for file extension
+  }
+
+  /**
    * Turns a globbing into a regular expression.
    * @private
    * @param {string} glob The globbing
@@ -641,6 +656,21 @@
       return new URL(resource, origin);
     }
     return url;
+  }
+
+  /**
+   * Checks if the location has changed.
+   * @private
+   * @param {Sidekick} sk The sidekick
+   * @returns {boolean} {@code true} if location changed, else {@code false}
+   */
+  function isNewLocation(sk) {
+    const { location } = sk;
+    const $test = document.getElementById('sidekick_test_location');
+    if ($test) {
+      return $test.value !== location.href;
+    }
+    return window.location.href !== location.href;
   }
 
   /**
@@ -1437,15 +1467,11 @@
   function addBulkPlugins(sk) {
     let bulkSelection = [];
 
-    const isSharePoint = (location) => /\w+\.sharepoint.com$/.test(location.host)
-      && (location.pathname.endsWith('/Forms/AllItems.aspx')
-      || location.pathname.endsWith('/onedrive.aspx'));
-
     const toWebPath = (folder, item) => {
       const { path, type } = item;
       const nameParts = path.split('.');
       let [file, ext] = nameParts;
-      if (isSharePoint(sk.location) && ext === 'docx') {
+      if (isSharePointFolder(sk.location) && ext === 'docx') {
         // omit docx extension on sharepoint
         ext = '';
       }
@@ -1468,7 +1494,7 @@
 
     const getBulkSelection = () => {
       const { location } = sk;
-      if (isSharePoint(location)) {
+      if (isSharePointFolder(location)) {
         const isGrid = document.querySelector('div[class~="ms-TilesList"]');
         return [...document.querySelectorAll('#appRoot [role="presentation"] div[aria-selected="true"]')]
           .filter((row) => !row.querySelector('img').getAttribute('src').includes('/foldericons/')
@@ -1493,14 +1519,6 @@
       }
     };
 
-    const isChangedUrl = () => {
-      const $test = document.getElementById('sidekick_test_location');
-      if ($test) {
-        return $test.value !== sk.location.href;
-      }
-      return window.location.href !== sk.location.href;
-    };
-
     const updateBulkInfo = () => {
       if (!sk.isAdmin()) {
         return;
@@ -1518,10 +1536,6 @@
       }
       // show/hide bulk buttons
       const filesSelected = sel.length > 0;
-      if (isChangedUrl()) {
-        // refresh location
-        sk.location = getLocation();
-      }
       ['preview', 'publish', 'copy-urls'].forEach((action) => {
         const pluginId = `bulk-${action}`;
         const plugin = sk.get(pluginId);
@@ -1663,10 +1677,17 @@
           class: 'hlx-sk-label',
         },
       }],
-      callback: () => {
-        window.setInterval(() => {
-          updateBulkInfo();
-        }, 500);
+      callback: (sidekick) => {
+        const { location } = sk;
+        const rootEl = document.querySelector(isSharePointFolder(location) ? '#appRoot' : 'body');
+        if (rootEl) {
+          const listener = () => {
+            console.log('updateBulkInfo');
+            window.setTimeout(() => updateBulkInfo(sidekick), 100);
+          };
+          rootEl.addEventListener('click', listener);
+          rootEl.addEventListener('keyup', listener);
+        }
       },
     });
 
@@ -2316,18 +2337,15 @@
   }
 
   /**
-   * Registers a plugin for re-evaluation if it should be shown or hidden,
-   * and if its button should be enabled or disabled.
+   * Checks existing plugins based on the status of the current resource.
    * @private
    * @param {Sidekick} sk The sidekick
-   * @param {Plugin} plugin The plugin configuration
-   * @param {HTMLElement} $plugin The plugin
-   * @returns {HTMLElement} The plugin or {@code null}
    */
-  function registerPlugin(sk, plugin, $plugin) {
-    // re-evaluate plugin when status fetched
-    sk.addEventListener('statusfetched', () => {
-      const { status } = sk;
+  function checkPlugins(sk) {
+    const { status, plugins, pluginContainer } = sk;
+    Object.keys(plugins).forEach((id) => {
+      const plugin = plugins[id];
+      const $plugin = sk.get(id);
       if (typeof plugin.condition === 'function') {
         if ($plugin && !plugin.condition(sk)) {
           // plugin exists but condition now false
@@ -2355,24 +2373,12 @@
         }
       }
     });
-    if (typeof plugin.callback === 'function') {
-      plugin.callback(sk, $plugin);
-    }
-    return $plugin || null;
-  }
-
-  /**
-   * Checks existing plugins based on the status of the current resource.
-   * @private
-   * @param {Sidekick} sk The sidekick
-   */
-  function checkPlugins(sk) {
-    sk.pluginContainer.classList.remove('hlx-sk-concealed');
+    pluginContainer.classList.remove('hlx-sk-concealed');
     window.setTimeout(() => {
-      if (!sk.pluginContainer.querySelector(':scope div.plugin')) {
+      if (!pluginContainer.querySelector(':scope div.plugin')) {
         // add empty text
-        sk.pluginContainer.innerHTML = '';
-        sk.pluginContainer.append(createTag({
+        pluginContainer.innerHTML = '';
+        pluginContainer.append(createTag({
           tag: 'span',
           text: i18n(sk, 'plugins_empty'),
           attrs: {
@@ -2747,6 +2753,15 @@
 
       // collapse dropdowns when document is clicked
       document.addEventListener('click', () => collapseDropdowns(this));
+      // listen to URL changes
+      window.setInterval(() => {
+        if (isNewLocation(this)) {
+          this.fetchStatus(true);
+        }
+      }, 500);
+      window.addEventListener('popstate', () => {
+        this.fetchStatus(true);
+      });
     }
 
     /**
@@ -2938,7 +2953,7 @@
       plugin.isShown = typeof plugin.condition === 'undefined'
           || (typeof plugin.condition === 'function' && plugin.condition(this));
       if (!plugin.isShown) {
-        return registerPlugin(this, plugin, null);
+        return null;
       }
 
       // find existing plugin
@@ -3026,7 +3041,11 @@
       if (typeof plugin.advanced === 'function' && plugin.advanced(this)) {
         $plugin.classList.add('hlx-sk-advanced-only');
       }
-      return registerPlugin(this, plugin, $plugin);
+      // callback
+      if (typeof plugin.callback === 'function') {
+        plugin.callback(this, $plugin);
+      }
+      return $plugin;
     }
 
     /**
@@ -3072,10 +3091,7 @@
      */
     isAdmin() {
       const { location } = this;
-      return (location.host === 'drive.google.com')
-        || (/\w+\.sharepoint.com$/.test(location.host)
-        && (location.pathname.endsWith('/Forms/AllItems.aspx')
-        || location.pathname.endsWith('/onedrive.aspx')));
+      return isSharePointFolder(location) || location.host === 'drive.google.com';
     }
 
     /**
