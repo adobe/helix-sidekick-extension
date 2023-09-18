@@ -1969,12 +1969,11 @@
             container: containerId,
           };
           sk.customPlugins[plugin.id] = plugin;
-          // check and remove existing plugin
+          // check existing plugin
           const existingPlugin = sk.plugins[plugin.id];
           if (existingPlugin) {
-            if (sk.get(plugin.id) && !condition(sk)) {
-              sk.remove(id);
-            }
+            // override condition
+            existingPlugin.condition = condition;
           } else {
             // add custom plugin
             sk.add(plugin);
