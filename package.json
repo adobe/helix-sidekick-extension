@@ -66,10 +66,10 @@
     "puppeteer": "21.1.1",
     "puppeteer-core": "21.1.1",
     "puppeteer-to-istanbul": "1.4.0",
-    "semantic-release": "21.1.1",
+    "semantic-release": "22.0.0",
     "semantic-release-react-native": "1.8.2",
     "shelljs": "0.8.5",
-    "sinon": "15.2.0"
+    "sinon": "16.0.0"
   },
   "lint-staged": {
     "*.js": "eslint"
