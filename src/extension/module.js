@@ -1497,12 +1497,12 @@
       if (isSharePointFolder(location)) {
         const isGrid = document.querySelector('div[class~="ms-TilesList"]');
         return [...document.querySelectorAll('#appRoot [role="presentation"] div[aria-selected="true"]')]
-          .filter((row) => !row.querySelector('img').getAttribute('src').includes('/foldericons/')
-            && !row.querySelector('img').getAttribute('src').endsWith('folder.svg'))
+          .filter((row) => !row.querySelector('img')?.getAttribute('src').includes('/foldericons/')
+            && !row.querySelector('img')?.getAttribute('src').endsWith('folder.svg'))
           .map((row) => ({
             type: isGrid
               ? row.querySelector(':scope i[aria-label]')?.getAttribute('aria-label').trim()
-              : new URL(row.querySelector('img').getAttribute('src'), sk.location.href).pathname.split('/').slice(-1)[0].split('.')[0],
+              : new URL(row.querySelector('img')?.getAttribute('src'), sk.location.href).pathname.split('/').slice(-1)[0].split('.')[0],
             path: isGrid
               ? row.querySelector('div[data-automationid="name"]').textContent.trim()
               : row.querySelector('button')?.textContent.trim(),
@@ -1539,8 +1539,12 @@
       ['preview', 'publish', 'copy-urls'].forEach((action) => {
         const pluginId = `bulk-${action}`;
         const plugin = sk.get(pluginId);
-        const customShowPlugin = (sk.customPlugins[action]?.condition || (() => true))(sk);
-        plugin.classList[filesSelected && customShowPlugin ? 'remove' : 'add']('hlx-sk-hidden');
+        let customShow = true;
+        const customPlugin = sk.customPlugins[action];
+        if (customPlugin) {
+          customShow = customPlugin.condition(sk);
+        }
+        plugin.classList[filesSelected && customShow ? 'remove' : 'add']('hlx-sk-hidden');
       });
       // update copy url button texts based on selection size
       ['', 'preview', 'live', 'prod'].forEach((env) => {
@@ -1681,10 +1685,7 @@
         const { location } = sk;
         const rootEl = document.querySelector(isSharePointFolder(location) ? '#appRoot' : 'body');
         if (rootEl) {
-          const listener = () => {
-            console.log('updateBulkInfo');
-            window.setTimeout(() => updateBulkInfo(sidekick), 100);
-          };
+          const listener = () => window.setTimeout(() => updateBulkInfo(sidekick), 100);
           rootEl.addEventListener('click', listener);
           rootEl.addEventListener('keyup', listener);
         }
@@ -1845,13 +1846,13 @@
           } = cfg;
           const condition = (s) => {
             let excluded = false;
-            const pathSearchHash = s.location.href.replace(s.location.origin, '');
+            const { webPath } = s.status;
             if (excludePaths && Array.isArray(excludePaths)
-              && excludePaths.some((glob) => globToRegExp(glob).test(pathSearchHash))) {
+              && excludePaths.some((glob) => globToRegExp(glob).test(webPath))) {
               excluded = true;
             }
             if (includePaths && Array.isArray(includePaths)
-              && includePaths.some((glob) => globToRegExp(glob).test(pathSearchHash))) {
+              && includePaths.some((glob) => globToRegExp(glob).test(webPath))) {
               excluded = false;
             }
             if (excluded) {
@@ -1969,11 +1970,12 @@
             container: containerId,
           };
           sk.customPlugins[plugin.id] = plugin;
-          // check existing plugin
-          const existingPlugin = sk.plugins[plugin.id];
-          if (existingPlugin) {
-            // override condition
-            existingPlugin.condition = condition;
+          // check default plugin
+          const defaultPlugin = sk.plugins[plugin.id];
+          if (defaultPlugin) {
+            // extend default condition
+            const { condition: defaultCondition } = defaultPlugin;
+            defaultPlugin.condition = (s) => defaultCondition(s) && condition(s);
           } else {
             // add custom plugin
             sk.add(plugin);
