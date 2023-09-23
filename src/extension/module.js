@@ -280,19 +280,6 @@
   ];
 
   /**
-   * Array of supported file extenions in the admin environment.
-   * @private
-   * @type {string[]}
-   */
-  const SUPPORTED_FILE_EXTENSIONS = [
-    'jpg',
-    'jpeg',
-    'png',
-    'pdf',
-    'svg',
-  ];
-
-  /**
    * Enumeration of view types.
    * @private
    * @type {Object<number>}
@@ -432,7 +419,13 @@
     if (extension === file) {
       return true;
     } else {
-      return SUPPORTED_FILE_EXTENSIONS.includes(extension.toLowerCase());
+      return [
+        'jpg',
+        'jpeg',
+        'png',
+        'pdf',
+        'svg',
+      ].includes(extension.toLowerCase());
     }
   }
 
