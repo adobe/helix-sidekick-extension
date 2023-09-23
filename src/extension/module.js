@@ -280,6 +280,19 @@
   ];
 
   /**
+   * Array of supported file extenions in the admin environment.
+   * @private
+   * @type {string[]}
+   */
+  const SUPPORTED_FILE_EXTENSIONS = [
+    'jpg',
+    'jpeg',
+    'png',
+    'pdf',
+    'svg',
+  ];
+
+  /**
    * Enumeration of view types.
    * @private
    * @type {Object<number>}
@@ -408,18 +421,70 @@
   }
 
   /**
+   * Checks a path against supported file extensions.
+   * @private
+   * @param {string} path The path to check
+   * @returns {boolean} {@code true} if file extension supported, else {@code false}
+   */
+  function isSupportedFileExtension(path) {
+    const file = path.split('/').pop();
+    const extension = file.split('/').pop().split('.').pop();
+    if (extension !== file) {
+      return SUPPORTED_FILE_EXTENSIONS.includes(extension.toLowerCase());
+    }
+    return false;
+  }
+
+  /**
+   * Recognizes a SharePoint URL.
+   * @private
+   * @param {URL} url The URL
+   * @returns {boolean} {@code true} if URL is SharePoint, else {@code false}
+   */
+  function isSharePoint(url) {
+    return /\w+\.sharepoint.com$/.test(url.host);
+  }
+
+  /**
+   * Recognizes a SharePoint document management URL.
+   * @private
+   * @param {URL} url The URL
+   * @returns {boolean} {@code true} if URL is SharePoint DM, else {@code false}
+   */
+  function isSharePointDM(url) {
+    return isSharePoint(url)
+      && (url.pathname.endsWith('/Forms/AllItems.aspx')
+      || url.pathname.endsWith('/onedrive.aspx'));
+  }
+
+  /**
    * Recognizes a SharePoint folder URL.
    * @private
    * @param {URL} url The URL
    * @returns {boolean} {@code true} if URL is SharePoint folder, else {@code false}
    */
   function isSharePointFolder(url) {
-    return /\w+\.sharepoint.com$/.test(url.host)
-      && (url.pathname.endsWith('/Forms/AllItems.aspx')
-      || url.pathname.endsWith('/onedrive.aspx'))
-      && !(new URLSearchParams(url.search)
-        .get('id')?.split('/').pop()
-        .includes('.')); // check last path segment for file extension
+    if (isSharePointDM(url)) {
+      const docPath = new URLSearchParams(url.search).get('id');
+      const dotIndex = docPath?.split('/').pop().indexOf('.');
+      return [-1, 0].includes(dotIndex); // dot only allowed as first char
+    }
+    return false;
+  }
+
+  /**
+   * Recognizes a SharePoint viewer URL.
+   * @private
+   * @param {URL} url The URL
+   * @returns {boolean} {@code true} if URL is SharePoint viewer, else {@code false}
+   */
+  function isSharePointViewer(url) {
+    if (isSharePointDM(url)) {
+      const docPath = new URLSearchParams(url.search).get('id');
+      const dotIndex = docPath?.split('/').pop().lastIndexOf('.');
+      return dotIndex > 0; // must contain a dot
+    }
+    return false;
   }
 
   /**
@@ -1683,12 +1748,13 @@
       }],
       callback: (sidekick) => {
         const { location } = sk;
+        const listener = () => window.setTimeout(() => updateBulkInfo(sidekick), 100);
         const rootEl = document.querySelector(isSharePointFolder(location) ? '#appRoot' : 'body');
         if (rootEl) {
-          const listener = () => window.setTimeout(() => updateBulkInfo(sidekick), 100);
           rootEl.addEventListener('click', listener);
           rootEl.addEventListener('keyup', listener);
         }
+        listener();
       },
     });
 
@@ -1785,8 +1851,6 @@
         },
       });
     });
-
-    updateBulkInfo();
   }
 
   /**
@@ -3078,12 +3142,18 @@
     isEditor() {
       const { config, location } = this;
       const { host, pathname, search } = location;
-      return (/.*\.sharepoint\.com$/.test(host)
-        && pathname.match(/\/_layouts\/15\/[\w]+.aspx$/)
-        && search.includes('sourcedoc='))
-        || location.host === 'docs.google.com'
-        || (config.mountpoint && new URL(config.mountpoint).host === location.host
-          && !this.isAdmin());
+      if ((isSharePoint(location)
+        && pathname.match(/\/_layouts\/15\/[\w]+.aspx$/) && search.includes('sourcedoc='))
+        || isSharePointViewer(location)) {
+        return true;
+      }
+      if (host === 'docs.google.com') {
+        return true;
+      }
+      if (config.mountpoint && new URL(config.mountpoint).host === host && !this.isAdmin()) {
+        return true;
+      }
+      return false;
     }
 
     /**
@@ -3159,10 +3229,8 @@
      * @returns {boolean} <code>true</code> if content URL, else <code>false</code>
      */
     isContent() {
-      const file = this.location.pathname.split('/').pop();
-      const ext = file && file.split('.').pop();
-      return this.isEditor() || this.isAdmin() || ext === file || ext === 'html'
-        || ext === 'json' || ext === 'pdf';
+      const extSupported = isSupportedFileExtension(this.location.pathname);
+      return this.isEditor() || this.isAdmin() || extSupported;
     }
 
     /**
