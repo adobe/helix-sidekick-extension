@@ -467,6 +467,19 @@
   }
 
   /**
+   * Recognizes a SharePoint editor URL.
+   * @private
+   * @param {URL} url The URL
+   * @returns {boolean} {@code true} if URL is SharePoint editor, else {@code false}
+   */
+  function isSharePointEditor(url) {
+    const { pathname, search } = url;
+    return isSharePoint(url)
+      && pathname.match(/\/_layouts\/15\/[\w]+.aspx$/)
+      && search.includes('sourcedoc=');
+  }
+
+  /**
    * Recognizes a SharePoint viewer URL.
    * @private
    * @param {URL} url The URL
@@ -3135,10 +3148,8 @@
      */
     isEditor() {
       const { config, location } = this;
-      const { host, pathname, search } = location;
-      if ((isSharePoint(location)
-        && pathname.match(/\/_layouts\/15\/[\w]+.aspx$/) && search.includes('sourcedoc='))
-        || isSharePointViewer(location)) {
+      const { host } = location;
+      if (isSharePointEditor(location) || isSharePointViewer(location)) {
         return true;
       }
       if (host === 'docs.google.com') {
