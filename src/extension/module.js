@@ -429,10 +429,11 @@
   function isSupportedFileExtension(path) {
     const file = path.split('/').pop();
     const extension = file.split('/').pop().split('.').pop();
-    if (extension !== file) {
+    if (extension === file) {
+      return true;
+    } else {
       return SUPPORTED_FILE_EXTENSIONS.includes(extension.toLowerCase());
     }
-    return false;
   }
 
   /**
