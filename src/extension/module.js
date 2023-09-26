@@ -415,7 +415,7 @@
    */
   function isSupportedFileExtension(path) {
     const file = path.split('/').pop();
-    const extension = file.split('/').pop().split('.').pop();
+    const extension = file.split('.').pop();
     if (extension === file) {
       return true;
     } else {
