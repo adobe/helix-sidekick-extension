@@ -418,7 +418,7 @@
       glob = '**';
     }
     const reString = glob
-      .replace('.', '//.') // don't match every char, just real dots
+      .replace('.', '\\.') // don't match every char, just real dots
       .replace(/\*\*/g, '_')
       .replace(/\*/g, '[0-9a-z-.]*')
       .replace(/_/g, '.*');
