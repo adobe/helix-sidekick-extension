@@ -1920,13 +1920,13 @@
           } = cfg;
           const condition = (s) => {
             let excluded = false;
-            const { webPath } = s.status;
+            const pathSearchHash = s.location.href.replace(s.location.origin, '');
             if (excludePaths && Array.isArray(excludePaths)
-              && excludePaths.some((glob) => globToRegExp(glob).test(webPath))) {
+              && excludePaths.some((glob) => globToRegExp(glob).test(pathSearchHash))) {
               excluded = true;
             }
             if (includePaths && Array.isArray(includePaths)
-              && includePaths.some((glob) => globToRegExp(glob).test(webPath))) {
+              && includePaths.some((glob) => globToRegExp(glob).test(pathSearchHash))) {
               excluded = false;
             }
             if (excluded) {
