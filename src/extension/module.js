@@ -408,6 +408,103 @@
   }
 
   /**
+   * Checks a path against supported file extensions.
+   * @private
+   * @param {string} path The path to check
+   * @returns {boolean} {@code true} if file extension supported, else {@code false}
+   */
+  function isSupportedFileExtension(path) {
+    const file = path.split('/').pop();
+    const extension = file.split('.').pop();
+    if (extension === file) {
+      return true;
+    } else {
+      return [
+        'jpg',
+        'jpeg',
+        'png',
+        'pdf',
+        'svg',
+      ].includes(extension.toLowerCase());
+    }
+  }
+
+  /**
+   * Recognizes a SharePoint URL.
+   * @private
+   * @param {Sidekick} sk The sidekick
+   * @param {URL} url The URL
+   * @returns {boolean} {@code true} if URL is SharePoint, else {@code false}
+   */
+  function isSharePoint(sk, url) {
+    const { config } = sk;
+    const { mountpoint } = config;
+    const isSPMountpoint = typeof mountpoint === 'object'
+      ? mountpoint.contentSourceType === 'onedrive'
+      : /\w+\.sharepoint.com$/.test(mountpoint);
+
+    return /\w+\.sharepoint.com$/.test(url.host)
+      || (isSPMountpoint && url.host === new URL(mountpoint).host); // check custom sharepoint host
+  }
+
+  /**
+   * Recognizes a SharePoint document management URL.
+   * @private
+   * @param {Sidekick} sk The sidekick
+   * @param {URL} url The URL
+   * @returns {boolean} {@code true} if URL is SharePoint DM, else {@code false}
+   */
+  function isSharePointDM(sk, url) {
+    return isSharePoint(sk, url)
+      && (url.pathname.endsWith('/Forms/AllItems.aspx')
+      || url.pathname.endsWith('/onedrive.aspx'));
+  }
+
+  /**
+   * Recognizes a SharePoint folder URL.
+   * @private
+   * @param {Sidekick} sk The sidekick
+   * @param {URL} url The URL
+   * @returns {boolean} {@code true} if URL is SharePoint folder, else {@code false}
+   */
+  function isSharePointFolder(sk, url) {
+    if (isSharePointDM(sk, url)) {
+      const docPath = new URLSearchParams(url.search).get('id');
+      const dotIndex = docPath?.split('/').pop().indexOf('.');
+      return [-1, 0].includes(dotIndex); // dot only allowed as first char
+    }
+    return false;
+  }
+
+  /**
+   * Recognizes a SharePoint editor URL.
+   * @private
+   * @param {URL} url The URL
+   * @returns {boolean} {@code true} if URL is SharePoint editor, else {@code false}
+   */
+  function isSharePointEditor(sk, url) {
+    const { pathname, search } = url;
+    return isSharePoint(sk, url)
+      && pathname.match(/\/_layouts\/15\/[\w]+.aspx$/)
+      && search.includes('sourcedoc=');
+  }
+
+  /**
+   * Recognizes a SharePoint viewer URL.
+   * @private
+   * @param {URL} url The URL
+   * @returns {boolean} {@code true} if URL is SharePoint viewer, else {@code false}
+   */
+  function isSharePointViewer(sk, url) {
+    if (isSharePointDM(sk, url)) {
+      const docPath = new URLSearchParams(url.search).get('id');
+      const dotIndex = docPath?.split('/').pop().lastIndexOf('.');
+      return dotIndex > 0; // must contain a dot
+    }
+    return false;
+  }
+
+  /**
    * Turns a globbing into a regular expression.
    * @private
    * @param {string} glob The globbing
@@ -1437,15 +1534,11 @@
   function addBulkPlugins(sk) {
     let bulkSelection = [];
 
-    const isSharePoint = (location) => /\w+\.sharepoint.com$/.test(location.host)
-      && (location.pathname.endsWith('/Forms/AllItems.aspx')
-      || location.pathname.endsWith('/onedrive.aspx'));
-
     const toWebPath = (folder, item) => {
       const { path, type } = item;
       const nameParts = path.split('.');
       let [file, ext] = nameParts;
-      if (isSharePoint(sk.location) && ext === 'docx') {
+      if (isSharePointFolder(sk, sk.location) && ext === 'docx') {
         // omit docx extension on sharepoint
         ext = '';
       }
@@ -1468,11 +1561,12 @@
 
     const getBulkSelection = () => {
       const { location } = sk;
-      if (isSharePoint(location)) {
+      if (isSharePointFolder(sk, location)) {
         const isGrid = document.querySelector('div[class~="ms-TilesList"]');
         return [...document.querySelectorAll('#appRoot [role="presentation"] div[aria-selected="true"]')]
-          .filter((row) => !row.querySelector('img').getAttribute('src').includes('/foldericons/')
-            && !row.querySelector('img').getAttribute('src').endsWith('folder.svg'))
+          .filter((row) => !row.querySelector('img')?.getAttribute('src').includes('/foldericons/')
+            && !row.querySelector('img')?.getAttribute('src').endsWith('folder.svg')
+            && !row.querySelector('svg')?.parentElement.className.toLowerCase().includes('folder'))
           .map((row) => ({
             type: isGrid
               ? row.querySelector(':scope i[aria-label]')?.getAttribute('aria-label').trim()
@@ -1663,10 +1757,15 @@
           class: 'hlx-sk-label',
         },
       }],
-      callback: () => {
-        window.setInterval(() => {
-          updateBulkInfo();
-        }, 500);
+      callback: (sidekick) => {
+        const { location } = sk;
+        const listener = () => window.setTimeout(() => updateBulkInfo(sidekick), 100);
+        const rootEl = document.querySelector(isSharePointFolder(sk, location) ? '#appRoot' : 'body');
+        if (rootEl) {
+          rootEl.addEventListener('click', listener);
+          rootEl.addEventListener('keyup', listener);
+        }
+        listener();
       },
     });
 
@@ -3153,14 +3252,15 @@
      * @returns {boolean} <code>true</code> if editor URL, else <code>false</code>
      */
     isEditor() {
-      const { config, location } = this;
-      const { host, pathname, search } = location;
-      return (/.*\.sharepoint\.com$/.test(host)
-        && pathname.match(/\/_layouts\/15\/[\w]+.aspx$/)
-        && search.includes('sourcedoc='))
-        || location.host === 'docs.google.com'
-        || (config.mountpoint && new URL(config.mountpoint).host === location.host
-          && !this.isAdmin());
+      const { location } = this;
+      const { host } = location;
+      if (isSharePointEditor(this, location) || isSharePointViewer(this, location)) {
+        return true;
+      }
+      if (host === 'docs.google.com') {
+        return true;
+      }
+      return false;
     }
 
     /**
@@ -3169,10 +3269,7 @@
      */
     isAdmin() {
       const { location } = this;
-      return (location.host === 'drive.google.com')
-        || (/\w+\.sharepoint.com$/.test(location.host)
-        && (location.pathname.endsWith('/Forms/AllItems.aspx')
-        || location.pathname.endsWith('/onedrive.aspx')));
+      return isSharePointFolder(this, location) || location.host === 'drive.google.com';
     }
 
     /**
@@ -3239,10 +3336,8 @@
      * @returns {boolean} <code>true</code> if content URL, else <code>false</code>
      */
     isContent() {
-      const file = this.location.pathname.split('/').pop();
-      const ext = file && file.split('.').pop();
-      return this.isEditor() || this.isAdmin() || ext === file || ext === 'html'
-        || ext === 'json' || ext === 'pdf';
+      const extSupported = isSupportedFileExtension(this.location.pathname);
+      return this.isEditor() || this.isAdmin() || extSupported;
     }
 
     /**

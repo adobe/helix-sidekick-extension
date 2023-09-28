@@ -250,7 +250,8 @@ describe('Test extension utils', () => {
     });
     expect(host).to.equal('business.adobe.com');
     expect(project).to.equal('Adobe Business Website');
-    expect(mountpoints[0]).to.equal('https://adobe.sharepoint.com/:f:/s/Dummy/Alk9MSH25LpBuUWA_N6DOL8BuI6Vrdyrr87gne56dz3QeQ');
+    expect(mountpoints[0].contentSourceUrl).to.equal('https://adobe.sharepoint.com/:f:/s/Dummy/Alk9MSH25LpBuUWA_N6DOL8BuI6Vrdyrr87gne56dz3QeQ');
+    expect(mountpoints[0].contentSourceType).to.equal('onedrive');
   });
 
   it('assembleProject with giturl', async () => {

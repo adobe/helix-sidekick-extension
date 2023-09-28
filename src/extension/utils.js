@@ -458,6 +458,7 @@ export async function getProjectEnv({
       prod,
       project,
       contentSourceUrl,
+      contentSourceType,
     } = await res.json();
     if (preview && preview.host) {
       env.previewHost = preview.host;
@@ -472,7 +473,10 @@ export async function getProjectEnv({
       env.project = project;
     }
     if (contentSourceUrl) {
-      env.mountpoints = [contentSourceUrl];
+      env.mountpoints = [{
+        contentSourceUrl,
+        contentSourceType,
+      }];
     }
   } else if (res.status === 401) {
     env.unauthorized = true;
