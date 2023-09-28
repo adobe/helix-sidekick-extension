@@ -1,3 +1,10 @@
+## [6.30.4](https://github.com/adobe/helix-sidekick-extension/compare/v6.30.3...v6.30.4) (2023-09-28)
+
+
+### Bug Fixes
+
+* exclude/includePath not working as expected ([2bd8a5c](https://github.com/adobe/helix-sidekick-extension/commit/2bd8a5c9d78a41a7b554bc7b6ca2efbbfb7b7631))
+
 ## [6.30.3](https://github.com/adobe/helix-sidekick-extension/compare/v6.30.2...v6.30.3) (2023-09-28)
 
 
