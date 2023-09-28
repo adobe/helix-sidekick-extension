@@ -1571,7 +1571,8 @@
         const isGrid = document.querySelector('div[class~="ms-TilesList"]');
         return [...document.querySelectorAll('#appRoot [role="presentation"] div[aria-selected="true"]')]
           .filter((row) => !row.querySelector('img')?.getAttribute('src').includes('/foldericons/')
-            && !row.querySelector('img')?.getAttribute('src').endsWith('folder.svg'))
+            && !row.querySelector('img')?.getAttribute('src').endsWith('folder.svg')
+            && !row.querySelector('svg')?.parentElement.className.toLowerCase().includes('folder'))
           .map((row) => ({
             type: isGrid
               ? row.querySelector(':scope i[aria-label]')?.getAttribute('aria-label').trim()
