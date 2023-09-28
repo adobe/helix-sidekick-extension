@@ -1,3 +1,11 @@
+## [6.30.3](https://github.com/adobe/helix-sidekick-extension/compare/v6.30.2...v6.30.3) (2023-09-28)
+
+
+### Bug Fixes
+
+* add json to supported file extensions ([a62b57f](https://github.com/adobe/helix-sidekick-extension/commit/a62b57f18f056c9beb4fbb9fbdc7f2901bad30af))
+* ignore sharepoint folders in bulk selection ([bb89eb5](https://github.com/adobe/helix-sidekick-extension/commit/bb89eb501d83a722c3488581f9fd716d3a36f26b))
+
 ## [6.30.2](https://github.com/adobe/helix-sidekick-extension/compare/v6.30.1...v6.30.2) (2023-09-28)
 
 
