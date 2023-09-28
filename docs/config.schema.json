@@ -33,17 +33,6 @@
             "**/:x:**"
           ]
         },
-        "excludeWebPaths": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "Exclude the plugin from these web paths",
-          "examples": [
-            "/foo/bar",
-            "/foo/**"
-          ]
-        },
         "id": {
           "type": "string",
           "description": "The unique plugin ID"
@@ -57,17 +46,6 @@
           "examples": [
             "/foo/bar/**",
             "**.docx**"
-          ]
-        },
-        "includeWebPaths": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "Include the plugin on these web paths (overrides excludeWebPaths)",
-          "examples": [
-            "/foo/bar",
-            "/foo/bar/**"
           ]
         },
         "isContainer": {

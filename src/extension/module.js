@@ -1915,8 +1915,6 @@
             environments,
             excludePaths,
             includePaths,
-            excludeWebPaths,
-            includeWebPaths,
             containerId,
             isContainer,
           } = cfg;
@@ -1929,15 +1927,6 @@
             }
             if (includePaths && Array.isArray(includePaths)
               && includePaths.some((glob) => globToRegExp(glob).test(pathSearchHash))) {
-              excluded = false;
-            }
-            const { webPath } = s.status;
-            if (excludeWebPaths && Array.isArray(excludeWebPaths)
-              && excludeWebPaths.some((glob) => globToRegExp(glob).test(webPath))) {
-              excluded = true;
-            }
-            if (includeWebPaths && Array.isArray(includeWebPaths)
-              && includeWebPaths.some((glob) => globToRegExp(glob).test(webPath))) {
               excluded = false;
             }
             if (excluded) {
