@@ -69,7 +69,7 @@ describe('Test bulk preview plugin', () => {
       url: setup.getUrl('edit', 'admin'),
       pre: (p) => p.evaluate(() => {
         // user deselects file
-        document.getElementById('file-pdf').setAttribute('aria-selected', 'false');
+        document.getElementById('file-pdf').click();
       }),
       loadModule: true,
     }).run();
@@ -99,7 +99,14 @@ describe('Test bulk preview plugin', () => {
       page,
       fixture: TESTS[0].fixture,
       url: setup.getUrl('edit', 'admin'),
-      sleep: 1000,
+      pre: (p) => p.evaluate(() => {
+        // user deselects file
+        document.getElementById('file-pdf').click();
+      }),
+      post: (p) => p.evaluate(() => {
+        // user deselects another file
+        document.getElementById('file-word').click();
+      }),
       loadModule: true,
     }).run();
     assert.ok(
@@ -123,7 +130,7 @@ describe('Test bulk preview plugin', () => {
       plugin: 'bulk-preview',
       pre: (p) => p.evaluate(() => {
         // user deselects file
-        document.getElementById('file-pdf').setAttribute('aria-selected', 'false');
+        document.getElementById('file-pdf').click();
       }),
       loadModule: true,
     }).run();
@@ -188,8 +195,8 @@ describe('Test bulk preview plugin', () => {
         pluginSleep: 1000,
         pre: (p) => p.evaluate(() => {
           // user selects more files
-          document.getElementById('file-word').setAttribute('aria-selected', 'true');
-          document.getElementById('file-excel').setAttribute('aria-selected', 'true');
+          document.getElementById('file-word').click();
+          document.getElementById('file-excel').click();
         }),
         checkPage: (p) => p.evaluate(() => {
           window.hlx.clipboardText = 'dummy';
@@ -283,7 +290,7 @@ describe('Test bulk preview plugin', () => {
       pluginSleep: 1000,
       pre: (p) => p.evaluate(() => {
         // select another file
-        document.getElementById('file-word').setAttribute('aria-selected', 'true');
+        document.getElementById('file-word').click();
       }),
       loadModule: true,
       acceptDialogs: true,

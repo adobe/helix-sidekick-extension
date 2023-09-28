@@ -408,6 +408,93 @@
   }
 
   /**
+   * Checks a path against supported file extensions.
+   * @private
+   * @param {string} path The path to check
+   * @returns {boolean} {@code true} if file extension supported, else {@code false}
+   */
+  function isSupportedFileExtension(path) {
+    const file = path.split('/').pop();
+    const extension = file.split('.').pop();
+    if (extension === file) {
+      return true;
+    } else {
+      return [
+        'jpg',
+        'jpeg',
+        'png',
+        'pdf',
+        'svg',
+      ].includes(extension.toLowerCase());
+    }
+  }
+
+  /**
+   * Recognizes a SharePoint URL.
+   * @private
+   * @param {URL} url The URL
+   * @returns {boolean} {@code true} if URL is SharePoint, else {@code false}
+   */
+  function isSharePoint(url) {
+    return /\w+\.sharepoint.com$/.test(url.host);
+  }
+
+  /**
+   * Recognizes a SharePoint document management URL.
+   * @private
+   * @param {URL} url The URL
+   * @returns {boolean} {@code true} if URL is SharePoint DM, else {@code false}
+   */
+  function isSharePointDM(url) {
+    return isSharePoint(url)
+      && (url.pathname.endsWith('/Forms/AllItems.aspx')
+      || url.pathname.endsWith('/onedrive.aspx'));
+  }
+
+  /**
+   * Recognizes a SharePoint folder URL.
+   * @private
+   * @param {URL} url The URL
+   * @returns {boolean} {@code true} if URL is SharePoint folder, else {@code false}
+   */
+  function isSharePointFolder(url) {
+    if (isSharePointDM(url)) {
+      const docPath = new URLSearchParams(url.search).get('id');
+      const dotIndex = docPath?.split('/').pop().indexOf('.');
+      return [-1, 0].includes(dotIndex); // dot only allowed as first char
+    }
+    return false;
+  }
+
+  /**
+   * Recognizes a SharePoint editor URL.
+   * @private
+   * @param {URL} url The URL
+   * @returns {boolean} {@code true} if URL is SharePoint editor, else {@code false}
+   */
+  function isSharePointEditor(url) {
+    const { pathname, search } = url;
+    return isSharePoint(url)
+      && pathname.match(/\/_layouts\/15\/[\w]+.aspx$/)
+      && search.includes('sourcedoc=');
+  }
+
+  /**
+   * Recognizes a SharePoint viewer URL.
+   * @private
+   * @param {URL} url The URL
+   * @returns {boolean} {@code true} if URL is SharePoint viewer, else {@code false}
+   */
+  function isSharePointViewer(url) {
+    if (isSharePointDM(url)) {
+      const docPath = new URLSearchParams(url.search).get('id');
+      const dotIndex = docPath?.split('/').pop().lastIndexOf('.');
+      return dotIndex > 0; // must contain a dot
+    }
+    return false;
+  }
+
+  /**
    * Turns a globbing into a regular expression.
    * @private
    * @param {string} glob The globbing
@@ -418,6 +505,7 @@
       glob = '**';
     }
     const reString = glob
+      .replace('.', '\\.') // don't match every char, just real dots
       .replace(/\*\*/g, '_')
       .replace(/\*/g, '[0-9a-z-.]*')
       .replace(/_/g, '.*');
@@ -641,6 +729,21 @@
       return new URL(resource, origin);
     }
     return url;
+  }
+
+  /**
+   * Checks if the location has changed.
+   * @private
+   * @param {Sidekick} sk The sidekick
+   * @returns {boolean} {@code true} if location changed, else {@code false}
+   */
+  function isNewLocation(sk) {
+    const { location } = sk;
+    const $test = document.getElementById('sidekick_test_location');
+    if ($test) {
+      return $test.value !== location.href;
+    }
+    return window.location.href !== location.href;
   }
 
   /**
@@ -1437,15 +1540,11 @@
   function addBulkPlugins(sk) {
     let bulkSelection = [];
 
-    const isSharePoint = (location) => /\w+\.sharepoint.com$/.test(location.host)
-      && (location.pathname.endsWith('/Forms/AllItems.aspx')
-      || location.pathname.endsWith('/onedrive.aspx'));
-
     const toWebPath = (folder, item) => {
       const { path, type } = item;
       const nameParts = path.split('.');
       let [file, ext] = nameParts;
-      if (isSharePoint(sk.location) && ext === 'docx') {
+      if (isSharePointFolder(sk.location) && ext === 'docx') {
         // omit docx extension on sharepoint
         ext = '';
       }
@@ -1468,15 +1567,15 @@
 
     const getBulkSelection = () => {
       const { location } = sk;
-      if (isSharePoint(location)) {
+      if (isSharePointFolder(location)) {
         const isGrid = document.querySelector('div[class~="ms-TilesList"]');
         return [...document.querySelectorAll('#appRoot [role="presentation"] div[aria-selected="true"]')]
-          .filter((row) => !row.querySelector('img').getAttribute('src').includes('/foldericons/')
-            && !row.querySelector('img').getAttribute('src').endsWith('folder.svg'))
+          .filter((row) => !row.querySelector('img')?.getAttribute('src').includes('/foldericons/')
+            && !row.querySelector('img')?.getAttribute('src').endsWith('folder.svg'))
           .map((row) => ({
             type: isGrid
               ? row.querySelector(':scope i[aria-label]')?.getAttribute('aria-label').trim()
-              : new URL(row.querySelector('img').getAttribute('src'), sk.location.href).pathname.split('/').slice(-1)[0].split('.')[0],
+              : new URL(row.querySelector('img')?.getAttribute('src'), sk.location.href).pathname.split('/').slice(-1)[0].split('.')[0],
             path: isGrid
               ? row.querySelector('div[data-automationid="name"]').textContent.trim()
               : row.querySelector('button')?.textContent.trim(),
@@ -1491,14 +1590,6 @@
               || row.querySelector(':scope > div > div > div:nth-of-type(4)').textContent.trim(), // grid layout
           }));
       }
-    };
-
-    const isChangedUrl = () => {
-      const $test = document.getElementById('sidekick_test_location');
-      if ($test) {
-        return $test.value !== sk.location.href;
-      }
-      return window.location.href !== sk.location.href;
     };
 
     const updateBulkInfo = () => {
@@ -1518,15 +1609,15 @@
       }
       // show/hide bulk buttons
       const filesSelected = sel.length > 0;
-      if (isChangedUrl()) {
-        // refresh location
-        sk.location = getLocation();
-      }
       ['preview', 'publish', 'copy-urls'].forEach((action) => {
         const pluginId = `bulk-${action}`;
         const plugin = sk.get(pluginId);
-        const customShowPlugin = (sk.customPlugins[action]?.condition || (() => true))(sk);
-        plugin.classList[filesSelected && customShowPlugin ? 'remove' : 'add']('hlx-sk-hidden');
+        let customShow = true;
+        const customPlugin = sk.customPlugins[action];
+        if (customPlugin) {
+          customShow = customPlugin.condition(sk);
+        }
+        plugin.classList[filesSelected && customShow ? 'remove' : 'add']('hlx-sk-hidden');
       });
       // update copy url button texts based on selection size
       ['', 'preview', 'live', 'prod'].forEach((env) => {
@@ -1663,10 +1754,15 @@
           class: 'hlx-sk-label',
         },
       }],
-      callback: () => {
-        window.setInterval(() => {
-          updateBulkInfo();
-        }, 500);
+      callback: (sidekick) => {
+        const { location } = sk;
+        const listener = () => window.setTimeout(() => updateBulkInfo(sidekick), 100);
+        const rootEl = document.querySelector(isSharePointFolder(location) ? '#appRoot' : 'body');
+        if (rootEl) {
+          rootEl.addEventListener('click', listener);
+          rootEl.addEventListener('keyup', listener);
+        }
+        listener();
       },
     });
 
@@ -1763,8 +1859,6 @@
         },
       });
     });
-
-    updateBulkInfo();
   }
 
   /**
@@ -1824,13 +1918,13 @@
           } = cfg;
           const condition = (s) => {
             let excluded = false;
-            const pathSearchHash = s.location.href.replace(s.location.origin, '');
+            const { webPath } = s.status;
             if (excludePaths && Array.isArray(excludePaths)
-              && excludePaths.some((glob) => globToRegExp(glob).test(pathSearchHash))) {
+              && excludePaths.some((glob) => globToRegExp(glob).test(webPath))) {
               excluded = true;
             }
             if (includePaths && Array.isArray(includePaths)
-              && includePaths.some((glob) => globToRegExp(glob).test(pathSearchHash))) {
+              && includePaths.some((glob) => globToRegExp(glob).test(webPath))) {
               excluded = false;
             }
             if (excluded) {
@@ -1948,12 +2042,12 @@
             container: containerId,
           };
           sk.customPlugins[plugin.id] = plugin;
-          // check and remove existing plugin
-          const existingPlugin = sk.plugins[plugin.id];
-          if (existingPlugin) {
-            if (sk.get(plugin.id) && !condition(sk)) {
-              sk.remove(id);
-            }
+          // check default plugin
+          const defaultPlugin = sk.plugins[plugin.id];
+          if (defaultPlugin) {
+            // extend default condition
+            const { condition: defaultCondition } = defaultPlugin;
+            defaultPlugin.condition = (s) => defaultCondition(s) && condition(s);
           } else {
             // add custom plugin
             sk.add(plugin);
@@ -2316,18 +2410,15 @@
   }
 
   /**
-   * Registers a plugin for re-evaluation if it should be shown or hidden,
-   * and if its button should be enabled or disabled.
+   * Checks existing plugins based on the status of the current resource.
    * @private
    * @param {Sidekick} sk The sidekick
-   * @param {Plugin} plugin The plugin configuration
-   * @param {HTMLElement} $plugin The plugin
-   * @returns {HTMLElement} The plugin or {@code null}
    */
-  function registerPlugin(sk, plugin, $plugin) {
-    // re-evaluate plugin when status fetched
-    sk.addEventListener('statusfetched', () => {
-      const { status } = sk;
+  function checkPlugins(sk) {
+    const { status, plugins, pluginContainer } = sk;
+    Object.keys(plugins).forEach((id) => {
+      const plugin = plugins[id];
+      const $plugin = sk.get(id);
       if (typeof plugin.condition === 'function') {
         if ($plugin && !plugin.condition(sk)) {
           // plugin exists but condition now false
@@ -2355,24 +2446,12 @@
         }
       }
     });
-    if (typeof plugin.callback === 'function') {
-      plugin.callback(sk, $plugin);
-    }
-    return $plugin || null;
-  }
-
-  /**
-   * Checks existing plugins based on the status of the current resource.
-   * @private
-   * @param {Sidekick} sk The sidekick
-   */
-  function checkPlugins(sk) {
-    sk.pluginContainer.classList.remove('hlx-sk-concealed');
+    pluginContainer.classList.remove('hlx-sk-concealed');
     window.setTimeout(() => {
-      if (!sk.pluginContainer.querySelector(':scope div.plugin')) {
+      if (!pluginContainer.querySelector(':scope div.plugin')) {
         // add empty text
-        sk.pluginContainer.innerHTML = '';
-        sk.pluginContainer.append(createTag({
+        pluginContainer.innerHTML = '';
+        pluginContainer.append(createTag({
           tag: 'span',
           text: i18n(sk, 'plugins_empty'),
           attrs: {
@@ -2747,6 +2826,15 @@
 
       // collapse dropdowns when document is clicked
       document.addEventListener('click', () => collapseDropdowns(this));
+      // listen to URL changes
+      window.setInterval(() => {
+        if (isNewLocation(this)) {
+          this.fetchStatus(true);
+        }
+      }, 500);
+      window.addEventListener('popstate', () => {
+        this.fetchStatus(true);
+      });
     }
 
     /**
@@ -2938,7 +3026,7 @@
       plugin.isShown = typeof plugin.condition === 'undefined'
           || (typeof plugin.condition === 'function' && plugin.condition(this));
       if (!plugin.isShown) {
-        return registerPlugin(this, plugin, null);
+        return null;
       }
 
       // find existing plugin
@@ -3026,7 +3114,11 @@
       if (typeof plugin.advanced === 'function' && plugin.advanced(this)) {
         $plugin.classList.add('hlx-sk-advanced-only');
       }
-      return registerPlugin(this, plugin, $plugin);
+      // callback
+      if (typeof plugin.callback === 'function') {
+        plugin.callback(this, $plugin);
+      }
+      return $plugin;
     }
 
     /**
@@ -3057,13 +3149,17 @@
      */
     isEditor() {
       const { config, location } = this;
-      const { host, pathname, search } = location;
-      return (/.*\.sharepoint\.com$/.test(host)
-        && pathname.match(/\/_layouts\/15\/[\w]+.aspx$/)
-        && search.includes('sourcedoc='))
-        || location.host === 'docs.google.com'
-        || (config.mountpoint && new URL(config.mountpoint).host === location.host
-          && !this.isAdmin());
+      const { host } = location;
+      if (isSharePointEditor(location) || isSharePointViewer(location)) {
+        return true;
+      }
+      if (host === 'docs.google.com') {
+        return true;
+      }
+      if (config.mountpoint && new URL(config.mountpoint).host === host && !this.isAdmin()) {
+        return true;
+      }
+      return false;
     }
 
     /**
@@ -3072,10 +3168,7 @@
      */
     isAdmin() {
       const { location } = this;
-      return (location.host === 'drive.google.com')
-        || (/\w+\.sharepoint.com$/.test(location.host)
-        && (location.pathname.endsWith('/Forms/AllItems.aspx')
-        || location.pathname.endsWith('/onedrive.aspx')));
+      return isSharePointFolder(location) || location.host === 'drive.google.com';
     }
 
     /**
@@ -3142,10 +3235,8 @@
      * @returns {boolean} <code>true</code> if content URL, else <code>false</code>
      */
     isContent() {
-      const file = this.location.pathname.split('/').pop();
-      const ext = file && file.split('.').pop();
-      return this.isEditor() || this.isAdmin() || ext === file || ext === 'html'
-        || ext === 'json' || ext === 'pdf';
+      const extSupported = isSupportedFileExtension(this.location.pathname);
+      return this.isEditor() || this.isAdmin() || extSupported;
     }
 
     /**
