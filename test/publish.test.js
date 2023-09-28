@@ -145,6 +145,21 @@ describe('Test publish plugin', () => {
     );
   }).timeout(IT_DEFAULT_TIMEOUT);
 
+  it('Publish plugin available for JSON resource', async () => {
+    const setup = new Setup('blog');
+    nock.sidekick(setup);
+    nock.admin(setup);
+
+    const { plugins } = await new SidekickTest({
+      browser,
+      page,
+    }).run('https://main--blog--adobe.hlx.page/en/topics/bla.json');
+    assert.ok(
+      plugins.find((p) => p.id === 'publish'),
+      'Publish plugin not available for JSON',
+    );
+  }).timeout(IT_DEFAULT_TIMEOUT);
+
   it('Publish plugin button disabled without source document', async () => {
     const setup = new Setup('blog');
     setup.apiResponse().edit = {};
