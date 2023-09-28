@@ -1,3 +1,14 @@
+## [6.30.2](https://github.com/adobe/helix-sidekick-extension/compare/v6.30.1...v6.30.2) (2023-09-28)
+
+
+### Bug Fixes
+
+* custom override of existing plugin ([54fbb58](https://github.com/adobe/helix-sidekick-extension/commit/54fbb582731fb60ab83850b0451d049ba8576a0b))
+* custom plugin conditions ([c95e81d](https://github.com/adobe/helix-sidekick-extension/commit/c95e81d1691e1bd7b270c30cd1e2512ade69955b))
+* differentiate between file and folder in sharepoint ([dfc1be2](https://github.com/adobe/helix-sidekick-extension/commit/dfc1be2241f2e03173e62c11c05428add16fae5e))
+* **extension:** use backslashes, not slashes ([301fc06](https://github.com/adobe/helix-sidekick-extension/commit/301fc06b1c8b815d26ee59fc445f4a8987cf6697))
+* **globs:** don't match any character on . ([23be8a8](https://github.com/adobe/helix-sidekick-extension/commit/23be8a8df73dbbc7b4f48845b5a226be84670d80))
+
 ## [6.30.1](https://github.com/adobe/helix-sidekick-extension/compare/v6.30.0...v6.30.1) (2023-09-12)
 
 
