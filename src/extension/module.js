@@ -1915,18 +1915,29 @@
             environments,
             excludePaths,
             includePaths,
+            excludeWebPaths,
+            includeWebPaths,
             containerId,
             isContainer,
           } = cfg;
           const condition = (s) => {
             let excluded = false;
-            const { webPath } = s.status;
+            const pathSearchHash = s.location.href.replace(s.location.origin, '');
             if (excludePaths && Array.isArray(excludePaths)
-              && excludePaths.some((glob) => globToRegExp(glob).test(webPath))) {
+              && excludePaths.some((glob) => globToRegExp(glob).test(pathSearchHash))) {
               excluded = true;
             }
             if (includePaths && Array.isArray(includePaths)
-              && includePaths.some((glob) => globToRegExp(glob).test(webPath))) {
+              && includePaths.some((glob) => globToRegExp(glob).test(pathSearchHash))) {
+              excluded = false;
+            }
+            const { webPath } = s.status;
+            if (excludeWebPaths && Array.isArray(excludeWebPaths)
+              && excludeWebPaths.some((glob) => globToRegExp(glob).test(webPath))) {
+              excluded = true;
+            }
+            if (includeWebPaths && Array.isArray(includeWebPaths)
+              && includeWebPaths.some((glob) => globToRegExp(glob).test(webPath))) {
               excluded = false;
             }
             if (excluded) {

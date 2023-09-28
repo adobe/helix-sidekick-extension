@@ -29,6 +29,17 @@
           },
           "description": "Exclude the plugin from these paths",
           "examples": [
+            "/foo/**",
+            "**/:x:**"
+          ]
+        },
+        "excludeWebPaths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Exclude the plugin from these web paths",
+          "examples": [
             "/foo/bar",
             "/foo/**"
           ]
@@ -43,6 +54,17 @@
             "type": "string"
           },
           "description": "Include the plugin on these paths (overrides excludePaths)",
+          "examples": [
+            "/foo/bar/**",
+            "**.docx**"
+          ]
+        },
+        "includeWebPaths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Include the plugin on these web paths (overrides excludeWebPaths)",
           "examples": [
             "/foo/bar",
             "/foo/bar/**"
