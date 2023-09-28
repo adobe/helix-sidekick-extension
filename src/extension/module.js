@@ -420,6 +420,7 @@
       return true;
     } else {
       return [
+        'json',
         'jpg',
         'jpeg',
         'png',
