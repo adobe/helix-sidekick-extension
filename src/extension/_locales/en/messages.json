@@ -559,8 +559,17 @@
   "user_login": {
     "message": "Sign in"
   },
+  "user_login_expired": {
+    "message": "Your session has expired, please sign in again."
+  },
+  "user_login_expiring_soon": {
+    "message": "Your session will expire soon. Would you like to refresh it now?"
+  },
   "user_login_hint": {
     "message": "You need to sign in before you can use Sidekick."
+  },
+  "user_login_valid_until": {
+    "message": "Session valid until $1"
   },
   "user_logout": {
     "message": "Sign out"
