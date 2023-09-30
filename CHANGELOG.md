@@ -1,3 +1,29 @@
+## [6.30.4](https://github.com/adobe/helix-sidekick-extension/compare/v6.30.3...v6.30.4) (2023-09-28)
+
+
+### Bug Fixes
+
+* exclude/includePath not working as expected ([2bd8a5c](https://github.com/adobe/helix-sidekick-extension/commit/2bd8a5c9d78a41a7b554bc7b6ca2efbbfb7b7631))
+
+## [6.30.3](https://github.com/adobe/helix-sidekick-extension/compare/v6.30.2...v6.30.3) (2023-09-28)
+
+
+### Bug Fixes
+
+* add json to supported file extensions ([a62b57f](https://github.com/adobe/helix-sidekick-extension/commit/a62b57f18f056c9beb4fbb9fbdc7f2901bad30af))
+* ignore sharepoint folders in bulk selection ([bb89eb5](https://github.com/adobe/helix-sidekick-extension/commit/bb89eb501d83a722c3488581f9fd716d3a36f26b))
+
+## [6.30.2](https://github.com/adobe/helix-sidekick-extension/compare/v6.30.1...v6.30.2) (2023-09-28)
+
+
+### Bug Fixes
+
+* custom override of existing plugin ([54fbb58](https://github.com/adobe/helix-sidekick-extension/commit/54fbb582731fb60ab83850b0451d049ba8576a0b))
+* custom plugin conditions ([c95e81d](https://github.com/adobe/helix-sidekick-extension/commit/c95e81d1691e1bd7b270c30cd1e2512ade69955b))
+* differentiate between file and folder in sharepoint ([dfc1be2](https://github.com/adobe/helix-sidekick-extension/commit/dfc1be2241f2e03173e62c11c05428add16fae5e))
+* **extension:** use backslashes, not slashes ([301fc06](https://github.com/adobe/helix-sidekick-extension/commit/301fc06b1c8b815d26ee59fc445f4a8987cf6697))
+* **globs:** don't match any character on . ([23be8a8](https://github.com/adobe/helix-sidekick-extension/commit/23be8a8df73dbbc7b4f48845b5a226be84670d80))
+
 ## [6.30.1](https://github.com/adobe/helix-sidekick-extension/compare/v6.30.0...v6.30.1) (2023-09-12)
 
 

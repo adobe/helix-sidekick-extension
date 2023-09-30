@@ -77,7 +77,7 @@ describe('Test bulk copy URLs plugin', () => {
         };
         const btnTexts = retrieveButtonText();
         // change selection
-        document.getElementById('file-word').setAttribute('aria-selected', 'true');
+        document.getElementById('file-word').click();
         // wait 1s
         return new Promise((resolve) => {
           setTimeout(() => {
@@ -106,7 +106,7 @@ describe('Test bulk copy URLs plugin', () => {
       url: setup.getUrl('edit', 'admin'),
       pre: (p) => p.evaluate(() => {
         // user deselects file
-        document.getElementById('file-pdf').setAttribute('aria-selected', 'false');
+        document.getElementById('file-pdf').click();
       }),
       loadModule: true,
     }).run();
@@ -132,7 +132,7 @@ describe('Test bulk copy URLs plugin', () => {
       plugin: 'bulk-copy-preview-urls',
       pre: (p) => p.evaluate(() => {
         // user deselects file
-        document.getElementById('file-pdf').setAttribute('aria-selected', 'false');
+        document.getElementById('file-pdf').click();
       }),
       loadModule: true,
     }).run();
@@ -213,8 +213,8 @@ describe('Test bulk copy URLs plugin', () => {
       pluginSleep: 500,
       pre: (p) => p.evaluate(() => {
         // select spreadsheet
-        document.getElementById('file-pdf').setAttribute('aria-selected', 'false');
-        document.getElementById('file-gsheet').setAttribute('aria-selected', 'true');
+        document.getElementById('file-pdf').click();
+        document.getElementById('file-gsheet').click();
       }),
       post: (p) => p.evaluate(() => {
         window.hlx.clipboardText = 'dummy';
@@ -282,8 +282,8 @@ describe('Test bulk copy URLs plugin', () => {
         pluginSleep: 500,
         pre: (p) => p.evaluate(() => {
           // user selects more files
-          document.getElementById('file-word').setAttribute('aria-selected', 'true');
-          document.getElementById('file-excel').setAttribute('aria-selected', 'true');
+          document.getElementById('file-word').click();
+          document.getElementById('file-excel').click();
         }),
         post: (p) => p.evaluate(() => {
           window.hlx.clipboardText = 'dummy';

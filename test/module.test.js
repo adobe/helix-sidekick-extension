@@ -435,7 +435,7 @@ describe('Test sidekick', () => {
             "host": "blog.adobe.com",
             "plugins": [{
               "id": "publish",
-              "excludePaths": ["**/drafts/**"]
+              "excludePaths": ["**/topics/**"]
             }]
           }`,
         });
@@ -447,7 +447,7 @@ describe('Test sidekick', () => {
         });
         const {
           plugins,
-        } = await test.run('https://main--blog--adobe.hlx.page/en/drafts/foo');
+        } = await test.run();
         assert.ok(!plugins.find((p) => p.id === 'publish'), 'Did not extend existing plugin');
       }).timeout(IT_DEFAULT_TIMEOUT);
 
@@ -983,7 +983,9 @@ describe('Test sidekick', () => {
       it('Detects resource proxy URL correctly', async () => {
         const setup = new Setup('blog');
         nock.sidekick(setup);
-        nock.admin(setup);
+        nock.admin(setup, {
+          persist: true,
+        });
         const test = new SidekickTest({
           browser,
           page,
