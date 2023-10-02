@@ -1,3 +1,10 @@
+## [6.30.5](https://github.com/adobe/helix-sidekick-extension/compare/v6.30.4...v6.30.5) (2023-10-02)
+
+
+### Bug Fixes
+
+* proper resource check ([268bb1d](https://github.com/adobe/helix-sidekick-extension/commit/268bb1db3e75a9b8641368524f8b5f43df7e7bd3))
+
 ## [6.30.4](https://github.com/adobe/helix-sidekick-extension/compare/v6.30.3...v6.30.4) (2023-09-28)
 
 
