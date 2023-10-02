@@ -2177,15 +2177,6 @@
   function checkUserState(sk) {
     const toggle = sk.userMenu.firstElementChild;
     toggle.removeAttribute('disabled');
-    const { authTokenExpiry } = sk.config;
-    const getExpiryText = () => {
-      if (authTokenExpiry) {
-        const expiryDate = new Date(authTokenExpiry);
-        const expiryTime = expiryDate.toLocaleTimeString([], { timeStyle: 'short' });
-        return i18n(sk, 'user_login_valid_until').replace('$1', expiryTime);
-      }
-      return '';
-    };
     const updateUserPicture = async (picture, name) => {
       toggle.querySelector('.user-picture')?.remove();
       if (picture) {
@@ -2251,18 +2242,6 @@
                 e.stopPropagation();
               },
             },
-          },
-          {
-            tag: 'div',
-            text: getExpiryText(),
-            attrs: {
-              class: 'profile-expiry',
-            },
-            lstnrs: {
-              click: (e) => {
-                e.stopPropagation();
-              },
-            },
           }],
         });
       } else {
@@ -2295,7 +2274,7 @@
         sk.remove('user-info');
         sk.remove('user-switch');
         sk.remove('user-logout');
-      });
+      }, { once: true });
     } else {
       updateUserPicture();
       // login
@@ -2311,12 +2290,14 @@
       // clean up on login
       sk.addEventListener('loggedin', () => {
         sk.remove('user-login');
-      });
+      }, { once: true });
       if (!sk.status.loggedOut && sk.status.status === 401 && !sk.isAuthenticated()) {
         // encourage login
         encourageLogin(sk, true);
       }
     }
+
+    const { authTokenExpiry } = sk.config;
     if (authTokenExpiry) {
       // alert user before and after token expiry
       const showLoginDialog = (text) => {
@@ -2352,43 +2333,55 @@
           true,
         );
       };
-      const expiryDate = new Date(authTokenExpiry);
-      const now = new Date();
-      const fiveMinutesFromNow = new Date(Date.now() + 300000);
-      console.log('now     ', now);
-      console.log('in five ', fiveMinutesFromNow);
-      console.log('expiry  ', expiryDate);
-      if (expiryDate) {
+
+      const now = Date.now();
+      if (authTokenExpiry > now && !sk.config.authTokenWarnings) {
+        const expiryMinus5Mins = authTokenExpiry - 300000;
         // alert user 5 minutes before token expiry
-        let delay = authTokenExpiry - fiveMinutesFromNow.valueOf();
+        let delay = expiryMinus5Mins - now;
         if (delay < 0) {
           delay = 0;
         }
         console.log(`will alert user 5 minutes before in ${delay / 1000}s`);
-        window.setTimeout(() => {
-          console.log('double check: alert user 5 minutes before', sk.config.authTokenExpiry);
-          if (sk.config.authTokenExpiry) {
+        window.setTimeout(async () => {
+          console.log(
+            new Date(),
+            'double check: alert user 5 minutes before',
+            sk.config.authTokenExpiry,
+            authTokenExpiry,
+          );
+          if (sk.config.authTokenExpiry && sk.config.authTokenExpiry === authTokenExpiry
+            && await checkProfileStatus(sk, 200)) {
             showLoginDialog(i18n(sk, 'user_login_expiring_soon'));
           }
         }, delay);
-      }
-      if (expiryDate > now) {
         // alert user once token has expired
-        console.log(`will alert user of expired token in ${(authTokenExpiry - now.valueOf()) / 1000}s`);
-        window.setTimeout(() => {
-          // double check
-          console.log('double check: alert user of expired token', sk.config.authTokenExpiry);
-          if (sk.config.authTokenExpiry) {
+        delay = authTokenExpiry - now;
+        if (delay < 0) {
+          delay = 0;
+        }
+        console.log(`will alert user of expired token in ${(authTokenExpiry - now) / 1000}s`);
+        window.setTimeout(async () => {
+          // fetch status and double check
+          console.log(
+            new Date(),
+            'double check: alert user of expired token',
+            sk.config.authTokenExpiry,
+            authTokenExpiry,
+          );
+          if (sk.config.authTokenExpiry && sk.config.authTokenExpiry === authTokenExpiry
+            && await checkProfileStatus(sk, 401)) {
+            console.log('show expired dialog');
             delete sk.config.authToken;
             delete sk.config.authTokenExpiry;
-            sk.fetchStatus();
             showLoginDialog(i18n(sk, 'user_login_expired'));
+            sk.fetchStatus();
+          } else {
+            console.log('hide dialog');
+            sk.hideModal();
           }
-        }, authTokenExpiry - now.valueOf());
-      } else {
-        console.log('alert user of expired token right away!');
-        // alert user that token has already expired
-        // showLoginDialog(i18n(sk, 'user_login_expired'));
+        }, delay);
+        sk.config.authTokenWarnings = true;
       }
     }
   }
