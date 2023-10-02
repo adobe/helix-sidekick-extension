@@ -64,7 +64,7 @@ export default async function injectSidekick(config, display) {
     } = curatedConfig;
 
     // todo: improve config change handling. currently we only update the authToken
-    chrome.storage.sync.onChanged.addListener((changes) => {
+    chrome.storage.session.onChanged.addListener((changes) => {
       const { authToken } = changes[`${owner}/${repo}`]?.newValue || {};
       if (authToken) {
         const { authTokenExpiry } = changes[`${owner}/${repo}`]?.newValue || {};

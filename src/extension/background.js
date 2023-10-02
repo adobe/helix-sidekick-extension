@@ -466,7 +466,9 @@ async function updateAdminAuthHeaderRules() {
     let id = 2;
     const projects = await getConfig('sync', 'hlxSidekickProjects') || [];
     const addRules = [];
-    const projectConfigs = await Promise.all(projects.map((handle) => getConfig('sync', handle)));
+    const projectConfigs = (await Promise.all(projects
+      .map((handle) => getConfig('session', handle))))
+      .filter((cfg) => !!cfg);
     projectConfigs.forEach(({ owner, repo, authToken }) => {
       if (authToken) {
         addRules.push({
@@ -513,6 +515,7 @@ async function storeAuthToken(owner, repo, token, exp) {
       }
     } else {
       delete project.authToken;
+      delete project.authTokenExpiry;
     }
     await setProject(project);
     log.debug(`updated auth token for ${owner}--${repo}`);

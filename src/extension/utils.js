@@ -80,7 +80,7 @@ export async function getConfig(type, prop) {
   const cfg = await new Promise((resolve) => {
     chrome.storage[type].get(prop, resolve);
   });
-  return prop ? cfg[prop] : cfg;
+  return cfg?.[prop];
 }
 
 /**
@@ -123,28 +123,6 @@ export async function clearConfig(type) {
   return new Promise((resolve) => {
     chrome.storage[type].clear(resolve);
   });
-}
-
-/**
- * Assembles a state object from multiple storage types.
- * @param {Function} cb The function to call with the state object
- * @returns {Promise<void>}
- */
-export async function getState(cb) {
-  if (typeof cb === 'function') {
-    const display = await getConfig('local', 'hlxSidekickDisplay') || false;
-    const adminVersion = await getConfig('local', 'hlxSidekickAdminVersion');
-
-    const pushDown = await getConfig('sync', 'hlxSidekickPushDown') || false;
-    const projects = await Promise.all((await getConfig('sync', 'hlxSidekickProjects') || [])
-      .map((handle) => getConfig('sync', handle)));
-    cb({
-      display,
-      adminVersion,
-      pushDown,
-      projects,
-    });
-  }
 }
 
 /**
@@ -538,12 +516,11 @@ export async function getProject(project) {
   const handle = `${owner}/${repo}`;
   const projectConfig = await getConfig('sync', handle);
   if (projectConfig) {
-    // check for auth token
+    // check session storage for auth token
     const auth = await getConfig('session', handle) || {};
-    console.log('getProject', handle, auth);
     return {
       ...auth,
-      projectConfig,
+      ...projectConfig,
     };
   }
   return undefined;
@@ -564,15 +541,21 @@ export async function setProject(project, cb) {
     }
   });
   const handle = `${owner}/${repo}`;
-  // move auth token to session storage
+  // put auth token to session storage
   const { authToken, authTokenExpiry } = project;
   if (authToken !== undefined) {
     delete project.authToken;
     delete project.authTokenExpiry;
-    console.log('setProject', handle, authToken, authTokenExpiry);
     await setConfig('session', {
-      [handle]: { authToken, authTokenExpiry },
+      [handle]: {
+        owner,
+        repo,
+        authToken,
+        authTokenExpiry,
+      },
     });
+  } else {
+    await removeConfig('session', handle);
   }
   // update project config
   await setConfig('sync', {
@@ -663,6 +646,31 @@ export async function deleteProject(handle, cb) {
       log.warn('project to delete not found', handle);
       if (typeof cb === 'function') cb(false);
     }
+  }
+}
+
+/**
+ * Assembles a state object from multiple storage types.
+ * @param {Function} cb The function to call with the state object
+ * @returns {Promise<void>}
+ */
+export async function getState(cb) {
+  if (typeof cb === 'function') {
+    const display = await getConfig('local', 'hlxSidekickDisplay') || false;
+    const adminVersion = await getConfig('local', 'hlxSidekickAdminVersion');
+
+    const pushDown = await getConfig('sync', 'hlxSidekickPushDown') || false;
+    const projects = await Promise.all((await getConfig('sync', 'hlxSidekickProjects') || [])
+      .map((handle) => {
+        const [owner, repo] = handle.split('/');
+        return getProject({ owner, repo });
+      }));
+    cb({
+      display,
+      adminVersion,
+      pushDown,
+      projects,
+    });
   }
 }
 
