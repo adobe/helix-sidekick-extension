@@ -458,7 +458,6 @@ export async function getProjectEnv({
       prod,
       project,
       contentSourceUrl,
-      contentSourceType,
     } = await res.json();
     if (preview && preview.host) {
       env.previewHost = preview.host;
@@ -473,10 +472,7 @@ export async function getProjectEnv({
       env.project = project;
     }
     if (contentSourceUrl) {
-      env.mountpoints = [{
-        contentSourceUrl,
-        contentSourceType,
-      }];
+      env.mountpoints = [contentSourceUrl];
     }
   } else if (res.status === 401) {
     env.unauthorized = true;
@@ -539,7 +535,18 @@ export function assembleProject({
  */
 export async function getProject(project) {
   const { owner, repo } = project;
-  return getConfig('sync', `${owner}/${repo}`);
+  const handle = `${owner}/${repo}`;
+  const projectConfig = await getConfig('sync', handle);
+  if (projectConfig) {
+    // check for auth token
+    const auth = await getConfig('session', handle) || {};
+    console.log('getProject', handle, auth);
+    return {
+      ...auth,
+      projectConfig,
+    };
+  }
+  return undefined;
 }
 
 /**
@@ -557,6 +564,16 @@ export async function setProject(project, cb) {
     }
   });
   const handle = `${owner}/${repo}`;
+  // move auth token to session storage
+  const { authToken, authTokenExpiry } = project;
+  if (authToken !== undefined) {
+    delete project.authToken;
+    delete project.authTokenExpiry;
+    console.log('setProject', handle, authToken, authTokenExpiry);
+    await setConfig('session', {
+      [handle]: { authToken, authTokenExpiry },
+    });
+  }
   // update project config
   await setConfig('sync', {
     [handle]: project,
