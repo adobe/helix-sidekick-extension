@@ -125,7 +125,7 @@ describe('Test user auth handling', () => {
         authTokenExpiry: Date.now() + 1000, // token expires in 1 seconds minutes
       },
       loadModule: true,
-      sleep: 1000,
+      sleep: 2000,
     }).run();
     assert.ok(
       notification && notification.message.includes('session has expired'),
