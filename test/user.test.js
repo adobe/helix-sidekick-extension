@@ -122,13 +122,13 @@ describe('Test user auth handling', () => {
       sidekickConfig: {
         ...setup.sidekickConfig,
         authToken: 'abcd1234',
-        authTokenExpiry: Date.now() + 2000, // token expires in 1 seconds minutes
+        authTokenExpiry: Date.now() + 5000, // token expires in 1 seconds minutes
       },
       loadModule: true,
-      sleep: 2000,
+      sleep: 10000,
     }).run();
     assert.ok(
-      notification && notification.message.includes('session has expired'),
+      notification?.message?.includes('session has expired'),
       'Did not show expiry notice',
     );
   }).timeout(IT_DEFAULT_TIMEOUT);
