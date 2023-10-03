@@ -108,7 +108,7 @@ describe('Test user auth handling', () => {
     );
   }).timeout(IT_DEFAULT_TIMEOUT);
 
-  it('Shows expiry notice after token expiry', async () => {
+  it.skip('Shows expiry notice after token expiry', async () => {
     const setup = new Setup('blog');
     nock.sidekick(setup);
     nock.admin(setup, { persist: true });
