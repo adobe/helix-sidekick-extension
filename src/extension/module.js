@@ -2371,14 +2371,15 @@
           );
           if (sk.config.authTokenExpiry && sk.config.authTokenExpiry === authTokenExpiry
             && await checkProfileStatus(sk, 401)) {
-            console.log('show expired dialog');
             delete sk.config.authToken;
             delete sk.config.authTokenExpiry;
+            delete sk.config.authTokenWarnings;
             showLoginDialog(i18n(sk, 'user_login_expired'));
             sk.fetchStatus();
-          } else {
-            console.log('hide dialog');
+          } else if (sk.config.authTokenWarnings) {
+            // clean up existing warning dialogs
             sk.hideModal();
+            delete sk.config.authTokenWarnings;
           }
         }, delay);
         sk.config.authTokenWarnings = true;
