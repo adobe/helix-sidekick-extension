@@ -235,7 +235,7 @@ export function isSharePointHost(tabUrl, projects = []) {
   return /^[a-z-]+\.sharepoint\.com$/.test(host)
     || !!projects.find((p) => {
       const mp = p.mountpoints && p.mountpoints[0];
-      return mp && new URL(mp).host === host && !host.endsWith('.google.com');
+      return !host.endsWith('.google.com') && mp && new URL(mp).host === host;
     });
 }
 

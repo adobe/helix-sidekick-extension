@@ -441,7 +441,7 @@
     const { host } = url;
     const { config: { mountpoint } } = sk;
     return /\w+\.sharepoint.com$/.test(host)
-      || (mountpoint && new URL(mountpoint).host === host && !host.endsWith('.google.com'));
+      || (!host.endsWith('.google.com') && mountpoint && new URL(mountpoint).host === host);
   }
 
   /**
