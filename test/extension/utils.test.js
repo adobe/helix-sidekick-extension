@@ -366,4 +366,14 @@ describe('Test extension utils', () => {
     })).to.be.true;
     expect(display).to.be.false;
   });
+
+  it('isSharePointHost', async () => {
+    expect(utils.isSharePointHost('https://foo.sharepoint.com/sites/foo/Shared%20Documents/root1')).to.be.true;
+    expect(utils.isSharePointHost('https://foo.custom/sites/foo/Shared%20Documents/root1', CONFIGS)).to.be.true;
+  });
+
+  it('isGoogleDriveHost', async () => {
+    expect(utils.isGoogleDriveHost('https://drive.google.com/drive/folders/1234567890')).to.be.true;
+    expect(utils.isGoogleDriveHost('https://docs.google.com/document/d/1234567890/edit')).to.be.true;
+  });
 });

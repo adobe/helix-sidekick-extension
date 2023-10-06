@@ -285,7 +285,7 @@ function checkTab(id) {
         log.debug('local dev url detected, retrieve proxy url');
         checkUrl = await getProxyUrl(tab);
       }
-      await populateUrlCache(checkUrl);
+      await populateUrlCache(checkUrl, projects);
       if (tab.active) {
         await checkContextMenu(tab, projects);
       }

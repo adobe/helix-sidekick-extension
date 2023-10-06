@@ -227,11 +227,16 @@ async function fetchGoogleDriveEditInfo(tabUrl) {
 /**
  * Determines if a URL has a Microsoft SharePoint host.
  * @param {string} tabUrl The tab URL
+ * @param {Object[]} projects The project configurations
  * @returns {boolean} {@code true} if SharePoint host, else {@code false}
  */
-function isSharePointHost(tabUrl) {
+export function isSharePointHost(tabUrl, projects = []) {
   const { host } = new URL(tabUrl);
-  return /^[a-z-]+\.sharepoint\.com$/.test(host);
+  return /^[a-z-]+\.sharepoint\.com$/.test(host)
+    || !!projects.find((p) => {
+      const mp = p.mountpoints && p.mountpoints[0];
+      return !host.endsWith('.google.com') && mp && new URL(mp).host === host;
+    });
 }
 
 /**
@@ -239,7 +244,7 @@ function isSharePointHost(tabUrl) {
  * @param {string} tabUrl The tab URL
  * @returns {boolean} {@code true} if Google Drive host, else {@code false}
  */
-function isGoogleDriveHost(tabUrl) {
+export function isGoogleDriveHost(tabUrl) {
   const { host } = new URL(tabUrl);
   return /^(docs|drive)\.google\.com$/.test(host);
 }
@@ -265,12 +270,13 @@ export async function queryUrlCache(tabUrl) {
  * Microsoft SharePoint or Google Drive URLs will be looked up in the Franklin Admin Service
  * and expire after 2 hours.
  * @param {string} tabUrl The tab URL
- * @param {Object} config={} The project config (optional)
+ * @param {Object|Object[]} config={} The project config(s) (optional)
  * @param {string} config.owner The owner
  * @param {string} config.repo The repository
  * @returns {Promise<void>}
  */
-export async function populateUrlCache(tabUrl, { owner, repo } = {}) {
+export async function populateUrlCache(tabUrl, config = {}) {
+  const { owner, repo } = typeof config === 'object' && !Array.isArray(config) ? config : {};
   const createCacheEntry = (cacheUrl, results = [], expiry = false) => {
     const entry = { url: cacheUrl, results };
     if (expiry) {
@@ -300,12 +306,13 @@ export async function populateUrlCache(tabUrl, { owner, repo } = {}) {
       urlCache.push(entry);
     }
   } else {
+    const isSPHost = isSharePointHost(tabUrl, Array.isArray(config) ? config : [config]);
     // lookup (for sharepoint and google drive only)
-    if (!isSharePointHost(tabUrl) && !isGoogleDriveHost(tabUrl)) {
+    if (!isSPHost && !isGoogleDriveHost(tabUrl)) {
       return;
     }
     if ((await queryUrlCache(tabUrl)).length === 0) {
-      const info = isSharePointHost(tabUrl)
+      const info = isSPHost
         ? await fetchSharePointEditInfo(tabUrl)
         : await fetchGoogleDriveEditInfo(tabUrl);
       log.debug('resource edit info', info);
