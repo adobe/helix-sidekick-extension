@@ -1,3 +1,10 @@
+# [6.31.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.30.5...v6.31.0) (2023-10-06)
+
+
+### Features
+
+* support for custom sharepoint domain ([1db320b](https://github.com/adobe/helix-sidekick-extension/commit/1db320b8943cfd0c001fa4fd1b62d0940952ad4c)), closes [#548](https://github.com/adobe/helix-sidekick-extension/issues/548)
+
 ## [6.30.5](https://github.com/adobe/helix-sidekick-extension/compare/v6.30.4...v6.30.5) (2023-10-02)
 
 
