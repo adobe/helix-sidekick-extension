@@ -2364,14 +2364,7 @@
         if (delay < 0) {
           delay = 0;
         }
-        console.log(`will alert user 5 minutes before in ${delay / 1000}s`);
         window.setTimeout(async () => {
-          console.log(
-            new Date(),
-            'double check: alert user 5 minutes before',
-            sk.config.authTokenExpiry,
-            authTokenExpiry,
-          );
           if (sk.config.authTokenExpiry && sk.config.authTokenExpiry === authTokenExpiry
             && await checkProfileStatus(sk, 200)) {
             showLoginDialog(i18n(sk, 'user_login_expiring_soon'));
@@ -2382,15 +2375,8 @@
         if (delay < 0) {
           delay = 0;
         }
-        console.log(`will alert user of expired token in ${(authTokenExpiry - now) / 1000}s`);
         window.setTimeout(async () => {
           // fetch status and double check
-          console.log(
-            new Date(),
-            'double check: alert user of expired token',
-            sk.config.authTokenExpiry,
-            authTokenExpiry,
-          );
           if (sk.config.authTokenExpiry && sk.config.authTokenExpiry === authTokenExpiry
             && await checkProfileStatus(sk, 401)) {
             delete sk.config.authToken;
