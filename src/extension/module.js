@@ -2382,7 +2382,6 @@
             delete sk.config.authToken;
             delete sk.config.authTokenExpiry;
             delete sk.config.authTokenTimers;
-            console.log('showing dialog');
             showLoginDialog(i18n(sk, 'user_login_expired'));
             sk.fetchStatus();
           } else if (sk.config.authTokenTimers) {
