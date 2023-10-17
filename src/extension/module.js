@@ -2321,7 +2321,6 @@
 
     const { authTokenExpiry } = sk.config;
     if (authTokenExpiry) {
-      console.log('auth token expires', new Date(authTokenExpiry));
       // alert user before and after token expiry
       const showLoginDialog = (text) => {
         const buttonGroup = createTag({
