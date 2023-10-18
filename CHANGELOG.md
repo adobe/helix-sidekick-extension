@@ -1,3 +1,10 @@
+# [6.32.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.31.0...v6.32.0) (2023-10-18)
+
+
+### Features
+
+* allow view doc source on custom sites ([f801989](https://github.com/adobe/helix-sidekick-extension/commit/f801989f440906fc0c769fc422c8fb151f0c706c))
+
 # [6.31.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.30.5...v6.31.0) (2023-10-06)
 
 
