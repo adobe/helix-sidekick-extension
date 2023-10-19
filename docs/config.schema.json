@@ -101,6 +101,10 @@
     "specialView": {
       "type": "object",
       "properties": {
+        "id": {
+          "type": "string",
+          "description": "The unique view ID"
+        },
         "path": {
           "type": "string",
           "description": "Open the special view on this path",
