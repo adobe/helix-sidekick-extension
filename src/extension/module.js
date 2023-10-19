@@ -2320,53 +2320,59 @@
     }
 
     const { authTokenExpiry } = sk.config;
+    console.log('authTokenExpiry:', new Date(authTokenExpiry));
     if (authTokenExpiry) {
       // alert user before and after token expiry
-      const showLoginDialog = (text) => {
-        const buttonGroup = createTag({
-          tag: 'span',
-          attrs: {
-            class: 'hlx-sk-modal-button-group',
-          },
-        });
-        buttonGroup.append(createTag({
-          tag: 'button',
-          text: i18n(sk, 'user_login'),
-          attrs: {
-            class: 'accent',
-          },
-          lstnrs: {
-            click: () => {
-              login(sk);
-            },
-          },
-        }));
-        buttonGroup.append(createTag({
-          tag: 'button',
-          text: i18n(sk, 'cancel'),
-          lstnrs: {
-            click: () => {
-              sk.hideModal();
-            },
-          },
-        }));
-        sk.showModal(
-          [text, buttonGroup],
-          true,
-        );
-      };
-
       const now = Date.now();
+      console.log('now:            ', new Date(now));
+      console.log('future expiry?  ', authTokenExpiry > now);
+      console.log('timers set up?  ', !!sk.config.authTokenTimers);
       if (authTokenExpiry > now && !sk.config.authTokenTimers) {
+        const showLoginDialog = (text) => {
+          const buttonGroup = createTag({
+            tag: 'span',
+            attrs: {
+              class: 'hlx-sk-modal-button-group',
+            },
+          });
+          buttonGroup.append(createTag({
+            tag: 'button',
+            text: i18n(sk, 'user_login'),
+            attrs: {
+              class: 'accent',
+            },
+            lstnrs: {
+              click: () => {
+                login(sk);
+              },
+            },
+          }));
+          buttonGroup.append(createTag({
+            tag: 'button',
+            text: i18n(sk, 'cancel'),
+            lstnrs: {
+              click: () => {
+                sk.hideModal();
+              },
+            },
+          }));
+          sk.showModal(
+            [text, buttonGroup],
+            true,
+          );
+        };
+
         const expiryMinus5Mins = authTokenExpiry - 300000;
         // alert user 5 minutes before token expiry
         let delay = expiryMinus5Mins - now;
         if (delay < 0) {
           delay = 0;
         }
+        console.log('set timeout for expiry warning at ', new Date(expiryMinus5Mins), ', in', delay / 1000, 's');
         window.setTimeout(async () => {
-          if (sk.config.authTokenExpiry && sk.config.authTokenExpiry === authTokenExpiry
-            && await checkProfileStatus(sk, 200)) {
+          console.log(new Date(), 'show expiry warning?');
+          if (sk.config.authTokenExpiry && sk.config.authTokenExpiry === authTokenExpiry) {
+            console.log(new Date(), 'show dialog');
             showLoginDialog(i18n(sk, 'user_login_expiring_soon'));
           }
         }, delay);
@@ -2375,20 +2381,26 @@
         if (delay < 0) {
           delay = 0;
         }
+        console.log('set timeout for fetching status after expiry at', new Date(authTokenExpiry + 1000), ',in', delay / 1000, 's');
         window.setTimeout(async () => {
           // fetch status and double check
-          if (sk.config.authTokenExpiry && sk.config.authTokenExpiry === authTokenExpiry
-            && await checkProfileStatus(sk, 401)) {
-            delete sk.config.authToken;
-            delete sk.config.authTokenExpiry;
-            delete sk.config.authTokenTimers;
-            showLoginDialog(i18n(sk, 'user_login_expired'));
-            sk.fetchStatus();
-          } else if (sk.config.authTokenTimers) {
-            // clean up existing warning dialogs
-            sk.hideModal();
-            delete sk.config.authTokenTimers;
-          }
+          sk.addEventListener('statusfetched', async ({ detail }) => {
+            const { data: status } = detail;
+            console.log(new Date(), 'status fetched after expiry', status);
+            if (sk.config.authTokenExpiry && sk.config.authTokenExpiry === authTokenExpiry
+              && status.status === 401) {
+              console.log(new Date(), 'show dialog');
+              delete sk.config.authToken;
+              delete sk.config.authTokenExpiry;
+              delete sk.config.authTokenTimers;
+              showLoginDialog(i18n(sk, 'user_login_expired'));
+            } else if (sk.config.authTokenTimers) {
+              // clean up existing warning dialogs
+              sk.hideModal();
+              delete sk.config.authTokenTimers;
+            }
+          }, { once: true });
+          sk.fetchStatus();
         }, delay);
         sk.config.authTokenTimers = true;
       }
