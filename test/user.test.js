@@ -88,9 +88,6 @@ describe('Test user auth handling', () => {
     const setup = new Setup('blog');
     nock.sidekick(setup);
     nock.admin(setup);
-    nock('https://admin.hlx.page')
-      .get('/profile/adobe/blog/main')
-      .reply(200, '{ "status": 200 }');
     const { notification } = await new SidekickTest({
       browser,
       page,
@@ -108,24 +105,23 @@ describe('Test user auth handling', () => {
     );
   }).timeout(IT_DEFAULT_TIMEOUT);
 
-  it.skip('Shows expiry notice after token expiry', async () => {
+  it('Shows expiry notice after token expiry', async () => {
     const setup = new Setup('blog');
     nock.sidekick(setup);
-    nock.admin(setup, { persist: true });
+    nock.admin(setup);
     nock('https://admin.hlx.page')
-      .get('/profile/adobe/blog/main')
-      .twice()
-      .reply(200, '{ "status": 401 }');
+      .get('/status/adobe/blog/main/en/topics/bla?editUrl=auto')
+      .reply(401, '{ "status": 401 }');
     const { notification } = await new SidekickTest({
       browser,
       page,
       sidekickConfig: {
         ...setup.sidekickConfig,
         authToken: 'abcd1234',
-        authTokenExpiry: Date.now() + 1000, // token expires in 1 seconds minutes
+        authTokenExpiry: Date.now() + 500, // token expires in 1 seconds
       },
       loadModule: true,
-      sleep: 1000,
+      sleep: 2000,
     }).run();
     assert.ok(
       notification?.message?.includes('session has expired'),
