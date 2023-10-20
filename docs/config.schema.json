@@ -175,6 +175,10 @@
     "redirect": {
       "type": "url",
       "description": "Loads the sidekick configuration from a different URL"
+    },
+    "specialViews": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/specialView" }
     }
    },
    "additionalProperties": false
