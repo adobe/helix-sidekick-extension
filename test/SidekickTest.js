@@ -334,12 +334,15 @@ export class SidekickTest extends EventEmitter {
       this.page
         .goto(`file://${__testdir}/fixtures/${this.fixture}`, { waitUntil: 'load' })
         .then(() => this.pre(this.page))
-        .then(() => this.page.evaluate(async (
-          testLocation,
-          skCfg,
-          isBookmarklet,
-          checkEvents = [],
-        ) => {
+        .then(() => this.page.evaluate(async (opts) => {
+          const {
+            testLocation,
+            skCfg,
+            isBookmarklet,
+            checkEvents,
+          } = opts;
+          // eslint-disable-next-line no-console
+          console.log('page.evaluate', opts);
           // set test location
           if (testLocation) {
             let input = document.getElementById('sidekick_test_location');
@@ -358,8 +361,10 @@ export class SidekickTest extends EventEmitter {
             skCfg.scriptRoot = 'https://www.hlx.live/tools/sidekick';
             s.dataset.config = JSON.stringify(skCfg);
             if (document.head.querySelector('script#hlx-sk-app')) {
+              console.log('replacing bookmarklet');
               document.head.querySelector('script#hlx-sk-app').replaceWith(s);
             } else {
+              console.log('adding bookmarklet');
               document.head.append(s);
             }
           } else {
@@ -418,7 +423,12 @@ export class SidekickTest extends EventEmitter {
               });
             });
           });
-        }, pageUrl || this.url, this.sidekickConfig, !this.loadModule, this.checkEvents))
+        }, {
+          testLocation: pageUrl || this.url,
+          skCfg: this.sidekickConfig,
+          isBookmarklet: !this.loadModule,
+          checkEvents: this.checkEvents || [],
+        }))
         // wait until sidekick is fully loaded
         .then(() => sleep(+this.sleep))
         .then(() => this.post(this.page))

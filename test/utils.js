@@ -16,7 +16,7 @@ import assert from 'assert';
 import { h1 } from '@adobe/fetch';
 import nock from 'nock';
 import puppeteer from 'puppeteer';
-import { CDPBrowser } from 'puppeteer-core';
+import { CdpBrowser } from 'puppeteer-core';
 import mime from 'mime';
 import { fileURLToPath } from 'url';
 import { promises as fs } from 'fs';
@@ -24,8 +24,8 @@ import { promises as fs } from 'fs';
 const { fetch } = h1();
 
 // set debug to true to see browser window and debug output
-export const DEBUG = false;
-export const DEBUG_LOGS = false;
+export const DEBUG = true;
+export const DEBUG_LOGS = true;
 
 export const IT_DEFAULT_TIMEOUT = 60000;
 
@@ -480,11 +480,6 @@ export class TestBrowser {
    * @returns {Promise<void>}
    */
   async setupInterceptRequests(connection) {
-    await connection.send('Target.setAutoAttach', {
-      autoAttach: true,
-      waitForDebuggerOnStart: true,
-      flatten: true,
-    });
     connection.on('Target.attachedToTarget', async (event) => {
       const { sessionId } = event;
 
@@ -492,7 +487,7 @@ export class TestBrowser {
       const getSession = () => connection.session(sessionId);
       const session = getSession();
 
-      if (!event.waitingForDebugger || !session || event.targetInfo.type !== 'page') {
+      if (!event.waitingForDebugger || !session || event.targetInfo.type !== 'tab') {
         return;
       }
 
@@ -591,14 +586,29 @@ export class TestBrowser {
         console.error('[pup] error setting up request-interception', e);
       }
     });
+    // await connection.send('Target.setAutoAttach', {
+    //   autoAttach: true,
+    //   waitForDebuggerOnStart: true,
+    //   flatten: true,
+    //   filter: [
+    //     {
+    //       type: 'page',
+    //       exclude: false,
+    //     },
+    //     {
+    //       type: 'tab',
+    //       exclude: 'false',
+    //     },
+    //   ],
+    // });
   }
 
   static async create() {
     let browserConnection;
     // eslint-disable-next-line no-underscore-dangle
-    const oldCreate = CDPBrowser._create;
+    const oldCreate = CdpBrowser._create;
     // eslint-disable-next-line no-underscore-dangle
-    CDPBrowser._create = (product, connection, ...args) => {
+    CdpBrowser._create = (product, connection, ...args) => {
       browserConnection = connection;
       return oldCreate(product, connection, ...args);
     };
@@ -611,7 +621,9 @@ export class TestBrowser {
         '-no-sandbox',
         '-disable-setuid-sandbox',
         '--user-agent="HeadlessChrome"',
+        '--disable-features=Prerender2',
       ],
+      waitForInitialPage: true,
       slowMo: false,
     });
     const testBrowser = new TestBrowser(browser);

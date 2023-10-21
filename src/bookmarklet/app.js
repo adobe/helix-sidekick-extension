@@ -101,6 +101,7 @@
     const appScript = document.getElementById('hlx-sk-app');
     // load sidekick module
     const moduleScript = document.createElement('script');
+    console.log('got appscript:', appScript);
     moduleScript.id = 'hlx-sk-module';
     moduleScript.src = (appScript && appScript.getAttribute('src').replace('app.js', 'module.js'))
       || 'https://www.hlx.live/tools/sidekick/module.js';
