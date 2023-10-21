@@ -2,11 +2,11 @@ version: 2.1
 executors:
   node18:
     docker:
-      - image: cimg/node:18.17
+      - image: cimg/node:18.18
 
 orbs:
-  browser-tools: circleci/browser-tools@1.4.5
-  codecov: codecov/codecov@3.2.5
+  browser-tools: circleci/browser-tools@1.4.6
+  codecov: codecov/codecov@3.3.0
 
 commands:
   setup:
