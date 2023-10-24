@@ -44,12 +44,16 @@
             [matchingProject] = matches;
           }
         }
+        if (selectedProject) {
+          // use selected project from matches and persist in session
+          const { owner, repo } = selectedProject;
+          selectedProject = matches.find((m) => m.owner === owner && m.repo === repo)
+            || selectedProject;
+          window.sessionStorage.setItem('hlx-sk-project', JSON.stringify(selectedProject));
+        }
         if (selectedProject || matchingProject) {
           log.info('content.js: selected or single matching config found, inject sidekick');
           // user selected config or single match, remember and show sidekick
-          if (selectedProject) {
-            window.sessionStorage.setItem('hlx-sk-project', JSON.stringify(selectedProject));
-          }
           const config = selectedProject || matchingProject;
           if (adminVersion) {
             config.adminVersion = adminVersion;

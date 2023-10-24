@@ -611,6 +611,7 @@ export class TestBrowser {
         '-no-sandbox',
         '-disable-setuid-sandbox',
         '--user-agent="HeadlessChrome"',
+        '--disable-features=DialMediaRouteProvider',
       ],
       slowMo: false,
     });
