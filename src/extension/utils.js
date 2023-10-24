@@ -523,12 +523,16 @@ export async function getProject(project) {
   const handle = `${owner}/${repo}`;
   const projectConfig = await getConfig('sync', handle);
   if (projectConfig) {
-    // check session storage for auth token
-    const auth = await getConfig('session', handle) || {};
-    return {
-      ...projectConfig,
-      ...auth,
-    };
+    // if service worker, check session storage for auth token
+    if (typeof window === 'undefined') {
+      const auth = await getConfig('session', handle) || {};
+      return {
+        ...projectConfig,
+        ...auth,
+      };
+    } else {
+      return projectConfig;
+    }
   }
   return undefined;
 }
