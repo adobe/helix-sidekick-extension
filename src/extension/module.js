@@ -2320,13 +2320,9 @@
     }
 
     const { authTokenExpiry } = sk.config;
-    console.log('authTokenExpiry:', new Date(authTokenExpiry));
     if (authTokenExpiry) {
       // alert user before and after token expiry
       const now = Date.now();
-      console.log('now:            ', new Date(now));
-      console.log('future expiry?  ', authTokenExpiry > now);
-      console.log('timers set up?  ', !!sk.config.authTokenTimers);
       if (authTokenExpiry > now && !sk.config.authTokenTimers) {
         const showLoginDialog = (text) => {
           const buttonGroup = createTag({
@@ -2368,11 +2364,8 @@
         if (delay < 0) {
           delay = 0;
         }
-        console.log('set timeout for expiry warning at ', new Date(expiryMinus5Mins), ', in', delay / 1000, 's');
         window.setTimeout(async () => {
-          console.log(new Date(), 'show expiry warning?');
           if (sk.config.authTokenExpiry && sk.config.authTokenExpiry === authTokenExpiry) {
-            console.log(new Date(), 'show dialog');
             showLoginDialog(i18n(sk, 'user_login_expiring_soon'));
           }
         }, delay);
@@ -2381,15 +2374,12 @@
         if (delay < 0) {
           delay = 0;
         }
-        console.log('set timeout for fetching status after expiry at', new Date(authTokenExpiry + 1000), ',in', delay / 1000, 's');
         window.setTimeout(async () => {
           // fetch status and double check
           sk.addEventListener('statusfetched', async ({ detail }) => {
             const { data: status } = detail;
-            console.log(new Date(), 'status fetched after expiry', status);
             if (sk.config.authTokenExpiry && sk.config.authTokenExpiry === authTokenExpiry
               && status.status === 401) {
-              console.log(new Date(), 'show dialog');
               delete sk.config.authToken;
               delete sk.config.authTokenExpiry;
               delete sk.config.authTokenTimers;
