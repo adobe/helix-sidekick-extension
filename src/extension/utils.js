@@ -526,8 +526,8 @@ export async function getProject(project) {
     // check session storage for auth token
     const auth = await getConfig('session', handle) || {};
     return {
-      ...auth,
       ...projectConfig,
+      ...auth,
     };
   }
   return undefined;
