@@ -1,3 +1,10 @@
+# [6.33.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.32.0...v6.33.0) (2023-10-24)
+
+
+### Features
+
+* notify user of token expiry ([dbe9651](https://github.com/adobe/helix-sidekick-extension/commit/dbe965144fb6032119daceb1401cffdc97da3e1a))
+
 # [6.32.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.31.0...v6.32.0) (2023-10-18)
 
 
