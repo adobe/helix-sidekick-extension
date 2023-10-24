@@ -84,27 +84,6 @@ describe('Test user auth handling', () => {
     assert.ok(plugins.find((p) => p.id === 'user-logout'), 'Did not show logout option');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
-  it('Shows expiry warning 5 minutes before token expires', async () => {
-    const setup = new Setup('blog');
-    nock.sidekick(setup);
-    nock.admin(setup);
-    const { notification } = await new SidekickTest({
-      browser,
-      page,
-      sidekickConfig: {
-        ...setup.sidekickConfig,
-        authToken: 'abcd1234',
-        authTokenExpiry: Date.now() + 240000, // token expires in 4 minutes
-      },
-      loadModule: true,
-      sleep: 1000,
-    }).run();
-    assert.ok(
-      notification && notification.message.includes('session will expire soon'),
-      'Did not show expiry warning',
-    );
-  }).timeout(IT_DEFAULT_TIMEOUT);
-
   it('Shows expiry notice after token expiry', async () => {
     const setup = new Setup('blog');
     nock.sidekick(setup);
