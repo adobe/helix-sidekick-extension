@@ -2358,19 +2358,8 @@
           );
         };
 
-        const expiryMinus5Mins = authTokenExpiry - 300000;
-        // alert user 5 minutes before token expiry
-        let delay = expiryMinus5Mins - now;
-        if (delay < 0) {
-          delay = 0;
-        }
-        window.setTimeout(async () => {
-          if (sk.config.authTokenExpiry && sk.config.authTokenExpiry === authTokenExpiry) {
-            showLoginDialog(i18n(sk, 'user_login_expiring_soon'));
-          }
-        }, delay);
         // alert user 1 second after token has expired
-        delay = authTokenExpiry - now + 1000;
+        let delay = authTokenExpiry - now + 1000;
         if (delay < 0) {
           delay = 0;
         }
@@ -2378,8 +2367,7 @@
           // fetch status and double check
           sk.addEventListener('statusfetched', async ({ detail }) => {
             const { data: status } = detail;
-            if (sk.config.authTokenExpiry && sk.config.authTokenExpiry === authTokenExpiry
-              && status.status === 401) {
+            if (sk.config.authTokenExpiry === authTokenExpiry && status.status === 401) {
               delete sk.config.authToken;
               delete sk.config.authTokenExpiry;
               delete sk.config.authTokenTimers;
