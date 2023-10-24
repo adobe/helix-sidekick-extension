@@ -60,6 +60,7 @@ describe('Test sidekick logout', () => {
       plugin: 'user-logout',
       pluginSleep: 3000,
       checkPage: async (p) => p.evaluate(() => window.hlx.sidekick.config),
+      loadModule: true,
     });
     test.sidekickConfig.authToken = 'foobar';
     const { checkPageResult: config } = await test.run();

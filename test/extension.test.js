@@ -32,6 +32,7 @@ describe.skip('Test sidekick extension', () => {
         '-disable-setuid-sandbox',
         '--disable-extensions-except=./src/extension',
         '--load-extension=./src/extension',
+        '--disable-features=DialMediaRouteProvider',
       ],
       slowMo: false,
     });

@@ -464,7 +464,9 @@ async function updateAdminAuthHeaderRules() {
     let id = 2;
     const projects = await getConfig('sync', 'hlxSidekickProjects') || [];
     const addRules = [];
-    const projectConfigs = await Promise.all(projects.map((handle) => getConfig('sync', handle)));
+    const projectConfigs = (await Promise.all(projects
+      .map((handle) => getConfig('session', handle))))
+      .filter((cfg) => !!cfg);
     projectConfigs.forEach(({ owner, repo, authToken }) => {
       if (authToken) {
         addRules.push({
@@ -500,14 +502,18 @@ async function updateAdminAuthHeaderRules() {
   }
 }
 
-async function storeAuthToken(owner, repo, token) {
+async function storeAuthToken(owner, repo, token, exp) {
   // find config tab with owner/repo
   const project = await getProject({ owner, repo });
   if (project) {
     if (token) {
       project.authToken = token;
+      if (exp) {
+        project.authTokenExpiry = exp * 1000; // store expiry in milliseconds
+      }
     } else {
       delete project.authToken;
+      delete project.authTokenExpiry;
     }
     await setProject(project);
     log.debug(`updated auth token for ${owner}--${repo}`);
@@ -524,13 +530,15 @@ async function storeAuthToken(owner, repo, token) {
  */
 const externalActions = {
   // updates a project's auth token (admin only)
-  updateAuthToken: async ({ authToken, owner, repo }, { url }) => {
+  updateAuthToken: async ({
+    authToken, exp, owner, repo,
+  }, { url }) => {
     let resp = '';
     try {
       if (!url || new URL(url).origin !== 'https://admin.hlx.page') {
         resp = 'unauthorized sender url';
       } else if (authToken !== undefined && owner && repo) {
-        await storeAuthToken(owner, repo, authToken);
+        await storeAuthToken(owner, repo, authToken, exp);
         resp = 'close';
       }
     } catch (e) {

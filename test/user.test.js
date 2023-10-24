@@ -84,6 +84,30 @@ describe('Test user auth handling', () => {
     assert.ok(plugins.find((p) => p.id === 'user-logout'), 'Did not show logout option');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
+  it('Shows expiry notice after token expiry', async () => {
+    const setup = new Setup('blog');
+    nock.sidekick(setup);
+    nock.admin(setup);
+    nock('https://admin.hlx.page')
+      .get('/status/adobe/blog/main/en/topics/bla?editUrl=auto')
+      .reply(401, '{ "status": 401 }');
+    const { notification } = await new SidekickTest({
+      browser,
+      page,
+      sidekickConfig: {
+        ...setup.sidekickConfig,
+        authToken: 'abcd1234',
+        authTokenExpiry: Date.now() + 500, // token expires in 1 seconds
+      },
+      loadModule: true,
+      sleep: 2000,
+    }).run();
+    assert.ok(
+      notification?.message?.includes('session has expired'),
+      'Did not show expiry notice',
+    );
+  }).timeout(IT_DEFAULT_TIMEOUT);
+
   it('Keeps plugin buttons disabled based on permissions', async () => {
     const setup = new Setup('blog');
     setup.apiResponse().live.permissions = ['read'];
