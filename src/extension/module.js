@@ -3827,5 +3827,4 @@ import { sampleRUM } from './rum.js';
 
   window.hlx = window.hlx || {};
   window.hlx.initSidekick = initSidekick;
-  window.hlx.sampleRUM = sampleRUM;
 })();
