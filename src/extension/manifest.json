@@ -52,6 +52,7 @@
         "module.js",
         "sidekick.js",
         "utils.js",
+        "rum.js",
         "view/json/json.html",
         "view-doc-source/js/content.js"
       ],
