@@ -16,6 +16,7 @@
  * @returns {String} The block name
  */
 export const classNameToBlockName = (classList) => {
+  if (!classList.length) return '';
   let blockType = classList.shift();
   blockType = blockType.split('-').map((s) => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase()).join(' ');
   if (classList.length) {
@@ -57,7 +58,7 @@ export const toBlockCSSClassNames = (text) => {
  * @param {HTMLElement} main The main element
  */
 export const blockDivToTable = (main) => {
-  main.querySelectorAll('div[class]').forEach((div) => {
+  main.querySelectorAll(':scope > div[class]').forEach((div) => {
     const table = document.createElement('table');
     const thead = document.createElement('thead');
     const tr = document.createElement('tr');
