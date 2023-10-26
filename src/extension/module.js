@@ -11,8 +11,6 @@
  */
 /* eslint-disable no-console, no-alert */
 
-import { sampleRUM } from './rum.js';
-
 (() => {
   /**
    * @typedef {Object} ElemConfig
@@ -631,6 +629,8 @@ import { sampleRUM } from './rum.js';
     // prepend custom views
     views = (specialViews || []).concat(views);
 
+    const sampleRUM = await import(`${config.scriptRoot}/rum.js`);
+
     return {
       ...config,
       ref,
@@ -645,6 +645,7 @@ import { sampleRUM } from './rum.js';
       views,
       devUrl,
       lang: lang || getLanguage(),
+      sampleRUM,
     };
   }
 
@@ -934,7 +935,7 @@ import { sampleRUM } from './rum.js';
       sk.showModal(i18n(sk, 'config_shareurl_copied').replace('$1', config.project));
     }
     // log telemetry
-    sampleRUM('sidekick:share', {
+    config.sampleRUM('sidekick:share', {
       source: sk.location.href,
       target: shareUrl,
     });
@@ -988,7 +989,7 @@ import { sampleRUM } from './rum.js';
       ];
       if (name.startsWith('custom:') || userEvents.includes(name)) {
         // log telemetry
-        sampleRUM(`sidekick:${name}`, {
+        config.sampleRUM(`sidekick:${name}`, {
           source: data?.sourceUrl || sk.location.href,
           target: data?.targetUrl || sk.status.webPath,
         });
@@ -1933,7 +1934,7 @@ import { sampleRUM } from './rum.js';
                         palette.classList.remove('hlx-sk-hidden');
                         button.classList.add('pressed');
                         // log telemetry
-                        sampleRUM('sidekick:paletteclosed', {
+                        sk.config.sampleRUM('sidekick:paletteclosed', {
                           source: sk.location.href,
                           target: sk.status.webPath,
                         });
@@ -2658,7 +2659,7 @@ import { sampleRUM } from './rum.js';
     }
     if (userAction) {
       // log telemetry
-      sampleRUM('sidekick:viewhidden', {
+      sk.config.sampleRUM('sidekick:viewhidden', {
         source: sk.location.href,
         target: sk.status.webPath,
       });
