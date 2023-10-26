@@ -11,12 +11,11 @@
  */
 
 import {
-  blockDivToTable,
   blockTableToDiv,
-  createSectionBreaks,
   removeSectionBreaks,
-  addMetadataBlock,
 } from './blocks.js';
+
+import md2html from '../../lib/md2html.lib.js';
 
 /**
  * Returns the current tab
@@ -63,32 +62,7 @@ const copyHTMLToClipboard = (html) => {
 };
 
 /**
- * Converts the source HTML (~Pipeline output) to HTML friendly for edition.
- * While the header and footer are not needed (only the main is), the head is needed to
- * compute the metadata block.
- * @param {HTMLElement} main The source main element
- * @param {HTMLElement} head The source head element
- * @param {String} url The url of the page
- */
-const htmlSourceToEdition = (main, head, url) => {
-  main.querySelectorAll('img').forEach((img) => {
-    if (!img.src) return;
-    const content = new URL(url);
-    const pathname = content.pathname.replace(/\/$/, '');
-    img.src = `${content.origin}${pathname}${img.src.substring(img.src.lastIndexOf('/'))}`;
-  });
-
-  main.querySelectorAll('picture source').forEach((source) => {
-    source.remove();
-  });
-
-  blockDivToTable(main);
-  createSectionBreaks(main);
-  addMetadataBlock(main, head, url);
-};
-
-/**
- * Converts the HTML friendly for edition to the source HTML (~Pipeline output)
+ * Converts the HTML friendly for edition to the source HTML (~Franklin Pipeline output)
  * @returns {String} The HTML content of the editor
  */
 const htmlEditionToSource = () => {
@@ -155,17 +129,17 @@ const makeStylesReadyForCopy = (element) => {
  * @param {String} url The url to load
  */
 const loadEditor = async (url) => {
-  const req = await fetch(url);
-  const source = await req.text();
-
-  const doc = new DOMParser().parseFromString(source, 'text/html');
-  const { head } = doc;
-  const main = doc.querySelector('main');
-
-  htmlSourceToEdition(main, head, url);
+  const u = new URL(url);
+  let { pathname } = u;
+  if (pathname.endsWith('/')) {
+    pathname += 'index';
+  }
+  const req = await fetch(`${u.origin}${pathname}.md`);
+  const md = await req.text();
+  const html = md2html(md);
 
   const editor = getEditorElement();
-  editor.innerHTML = main.innerHTML;
+  editor.innerHTML = html;
 
   makeStylesReadyForCopy(editor);
 };
