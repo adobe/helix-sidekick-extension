@@ -14,7 +14,8 @@ governing permissions and limitations under the License.
 <head>
   <meta http-equiv="Content-Security-Policy" content="script-src * 'unsafe-inline' blob: data: filesystem:">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Franklin Sidekick</title>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+  <title>AEM Sidekick</title>
 	<link rel="stylesheet" type="text/css" href="./options.css" />
   <script src="./options.js" type="module"></script>
   <template id="configEditorTemplate">
@@ -23,11 +24,14 @@ governing permissions and limitations under the License.
         <p><input type="text" id="edit-project"></p>
         <p class="mandatory"><input type="url" id="edit-giturl"></p>
         <p class="mandatory"><input type="url" id="edit-mountpoints"></p>
+        <p class="advanced-only"><input type="text" id="edit-previewHost"></p>
+        <p class="advanced-only"><input type="text" id="edit-liveHost"></p>
         <p><input type="text" id="edit-host"></p>
         <p class="advanced-only">
           <input type="checkbox" id="edit-devMode">
           <label for="edit-devMode"></label>
         </p>
+        <p class="advanced-only"><input type="url" id="edit-devOrigin"></p>
         <p>
           <button></button>
           <button></button>
@@ -48,7 +52,13 @@ governing permissions and limitations under the License.
       </ul>
     </nav>
     <div id="projects" class="area expanded">
-      <h2>__MSG_config_projects__ <span id="projects_num"><span></h2>
+      <h2>__MSG_config_projects__
+        <span id="projects_num"></span>
+      </h2>
+      <div id="config_filter" class="hidden">
+        <input type="text" autocomplete="true" placeholder="__MSG_config_filter__">
+        <button class="hidden" title="__MSG_config_filter_clear__"></button>
+      </div>
       <div id="configs"></div>
         <div>
           <div>

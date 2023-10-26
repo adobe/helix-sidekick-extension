@@ -11,8 +11,8 @@
  */
 /* eslint-disable no-console, import/no-extraneous-dependencies */
 
-const fs = require('fs-extra');
-const archiver = require('archiver');
+import fs from 'fs-extra';
+import archiver from 'archiver';
 
 const supportedBrowsers = ['chrome', 'safari', 'firefox'];
 

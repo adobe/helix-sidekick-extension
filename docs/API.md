@@ -64,6 +64,7 @@ The sidekick provides helper tools for authors.
     * [.get(id)](#Sidekick+get) ⇒ <code>HTMLElement</code>
     * [.remove(id)](#Sidekick+remove) ⇒ [<code>Sidekick</code>](#Sidekick)
     * [.isEditor()](#Sidekick+isEditor) ⇒ <code>boolean</code>
+    * [.isAdmin()](#Sidekick+isAdmin) ⇒ <code>boolean</code>
     * [.isDev()](#Sidekick+isDev) ⇒ <code>boolean</code>
     * [.isInner()](#Sidekick+isInner) ⇒ <code>boolean</code>
     * [.isOuter()](#Sidekick+isOuter) ⇒ <code>boolean</code>
@@ -127,7 +128,8 @@ Fetches the status for the current resource.
 <a name="Sidekick+loadContext"></a>
 
 ### sidekick.loadContext(cfg) ⇒ [<code>Sidekick</code>](#Sidekick)
-Loads the sidekick configuration and retrieves the location of the current document.
+Loads the sidekick configuration and language dictionary,
+and retrieves the location of the current document.
 
 **Kind**: instance method of [<code>Sidekick</code>](#Sidekick)  
 **Returns**: [<code>Sidekick</code>](#Sidekick) - The sidekick  
@@ -211,6 +213,13 @@ Checks if the current location is an editor URL (SharePoint or Google Docs).
 
 **Kind**: instance method of [<code>Sidekick</code>](#Sidekick)  
 **Returns**: <code>boolean</code> - <code>true</code> if editor URL, else <code>false</code>  
+<a name="Sidekick+isAdmin"></a>
+
+### sidekick.isAdmin() ⇒ <code>boolean</code>
+Checks if the current location is an admin URL (SharePoint or Google Drive).
+
+**Kind**: instance method of [<code>Sidekick</code>](#Sidekick)  
+**Returns**: <code>boolean</code> - <code>true</code> if admin URL, else <code>false</code>  
 <a name="Sidekick+isDev"></a>
 
 ### sidekick.isDev() ⇒ <code>boolean</code>
@@ -546,7 +555,7 @@ The plugin configuration.
 | isContainer | <code>boolean</code> |  | Determines whether to turn this plugin into a dropdown |
 | isPalette | <code>boolean</code> |  | Determines whether a URL is opened in a palette instead of a new tab |
 | paletteRect | <code>string</code> |  | The dimensions and position of a palette (optional) |
-| environments | <code>Array.&lt;string&gt;</code> |  | Specifies when to show this plugin                               (admin, edit, preview, live, prod) |
+| environments | <code>Array.&lt;string&gt;</code> |  | Specifies when to show this plugin                               (admin, edit, dev, preview, live, prod) |
 | excludePaths | <code>Array.&lt;string&gt;</code> |  | Exclude the plugin from these paths (glob patterns supported) |
 | includePaths | <code>Array.&lt;string&gt;</code> |  | Include the plugin on these paths (glob patterns supported) |
 
@@ -561,7 +570,7 @@ A custom view configuration.
 | Name | Type | Description |
 | --- | --- | --- |
 | path | <code>string</code> | The path or globbing pattern where to apply this view |
-| css | <code>string</code> | The URL of a CSS file or inline CSS to render this view (optional) |
+| viewer | <code>string</code> | The URL to render this view |
 
 <a name="HelpStep"></a>
 
@@ -605,10 +614,12 @@ The sidekick configuration.
 | mountpoint | <code>string</code> |  | The content source URL (optional) |
 | project | <code>string</code> |  | The name of the project used in the sharing link (optional) |
 | plugins | [<code>Array.&lt;Plugin&gt;</code>](#Plugin) |  | An array of [plugin configurations](#Plugin) (optional) |
-| outerHost | <code>string</code> |  | The outer CDN's host name (optional) |
+| previewHost | <code>string</code> |  | The host name of a custom preview CDN (optional) |
+| liveHost | <code>string</code> |  | The host name of a custom live CDN (optional) |
 | host | <code>string</code> |  | The production host name to publish content to (optional) |
 | byocdn | <code>boolean</code> | <code>false</code> | <pre>true</pre> if the production host is a 3rd party CDN |
-| devMode | <code>boolean</code> | <code>false</code> | Loads configuration and plugins from the developmemt environment |
+| devMode | <code>boolean</code> | <code>false</code> | Loads configuration and plugins from the development environment |
+| devOrigin | <code>boolean</code> | <code>http://localhost:3000</code> | URL of the local development environment |
 | pushDown | <code>boolean</code> | <code>false</code> | <pre>true</pre> to have the sidekick push down page content |
 | pushDownSelector | <code>string</code> |  | The CSS selector for absolute elements to also push down |
 | specialViews | [<code>Array.&lt;ViewConfig&gt;</code>](#ViewConfig) |  | An array of custom [view configurations](#ViewConfig) |

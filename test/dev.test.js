@@ -11,17 +11,12 @@
  */
 /* eslint-env mocha */
 
-'use strict';
+import assert from 'assert';
+import {
+  IT_DEFAULT_TIMEOUT, Nock, Setup, TestBrowser,
+} from './utils.js';
 
-const assert = require('assert');
-
-const {
-  IT_DEFAULT_TIMEOUT,
-  Nock,
-  TestBrowser,
-  Setup,
-} = require('./utils.js');
-const { SidekickTest } = require('./SidekickTest.js');
+import { SidekickTest } from './SidekickTest.js';
 
 describe('Test dev plugin', () => {
   /** @type TestBrowser */
@@ -48,6 +43,9 @@ describe('Test dev plugin', () => {
   });
 
   it('Dev plugin hidden by default', async () => {
+    const setup = new Setup('blog');
+    nock.sidekick(setup);
+    nock.admin(setup);
     const { plugins } = await new SidekickTest({
       browser,
       page,
@@ -62,7 +60,9 @@ describe('Test dev plugin', () => {
     nock('http://localhost:3000')
       .get('/creativecloud/en/test')
       .reply(200, 'local dev...');
-    nock.admin(new Setup('pages'));
+    const setup = new Setup('pages');
+    nock.sidekick(setup);
+    nock.admin(setup);
     const { popupOpened } = await new SidekickTest({
       browser,
       page,
@@ -82,7 +82,9 @@ describe('Test dev plugin', () => {
     nock('http://localhost:3000')
       .get('/en/topics/bla')
       .reply(200, 'local dev...');
-    nock.admin(new Setup('blog'));
+    const setup = new Setup('blog');
+    nock.sidekick(setup);
+    nock.admin(setup);
     const { popupOpened } = await new SidekickTest({
       browser,
       page,
@@ -98,7 +100,9 @@ describe('Test dev plugin', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Dev plugin switches to dev from preview URL', async () => {
-    nock.admin(new Setup('blog'));
+    const setup = new Setup('blog');
+    nock.sidekick(setup);
+    nock.admin(setup);
     await new SidekickTest({
       browser,
       page,
@@ -108,7 +112,9 @@ describe('Test dev plugin', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Dev plugin switches to dev from production URL', async () => {
-    nock.admin(new Setup('blog'));
+    const setup = new Setup('blog');
+    nock.sidekick(setup);
+    nock.admin(setup);
     await new SidekickTest({
       browser,
       page,

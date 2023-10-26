@@ -11,17 +11,12 @@
  */
 /* eslint-env mocha */
 
-'use strict';
+import assert from 'assert';
+import {
+  IT_DEFAULT_TIMEOUT, Nock, Setup, TestBrowser,
+} from './utils.js';
 
-const assert = require('assert');
-
-const {
-  IT_DEFAULT_TIMEOUT,
-  TestBrowser,
-  Nock,
-  Setup,
-} = require('./utils.js');
-const { SidekickTest } = require('./SidekickTest.js');
+import { SidekickTest } from './SidekickTest.js';
 
 describe('Test user auth handling', () => {
   /** @type TestBrowser */
@@ -48,7 +43,9 @@ describe('Test user auth handling', () => {
   });
 
   it('Shows user info from profile', async () => {
-    nock.admin(new Setup('blog'));
+    const setup = new Setup('blog');
+    nock.sidekick(setup);
+    nock.admin(setup);
     const { checkPageResult } = await new SidekickTest({
       browser,
       page,
@@ -61,6 +58,7 @@ describe('Test user auth handling', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Shows login option in user menu if user not logged in', async () => {
+    nock.sidekick();
     nock('https://admin.hlx.page')
       .get('/status/adobe/blog/main/en/topics/bla?editUrl=auto')
       .reply(401);
@@ -75,7 +73,9 @@ describe('Test user auth handling', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Shows switch user and logout option in user menu if user logged in', async () => {
-    nock.admin(new Setup('blog'));
+    const setup = new Setup('blog');
+    nock.sidekick(setup);
+    nock.admin(setup);
     const { plugins } = await new SidekickTest({
       browser,
       page,
@@ -84,9 +84,34 @@ describe('Test user auth handling', () => {
     assert.ok(plugins.find((p) => p.id === 'user-logout'), 'Did not show logout option');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
+  it('Shows expiry notice after token expiry', async () => {
+    const setup = new Setup('blog');
+    nock.sidekick(setup);
+    nock.admin(setup);
+    nock('https://admin.hlx.page')
+      .get('/status/adobe/blog/main/en/topics/bla?editUrl=auto')
+      .reply(401, '{ "status": 401 }');
+    const { notification } = await new SidekickTest({
+      browser,
+      page,
+      sidekickConfig: {
+        ...setup.sidekickConfig,
+        authToken: 'abcd1234',
+        authTokenExpiry: Date.now() + 500, // token expires in 1 seconds
+      },
+      loadModule: true,
+      sleep: 2000,
+    }).run();
+    assert.ok(
+      notification?.message?.includes('session has expired'),
+      'Did not show expiry notice',
+    );
+  }).timeout(IT_DEFAULT_TIMEOUT);
+
   it('Keeps plugin buttons disabled based on permissions', async () => {
     const setup = new Setup('blog');
     setup.apiResponse().live.permissions = ['read'];
+    nock.sidekick(setup);
     nock.admin(setup);
     const { plugins } = await new SidekickTest({
       browser,

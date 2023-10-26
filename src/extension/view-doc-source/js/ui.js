@@ -42,11 +42,14 @@ const sendMessage = async (message) => {
 
 const getEditorElement = () => document.getElementById('editor');
 
+const getHTMLForCopy = (html) => html.replace(/<hr>/gm, '---');
+
 /**
  * Copies the provided HTML to clipboard
  * @param {String} action The html to copy to clipboard
  */
 const copyHTMLToClipboard = (html) => {
+  html = getHTMLForCopy(html);
   const callback = (e) => {
     e.clipboardData.setData('text/html', html);
     e.clipboardData.setData('text/plain', html);
@@ -164,9 +167,21 @@ const debounce = (func, wait, immed) => {
 };
 
 /**
+ * Replaces all i18n messages in an element
+ * @param {HTMLElement} elem The element
+ */
+const localize = (elem) => {
+  const find = /__MSG_(.*)__/g;
+  const replace = (match, value) => (value ? chrome.i18n.getMessage(value) : '');
+  elem.innerHTML = elem.innerHTML.replace(find, replace);
+};
+
+/**
  * Initial setup
  */
 const load = async () => {
+  localize(document.body);
+
   const tab = await getCurrentTab();
 
   await chrome.scripting.executeScript({

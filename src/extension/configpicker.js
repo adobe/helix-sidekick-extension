@@ -80,7 +80,7 @@ class ConfigPicker extends HTMLElement {
     let configContainer = pluginContainer;
 
     const label = document.createElement('span');
-    label.style.margin = '6px 8px 0 0';
+    label.className = 'hlx-sk-label';
     label.textContent = `${i18n('config_project_pick')}:`;
     root.prepend(label);
 

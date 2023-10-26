@@ -11,19 +11,15 @@
  */
 /* eslint-disable no-console, import/no-unresolved */
 
-'use strict';
-
 import {} from './lib/polyfills.min.js';
 
 import {
-  DEV_URL,
   log,
   url,
   getConfig,
   setConfig,
   setDisplay,
   i18n,
-  storeAuthToken,
 } from './utils.js';
 
 export default async function injectSidekick(config, display) {
@@ -38,62 +34,43 @@ export default async function injectSidekick(config, display) {
     // create sidekick
     log.debug('sidekick.js: no sidekick yet, create it');
     // reduce config to only include properties relevant for sidekick
-    let curatedConfig = Object.fromEntries(Object.entries(config)
+    const curatedConfig = Object.fromEntries(Object.entries(config)
       .filter(([k]) => [
         'owner',
         'repo',
         'ref',
+        'previewHost',
+        'liveHost',
         'host',
         'devMode',
+        'devOrigin',
         'pushDown',
         'adminVersion',
         'authToken',
+        'authTokenExpiry',
       ].includes(k)));
     curatedConfig.scriptUrl = url('module.js');
-    [curatedConfig.mountpoint] = config.mountpoints;
+    [curatedConfig.mountpoint] = config.mountpoints || [];
     log.debug('sidekick.js: curated config', curatedConfig);
 
     // inject sidekick
     await import(curatedConfig.scriptUrl);
 
-    // look for custom config in project
-    const {
-      owner, repo, ref, devMode, adminVersion,
-    } = config;
-    const configOrigin = devMode
-      ? DEV_URL
-      : `https://${ref}--${repo}--${owner}.hlx.live`;
-    try {
-      const res = await fetch(`${configOrigin}/tools/sidekick/config.json`);
-      if (res.ok) {
-        log.info('custom sidekick config found');
-        curatedConfig = {
-          ...curatedConfig,
-          ...(await res.json()),
-          // no overriding below
-          owner,
-          repo,
-          ref,
-          devMode,
-          adminVersion,
-        };
-      }
-      log.debug('sidekick.js: extended config', curatedConfig);
-    } catch (e) {
-      // init sidekick without extended config
-      log.info('error retrieving custom sidekick config', e);
-    }
-
     // init sidekick
     window.hlx.initSidekick(curatedConfig);
 
+    const {
+      owner, repo,
+    } = curatedConfig;
+
     // todo: improve config change handling. currently we only update the authToken
-    chrome.storage.sync.onChanged.addListener((changes) => {
-      const newAuthToken = changes[`${owner}/${repo}`]?.newValue?.authToken;
-      if (newAuthToken) {
+    chrome.storage.session.onChanged.addListener((changes) => {
+      const { authToken } = changes[`${owner}/${repo}`]?.newValue || {};
+      if (authToken) {
+        const { authTokenExpiry } = changes[`${owner}/${repo}`]?.newValue || {};
         log.debug(`adding authToken to config ${owner}/${repo} and refreshig sidekick`);
-        window.hlx.sidekickConfig.authToken = newAuthToken;
-        window.hlx.sidekick.loadContext(window.hlx.sidekickConfig);
+        window.hlx.sidekickConfig.authToken = authToken;
+        window.hlx.sidekickConfig.authTokenExpiry = authTokenExpiry;
       }
     });
 
@@ -106,11 +83,6 @@ export default async function injectSidekick(config, display) {
         // set display to false if user clicks close button
         sk.addEventListener('hidden', () => {
           setDisplay(false);
-        });
-        sk.addEventListener('loggedout', async () => {
-          // user clicked logout, delete the authToken from the config
-          log.debug(`removing authToken from config ${owner}/${repo}`);
-          await storeAuthToken(owner, repo, '');
         });
         const helpOptOut = await getConfig('sync', 'hlxSidekickHelpOptOut');
         if (!helpOptOut) {

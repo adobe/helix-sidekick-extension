@@ -11,17 +11,12 @@
  */
 /* eslint-env mocha */
 
-'use strict';
+import assert from 'assert';
+import {
+  IT_DEFAULT_TIMEOUT, Nock, Setup, TestBrowser,
+} from './utils.js';
 
-const assert = require('assert');
-
-const {
-  IT_DEFAULT_TIMEOUT,
-  TestBrowser,
-  Nock,
-  Setup,
-} = require('./utils.js');
-const { SidekickTest } = require('./SidekickTest.js');
+import { SidekickTest } from './SidekickTest.js';
 
 describe('Test preview plugin', () => {
   /** @type TestBrowser */
@@ -51,7 +46,9 @@ describe('Test preview plugin', () => {
     nock('https://main--pages--adobe.hlx.page')
       .get('/creativecloud/en/test')
       .reply(200, '<html></html>');
-    nock.admin(new Setup('pages'));
+    const setup = new Setup('pages');
+    nock.sidekick(setup);
+    nock.admin(setup);
     const { popupOpened } = await new SidekickTest({
       browser,
       page,
@@ -71,7 +68,9 @@ describe('Test preview plugin', () => {
     nock('https://main--blog--adobe.hlx.page')
       .get('/en/topics/bla')
       .reply(200, '<html></html>');
-    nock.admin(new Setup('blog'));
+    const setup = new Setup('blog');
+    nock.sidekick(setup);
+    nock.admin(setup);
     const { popupOpened } = await new SidekickTest({
       browser,
       page,
@@ -87,7 +86,9 @@ describe('Test preview plugin', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Preview plugin switches to preview from live URL', async () => {
-    nock.admin(new Setup('blog'));
+    const setup = new Setup('blog');
+    nock.sidekick(setup);
+    nock.admin(setup);
     const { navigated } = await new SidekickTest({
       browser,
       page,
@@ -103,7 +104,9 @@ describe('Test preview plugin', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Preview plugin switches to preview from production URL', async () => {
-    nock.admin(new Setup('blog'));
+    const setup = new Setup('blog');
+    nock.sidekick(setup);
+    nock.admin(setup);
     const { navigated } = await new SidekickTest({
       browser,
       page,
@@ -119,7 +122,9 @@ describe('Test preview plugin', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Preview plugin preserves query parameters and hash when switching to preview', async () => {
-    nock.admin(new Setup('blog'));
+    const setup = new Setup('blog');
+    nock.sidekick(setup);
+    nock.admin(setup);
     const { navigated } = await new SidekickTest({
       browser,
       page,
@@ -138,7 +143,9 @@ describe('Test preview plugin', () => {
     nock('https://main--blog--adobe.hlx.page')
       .get('/en/topics/bla')
       .reply(200, 'some content...');
-    nock.admin(new Setup('blog'));
+    const setup = new Setup('blog');
+    nock.sidekick(setup);
+    nock.admin(setup);
     const { popupOpened } = await new SidekickTest({
       browser,
       page,
@@ -150,6 +157,36 @@ describe('Test preview plugin', () => {
       popupOpened,
       'https://main--blog--adobe.hlx.page/en/topics/bla',
       'Unexpected editor query parameters forwarded',
+    );
+  }).timeout(IT_DEFAULT_TIMEOUT);
+
+  it('Preview plugin switches to custom viewer', async () => {
+    nock('https://main--blog--adobe.hlx.page')
+      .get('/tools/sidekick/json/index.html?path=%2Fen%2Fbla.json')
+      .reply(200, 'custom PDF viewer');
+    const setup = new Setup('blog');
+    nock.sidekick(setup, {
+      configJson: {
+        specialViews: [
+          {
+            path: '**.json',
+            viewer: '/tools/sidekick/json/index.html',
+          },
+        ],
+      },
+    });
+    nock.admin(setup, { type: 'json' });
+    const { popupOpened } = await new SidekickTest({
+      browser,
+      page,
+      url: 'https://docs.google.com/document/d/2E1PNphAhTZAZrDjevM0BX7CZr7KjomuBO6xE1TUo9NU/edit',
+      plugin: 'preview',
+      waitPopup: 2000,
+    }).run();
+    assert.strictEqual(
+      popupOpened,
+      'https://main--blog--adobe.hlx.page/tools/sidekick/json/index.html?path=%2Fen%2Fbla.json',
+      'Preview URL not opened',
     );
   }).timeout(IT_DEFAULT_TIMEOUT);
 });

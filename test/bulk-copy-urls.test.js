@@ -11,17 +11,12 @@
  */
 /* eslint-env mocha */
 
-'use strict';
+import assert from 'assert';
+import {
+  IT_DEFAULT_TIMEOUT, Nock, Setup, TestBrowser,
+} from './utils.js';
 
-const assert = require('assert');
-
-const {
-  IT_DEFAULT_TIMEOUT,
-  Nock,
-  TestBrowser,
-  Setup,
-} = require('./utils.js');
-const { SidekickTest } = require('./SidekickTest.js');
+import { SidekickTest } from './SidekickTest.js';
 
 const SHAREPOINT_FIXTURE = 'admin-sharepoint.html';
 const GDRIVE_FIXTURE = 'admin-gdrive.html';
@@ -64,7 +59,9 @@ describe('Test bulk copy URLs plugin', () => {
     nock.admin(setup, {
       route: 'status',
       type: 'admin',
+      persist: true,
     });
+    nock.sidekick(setup);
     const { checkPageResult: buttonTexts } = await new SidekickTest({
       browser,
       page,
@@ -72,16 +69,15 @@ describe('Test bulk copy URLs plugin', () => {
       url: setup.getUrl('edit', 'admin'),
       checkPage: (p) => p.evaluate(async () => {
         const retrieveButtonText = (texts = []) => {
-          const button = window.hlx.sidekick.get('bulk-copy-urls')
-            .querySelector('button');
-          const text = window.getComputedStyle(button, ':before')
-            .getPropertyValue('content').replaceAll('"', '');
+          const plugin = window.hlx.sidekick.get('bulk-copy-urls');
+          const button = plugin.querySelector(':scope > button');
+          const text = button.textContent;
           texts.push(text);
           return texts;
         };
         const btnTexts = retrieveButtonText();
         // change selection
-        document.getElementById('file-word').setAttribute('aria-selected', 'true');
+        document.getElementById('file-word').click();
         // wait 1s
         return new Promise((resolve) => {
           setTimeout(() => {
@@ -100,7 +96,9 @@ describe('Test bulk copy URLs plugin', () => {
     nock.admin(setup, {
       route: 'status',
       type: 'admin',
+      persist: true,
     });
+    nock.sidekick(setup);
     const { plugins } = await new SidekickTest({
       browser,
       page,
@@ -108,7 +106,7 @@ describe('Test bulk copy URLs plugin', () => {
       url: setup.getUrl('edit', 'admin'),
       pre: (p) => p.evaluate(() => {
         // user deselects file
-        document.getElementById('file-pdf').setAttribute('aria-selected', 'false');
+        document.getElementById('file-pdf').click();
       }),
       loadModule: true,
     }).run();
@@ -120,9 +118,11 @@ describe('Test bulk copy URLs plugin', () => {
 
   it('Bulk copy preview URLs plugin shows notification when triggered with empty selection', async () => {
     const { setup } = TESTS[0];
+    nock.sidekick(setup);
     nock.admin(setup, {
       route: 'status',
       type: 'admin',
+      persist: true,
     });
     const { notification } = await new SidekickTest({
       browser,
@@ -132,7 +132,7 @@ describe('Test bulk copy URLs plugin', () => {
       plugin: 'bulk-copy-preview-urls',
       pre: (p) => p.evaluate(() => {
         // user deselects file
-        document.getElementById('file-pdf').setAttribute('aria-selected', 'false');
+        document.getElementById('file-pdf').click();
       }),
       loadModule: true,
     }).run();
@@ -141,9 +141,11 @@ describe('Test bulk copy URLs plugin', () => {
 
   it('Bulk copy live URLs plugin hidden with production host', async () => {
     const { setup } = TESTS[0];
+    nock.sidekick(setup);
     nock.admin(setup, {
       route: 'status',
       type: 'admin',
+      persist: true,
     });
     const { plugins } = await new SidekickTest({
       browser,
@@ -162,8 +164,10 @@ describe('Test bulk copy URLs plugin', () => {
 
   it('Bulk copy preview URLs plugin prevents duplicate slashes in path if root folder', async () => {
     const { setup } = TESTS[0];
+    nock.sidekick(setup);
     nock('https://admin.hlx.page/status')
       .get(/.*/)
+      .twice()
       .reply(200, {
         ...setup.apiResponse('admin'),
         webPath: '/', // root folder
@@ -193,9 +197,11 @@ describe('Test bulk copy URLs plugin', () => {
 
   it('Bulk copy preview URLs plugin uses json extension for spreadsheet', async () => {
     const { setup } = TESTS[1];
+    nock.sidekick(setup);
     nock.admin(setup, {
       route: 'status',
       type: 'admin',
+      persist: true,
     });
     const { checkPageResult: clipboardText } = await new SidekickTest({
       browser,
@@ -207,8 +213,8 @@ describe('Test bulk copy URLs plugin', () => {
       pluginSleep: 500,
       pre: (p) => p.evaluate(() => {
         // select spreadsheet
-        document.getElementById('file-pdf').setAttribute('aria-selected', 'false');
-        document.getElementById('file-gsheet').setAttribute('aria-selected', 'true');
+        document.getElementById('file-pdf').click();
+        document.getElementById('file-gsheet').click();
       }),
       post: (p) => p.evaluate(() => {
         window.hlx.clipboardText = 'dummy';
@@ -228,9 +234,11 @@ describe('Test bulk copy URLs plugin', () => {
   TESTS.forEach(({ env, fixture, setup }) => {
     it(`Bulk copy preview URLs plugin copies preview URLs for existing selection to clipboard in ${env}`, async () => {
       const { owner, repo, ref } = setup.sidekickConfig;
+      nock.sidekick(setup);
       nock.admin(setup, {
         route: 'status',
         type: 'admin',
+        persist: true,
       });
       const { checkPageResult: clipboardText } = await new SidekickTest({
         browser,
@@ -258,9 +266,11 @@ describe('Test bulk copy URLs plugin', () => {
 
     it(`Bulk copy preview URLs plugin copies preview URLs for user selection to clipboard in ${env}`, async () => {
       const { owner, repo, ref } = setup.sidekickConfig;
+      nock.sidekick(setup);
       nock.admin(setup, {
         route: 'status',
         type: 'admin',
+        persist: true,
       });
       const { checkPageResult: clipboardText } = await new SidekickTest({
         browser,
@@ -272,8 +282,8 @@ describe('Test bulk copy URLs plugin', () => {
         pluginSleep: 500,
         pre: (p) => p.evaluate(() => {
           // user selects more files
-          document.getElementById('file-word').setAttribute('aria-selected', 'true');
-          document.getElementById('file-excel').setAttribute('aria-selected', 'true');
+          document.getElementById('file-word').click();
+          document.getElementById('file-excel').click();
         }),
         post: (p) => p.evaluate(() => {
           window.hlx.clipboardText = 'dummy';
@@ -297,9 +307,11 @@ describe('Test bulk copy URLs plugin', () => {
 
     it(`Bulk copy live URLs plugin copies live URLs for existing selection to clipboard in ${env}`, async () => {
       const { owner, repo, ref } = setup.sidekickConfig;
+      nock.sidekick(setup);
       nock.admin(setup, {
         route: 'status',
         type: 'admin',
+        persist: true,
       });
       const { checkPageResult: clipboardText } = await new SidekickTest({
         browser,
@@ -328,9 +340,11 @@ describe('Test bulk copy URLs plugin', () => {
 
     it(`Bulk copy prod URLs plugin copies production URLs for existing selection to clipboard in ${env}`, async () => {
       const { host } = JSON.parse(setup.configJson);
+      nock.sidekick(setup);
       nock.admin(setup, {
         route: 'status',
         type: 'admin',
+        persist: true,
       });
       const { checkPageResult: clipboardText } = await new SidekickTest({
         browser,
@@ -354,6 +368,39 @@ describe('Test bulk copy URLs plugin', () => {
         clipboardText,
         `https://${host}/documents/file.pdf`,
         `URL not copied to clipboard in ${env}`,
+      );
+    }).timeout(IT_DEFAULT_TIMEOUT);
+
+    it(`Bulk copy prod URLs plugin refetches status after navigation in ${env}`, async () => {
+      nock.sidekick(setup);
+      nock.admin(setup, {
+        route: 'status',
+        type: 'admin',
+        persist: true,
+      });
+      const { requestsMade } = await new SidekickTest({
+        browser,
+        page,
+        plugin: 'bulk-copy-prod-urls',
+        pluginSleep: 1000,
+        acceptDialogs: true,
+        fixture,
+        url: setup.getUrl('edit', 'admin'),
+        post: (p) => p.evaluate((url) => {
+          document.getElementById('sidekick_test_location').value = `${url}&navigated=true`;
+        }, setup.getUrl('edit', 'admin')),
+        checkPage: (p) => p.evaluate(() => new Promise((resolve) => {
+          // wait a bit
+          setTimeout(resolve, 1000);
+        })),
+        loadModule: true,
+      }).run();
+      const statusReqs = requestsMade
+        .filter((r) => r.url.startsWith('https://admin.hlx.page/status/'))
+        .map((r) => r.url);
+      assert.ok(
+        statusReqs.length === 2,
+        'Did not refetch status after navigation',
       );
     }).timeout(IT_DEFAULT_TIMEOUT);
   });

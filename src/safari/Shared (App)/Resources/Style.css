@@ -15,7 +15,7 @@ html {
 }
 
 body {
-    display: flex;
+    display: none;
     align-items: center;
     justify-content: center;
     flex-direction: column;
@@ -26,6 +26,10 @@ body {
 
     font: -apple-system-short-body;
     text-align: center;
+}
+
+body {
+    display: flex;
 }
 
 body:not(.platform-mac, .platform-ios) :is(.platform-mac, .platform-ios) {
@@ -58,4 +62,16 @@ body.state-off :is(.state-on, .state-unknown) {
 
 button {
     font-size: 1em;
+}
+
+img.logo {
+    margin: 0 auto;
+}
+
+img.platform-ios.logo {
+    margin-bottom: 2em;
+}
+
+ol {
+    text-align: left;
 }

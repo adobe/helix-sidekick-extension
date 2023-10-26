@@ -11,17 +11,12 @@
  */
 /* eslint-env mocha */
 
-'use strict';
+import assert from 'assert';
+import {
+  IT_DEFAULT_TIMEOUT, Nock, Setup, TestBrowser,
+} from './utils.js';
 
-const assert = require('assert');
-
-const {
-  IT_DEFAULT_TIMEOUT,
-  Nock,
-  TestBrowser,
-  Setup,
-} = require('./utils.js');
-const { SidekickTest } = require('./SidekickTest.js');
+import { SidekickTest } from './SidekickTest.js';
 
 const SHAREPOINT_FIXTURE = 'admin-sharepoint.html';
 const GDRIVE_FIXTURE = 'admin-gdrive.html';
@@ -61,6 +56,40 @@ describe('Test bulk preview plugin', () => {
 
   it('Bulk preview plugin hidden on empty selection', async () => {
     const { setup } = TESTS[0];
+    nock.sidekick();
+    nock.admin(setup, {
+      route: 'status',
+      type: 'admin',
+    });
+    const { plugins } = await new SidekickTest({
+      browser,
+      page,
+      sleep: 1000,
+      fixture: TESTS[0].fixture,
+      url: setup.getUrl('edit', 'admin'),
+      pre: (p) => p.evaluate(() => {
+        // user deselects file
+        document.getElementById('file-pdf').click();
+      }),
+      loadModule: true,
+    }).run();
+    assert.ok(
+      plugins.find((p) => p.id === 'bulk-preview' && p.classes.includes('hlx-sk-hidden')),
+      'Plugin not hidden on empty selection',
+    );
+  }).timeout(IT_DEFAULT_TIMEOUT);
+
+  it('Bulk preview plugin hidden via project config', async () => {
+    const { setup } = TESTS[0];
+    nock.sidekick(setup, {
+      configJson: `{
+        "host": "blog.adobe.com",
+        "plugins": [{
+          "id": "preview",
+          "excludePaths": ["/**"]
+        }]
+      }`,
+    });
     nock.admin(setup, {
       route: 'status',
       type: 'admin',
@@ -72,18 +101,23 @@ describe('Test bulk preview plugin', () => {
       url: setup.getUrl('edit', 'admin'),
       pre: (p) => p.evaluate(() => {
         // user deselects file
-        document.getElementById('file-pdf').setAttribute('aria-selected', 'false');
+        document.getElementById('file-pdf').click();
+      }),
+      post: (p) => p.evaluate(() => {
+        // user deselects another file
+        document.getElementById('file-word').click();
       }),
       loadModule: true,
     }).run();
     assert.ok(
       plugins.find((p) => p.id === 'bulk-preview' && p.classes.includes('hlx-sk-hidden')),
-      'Plugin not hidden on empty selection',
+      'Plugin not hidden via project config',
     );
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Bulk preview plugin shows notification when triggered with empty selection', async () => {
     const { setup } = TESTS[0];
+    nock.sidekick();
     nock.admin(setup, {
       route: 'status',
       type: 'admin',
@@ -96,7 +130,7 @@ describe('Test bulk preview plugin', () => {
       plugin: 'bulk-preview',
       pre: (p) => p.evaluate(() => {
         // user deselects file
-        document.getElementById('file-pdf').setAttribute('aria-selected', 'false');
+        document.getElementById('file-pdf').click();
       }),
       loadModule: true,
     }).run();
@@ -106,9 +140,11 @@ describe('Test bulk preview plugin', () => {
   TESTS.forEach(({ env, fixture, setup }) => {
     it(`Bulk preview plugin previews existing selection in ${env}`, async () => {
       const { owner, repo, ref } = setup.sidekickConfig;
+      nock.sidekick();
       nock.admin(setup, {
         route: 'status',
         type: 'admin',
+        persist: true,
       });
       nock.admin(setup, {
         route: 'preview',
@@ -124,6 +160,7 @@ describe('Test bulk preview plugin', () => {
         configJson: setup.configJson,
         url: setup.getUrl('edit', 'admin'),
         plugin: 'bulk-preview',
+        pluginSleep: 500,
         loadModule: true,
         acceptDialogs: true,
       }).run();
@@ -133,11 +170,13 @@ describe('Test bulk preview plugin', () => {
       assert.ok(updateReq, `Preview URL not updated in ${env}`);
     }).timeout(IT_DEFAULT_TIMEOUT);
 
-    it(`Bulk preview plugin previews user selection in ${env} and copies preview URLs to clipboard`, async () => {
+    it(`Bulk preview plugin previews user selection in ${env}, copies preview URLs to clipboard and opens them`, async () => {
       const { owner, repo, ref } = setup.sidekickConfig;
+      nock.sidekick();
       nock.admin(setup, {
         route: 'status',
         type: 'admin',
+        persist: true,
       });
       nock.admin(setup, {
         route: 'preview',
@@ -145,7 +184,7 @@ describe('Test bulk preview plugin', () => {
         method: 'post',
         persist: true,
       });
-      const { requestsMade, checkPageResult: clipboardText } = await new SidekickTest({
+      const { requestsMade, checkPageResult } = await new SidekickTest({
         browser,
         page,
         fixture,
@@ -156,21 +195,23 @@ describe('Test bulk preview plugin', () => {
         pluginSleep: 1000,
         pre: (p) => p.evaluate(() => {
           // user selects more files
-          document.getElementById('file-word').setAttribute('aria-selected', 'true');
-          document.getElementById('file-excel').setAttribute('aria-selected', 'true');
+          document.getElementById('file-word').click();
+          document.getElementById('file-excel').click();
         }),
         checkPage: (p) => p.evaluate(() => {
           window.hlx.clipboardText = 'dummy';
           window.navigator.clipboard.writeText = (text) => {
             window.hlx.clipboardText = text;
           };
-          // user clicks copy URLs button
+          window.hlx.openedWindows = [];
+          window.open = (url) => window.hlx.openedWindows.push(url);
+          // user clicks copy and open URLs buttons
           // eslint-disable-next-line no-underscore-dangle
-          window.hlx.sidekick._modal.querySelector('button').click();
-          // wait 500ms gthen get clipboard text
+          window.hlx.sidekick._modal.querySelectorAll('button').forEach((b) => b.click());
+          // wait 500ms, then get clipboard text and opened windows
           return new Promise((resolve) => {
             setTimeout(() => {
-              resolve(window.hlx.clipboardText);
+              resolve([window.hlx.clipboardText, window.hlx.openedWindows]);
             }, 500);
           });
         }),
@@ -180,6 +221,7 @@ describe('Test bulk preview plugin', () => {
       const updateReqs = requestsMade
         .filter((r) => r.method === 'POST')
         .map((r) => r.url);
+      const [clipboardText, openedWindows] = checkPageResult;
       assert.deepEqual(
         updateReqs,
         [
@@ -189,15 +231,18 @@ describe('Test bulk preview plugin', () => {
         ],
         `User selection not recognized in ${env}`,
       );
-      assert.ok(clipboardText !== 'dummy', `URLs not copied to clipboard in ${env}`);
+      assert.strictEqual(clipboardText.split('\n').length, 3, `3 URLs not copied to clipboard in ${env}: \n${clipboardText}`);
+      assert.strictEqual(openedWindows.length, 3, `3 URLs not opened in ${env}: \n${openedWindows.join('\n')}`);
     }).timeout(IT_DEFAULT_TIMEOUT);
   });
 
   it('Bulk preview plugin handles error response', async () => {
     const { setup } = TESTS[0];
+    nock.sidekick();
     nock.admin(setup, {
       route: 'status',
       type: 'admin',
+      persist: true,
     });
     nock.admin(setup, {
       route: 'preview',
@@ -223,9 +268,11 @@ describe('Test bulk preview plugin', () => {
 
   it('Bulk preview plugin handles partial error response', async () => {
     const { setup } = TESTS[0];
+    nock.sidekick();
     nock.admin(setup, {
       route: 'status',
       type: 'admin',
+      persist: true,
     });
     nock.admin(setup, {
       route: 'preview',
@@ -243,7 +290,7 @@ describe('Test bulk preview plugin', () => {
       pluginSleep: 1000,
       pre: (p) => p.evaluate(() => {
         // select another file
-        document.getElementById('file-word').setAttribute('aria-selected', 'true');
+        document.getElementById('file-word').click();
       }),
       loadModule: true,
       acceptDialogs: true,
@@ -251,6 +298,46 @@ describe('Test bulk preview plugin', () => {
     assert.ok(
       notification.className.includes('level-1'),
       'Did not handle partial error',
+    );
+  }).timeout(IT_DEFAULT_TIMEOUT);
+
+  it('Bulk preview plugin refetches status after navigation', async () => {
+    const { setup } = TESTS[0];
+    nock.sidekick(setup);
+    nock.admin(setup, {
+      route: 'status',
+      type: 'admin',
+      persist: true,
+    });
+    nock.admin(setup, {
+      route: 'preview',
+      type: 'html',
+      method: 'post',
+      status: [200],
+    });
+    const { requestsMade } = await new SidekickTest({
+      browser,
+      page,
+      plugin: 'bulk-preview',
+      pluginSleep: 1000,
+      acceptDialogs: true,
+      fixture: SHAREPOINT_FIXTURE,
+      url: setup.getUrl('edit', 'admin'),
+      post: (p) => p.evaluate((url) => {
+        document.getElementById('sidekick_test_location').value = `${url}&navigated=true`;
+      }, setup.getUrl('edit', 'admin')),
+      checkPage: (p) => p.evaluate(() => new Promise((resolve) => {
+        // wait a bit
+        setTimeout(resolve, 1000);
+      })),
+      loadModule: true,
+    }).run();
+    const statusReqs = requestsMade
+      .filter((r) => r.url.startsWith('https://admin.hlx.page/status/'))
+      .map((r) => r.url);
+    assert.ok(
+      statusReqs.length === 2,
+      'Did not refetch status after navigation',
     );
   }).timeout(IT_DEFAULT_TIMEOUT);
 });

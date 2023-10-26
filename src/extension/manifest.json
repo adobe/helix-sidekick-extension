@@ -1,19 +1,21 @@
 {
   "manifest_version": 3,
   "name": "__MSG_title__",
-  "version": "6.7.5",
+  "version": "6.33.0",
   "author": "Adobe",
   "homepage_url": "https://www.hlx.live/tools/sidekick/",
   "default_locale": "en",
   "options_page": "options.html",
   "description": "__MSG_description__",
   "permissions": [
+    "activeTab",
     "contextMenus",
+    "declarativeNetRequest",
     "scripting",
-    "storage",
-    "activeTab"
+    "storage"
   ],
   "host_permissions": [
+    "https://www.hlx.live/tools/sidekick/*",
     "http://localhost:3000/*",
     "https://*/*"
   ],
@@ -25,7 +27,13 @@
     "page": "background.html",
     "persistent": false
   },
-  "externally_connectable": {
+  "__chrome__externally_connectable": {
+    "matches": [
+      "http://localhost:3000/*",
+      "https://*/*"
+    ]
+  },
+  "__safari__externally_connectable": {
     "matches": [
       "https://admin.hlx.page/*"
     ]
@@ -33,6 +41,7 @@
   "web_accessible_resources": [
     {
       "resources": [
+        "_locales/*",
         "app.css",
         "de.css",
         "configpicker.js",
@@ -43,22 +52,22 @@
         "module.js",
         "sidekick.js",
         "utils.js",
-        "view/json.js",
+        "view/json/json.html",
         "view-doc-source/js/content.js"
       ],
       "matches": [
-        "https://*/*",
-        "http://localhost:3000/*"
+        "<all_urls>"
       ]
     }
   ],
   "action": {
     "default_title": "__MSG_title__",
     "default_icon": {
-      "16": "icons/helix_logo_16.png",
-      "32": "icons/helix_logo_32.png",
-      "48": "icons/helix_logo_48.png",
-      "128": "icons/helix_logo_128.png"
+      "16": "icons/ec-icon-16x16.png",
+      "32": "icons/ec-icon-32x32.png",
+      "48": "icons/ec-icon-48x48.png",
+      "128": "icons/ec-icon-128x128.png",
+      "512": "icons/ec-icon-512x512.png"
     }
   },
   "commands": {
@@ -71,9 +80,10 @@
     }
   },
   "icons": {
-    "16": "icons/helix_logo_16.png",
-    "32": "icons/helix_logo_32.png",
-    "48": "icons/helix_logo_48.png",
-    "128": "icons/helix_logo_128.png"
+    "16": "icons/ec-icon-16x16.png",
+    "32": "icons/ec-icon-32x32.png",
+    "48": "icons/ec-icon-48x48.png",
+    "128": "icons/ec-icon-128x128.png",
+    "512": "icons/ec-icon-512x512.png"
   }
 }

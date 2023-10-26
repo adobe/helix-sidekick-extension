@@ -11,17 +11,12 @@
  */
 /* eslint-env mocha */
 
-'use strict';
+import assert from 'assert';
+import {
+  IT_DEFAULT_TIMEOUT, Nock, Setup, TestBrowser,
+} from './utils.js';
 
-const assert = require('assert');
-
-const {
-  IT_DEFAULT_TIMEOUT,
-  TestBrowser,
-  Nock,
-  Setup,
-} = require('./utils.js');
-const { SidekickTest } = require('./SidekickTest.js');
+import { SidekickTest } from './SidekickTest.js';
 
 describe('Test unpublish plugin', () => {
   /** @type TestBrowser */
@@ -49,7 +44,9 @@ describe('Test unpublish plugin', () => {
 
   it('Unpublish plugin uses live API', async () => {
     const setup = new Setup('blog');
-    setup.apiResponse().edit = {}; // no source doc
+    setup.apiResponse().edit = { status: 404 }; // no source doc
+    setup.apiResponse().live.permissions.push('delete'); // add delete permission
+    nock.sidekick(setup);
     nock.admin(setup);
     nock('https://admin.hlx.page')
       .delete('/live/adobe/blog/main/en/topics/bla')
@@ -63,7 +60,9 @@ describe('Test unpublish plugin', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('No unpublish plugin if source document still exists', async () => {
-    nock.admin(new Setup('blog'));
+    const setup = new Setup('blog');
+    nock.sidekick(setup);
+    nock.admin(setup);
     const { plugins } = await new SidekickTest({
       browser,
       page,
@@ -73,13 +72,65 @@ describe('Test unpublish plugin', () => {
 
   it('No unpublish plugin if page not published', async () => {
     const setup = new Setup('blog');
-    setup.apiResponse().edit = {}; // no source doc
-    setup.apiResponse().live = {}; // page not published
+    setup.apiResponse().edit = { status: 404 }; // no source doc
+    setup.apiResponse().live = { status: 404 }; // page not published
+    nock.sidekick(setup);
     nock.admin(setup);
     const { plugins } = await new SidekickTest({
       browser,
       page,
     }).run();
     assert.ok(!plugins.find((p) => p.id === 'unpublish'), 'Unexpected unpublish plugin found');
+  }).timeout(IT_DEFAULT_TIMEOUT);
+
+  it('Unpublish plugin hidden if source document still exists but user is authenticated', async () => {
+    const setup = new Setup('blog');
+    nock.login();
+    nock('https://admin.hlx.page')
+      .get('/sidekick/adobe/blog/main/config.json')
+      .twice()
+      .reply(function req() {
+        if (this.req.headers.cookie === 'auth_token=foobar') {
+          return [200, '{}', { 'content-type': 'application/json' }];
+        }
+        return [401];
+      })
+      .get('/status/adobe/blog/main/en/topics/bla?editUrl=auto')
+      .twice()
+      .reply(function req() {
+        if (this.req.headers.cookie === 'auth_token=foobar') {
+          const resp = setup.apiResponse();
+          resp.live.permissions.push('delete'); // authenticated request, add delete permission
+          return [200, JSON.stringify(resp), { 'content-type': 'application/json' }];
+        }
+        return [401, '{ "status": 401 }', { 'content-type': 'application/json' }];
+      })
+      .get('/login/adobe/blog/main?extensionId=cookie')
+      .reply(200, '<html>logged in<script>setTimeout(() => self.close(), 500)</script></html>', {
+        'set-cookie': 'auth_token=foobar; Path=/; HttpOnly; Secure; SameSite=None',
+      })
+      .get('/profile/adobe/blog/main')
+      .reply(function req() {
+        if (this.req.headers.cookie === 'auth_token=foobar') {
+          return [200, '{ "status": 200 }', { 'content-type': 'application/json' }];
+        }
+        return [401, '{ "status": 401 }', { 'content-type': 'application/json' }];
+      })
+      // in debug mode, the browser requests /favicon.ico
+      .get('/favicon.ico')
+      .optionally()
+      .reply(404);
+
+    const { plugins } = await new SidekickTest({
+      browser,
+      page,
+      plugin: 'user-login',
+      pluginSleep: 2000,
+      loadModule: true,
+    }).run();
+    assert.ok(
+      plugins.find((p) => p.id === 'unpublish' && p.classes.includes('hlx-sk-advanced-only')),
+      'Unpublish plugin not found',
+    );
   }).timeout(IT_DEFAULT_TIMEOUT);
 });

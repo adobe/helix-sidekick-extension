@@ -13,7 +13,7 @@
           "type": "array",
           "items": {
             "type": "string",
-            "enum": ["any", "admin", "edit", "preview", "live", "prod"]
+            "enum": ["any", "dev", "admin", "edit", "preview", "live", "prod"]
           },
           "description": "The environments to display this plugin in",
           "default": "any"
@@ -29,8 +29,8 @@
           },
           "description": "Exclude the plugin from these paths",
           "examples": [
-            "/foo/bar",
-            "/foo/**"
+            "/foo/**",
+            "**/:x:**"
           ]
         },
         "id": {
@@ -44,8 +44,8 @@
           },
           "description": "Include the plugin on these paths (overrides excludePaths)",
           "examples": [
-            "/foo/bar",
-            "/foo/bar/**"
+            "/foo/bar/**",
+            "**.docx**"
           ]
         },
         "isContainer": {
@@ -97,14 +97,59 @@
         { "required": [ "isContainer" ] }
       ],
       "additionalProperties": false
+    },
+    "specialView": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "The unique view ID"
+        },
+        "path": {
+          "type": "string",
+          "description": "Open the special view on this path",
+          "examples": [
+            "/foo/**.json"
+          ]
+        },
+        "viewer": {
+          "type": "string",
+          "description": "The URL of the special view. The resource path will be passed to it via 'path' parameter",
+          "examples": [
+            "/tools/sidekick/foo/index.html"
+          ]
+        }
+      },
+      "required": [
+        "path",
+        "viewer"
+      ],
+      "additionalProperties": false
     }
   },
-  "description": "Franklin Sidekick configuration",
+  "description": "Sidekick configuration",
   "type": "object",
   "properties": {
+    "extends": {
+      "type": "string",
+      "description": "Extend another project's sidekick configuration",
+      "examples": [
+        "hlxsites/foo"
+      ]
+    },
     "project": {
       "type": "string",
-      "description": "The name of the project to display in the Franklin Sidekick"
+      "description": "The name of the project to display in the sidekick"
+    },
+    "previewHost": {
+      "type": "string",
+      "format": "idn-hostname",
+      "description": "The host name of the preview environment (defaults to *.hlx.page)"
+    },
+    "liveHost": {
+      "type": "string",
+      "format": "idn-hostname",
+      "description": "The host name of the live environment (defaults to *.hlx.live)"
     },
     "host": {
       "type": "string",
@@ -117,7 +162,7 @@
     },
     "pushDown": {
       "type": "boolean",
-      "description": "Have Franklin Sidekick push down page content instead of overlaying it"
+      "description": "Have the sidekick push down page content instead of overlaying it"
     },
     "pushDownSelector": {
       "type": "string",
@@ -126,6 +171,14 @@
     "plugins": {
       "type": "array",
       "items": { "$ref": "#/$defs/plugin" }
+    },
+    "redirect": {
+      "type": "url",
+      "description": "Loads the sidekick configuration from a different URL"
+    },
+    "specialViews": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/specialView" }
     }
    },
    "additionalProperties": false

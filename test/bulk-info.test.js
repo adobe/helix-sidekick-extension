@@ -11,28 +11,23 @@
  */
 /* eslint-env mocha */
 
-'use strict';
+import assert from 'assert';
+import {
+  IT_DEFAULT_TIMEOUT, Nock, Setup, TestBrowser,
+} from './utils.js';
 
-const assert = require('assert');
+import { SidekickTest } from './SidekickTest.js';
 
-const {
-  IT_DEFAULT_TIMEOUT,
-  Nock,
-  TestBrowser,
-  Setup,
-} = require('./utils.js');
-const { SidekickTest } = require('./SidekickTest.js');
-
-const SHAREPOINT_FIXTURE = 'admin-sharepoint.html';
-const GDRIVE_FIXTURE = 'admin-gdrive.html';
 const TESTS = [{
   env: 'sharepoint',
   setup: new Setup('blog'),
-  fixture: SHAREPOINT_FIXTURE,
+  fixtureList: 'admin-sharepoint.html',
+  fixtureGrid: 'admin-sharepoint-grid.html',
 }, {
   env: 'gdrive',
   setup: new Setup('pages'),
-  fixture: GDRIVE_FIXTURE,
+  fixtureList: 'admin-gdrive.html',
+  fixtureGrid: 'admin-gdrive-grid.html',
 }];
 
 describe('Test bulk info plugin', () => {
@@ -59,59 +54,55 @@ describe('Test bulk info plugin', () => {
     nock.done();
   });
 
-  it('Bulk info plugin displays selection size', async () => {
-    const { setup } = TESTS[0];
-    nock.admin(setup, {
-      route: 'status',
-      type: 'admin',
-    });
-    const { checkPageResult: size } = await new SidekickTest({
-      browser,
-      page,
-      fixture: SHAREPOINT_FIXTURE,
-      url: setup.getUrl('edit', 'admin'),
-      loadModule: true,
-      checkPage: (p) => p.evaluate(() => {
-        // get displayed selection size
-        const info = window.hlx.sidekick.shadowRoot.getElementById('hlx-sk-bulk-info');
-        const num = +(window.getComputedStyle(info, ':before')
-          .getPropertyValue('content')
-          .replaceAll('"', '')
-          .split(' ')
-          .shift());
-        return Number.isNaN(num) ? 0 : num;
-      }),
-    }).run();
-    assert.strictEqual(size, 1, 'Wrong selection size displayed');
-  }).timeout(IT_DEFAULT_TIMEOUT);
+  TESTS.forEach(({
+    env, fixtureList, fixtureGrid, setup,
+  }) => {
+    it(`Bulk info plugin displays selection size in ${env} list view`, async () => {
+      nock.sidekick();
+      nock.admin(setup, {
+        route: 'status',
+        type: 'admin',
+      });
+      const { checkPageResult: sizeCheck } = await new SidekickTest({
+        browser,
+        page,
+        fixture: fixtureList,
+        url: setup.getUrl('edit', 'admin'),
+        loadModule: true,
+        checkPage: (p) => p.evaluate(() => {
+          // get displayed selection size
+          const info = window.hlx.sidekick.shadowRoot.getElementById('hlx-sk-bulk-info');
+          const num = +(info.textContent
+            .split(' ')
+            .shift());
+          return Number.isNaN(num) ? false : num === 1;
+        }),
+      }).run();
+      assert.ok(sizeCheck, 'Wrong selection size displayed');
+    }).timeout(IT_DEFAULT_TIMEOUT);
 
-  it('Bulk info plugin refetches status after navigation', async () => {
-    const { setup } = TESTS[0];
-    nock.admin(setup, {
-      route: 'status',
-      type: 'admin',
-      persist: true,
-    });
-    const { requestsMade } = await new SidekickTest({
-      browser,
-      page,
-      fixture: SHAREPOINT_FIXTURE,
-      url: setup.getUrl('edit', 'admin'),
-      post: (p) => p.evaluate((url) => {
-        document.getElementById('sidekick_test_location').value = `${url}&navigated=true`;
-      }, setup.getUrl('edit', 'admin')),
-      checkPage: (p) => p.evaluate(() => new Promise((resolve) => {
-        // wait a bit
-        setTimeout(resolve, 1000);
-      })),
-      loadModule: true,
-    }).run();
-    const statusReqs = requestsMade
-      .filter((r) => r.url.startsWith('https://admin.hlx.page/status/'))
-      .map((r) => r.url);
-    assert.ok(
-      statusReqs.length === 2,
-      'Did not refetch status after navigation',
-    );
-  }).timeout(IT_DEFAULT_TIMEOUT);
+    it(`Bulk info plugin displays selection size in ${env} grid view`, async () => {
+      nock.sidekick();
+      nock.admin(setup, {
+        route: 'status',
+        type: 'admin',
+      });
+      const { checkPageResult: sizeCheck } = await new SidekickTest({
+        browser,
+        page,
+        fixture: fixtureGrid,
+        url: setup.getUrl('edit', 'admin'),
+        loadModule: true,
+        checkPage: (p) => p.evaluate(() => {
+          // get displayed selection size
+          const info = window.hlx.sidekick.shadowRoot.getElementById('hlx-sk-bulk-info');
+          const num = +(info.textContent
+            .split(' ')
+            .shift());
+          return Number.isNaN(num) ? false : num === 2;
+        }),
+      }).run();
+      assert.ok(sizeCheck, 'Wrong selection size displayed');
+    }).timeout(IT_DEFAULT_TIMEOUT);
+  });
 });

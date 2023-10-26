@@ -10,9 +10,10 @@
  * governing permissions and limitations under the License.
  */
 
-const express = require('express');
+import express from 'express';
+
 const debugServer = express();
-const title = 'Franklin Sidekick Debug Server';
+const title = 'Sidekick Debug Server';
 const port = 3001;
 
 debugServer.get('/', (_, res) => {

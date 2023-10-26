@@ -11,17 +11,12 @@
  */
 /* eslint-env mocha */
 
-'use strict';
+import assert from 'assert';
+import {
+  IT_DEFAULT_TIMEOUT, Nock, Setup, TestBrowser,
+} from './utils.js';
 
-const assert = require('assert');
-
-const {
-  IT_DEFAULT_TIMEOUT,
-  TestBrowser,
-  Nock,
-  Setup,
-} = require('./utils.js');
-const { SidekickTest } = require('./SidekickTest.js');
+import { SidekickTest } from './SidekickTest.js';
 
 describe('Test publish plugin', () => {
   /** @type TestBrowser */
@@ -48,7 +43,9 @@ describe('Test publish plugin', () => {
   });
 
   it('Publish plugin uses live API', async () => {
-    nock.admin(new Setup('blog'));
+    const setup = new Setup('blog');
+    nock.sidekick(setup);
+    nock.admin(setup);
     nock('https://admin.hlx.page')
       .post('/live/adobe/blog/main/en/topics/bla')
       .reply(200);
@@ -57,7 +54,6 @@ describe('Test publish plugin', () => {
       .reply(200, 'bla');
     nock('https://blog.adobe.com')
       .get('/en/topics/bla')
-      .twice()
       .reply(200, 'bla');
     const { requestsMade, navigated } = await new SidekickTest({
       browser,
@@ -74,7 +70,9 @@ describe('Test publish plugin', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Publish plugin also publishes dependencies', async () => {
-    nock.admin(new Setup('blog'));
+    const setup = new Setup('blog');
+    nock.sidekick(setup);
+    nock.admin(setup);
     nock('https://admin.hlx.page')
       .post('/live/adobe/blog/main/en/topics/bla')
       .reply(200)
@@ -91,7 +89,6 @@ describe('Test publish plugin', () => {
       .reply(200, 'bla');
     nock('https://blog.adobe.com')
       .get('/en/topics/bla')
-      .twice()
       .reply(200, 'bla')
       .get('/en/topics/foo')
       .reply(200, 'bla')
@@ -118,7 +115,9 @@ describe('Test publish plugin', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Publish plugin busts client cache', async () => {
-    nock.admin(new Setup('blog'));
+    const setup = new Setup('blog');
+    nock.sidekick(setup);
+    nock.admin(setup);
     nock('https://admin.hlx.page')
       .post('/live/adobe/blog/main/en/topics/bla')
       .reply(200);
@@ -127,7 +126,6 @@ describe('Test publish plugin', () => {
       .reply(200, 'bla');
     nock('https://blog.adobe.com')
       .get('/en/topics/bla')
-      .twice()
       .reply(200, 'bla');
 
     const { requestsMade } = await new SidekickTest({
@@ -147,9 +145,25 @@ describe('Test publish plugin', () => {
     );
   }).timeout(IT_DEFAULT_TIMEOUT);
 
+  it('Publish plugin available for JSON resource', async () => {
+    const setup = new Setup('blog');
+    nock.sidekick(setup);
+    nock.admin(setup);
+
+    const { plugins } = await new SidekickTest({
+      browser,
+      page,
+    }).run('https://main--blog--adobe.hlx.page/en/topics/bla.json');
+    assert.ok(
+      plugins.find((p) => p.id === 'publish'),
+      'Publish plugin not available for JSON',
+    );
+  }).timeout(IT_DEFAULT_TIMEOUT);
+
   it('Publish plugin button disabled without source document', async () => {
     const setup = new Setup('blog');
     setup.apiResponse().edit = {};
+    nock.sidekick(setup);
     nock.admin(setup);
     const { plugins } = await new SidekickTest({
       browser,
@@ -164,6 +178,7 @@ describe('Test publish plugin', () => {
     const liveLastMod = setup.apiResponse().live.lastModified;
     setup.apiResponse().live.lastModified = new Date(new Date(liveLastMod)
       .setFullYear(2019)).toUTCString();
+    nock.sidekick(setup);
     nock.admin(setup);
     const test = new SidekickTest({
       browser,

@@ -14,7 +14,8 @@
       "imageAlt": "Cell phone with a form on it's screen.",
       "robots": "0",
       "checkSum": 1234,
-      "lastModified": "1642643210"
+      "lastModified": "1642643210",
+      "video": "/test/fixtures/video.mp4"
     },
     {
       "date": "44581",
@@ -27,7 +28,8 @@
       "imageAlt": "Axel Springer_",
       "robots": "0",
       "checkSum": 1234,
-      "lastModified": "1642643348"
+      "lastModified": "1642643348",
+      "video": "/test/fixtures/video.mp4"
     },
     {
       "date": "44581",
@@ -40,7 +42,8 @@
       "imageAlt": "Acrobat online tools for creative designers.",
       "robots": "0",
       "checkSum": 1234,
-      "lastModified": "1642643478"
+      "lastModified": "1642643478",
+      "video": "/test/fixtures/video.mp4"
     },
     {
       "date": "44581",
@@ -53,7 +56,8 @@
       "imageAlt": "Adobe Summit 2022.",
       "robots": "0",
       "checkSum": 1234,
-      "lastModified": "1642643576"
+      "lastModified": "1642643576",
+      "video": "/test/fixtures/video.mp4"
     }
   ],
   ":type": "sheet"

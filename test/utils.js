@@ -11,22 +11,23 @@
  */
 /* eslint-disable max-classes-per-file */
 /* eslint-env mocha */
-const v8 = require('node:v8');
-const assert = require('assert');
-const { fetch } = require('@adobe/fetch').h1();
-const nock = require('nock');
-const puppeteer = require('puppeteer');
-const pti = require('puppeteer-to-istanbul');
-const mime = require('mime');
-const { fileURLToPath } = require('url');
-const { promises: fs } = require('fs');
-const { CDPBrowser } = require('../node_modules/puppeteer/node_modules/puppeteer-core/lib/cjs/puppeteer/common/Browser.js');
+import v8 from 'node:v8';
+import assert from 'assert';
+import { h1 } from '@adobe/fetch';
+import nock from 'nock';
+import puppeteer from 'puppeteer';
+import { CDPBrowser } from 'puppeteer-core';
+import mime from 'mime';
+import { fileURLToPath } from 'url';
+import { promises as fs } from 'fs';
+
+const { fetch } = h1();
 
 // set debug to true to see browser window and debug output
-const DEBUG = false;
-const DEBUG_LOGS = false;
+export const DEBUG = false;
+export const DEBUG_LOGS = false;
 
-const IT_DEFAULT_TIMEOUT = 60000;
+export const IT_DEFAULT_TIMEOUT = 60000;
 
 const SETUPS = {
   none: {
@@ -42,11 +43,12 @@ const SETUPS = {
   },
   pages: {
     sidekickConfig: {
+      project: 'Pages',
       owner: 'adobe',
       repo: 'pages',
       ref: 'main',
     },
-    configJs: 'window.hlx.initSidekick({host:"pages.adobe.com","hlx3":true});',
+    configJs: 'window.hlx.initSidekick({host:"pages.adobe.com"});',
     configJson: '{"host":"pages.adobe.com"}',
     api: {
       html: {
@@ -79,14 +81,12 @@ const SETUPS = {
           permissions: [
             'read',
             'write',
-            'delete',
           ],
         },
         live: {
           permissions: [
             'read',
             'write',
-            'delete',
           ],
         },
       },
@@ -97,10 +97,10 @@ const SETUPS = {
   },
   blog: {
     sidekickConfig: {
+      project: 'Blog',
       owner: 'adobe',
       repo: 'blog',
       ref: 'main',
-      hlx3: true,
     },
     configJs: 'window.hlx.initSidekick({host:"blog.adobe.com"});',
     configJson: '{"host":"blog.adobe.com"}',
@@ -112,20 +112,18 @@ const SETUPS = {
           url: 'https://main--blog--adobe.hlx.live/en/topics/bla',
           status: 200,
           lastModified: 'Fri, 18 Jun 2021 09:57:02 GMT',
-          permisions: [
+          permissions: [
             'read',
             'write',
-            'delete',
           ],
         },
         preview: {
           url: 'https://main--blog--adobe.hlx.page/en/topics/bla',
           status: 200,
           lastModified: 'Fri, 18 Jun 2021 09:57:01 GMT',
-          permisions: [
+          permissions: [
             'read',
             'write',
-            'delete',
           ],
         },
         edit: {
@@ -174,9 +172,8 @@ const SETUPS = {
         },
         edit: {
           url: 'https://raw.githubusercontent.com/adobe/blog/main/en/bla.xml',
-          lastModified: 'Tue, 09 Nov 2021 14:17:13 GMT',
         },
-        source: {
+        code: {
           status: 200,
           contentType: 'application/xml',
           lastModified: 'Thu, 09 Dec 2021 08:01:27 GMT',
@@ -195,14 +192,12 @@ const SETUPS = {
           permissions: [
             'read',
             'write',
-            'delete',
           ],
         },
         live: {
           permissions: [
             'read',
             'write',
-            'delete',
           ],
         },
       },
@@ -218,7 +213,7 @@ const SETUPS = {
 /**
  * The sidekick test setup.
  */
-class Setup {
+export class Setup {
   /**
    * Creates a new test setup.
    * @param {string} name The name of the setup to use
@@ -276,7 +271,7 @@ class Setup {
   }
 }
 
-const toResp = (resp, path) => {
+export const toResp = (resp, path) => {
   if (typeof resp === 'object' && resp.status) {
     return resp;
   } else {
@@ -297,7 +292,7 @@ const toResp = (resp, path) => {
  * @param {Page} page
  * @returns {Promise<object>}
  */
-const getPlugins = async (page) => page.evaluate(
+export const getPlugins = async (page) => page.evaluate(
   () => [...window.hlx.sidekick.shadowRoot.querySelectorAll('div.plugin')]
     .map((plugin) => ({
       id: plugin.classList.item(0),
@@ -317,7 +312,7 @@ const getPlugins = async (page) => page.evaluate(
  * @param {string} id
  * @returns {Promise<*>}
  */
-const getPlugin = async (page, id) => getPlugins(page)
+export const getPlugin = async (page, id) => getPlugins(page)
   .then((plugins) => plugins.find((plugin) => plugin.id === id));
 
 /**
@@ -326,7 +321,7 @@ const getPlugin = async (page, id) => getPlugins(page)
  * @param {string} pluginId
  * @returns {Promise<void>}
  */
-const assertPlugin = async (page, pluginId) => {
+export const assertPlugin = async (page, pluginId) => {
   if (!pluginId) return;
   const pluginIds = typeof pluginId === 'string' ? [pluginId] : pluginId;
   const plugins = await getPlugins(page);
@@ -340,7 +335,7 @@ const assertPlugin = async (page, pluginId) => {
  * @param {number} [timeout=5000]
  * @returns {Promise<*>}
  */
-const waitForEvent = async (page, type) => page.waitForFunction('window.hlx.sidekick')
+export const waitForEvent = async (page, type) => page.waitForFunction('window.hlx.sidekick')
   .then(() => page.evaluate((evtType) => {
     window.hlx.sidekickEvents = {};
     const eventTypes = Array.isArray(evtType) ? evtType : [evtType];
@@ -360,7 +355,7 @@ const waitForEvent = async (page, type) => page.waitForFunction('window.hlx.side
  * @param {number} timeout
  * @returns {Promise<*>}
  */
-async function waitFor(test, timeout) {
+export async function waitFor(test, timeout) {
   const direct = await test();
   if (direct || !timeout) {
     return direct;
@@ -394,7 +389,7 @@ const getFiredEvents = async (page) => page.evaluate(() => window.hlx.sidekickEv
  * @param {string} type
  * @returns {Promise<boolean>}
  */
-const checkEventFired = async (page, type) => {
+export const checkEventFired = async (page, type) => {
   if (!type) return true;
   const firedEvents = await getFiredEvents(page);
   const eventTypes = Array.isArray(type) ? type : [type];
@@ -411,7 +406,7 @@ const checkEventFired = async (page, type) => {
  * @param {string} id
  * @returns {Promise<void>}
  */
-const execPlugin = async (page, id) => {
+export const execPlugin = async (page, id) => {
   if (!id) {
     return;
   }
@@ -429,7 +424,7 @@ const execPlugin = async (page, id) => {
  * @param {string} id
  * @returns {Promise<*>}
  */
-const clickButton = async (page, id) => page.evaluate((buttonId) => window.hlx.sidekick
+export const clickButton = async (page, id) => page.evaluate((buttonId) => window.hlx.sidekick
   .shadowRoot.querySelector(`.hlx-sk button.${buttonId}`).click(), id);
 
 /**
@@ -437,7 +432,7 @@ const clickButton = async (page, id) => page.evaluate((buttonId) => window.hlx.s
  * @param {Page} page
  * @returns {Promise<*>}
  */
-const getNotification = async (page) => page.evaluate(() => {
+export const getNotification = async (page) => page.evaluate(() => {
   const modal = window.hlx.sidekick.shadowRoot.querySelector('.hlx-sk-overlay .modal');
   const message = modal ? modal.textContent : null;
   const className = modal ? modal.className : null;
@@ -447,7 +442,7 @@ const getNotification = async (page) => page.evaluate(() => {
   };
 });
 
-const sleep = async (delay = 1000) => new Promise((resolve) => {
+export const sleep = async (delay = 1000) => new Promise((resolve) => {
   setTimeout(resolve, delay);
 });
 
@@ -457,11 +452,12 @@ const sleep = async (delay = 1000) => new Promise((resolve) => {
  *
  * so we need to create our own abstraction for network interception.
  */
-class TestBrowser {
+export class TestBrowser {
   constructor(browser) {
     this.browser = browser;
     // track frames to detect navigation requests
     // this.frames = {};
+    this.includeCoverage = (!!process.env.NODE_V8_COVERAGE);
   }
 
   onRequestHandler(handler) {
@@ -517,19 +513,23 @@ class TestBrowser {
         }
 
         try {
-          let res = await this.requestHandler?.(request);
-          if (res === -1) {
-            if (DEBUG_LOGS) {
-              // eslint-disable-next-line no-console
-              console.log('[pup] request aborted', request.url);
+          let res;
+          if (request.url.endsWith('/favicon.ico')) {
+            res = { status: 404 };
+          } else {
+            res = await this.requestHandler?.(request);
+            if (res === -1) {
+              if (DEBUG_LOGS) {
+                // eslint-disable-next-line no-console
+                console.log('[pup] request aborted', request.url);
+              }
+              await innerSession.send('Fetch.failRequest', {
+                requestId: evt.requestId,
+                errorReason: 'Aborted',
+              });
+              return;
             }
-            await innerSession.send('Fetch.failRequest', {
-              requestId: evt.requestId,
-              errorReason: 'Aborted',
-            });
-            return;
           }
-
           if (!res && request.url.startsWith('file://')) {
             // let file requests through
             if (DEBUG_LOGS) {
@@ -604,12 +604,14 @@ class TestBrowser {
     };
     const browser = await puppeteer.launch({
       devtools: DEBUG || process.env.HLX_SK_TEST_DEBUG,
-      // headless: false,
+      headless: DEBUG || process.env.HLX_SK_TEST_DEBUG ? false : 'new',
       args: [
         '--disable-popup-blocking',
         '--disable-web-security',
         '-no-sandbox',
         '-disable-setuid-sandbox',
+        '--user-agent="HeadlessChrome"',
+        '--disable-features=DialMediaRouteProvider',
       ],
       slowMo: false,
     });
@@ -624,8 +626,10 @@ class TestBrowser {
    */
   async openPage() {
     const page = await this.browser.newPage();
-    await page.coverage.startJSCoverage();
-    await page.coverage.startCSSCoverage();
+    if (this.includeCoverage) {
+      await page.coverage.startJSCoverage({ includeRawScriptCoverage: true });
+      await page.coverage.startCSSCoverage();
+    }
     return page;
   }
 
@@ -637,18 +641,26 @@ class TestBrowser {
 
   async closeAllPages() {
     if (!(DEBUG || process.env.HLX_SK_TEST_DEBUG)) {
+      const { includeCoverage } = this;
       await Promise.all((await this.browser.pages()).map(async (page) => {
         const url = page.url();
-        if (url.startsWith('file:///')) {
+        if (includeCoverage && url.startsWith('file:///')) {
           // only get coverage from file urls
-          const [jsCoverage, cssCoverage] = await Promise.all([
+          const [jsCoverage] = await Promise.all([
             page.coverage.stopJSCoverage(),
-            page.coverage.stopCSSCoverage(),
           ]);
-          pti.write([...jsCoverage, ...cssCoverage], {
-            includeHostname: true,
-            storagePath: './.nyc_output',
-          });
+
+          const coverage = jsCoverage.map(({ rawScriptCoverage: it }) => ({
+            ...it,
+            scriptId: String(it.scriptId),
+            url: it.url,
+          }));
+
+          // Export coverage data
+          await Promise.all(coverage.map(async (it, idx) => fs.writeFile(
+            `${process.env.NODE_V8_COVERAGE}/coverage-${Date.now()}-${idx}.json`,
+            JSON.stringify({ result: [it] }),
+          )));
         }
         if (url !== 'about:blank') {
           await page.close();
@@ -658,7 +670,7 @@ class TestBrowser {
   }
 }
 
-function Nock() {
+export function Nock() {
   const scopes = {};
 
   let unmatched;
@@ -695,6 +707,33 @@ function Nock() {
     }
   };
 
+  nocker.sidekick = (
+    /** @type Setup */ setup,
+    {
+      persist = false,
+      configJson,
+    } = {},
+  ) => {
+    // nock stray rum requests
+    nocker('https://rum.hlx.page/')
+      .post(/.*/)
+      .optionally()
+      .reply(200)
+      .persist();
+
+    // nock sidekick config request
+    const n = nocker('https://admin.hlx.page/sidekick/');
+    if (persist) {
+      n.persist();
+    }
+    return n
+      .get(/.*/)
+      .optionally()
+      .reply(() => (setup
+        ? [200, configJson || setup.configJson]
+        : [404]));
+  };
+
   nocker.admin = (
     /** @type Setup */ setup,
     {
@@ -712,31 +751,35 @@ function Nock() {
     return n[method](/.*/).reply(() => [status.length === 1 ? status[0] : status.shift(), setup.apiResponse(type)]);
   };
 
-  nocker.edit = () => nocker('https://adobe.sharepoint.com')
-    .get('/:w:/r/sites/TheBlog/_layouts/15/Doc.aspx?sourcedoc=%7BE8EC80CB-24C3-4B95-B082-C51FD8BC8760%7D&file=bla.docx&action=default&mobileredirect=true')
-    .reply(200, 'this would be a docx...', {
-      'content-type': 'text/plain',
-    });
+  nocker.login = () => {
+    nocker('https://login.microsoftonline.com')
+      .get(/.*/)
+      .optionally()
+      .reply(200);
+    nocker('https://login.live.com')
+      .get(/.*/)
+      .optionally()
+      .reply(200);
+    nocker('https://aadcdn.msauth.net')
+      .get(/.*/)
+      .optionally()
+      .reply(200);
+  };
+
+  nocker.edit = () => {
+    // also nock optional microsoft login redirect urls
+    nocker.login();
+
+    return nocker('https://adobe.sharepoint.com')
+      .get('/:w:/r/sites/TheBlog/_layouts/15/Doc.aspx?sourcedoc=%7BE8EC80CB-24C3-4B95-B082-C51FD8BC8760%7D&file=bla.docx&action=default&mobileredirect=true')
+      .optionally()
+      .reply(200, 'this would be a docx...', {
+        'content-type': 'text/plain',
+      })
+      .get('/favicon.ico')
+      .optionally()
+      .reply(404);
+  };
 
   return nocker;
 }
-
-module.exports = {
-  IT_DEFAULT_TIMEOUT,
-  DEBUG_LOGS,
-  DEBUG,
-  Setup,
-  toResp,
-  getPlugins,
-  getPlugin,
-  assertPlugin,
-  waitForEvent,
-  waitFor,
-  checkEventFired,
-  execPlugin,
-  clickButton,
-  getNotification,
-  sleep,
-  TestBrowser,
-  Nock,
-};

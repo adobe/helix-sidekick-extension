@@ -14,8 +14,9 @@
 
 import sinon from 'sinon';
 import { expect } from '@esm-bundle/chai';
-import chromeMock from './chromeMock.js';
-import fetchMock from './fetchMock.js';
+import { setUserAgent } from '@web/test-runner-commands';
+import chromeMock from '../mocks/chromeMock.js';
+import fetchMock from '../mocks/fetchMock.js';
 
 const CONFIGS = [
   {
@@ -54,6 +55,15 @@ const CONFIGS = [
     host: '5.foo.bar',
     mountpoints: ['https://foo.custom/sites/foo/Shared%20Documents/root1'],
   },
+  {
+    owner: 'foo',
+    repo: 'bar6',
+    ref: 'main',
+    previewHost: '6-preview.foo.bar',
+    liveHost: '6-live.foo.bar',
+    host: '6.foo.bar',
+    mountpoints: ['https://foo.sharepoint.com/sites/foo/Shared%20Documents/root1'],
+  },
 ];
 
 window.chrome = chromeMock;
@@ -69,6 +79,7 @@ describe('Test extension utils', () => {
     utils = {
       ...exports,
     };
+    await setUserAgent('HeadlessChrome');
   });
 
   afterEach(() => {
@@ -99,19 +110,6 @@ describe('Test extension utils', () => {
     expect(spy.calledWith('/foo')).to.be.true;
   });
 
-  it('checkLastError', async () => {
-    chrome.runtime.lastError = new Error('foo');
-    const lastError = utils.checkLastError();
-    expect(lastError).to.exist;
-    expect(lastError).to.equal('foo');
-    chrome.runtime.lastError = null;
-  });
-
-  it('getMountpoints', async () => {
-    const [mp] = await utils.getMountpoints('adobe', 'helix-project-boilerplate', 'main');
-    expect(mp).to.equal('https://drive.google.com/drive/u/0/folders/1MGzOt7ubUh3gu7zhZIPb7R7dyRzG371j');
-  });
-
   it('getGitHubSettings', async () => {
     const { owner, repo, ref } = utils.getGitHubSettings('https://github.com/foo/bar/tree/baz');
     expect(owner).to.equal('foo');
@@ -123,18 +121,6 @@ describe('Test extension utils', () => {
     // clone url
     const { repo: noDotGit } = utils.getGitHubSettings('https://github.com/foo/bar.git');
     expect(noDotGit).to.equal('bar');
-  });
-
-  it('getShareSettings', async () => {
-    const { giturl, project } = utils.getShareSettings('https://www.hlx.live/tools/sidekick/?giturl=https%3A%2F%2Fgithub.com%2Ffoo%2Fbar&project=bar');
-    expect(giturl).to.equal('https://github.com/foo/bar');
-    expect(Object.keys(utils.getShareSettings('https://www.hlx.live/tools/sidekick/?giturl=https%3A%2F%2Fgithub.com')).length).to.equal(0);
-    expect(project).to.equal('bar');
-  });
-
-  it('isValidShareURL', async () => {
-    const res = utils.isValidShareURL('https://www.hlx.live/tools/sidekick/?giturl=https%3A%2F%2Fgithub.com%2Ffoo%2Fbar');
-    expect(res).to.be.true;
   });
 
   it('getConfig', async () => {
@@ -174,64 +160,178 @@ describe('Test extension utils', () => {
     expect(Object.keys(state).length).to.equal(4);
   });
 
+  it('getShareSettings', async () => {
+    const { giturl, project } = utils.getShareSettings('https://www.hlx.live/tools/sidekick/?giturl=https%3A%2F%2Fgithub.com%2Ffoo%2Fbar&project=bar');
+    expect(giturl).to.equal('https://github.com/foo/bar');
+    expect(project).to.equal('bar');
+    expect(Object.keys(utils.getShareSettings('https://www.hlx.live/tools/sidekick/?giturl=https%3A%2F%2Fgithub.com')).length).to.equal(0);
+  });
+
+  it('isValidShareURL', async () => {
+    const res = utils.isValidShareURL('https://www.hlx.live/tools/sidekick/?giturl=https%3A%2F%2Fgithub.com%2Ffoo%2Fbar');
+    expect(res).to.be.true;
+  });
+
+  it('populateUrlCache', async () => {
+    const fetchSpy = sandbox.spy(window, 'fetch');
+    const storageSpy = sandbox.spy(window.chrome.storage.session, 'set');
+    // static url without config: 0 calls
+    await utils.populateUrlCache('https://www.hlx.live/');
+    expect(fetchSpy.callCount).to.equal(0);
+    expect(storageSpy.callCount).to.equal(0);
+    // sharepoint: 3 fetchSpy calls, 1 storageSpy call
+    await utils.populateUrlCache('https://foo.sharepoint.com/:w:/r/sites/foo/_layouts/15/Doc.aspx?sourcedoc=%7BBFD9A19C-4A68-4DBF-8641-DA2F1283C895%7D&file=index.docx&action=default&mobileredirect=true');
+    // gdrive: 1 fetchSpy call, 1 storageSpy call
+    await utils.populateUrlCache('https://docs.google.com/document/d/1234567890/edit');
+    expect(fetchSpy.callCount).to.equal(4);
+    expect(storageSpy.callCount).to.equal(2);
+    // cache: add new entry: 1 fetchSpy call, 1 storageSpy call
+    await utils.populateUrlCache('https://docs.google.com/document/d/0987654321/edit');
+    expect(fetchSpy.callCount).to.equal(5);
+    expect(storageSpy.callCount).to.equal(3);
+    // cache: reuse existing match: 0 calls
+    await utils.populateUrlCache('https://docs.google.com/document/d/0987654321/edit');
+    expect(fetchSpy.callCount).to.equal(5);
+    expect(storageSpy.callCount).to.equal(3);
+    // cache: refresh expired match: 1 fetchSpy call, 1 storageSpy call
+    sandbox.stub(Date, 'now').returns(Date.now() + 7205000); // fast-forward 2 days and 5 seconds
+    await utils.populateUrlCache('https://docs.google.com/document/d/0987654321/edit');
+    expect(fetchSpy.callCount).to.equal(6);
+    expect(storageSpy.callCount).to.equal(4);
+    // static url with config: 0 fetchSpy calls, 1 storageSpy call
+    await utils.populateUrlCache('https://random.foo.bar/', { owner: 'foo', repo: 'random' });
+    expect(fetchSpy.callCount).to.equal(6);
+    expect(storageSpy.callCount).to.equal(5);
+    // update static url with config: 0 fetchSpy calls, 1 storageSpy call
+    await utils.populateUrlCache('https://random.foo.bar/', { owner: 'bar', repo: 'random' });
+    expect(fetchSpy.callCount).to.equal(6);
+    expect(storageSpy.callCount).to.equal(6);
+  });
+
+  it('queryUrlCache', async () => {
+    // known url
+    let results = await utils.queryUrlCache('https://foo.sharepoint.com/:w:/r/sites/foo/_layouts/15/Doc.aspx?sourcedoc=%7BBFD9A19C-4A68-4DBF-8641-DA2F1283C895%7D&file=index.docx&action=default&mobileredirect=true');
+    expect(results.length).to.equal(1);
+    // unknown url
+    results = await utils.queryUrlCache('https://foo.sharepoint.com/:x:/r/sites/foo/_layouts/15/Doc.aspx?sourcedoc=%7ABFD9A19C-4A68-4DBF-8641-DA2F1283C895%7D&file=index.xlsx&action=default&mobileredirect=true');
+    expect(results.length).to.equal(0);
+    // static url
+    results = await utils.queryUrlCache('https://random.foo.bar/');
+    expect(results.length).to.equal(1);
+  });
+
   it('getProjectMatches', async () => {
-    const spy = sandbox.spy(window, 'fetch');
     // match sharepoint URL (docx)
     expect((await utils.getProjectMatches(CONFIGS, 'https://foo.sharepoint.com/:w:/r/sites/foo/_layouts/15/Doc.aspx?sourcedoc=%7BBFD9A19C-4A68-4DBF-8641-DA2F1283C895%7D&file=index.docx&action=default&mobileredirect=true')).length).to.equal(1);
     // match gdrive URL
     expect((await utils.getProjectMatches(CONFIGS, 'https://docs.google.com/document/d/1234567890/edit')).length).to.equal(1);
-    // reuse match from cache
-    await utils.getProjectMatches(CONFIGS, 'https://docs.google.com/document/d/1234567890/edit');
-    expect(spy.calledTwice).to.be.true;
-    // refreshes expired match in cache
-    sandbox.stub(Date, 'now').returns(Date.now() + 7205000); // fast-forward 2 days and 5 seconds
-    await utils.getProjectMatches(CONFIGS, 'https://docs.google.com/document/d/1234567890/edit');
-    expect(spy.calledThrice).to.be.true;
     // match preview URL
     expect((await utils.getProjectMatches(CONFIGS, 'https://main--bar1--foo.hlx.page/')).length).to.equal(1);
     // match preview URL with any ref
     expect((await utils.getProjectMatches(CONFIGS, 'https://baz--bar1--foo.hlx.page/')).length).to.equal(1);
+    // match custom preview URL
+    expect((await utils.getProjectMatches(CONFIGS, 'https://6-preview.foo.bar/')).length).to.equal(1);
     // match live URL
     expect((await utils.getProjectMatches(CONFIGS, 'https://main--bar1--foo.hlx.live/')).length).to.equal(1);
+    // match custom live URL
+    expect((await utils.getProjectMatches(CONFIGS, 'https://6-live.foo.bar/')).length).to.equal(1);
     // match production host
     expect((await utils.getProjectMatches(CONFIGS, 'https://1.foo.bar/')).length).to.equal(1);
     // ignore disabled config
     expect((await utils.getProjectMatches(CONFIGS, 'https://main--bar2--foo.hlx.live/')).length).to.equal(0);
   });
 
-  it('assembleProject', async () => {
+  it('getProjectEnv', async () => {
     const {
-      owner, repo, ref, host,
-    } = await utils.assembleProject({
+      host, project, mountpoints = [],
+    } = await utils.getProjectEnv({
+      owner: 'adobe',
+      repo: 'business-website',
+    });
+    expect(host).to.equal('business.adobe.com');
+    expect(project).to.equal('Adobe Business Website');
+    expect(mountpoints[0]).to.equal('https://adobe.sharepoint.com/:f:/s/Dummy/Alk9MSH25LpBuUWA_N6DOL8BuI6Vrdyrr87gne56dz3QeQ');
+  });
+
+  it('assembleProject with giturl', async () => {
+    const {
+      owner, repo, ref,
+    } = utils.assembleProject({
       giturl: 'https://github.com/adobe/business-website/tree/main',
     });
     expect(owner).to.equal('adobe');
     expect(repo).to.equal('business-website');
     expect(ref).to.equal('main');
-    expect(host).to.equal('business.adobe.com');
+  });
+
+  it('assembleProject with owner and repo', async () => {
+    const {
+      giturl,
+    } = utils.assembleProject({
+      owner: 'adobe',
+      repo: 'business-website',
+      ref: 'test',
+    });
+    expect(giturl).to.equal('https://github.com/adobe/business-website/tree/test');
   });
 
   it('addProject', async () => {
     const spy = sandbox.spy(window.chrome.storage.sync, 'set');
+    // add project
     const added = await new Promise((resolve) => {
       utils.addProject({
-        giturl: 'https://github.com/test/add-project',
+        giturl: 'https://github.com/test/project',
       }, resolve);
     });
     expect(added).to.be.true;
     expect(spy.calledWith({
-      hlxSidekickProjects: ['adobe/blog', 'test/add-project'],
+      hlxSidekickProjects: ['adobe/blog', 'test/project'],
+    })).to.be.true;
+    // add project with auth enabled
+    const addedWithAuth = await new Promise((resolve) => {
+      utils.addProject({
+        giturl: 'https://github.com/test/auth-project',
+      }, resolve);
+    });
+    expect(addedWithAuth).to.be.true;
+    expect(spy.calledWith({
+      hlxSidekickProjects: ['adobe/blog', 'test/project', 'test/auth-project'],
+    })).to.be.true;
+    // add existing
+    const addedExisting = await new Promise((resolve) => {
+      utils.addProject({
+        giturl: 'https://github.com/test/project',
+      }, resolve);
+    });
+    expect(addedExisting).to.be.false;
+  });
+
+  it('setProject', async () => {
+    const spy = sandbox.spy(window.chrome.storage.sync, 'set');
+    // set project
+    const project = {
+      owner: 'test',
+      repo: 'project',
+      ref: 'main',
+      project: 'Test',
+    };
+    const updated = await new Promise((resolve) => {
+      utils.setProject(project, resolve);
+    });
+    expect(updated).to.equal(project);
+    expect(spy.calledWith({
+      'test/project': project,
     })).to.be.true;
   });
 
   it('deleteProject', async () => {
     const spy = sandbox.spy(window.chrome.storage.sync, 'set');
     const deleted = await new Promise((resolve) => {
-      utils.deleteProject('test/add-project', resolve);
+      utils.deleteProject('adobe/blog', resolve);
     });
     expect(deleted).to.be.true;
     expect(spy.calledWith({
-      hlxSidekickProjects: ['adobe/blog'],
+      hlxSidekickProjects: ['test/project', 'test/auth-project'],
     })).to.be.true;
   });
 
@@ -265,5 +365,15 @@ describe('Test extension utils', () => {
       hlxSidekickDisplay: false,
     })).to.be.true;
     expect(display).to.be.false;
+  });
+
+  it('isSharePointHost', async () => {
+    expect(utils.isSharePointHost('https://foo.sharepoint.com/sites/foo/Shared%20Documents/root1')).to.be.true;
+    expect(utils.isSharePointHost('https://foo.custom/sites/foo/Shared%20Documents/root1', CONFIGS)).to.be.true;
+  });
+
+  it('isGoogleDriveHost', async () => {
+    expect(utils.isGoogleDriveHost('https://drive.google.com/drive/folders/1234567890')).to.be.true;
+    expect(utils.isGoogleDriveHost('https://docs.google.com/document/d/1234567890/edit')).to.be.true;
   });
 });

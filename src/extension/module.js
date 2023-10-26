@@ -11,8 +11,6 @@
  */
 /* eslint-disable no-console, no-alert */
 
-'use strict';
-
 (() => {
   /**
    * @typedef {Object} ElemConfig
@@ -71,7 +69,7 @@
    * @prop {boolean} isPalette Determines whether a URL is opened in a palette instead of a new tab
    * @prop {string} paletteRect The dimensions and position of a palette (optional)
    * @prop {string[]} environments Specifies when to show this plugin
-   *                               (admin, edit, preview, live, prod)
+   *                               (admin, edit, dev, preview, live, prod)
    * @prop {string[]} excludePaths Exclude the plugin from these paths (glob patterns supported)
    * @prop {string[]} includePaths Include the plugin on these paths (glob patterns supported)
    */
@@ -80,7 +78,7 @@
    * @typedef {Object} ViewConfig
    * @description A custom view configuration.
    * @prop {string} path The path or globbing pattern where to apply this view
-   * @prop {string} css The URL of a CSS file or inline CSS to render this view (optional)
+   * @prop {string} viewer The URL to render this view
    */
 
   /**
@@ -106,10 +104,12 @@
    * @prop {string} mountpoint The content source URL (optional)
    * @prop {string} project The name of the project used in the sharing link (optional)
    * @prop {Plugin[]} plugins An array of {@link Plugin|plugin configurations} (optional)
-   * @prop {string} outerHost The outer CDN's host name (optional)
+   * @prop {string} previewHost The host name of a custom preview CDN (optional)
+   * @prop {string} liveHost The host name of a custom live CDN (optional)
    * @prop {string} host The production host name to publish content to (optional)
    * @prop {boolean} byocdn=false <pre>true</pre> if the production host is a 3rd party CDN
-   * @prop {boolean} devMode=false Loads configuration and plugins from the developmemt environment
+   * @prop {boolean} devMode=false Loads configuration and plugins from the development environment
+   * @prop {boolean} devOrigin=http://localhost:3000 URL of the local development environment
    * @prop {boolean} pushDown=false <pre>true</pre> to have the sidekick push down page content
    * @prop {string} pushDownSelector The CSS selector for absolute elements to also push down
    * @prop {ViewConfig[]} specialViews An array of custom {@link ViewConfig|view configurations}
@@ -240,6 +240,24 @@
    */
 
   /**
+   * Supported sidekick languages.
+   * @private
+   * @type {string[]}
+   */
+  const LANGS = [
+    'en', // default language, do not reorder
+    'de',
+    'es',
+    'fr',
+    'it',
+    'ja',
+    'ko-kr',
+    'pt-br',
+    'zh-cn',
+    'zh-tw',
+  ];
+
+  /**
    * Mapping between the plugin IDs that will be treated as environments
    * and their corresponding host properties in the config.
    * @private
@@ -253,12 +271,90 @@
   };
 
   /**
-   * The URL of the development environment.
-   * @see {@link https://github.com/adobe/helix-cli|Franklin CLI}).
+   * Array of restricted paths with limited sidekick functionality.
    * @private
-   * @type {URL}
+   * @type {string[]}
    */
-  const DEV_URL = new URL('http://localhost:3000');
+  const RESTRICTED_PATHS = [
+    '/helix-env.json',
+  ];
+
+  /**
+   * Enumeration of view types.
+   * @private
+   * @type {Object<number>}
+   */
+  const VIEWS = {
+    DEFAULT: 0,
+    CUSTOM: 1,
+  };
+
+  /**
+   * Log RUM for sidekick telemetry.
+   * @private
+   * @param {string} checkpoint identifies the checkpoint in funnel
+   * @param {Object} data additional data for RUM sample
+   */
+  function sampleRUM(checkpoint, data = {}) {
+    sampleRUM.defer = sampleRUM.defer || [];
+    const defer = (fnname) => {
+      sampleRUM[fnname] = sampleRUM[fnname]
+        || ((...args) => sampleRUM.defer.push({ fnname, args }));
+    };
+    sampleRUM.drain = sampleRUM.drain
+      || ((dfnname, fn) => {
+        sampleRUM[dfnname] = fn;
+        sampleRUM.defer
+          .filter(({ fnname }) => dfnname === fnname)
+          .forEach(({ fnname, args }) => sampleRUM[fnname](...args));
+      });
+    sampleRUM.on = (chkpnt, fn) => {
+      sampleRUM.cases[chkpnt] = fn;
+    };
+    defer('observe');
+    defer('cw');
+    try {
+      window.hlx = window.hlx || {};
+      const sk = window.hlx.sidekick;
+      if (!window.hlx.rum) {
+        const usp = new URLSearchParams(sk.location.search);
+        const weight = (usp.get('hlx-sk-rum') === 'on') ? 1 : 10; // with parameter, weight is 1. Defaults to 10.
+        // eslint-disable-next-line no-bitwise
+        const hashCode = (s) => s.split('').reduce((a, b) => (((a << 5) - a) + b.charCodeAt(0)) | 0, 0);
+        const id = `${hashCode(sk.location.href)}-${new Date().getTime()}-${Math.random().toString(16).substr(2, 14)}`;
+        const random = Math.random();
+        const isSelected = (random * weight < 1);
+        // eslint-disable-next-line object-curly-newline
+        window.hlx.rum = { weight, id, random, isSelected, sampleRUM };
+      }
+      const { weight, id } = window.hlx.rum;
+      if (window.hlx && window.hlx.rum && window.hlx.rum.isSelected) {
+        const sendPing = () => {
+          // eslint-disable-next-line object-curly-newline, max-len, no-use-before-define
+          const body = JSON.stringify({ weight, id, referer: sk.location.href, generation: window.hlx.RUM_GENERATION, checkpoint, ...data });
+          const url = `https://rum.hlx.page/.rum/${weight}`;
+          // eslint-disable-next-line no-unused-expressions
+          navigator.sendBeacon(url, body);
+        };
+        sampleRUM.cases = sampleRUM.cases || {
+          cwv: () => sampleRUM.cwv(data) || true,
+          lazy: () => {
+            // use classic script to avoid CORS issues
+            const script = document.createElement('script');
+            script.src = 'https://rum.hlx.page/.rum/@adobe/helix-rum-enhancer@^1/src/index.js';
+            document.head.appendChild(script);
+            return true;
+          },
+        };
+        sendPing(data);
+        if (sampleRUM.cases[checkpoint]) {
+          sampleRUM.cases[checkpoint]();
+        }
+      }
+    } catch (error) {
+      // something went wrong
+    }
+  }
 
   /**
    * Retrieves project details from a host name.
@@ -295,7 +391,7 @@
       return true;
     }
     // matching project domains
-    const projectDomains = ['page', 'hlx.live'];
+    const projectDomains = ['.aem.page', '.aem.live', '.hlx.page', '.hlx.live'];
     if (!projectDomains.find((domain) => baseHost.endsWith(domain)
       && host.endsWith(domain))) {
       return false;
@@ -312,6 +408,102 @@
   }
 
   /**
+   * Checks a path against supported file extensions.
+   * @private
+   * @param {string} path The path to check
+   * @returns {boolean} {@code true} if file extension supported, else {@code false}
+   */
+  function isSupportedFileExtension(path) {
+    const file = path.split('/').pop();
+    const extension = file.split('.').pop();
+    if (extension === file) {
+      return true;
+    } else {
+      return [
+        'json',
+        'jpg',
+        'jpeg',
+        'png',
+        'pdf',
+        'svg',
+      ].includes(extension.toLowerCase());
+    }
+  }
+
+  /**
+   * Recognizes a SharePoint URL.
+   * @private
+   * @param {Sidekick} sk The sidekick
+   * @param {URL} url The URL
+   * @returns {boolean} {@code true} if URL is SharePoint, else {@code false}
+   */
+  function isSharePoint(sk, url) {
+    const { host } = url;
+    const { config: { mountpoint } } = sk;
+    return /\w+\.sharepoint.com$/.test(host)
+      || (!host.endsWith('.google.com') && mountpoint && new URL(mountpoint).host === host);
+  }
+
+  /**
+   * Recognizes a SharePoint document management URL.
+   * @private
+   * @param {Sidekick} sk The sidekick
+   * @param {URL} url The URL
+   * @returns {boolean} {@code true} if URL is SharePoint DM, else {@code false}
+   */
+  function isSharePointDM(sk, url) {
+    return isSharePoint(sk, url)
+      && (url.pathname.endsWith('/Forms/AllItems.aspx')
+      || url.pathname.endsWith('/onedrive.aspx'));
+  }
+
+  /**
+   * Recognizes a SharePoint folder URL.
+   * @private
+   * @param {Sidekick} sk The sidekick
+   * @param {URL} url The URL
+   * @returns {boolean} {@code true} if URL is SharePoint folder, else {@code false}
+   */
+  function isSharePointFolder(sk, url) {
+    if (isSharePointDM(sk, url)) {
+      const docPath = new URLSearchParams(url.search).get('id');
+      const dotIndex = docPath?.split('/').pop().indexOf('.');
+      return [-1, 0].includes(dotIndex); // dot only allowed as first char
+    }
+    return false;
+  }
+
+  /**
+   * Recognizes a SharePoint editor URL.
+   * @private
+   * @param {Sidekick} sk The sidekick
+   * @param {URL} url The URL
+   * @returns {boolean} {@code true} if URL is SharePoint editor, else {@code false}
+   */
+  function isSharePointEditor(sk, url) {
+    const { pathname, search } = url;
+    return isSharePoint(sk, url)
+      && pathname.match(/\/_layouts\/15\/[\w]+.aspx$/)
+      && search.includes('sourcedoc=');
+  }
+
+  /**
+   * Recognizes a SharePoint viewer URL.
+   * @private
+   * @param {Sidekick} sk The sidekick
+   * @param {URL} url The URL
+   * @returns {boolean} {@code true} if URL is SharePoint viewer, else {@code false}
+   */
+  function isSharePointViewer(sk, url) {
+    if (isSharePointDM(sk, url)) {
+      const docPath = new URLSearchParams(url.search).get('id');
+      const dotIndex = docPath?.split('/').pop().lastIndexOf('.');
+      return dotIndex > 0; // must contain a dot
+    }
+    return false;
+  }
+
+  /**
    * Turns a globbing into a regular expression.
    * @private
    * @param {string} glob The globbing
@@ -322,6 +514,7 @@
       glob = '**';
     }
     const reString = glob
+      .replace('.', '\\.') // don't match every char, just real dots
       .replace(/\*\*/g, '_')
       .replace(/\*/g, '[0-9a-z-.]*')
       .replace(/_/g, '.*');
@@ -329,47 +522,162 @@
   }
 
   /**
+   * Retrieves the sidekick language preferred by the user.
+   * The default language is <code>en</code>.
+   * @private
+   * @return {string} The language
+   */
+  function getLanguage() {
+    return navigator.languages
+      .map((prefLang) => LANGS.find((lang) => prefLang.toLowerCase().startsWith(lang)))
+      .filter((lang) => !!lang)[0] || LANGS[0];
+  }
+
+  /**
+   * Creates an Admin URL for an API and path.
+   * @private
+   * @param {Object} config The sidekick configuration
+   * @param {string} api The API endpoint to call
+   * @param {string} path The current path
+   * @returns {URL} The admin URL
+   */
+  function getAdminUrl({
+    owner, repo, ref, adminVersion,
+  }, api, path = '') {
+    const adminUrl = new URL([
+      'https://admin.hlx.page/',
+      api,
+      `/${owner}`,
+      `/${repo}`,
+      `/${ref}`,
+      path,
+    ].join(''));
+    if (adminVersion) {
+      adminUrl.searchParams.append('hlx-admin-version', adminVersion);
+    }
+    return adminUrl;
+  }
+
+  /**
+   * Returns the fetch options for admin requests
+   * @param {boolean} omitCredentials Should we omit the credentials
+   * @returns {object}
+   */
+  function getAdminFetchOptions(omitCredentials = false) {
+    const opts = {
+      cache: 'no-store',
+      credentials: omitCredentials ? 'omit' : 'include',
+      headers: {},
+    };
+    return opts;
+  }
+
+  /**
+   * Checks for configured views for the current resource.
+   * @private
+   * @param {Sidekick} sk The sidekick
+   * @param {number} viewType An optional view type (see {@link VIEWS})
+   * @param {string} testPath An optional test path (default: status.webPath)
+   * @returns {Object[]} The views
+   */
+  function findViews(sk, viewType, testPath) {
+    const { config } = sk;
+    // find view based on resource path
+    if (!testPath) {
+      const { webPath } = sk.status;
+      if (!webPath) {
+        return [];
+      }
+      testPath = webPath;
+    }
+    const { views, scriptRoot } = config;
+    const defaultOnly = viewType === VIEWS.DEFAULT;
+    const customOnly = viewType === VIEWS.CUSTOM;
+    return views.filter(({
+      path,
+      viewer,
+    }) => globToRegExp(path).test(testPath)
+      && !RESTRICTED_PATHS.includes(testPath)
+      && (!defaultOnly || viewer.startsWith(scriptRoot))
+      && (!customOnly || !viewer.startsWith(scriptRoot)));
+  }
+
+  /**
+   * Retrieves a string from the dictionary in the user's language.
+   * @private
+   * @param {Sidekick} sk The sidekick
+   * @param {string} key The dictionary key
+   * @returns {string} The string in the user's language
+   */
+  function i18n(sk, key) {
+    return sk.dict ? (sk.dict[key] || '') : '';
+  }
+
+  /**
    * Returns the sidekick configuration.
    * @private
    * @param {SidekickConfig} cfg The sidekick config (defaults to {@link window.hlx.sidekickConfig})
-   * @param {Location} location The current location
    * @returns {Object} The sidekick configuration
    */
-  function initConfig(cfg, location) {
-    const config = cfg || (window.hlx && window.hlx.sidekickConfig) || {};
+  async function initConfig(cfg) {
+    let config = cfg || (window.hlx && window.hlx.sidekickConfig) || {};
     const {
       owner,
       repo,
       ref = 'main',
-      outerHost,
+      devMode,
+      adminVersion,
+      _extended,
+    } = config;
+    let { devOrigin } = config;
+    if (!devOrigin) {
+      devOrigin = 'http://localhost:3000';
+    }
+    if (owner && repo && !_extended) {
+      // look for custom config in project
+      const configUrl = devMode
+        ? `${devOrigin}/tools/sidekick/config.json`
+        : getAdminUrl(config, 'sidekick', '/config.json');
+      try {
+        const res = await fetch(configUrl, getAdminFetchOptions(true));
+        if (res.status === 200) {
+          config = {
+            ...config,
+            ...(await res.json()),
+            // no overriding below
+            owner,
+            repo,
+            ref,
+            devMode,
+            adminVersion,
+            _extended: Date.now(),
+          };
+        }
+      } catch (e) {
+        console.log('error retrieving custom sidekick config', e);
+      }
+    }
+
+    const {
+      lang,
+      previewHost,
+      liveHost,
+      outerHost: legacyLiveHost,
       host,
-      project,
+      project = '',
       pushDown,
       pushDownSelector,
       specialViews,
+      hlx5,
       scriptUrl = 'https://www.hlx.live/tools/sidekick/module.js',
+      scriptRoot = scriptUrl.split('/').filter((_, i, arr) => i < arr.length - 1).join('/'),
     } = config;
-    const innerPrefix = owner && repo ? `${ref}--${repo}--${owner}` : null;
     const publicHost = host && host.startsWith('http') ? new URL(host).host : host;
-    let innerHost = 'hlx.page';
-    if (!innerHost && scriptUrl) {
-      // get hlx domain from script src (used for branch deployment testing)
-      const scriptHost = new URL(scriptUrl).host;
-      if (scriptHost && scriptHost !== 'www.hlx.live' && !scriptHost.startsWith(DEV_URL.host)) {
-        // keep only 1st and 2nd level domain
-        innerHost = scriptHost.split('.')
-          .reverse()
-          .splice(0, 2)
-          .reverse()
-          .join('.');
-      }
-    }
-    innerHost = innerPrefix ? `${innerPrefix}.${innerHost}` : null;
-    let liveHost = outerHost;
-    if (!liveHost && owner && repo) {
-      // use default hlx3 outer CDN including the ref
-      liveHost = `${ref}--${repo}--${owner}.hlx.live`;
-    }
+    const hostPrefix = owner && repo ? `${ref}--${repo}--${owner}` : null;
+    const domain = hlx5 ? 'aem' : 'hlx';
+    const stdInnerHost = hostPrefix ? `${hostPrefix}.${domain}.page` : null;
+    const stdOuterHost = hostPrefix ? `${hostPrefix}.${domain}.live` : null;
+    const devUrl = new URL(devOrigin);
     // define elements to push down
     const pushDownElements = [];
     if (pushDown) {
@@ -377,35 +685,50 @@
         `html, iframe#WebApplicationFrame${pushDownSelector ? `, ${pushDownSelector}` : ''}`,
       ).forEach((elem) => pushDownElements.push(elem));
     }
-    // script root url
-    const scriptRoot = scriptUrl.split('/').filter((_, i, arr) => i < arr.length - 1).join('/');
     // default views
-    const defaultSpecialViews = [
+    let views = [
       {
         path: '**.json',
-        js: `${scriptRoot}/view/json.js`,
+        viewer: `${scriptRoot}/view/json/json.html`,
+        title: (sk) => i18n(sk, 'json_view_description'),
       },
     ];
-    // try custom views first
-    const allSpecialViews = Array.isArray(specialViews)
-      ? specialViews.concat(defaultSpecialViews)
-      : defaultSpecialViews;
-    // find view based on path
-    const { pathname } = location;
-    const specialView = allSpecialViews.find(({ path }) => globToRegExp(path).test(pathname));
+    // prepend custom views
+    views = (specialViews || []).concat(views);
 
     return {
       ...config,
       ref,
-      innerHost,
-      outerHost: liveHost,
+      innerHost: previewHost || stdInnerHost,
+      outerHost: liveHost || legacyLiveHost || stdOuterHost,
+      stdInnerHost,
+      stdOuterHost,
       scriptRoot,
       host: publicHost,
-      project: project || '',
-      pushDown,
+      project,
       pushDownElements,
-      specialView,
+      views,
+      devUrl,
+      lang: lang || getLanguage(),
     };
+  }
+
+  /**
+   * Get resource URL from a url string.
+   * For custom views, resource is given by the path request parameter.
+   * @private
+   * @param {URL} url The url string
+   * @returns {URL} The resource URL
+   */
+  function getResourceURL(url) {
+    const { origin, search } = url;
+    // check for resource proxy url
+    const searchParams = new URLSearchParams(search);
+    const resource = searchParams.get('path');
+    if (resource) {
+      return new URL(resource, origin);
+    }
+    return url;
   }
 
   /**
@@ -414,44 +737,36 @@
    * @returns {Location} The location object
    */
   function getLocation() {
+    // use window location by default
+    let url = new URL(window.location);
     // first check if there is a test location
     const $test = document.getElementById('sidekick_test_location');
     if ($test) {
       try {
-        return new URL($test.value);
+        url = new URL($test.value);
       } catch (e) {
         return null;
       }
     }
-    // fall back to window location
-    const {
-      hash, host, hostname, href, origin, pathname, port, protocol, search,
-    } = window.location;
 
-    return {
-      hash,
-      host,
-      hostname,
-      href,
-      origin,
-      pathname,
-      port,
-      protocol,
-      search,
-    };
+    return getResourceURL(url);
   }
 
   /**
-   * Extracts an internationalized text from the CSS of a given element
+   * Checks if the location has changed.
    * @private
-   * @param {HTMLElement} elem The HTML element
-   * @returns {string} The text
+   * @param {Sidekick} sk The sidekick
+   * @returns {boolean} {@code true} if location changed, else {@code false}
    */
-  function getI18nText(elem) {
-    const text = window.getComputedStyle(elem, ':before').getPropertyValue('content');
-    return text !== 'normal' && text !== 'none'
-      ? text.substring(1, text.length - 1)
-      : '';
+  function isNewLocation(sk) {
+    const { location } = sk;
+    const $test = document.getElementById('sidekick_test_location');
+    if ($test) {
+      return $test.value !== location.href;
+    }
+
+    const href = getResourceURL(new URL(window.location.href)).toString();
+    return href !== location.href;
   }
 
   /**
@@ -464,19 +779,9 @@
    */
   function makeAccessible(elem) {
     if (elem.tagName === 'A' || elem.tagName === 'BUTTON') {
-      const ensureTitle = (tag) => {
-        if (!tag.title) {
-          // wait for computed style to be available
-          window.setTimeout(() => {
-            let title = getI18nText(tag);
-            if (!title) {
-              title = tag.textContent;
-            }
-            tag.setAttribute('title', title);
-          }, 200);
-        }
-      };
-      ensureTitle(elem);
+      if (!elem.title) {
+        elem.title = elem.textContent;
+      }
       elem.setAttribute('tabindex', '0');
     }
     return elem;
@@ -567,16 +872,19 @@
       attrs: {
         ...(button.attrs || {}),
         class: 'dropdown-toggle',
+        'aria-expanded': false,
       },
       lstnrs: {
         click: (evt) => {
           if (dropdown.classList.contains('dropdown-expanded')) {
             dropdown.classList.remove('dropdown-expanded');
+            evt.target.setAttribute('aria-expanded', false);
             return;
           }
 
           collapseDropdowns(sk);
           dropdown.classList.add('dropdown-expanded');
+          evt.target.setAttribute('aria-expanded', true);
           const {
             lastElementChild: container,
           } = dropdown;
@@ -625,7 +933,7 @@
         // define alignment
         const alignments = [
           'bottom-center',
-          'botttom-left',
+          'bottom-left',
           'bottom-right',
         ];
         let align = target === sk.root ? alignments[0] : alignments[1];
@@ -683,16 +991,18 @@
     const shareUrl = getShareUrl(config);
     if (navigator.share) {
       navigator.share({
-        title: `Sidekick for ${config.project}`,
-        text: `Check out this helper bookmarklet for ${config.project}`,
+        text: i18n(sk, 'config_shareurl_share_title').replace('$1', config.project),
         url: shareUrl,
       });
     } else {
       navigator.clipboard.writeText(shareUrl);
-      sk.showModal({
-        css: 'modal-share-success',
-      });
+      sk.showModal(i18n(sk, 'config_shareurl_copied').replace('$1', config.project));
     }
+    // log telemetry
+    sampleRUM('sidekick:share', {
+      source: sk.location.href,
+      target: shareUrl,
+    });
   }
 
   /**
@@ -704,15 +1014,50 @@
    */
   function fireEvent(sk, name, data) {
     try {
-      sk.dispatchEvent(new CustomEvent(name, {
-        detail: {
-          data: data || {
-            config: JSON.parse(JSON.stringify(sk.config)),
-            location: sk.location,
-            status: sk.status,
-          },
+      const { config, location, status } = sk;
+      data = data || {
+        // turn complex into simple objects for event listener
+        config: JSON.parse(JSON.stringify(config)),
+        location: {
+          hash: location.hash,
+          host: location.host,
+          hostname: location.hostname,
+          href: location.href,
+          origin: location.origin,
+          pathname: location.pathname,
+          port: location.port,
+          protocol: location.protocol,
+          search: location.search,
         },
+        status,
+      };
+      sk.dispatchEvent(new CustomEvent(name, {
+        detail: { data },
       }));
+      const userEvents = [
+        'shown',
+        'hidden',
+        'updated',
+        'published',
+        'unpublished',
+        'deleted',
+        'envswitched',
+        'page-info',
+        'user',
+        'loggedin',
+        'loggedout',
+        'helpnext',
+        'helpdismissed',
+        'helpacknowlegded',
+        'helpoptedout',
+      ];
+      if (name.startsWith('custom:') || userEvents.includes(name)) {
+        // log telemetry
+        sampleRUM(`sidekick:${name}`, {
+          source: data?.sourceUrl || sk.location.href,
+          target: data?.targetUrl || sk.status.webPath,
+        });
+      }
     } catch (e) {
       console.warn('failed to fire event', name, e);
     }
@@ -764,46 +1109,43 @@
     return evt.metaKey || evt.shiftKey || evt.which === 2;
   }
 
-  /**
-   * Creates an Admin URL for an API and path.
-   * @private
-   * @param {Object} config The sidekick configuration
-   * @param {string} api The API endpoint to call
-   * @param {string} path The current path
-   * @returns {URL} The admin URL
-   */
-  function getAdminUrl({
-    owner, repo, ref, adminVersion,
-  }, api, path = '') {
-    const adminUrl = new URL([
-      'https://admin.hlx.page/',
-      api,
-      `/${owner}`,
-      `/${repo}`,
-      `/${ref}`,
-      path,
-    ].join(''));
-    if (adminVersion) {
-      adminUrl.searchParams.append('hlx-admin-version', adminVersion);
+  async function updatePreview(sk, ranBefore) {
+    sk.showWait();
+    const { status } = sk;
+    const resp = await sk.update();
+    if (!resp.ok) {
+      if (!ranBefore) {
+        // assume document has been renamed, re-fetch status and try again
+        sk.addEventListener('statusfetched', async () => {
+          updatePreview(sk, true);
+        }, { once: true });
+        sk.fetchStatus();
+      } else if (status.webPath.startsWith('/.helix/') && resp.error) {
+        // show detail message only in config update mode
+        sk.showModal({
+          message: `${i18n(sk, 'error_config_failure')}${resp.error}`,
+          sticky: true,
+          level: 0,
+        });
+      } else {
+        console.error(resp);
+        sk.showModal({
+          message: i18n(sk, 'error_preview_failure'),
+          sticky: true,
+          level: 0,
+        });
+      }
+      return;
     }
-    return adminUrl;
-  }
-
-  /**
-   * Returns the fetch options for admin requests
-   * @param {object} config
-   * @returns {object}
-   */
-  function getAdminFetchOptions({ authToken }) {
-    const opts = {
-      cache: 'no-store',
-      credentials: 'include',
-      headers: {},
-    };
-    if (authToken) {
-      opts.headers['x-auth-token'] = authToken;
+    // handle special case /.helix/*
+    if (status.webPath.startsWith('/.helix/')) {
+      sk.showModal({
+        message: i18n(sk, 'preview_config_success'),
+      });
+      return;
     }
-    return opts;
+    sk.hideModal();
+    sk.switchEnv('preview');
   }
 
   /**
@@ -816,6 +1158,7 @@
       id: 'edit',
       condition: (sidekick) => !sidekick.isEditor() && sidekick.isProject(),
       button: {
+        text: i18n(sk, 'edit'),
         action: async () => {
           const { config, status } = sk;
           const editUrl = status.edit && status.edit.url;
@@ -837,17 +1180,17 @@
    */
   function addEnvPlugins(sk) {
     // add env container
+    let switchViewText = i18n(sk, 'switch_view');
+    if (sk.isDev()) switchViewText = i18n(sk, 'development');
+    if (sk.isInner()) switchViewText = i18n(sk, 'preview');
+    if (sk.isOuter()) switchViewText = i18n(sk, 'live');
+    if (sk.isProd()) switchViewText = i18n(sk, 'production');
     sk.add({
       id: 'env',
       feature: true,
       button: {
+        text: switchViewText,
         isDropdown: true,
-      },
-      callback: (sidekick, $env) => {
-        if (sidekick.isDev()) $env.classList.add('is-dev');
-        if (sidekick.isInner()) $env.classList.add('is-preview');
-        if (sidekick.isOuter()) $env.classList.add('is-live');
-        if (sidekick.isProd()) $env.classList.add('is-prod');
       },
     });
 
@@ -857,6 +1200,7 @@
       container: 'env',
       condition: (sidekick) => sidekick.isEditor() || sidekick.isProject(),
       button: {
+        text: i18n(sk, 'development'),
         action: async (evt) => {
           if (evt.target.classList.contains('pressed')) {
             return;
@@ -876,6 +1220,7 @@
       container: 'env',
       condition: (sidekick) => sidekick.isEditor() || sidekick.isProject(),
       button: {
+        text: i18n(sk, 'preview'),
         action: async (evt) => {
           if (evt.target.classList.contains('pressed')) {
             return;
@@ -895,6 +1240,7 @@
       condition: (sidekick) => sidekick.config.outerHost
         && (sidekick.isEditor() || sidekick.isProject()),
       button: {
+        text: i18n(sk, 'live'),
         action: async (evt) => {
           if (evt.target.classList.contains('pressed')) {
             return;
@@ -916,6 +1262,7 @@
         && sidekick.config.host !== sidekick.config.outerHost
         && (sidekick.isEditor() || sidekick.isProject()),
       button: {
+        text: i18n(sk, 'production'),
         action: async (evt) => {
           if (evt.target.classList.contains('pressed')) {
             return;
@@ -944,51 +1291,15 @@
       id: 'edit-preview',
       condition: (sidekick) => sidekick.isEditor(),
       button: {
-        action: async (evt) => {
-          const { status } = sk;
-          const updatePreview = async (ranBefore) => {
-            const resp = await sk.update();
-            if (!resp.ok) {
-              if (!ranBefore) {
-                // assume document has been renamed, re-fetch status and try again
-                sk.addEventListener('statusfetched', async () => {
-                  updatePreview(true);
-                }, { once: true });
-                sk.fetchStatus();
-              } else if (status.webPath.startsWith('/.helix/') && resp.error) {
-                // show detail message only in config update mode
-                sk.showModal({
-                  css: 'modal-config-failure',
-                  message: resp.error,
-                  sticky: true,
-                  level: 0,
-                });
-              } else {
-                console.error(resp);
-                sk.showModal({
-                  css: 'modal-preview-failure',
-                  sticky: true,
-                  level: 0,
-                });
-              }
-              return;
-            }
-            // handle special case /.helix/*
-            if (status.webPath.startsWith('/.helix/')) {
-              sk.showModal({
-                css: 'modal-config-success',
-              });
-              return;
-            }
-            sk.switchEnv('preview', newTab(evt));
-          };
+        text: i18n(sk, 'preview'),
+        action: async () => {
+          const { status, location } = sk;
           if (status.edit && status.edit.sourceLocation
-            && status.edit.sourceLocation.startsWith('onedrive:')) {
+            && status.edit.sourceLocation.startsWith('onedrive:')
+            && !location.pathname.startsWith('/:x:/')) {
             // show ctrl/cmd + s hint on onedrive docs
-            const mac = navigator.platform.toLowerCase().includes('mac') ? '-mac' : '';
-            sk.showModal({
-              css: `modal-preview-onedrive${mac}`,
-            });
+            const mac = navigator.platform.toLowerCase().includes('mac') ? '_mac' : '';
+            sk.showModal(i18n(sk, `preview_onedrive${mac}`));
           } else if (status.edit.sourceLocation?.startsWith('gdrive:')) {
             const { contentType } = status.edit;
 
@@ -999,27 +1310,52 @@
             if (neitherGdocOrGSheet) {
               const isMsDocMime = contentType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
               const isMsExcelSheet = contentType === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
-              let css = 'modal-preview-not-gdoc-generic'; // show generic message by default
+              let errorKey = 'error_preview_not_gdoc_generic'; // show generic message by default
               if (isMsDocMime) {
-                css = 'modal-preview-not-gdoc-ms-word';
+                errorKey = 'error_preview_not_gdoc_ms_word';
               } else if (isMsExcelSheet) {
-                css = 'modal-preview-not-gsheet-ms-excel';
+                errorKey = 'error_preview_not_gsheet_ms_excel';
               }
               sk.showModal({
-                css,
+                message: i18n(sk, errorKey),
                 sticky: true,
                 level: 0,
               });
 
               return;
             }
-          } else {
-            sk.showWait();
           }
-          updatePreview();
+          if (location.pathname.startsWith('/:x:/')) {
+            // refresh excel with preview param
+            window.sessionStorage.setItem('hlx-sk-preview', JSON.stringify({
+              previewPath: status.webPath,
+              previewTimestamp: Date.now(),
+            }));
+            window.location.reload();
+          } else {
+            updatePreview(sk);
+          }
         },
         isEnabled: (sidekick) => sidekick.isAuthorized('preview', 'write')
           && sidekick.status.webPath,
+      },
+      callback: () => {
+        const { previewPath, previewTimestamp } = JSON
+          .parse(window.sessionStorage.getItem('hlx-sk-preview') || '{}');
+        window.sessionStorage.removeItem('hlx-sk-preview');
+        if (previewTimestamp < Date.now() + 60000) {
+          // preview request detected in session storage, wait for status...
+          sk.showWait();
+          sk.addEventListener('statusfetched', async () => {
+            const { status } = sk;
+            if (status.webPath === previewPath && sk.isAuthorized('preview', 'write')) {
+              // update preview and remove preview request from session storage
+              updatePreview(sk);
+            } else {
+              sk.hideModal();
+            }
+          }, { once: true });
+        }
       },
     });
   }
@@ -1034,18 +1370,9 @@
       id: 'reload',
       condition: (s) => s.config.innerHost && (s.isInner() || s.isDev()),
       button: {
+        text: i18n(sk, 'reload'),
         action: async (evt) => {
-          const { status } = sk;
-          if (status.edit && status.edit.sourceLocation
-            && status.edit.sourceLocation.startsWith('onedrive:')) {
-            // show ctrl/cmd + s hint on onedrive docs
-            const mac = navigator.platform.toLowerCase().includes('mac') ? '-mac' : '';
-            sk.showModal({
-              css: `modal-reload-onedrive${mac}`,
-            });
-          } else {
-            sk.showWait();
-          }
+          sk.showWait();
           try {
             const resp = await sk.update();
             if (!resp.ok && resp.status >= 400) {
@@ -1061,7 +1388,7 @@
             }
           } catch (e) {
             sk.showModal({
-              css: 'modal-reload-failure',
+              message: i18n(sk, 'reload_failure'),
               sticky: true,
               level: 0,
             });
@@ -1081,34 +1408,44 @@
   function addDeletePlugin(sk) {
     sk.add({
       id: 'delete',
-      condition: (sidekick) => sidekick.isAuthorized('preview', 'delete') && sidekick.isProject()
-        && (!sidekick.status.edit || !sidekick.status.edit.url) // show only if no edit url and
-        && (sidekick.status.preview && sidekick.status.preview.status !== 404), // preview exists
+      condition: (s) => s.isProject()
+        && s.isAuthorized('preview', 'delete') // show only if authorized and
+        && s.status.preview.status !== 404 // preview exists and
+        && s.status.code !== 200 // not code
+        && !RESTRICTED_PATHS.includes(s.location.pathname),
+      advanced: (s) => s.status.edit.url, // keep hidden if source still exists
       button: {
+        text: i18n(sk, 'delete'),
         action: async () => {
           const { location, status } = sk;
           // double check
-          if (status.edit && status.edit.url) {
+          if (!sk.isAuthenticated() && status.edit && status.edit.status === 200) {
             window.alert(sk.isContent()
-              ? 'This page still has a source document and cannot be deleted.'
-              : 'This file still exists in the repository and cannot be deleted.');
+              ? i18n(sk, 'delete_page_source_exists')
+              : i18n(sk, 'delete_file_source_exists'));
             return;
           }
           // have user confirm deletion
-          if (window.confirm(`${sk.isContent()
-            ? 'This page no longer has a source document'
-            : 'This file no longer exists in the repository'}, deleting it cannot be undone!\n\nAre you sure you want to delete it?`)) {
+          const confirmMsg = sk.isContent()
+            ? i18n(sk, sk.status.edit.status === 200 ? 'delete_page_confirm' : 'delete_page_no_source_confirm')
+            : i18n(sk, sk.status.code.status === 200 ? 'delete_file_confirm' : 'delete_file_no_source_confirm');
+          if (window.confirm(confirmMsg)) {
             try {
               const resp = await sk.delete();
               if (!resp.ok && resp.status >= 400) {
                 console.error(resp);
                 throw new Error(resp);
               }
+              // show confirmation
+              sk.remove('delete');
+              sk.showModal(sk.isContent()
+                ? i18n(sk, 'delete_page_success')
+                : i18n(sk, 'delete_file_success'));
               console.log(`redirecting to ${location.origin}/`);
               window.location.href = `${location.origin}/`;
             } catch (e) {
               sk.showModal({
-                css: 'modal-delete-failure',
+                message: i18n(sk, 'delete_failure'),
                 sticky: true,
                 level: 0,
               });
@@ -1129,6 +1466,7 @@
       id: 'publish',
       condition: (sidekick) => sidekick.isProject() && sk.isContent(),
       button: {
+        text: i18n(sk, 'publish'),
         action: async (evt) => {
           const { config, location } = sk;
           const path = location.pathname;
@@ -1143,18 +1481,12 @@
             // fetch and redirect to production
             const redirectHost = config.host || config.outerHost;
             const prodURL = `https://${redirectHost}${path}`;
-            await fetch(prodURL, { cache: 'reload', mode: 'no-cors' });
             console.log(`redirecting to ${prodURL}`);
-            if (newTab(evt)) {
-              window.open(prodURL);
-              sk.hideModal();
-            } else {
-              window.location.href = prodURL;
-            }
+            sk.switchEnv('prod', newTab(evt));
           } else {
             console.error(results);
             sk.showModal({
-              css: 'modal-publish-failure',
+              message: i18n(sk, 'publish_failure'),
               sticky: true,
               level: 0,
             });
@@ -1174,20 +1506,26 @@
   function addUnpublishPlugin(sk) {
     sk.add({
       id: 'unpublish',
-      condition: (sidekick) => sidekick.isAuthorized('live', 'delete') && sidekick.isProject()
-        && (!sidekick.status.edit || !sidekick.status.edit.url) // show only if no edit url and
-        && sidekick.status.live && sidekick.status.live.lastModified // published
-        && sk.isContent(),
+      condition: (s) => s.isProject() && s.isContent()
+        && s.isAuthorized('live', 'delete') // show only if authorized and
+        && s.status.live.status !== 404 // published and
+        && s.status.code !== 200 // not code
+        && !RESTRICTED_PATHS.includes(s.location.pathname),
+      advanced: (s) => s.status.edit.url, // keep hidden if source still exists
       button: {
+        text: i18n(sk, 'unpublish'),
         action: async () => {
           const { status } = sk;
           // double check
-          if (status.edit && status.edit.url) {
-            window.alert('This page has a source document and cannot be unpublished.');
+          if (!sk.isAuthenticated() && status.edit && status.edit.status === 200) {
+            window.alert(i18n(sk, 'unpublish_page_source_exists'));
             return;
           }
           // have user confirm unpublishing
-          if (window.confirm('This page no longer has a source document, unpublishing it cannot be undone!\n\nAre you sure you want to unpublish it?')) {
+          const confirmMsg = status.edit.status === 200
+            ? i18n(sk, 'unpublish_page_confirm')
+            : i18n(sk, 'unpublish_page_no_source_confirm');
+          if (window.confirm(confirmMsg)) {
             const path = status.webPath;
             try {
               const resp = await sk.unpublish();
@@ -1195,14 +1533,18 @@
                 console.error(resp);
                 throw new Error(resp);
               }
+              // show confirmation
+              sk.showModal(i18n(sk, 'unpublish_page_success'));
               if (!sk.isInner()) {
                 const newPath = `${path.substring(0, path.lastIndexOf('/'))}/`;
                 console.log(`redirecting to ${newPath}`);
                 window.location.href = newPath;
+              } else {
+                sk.remove('unpublish');
               }
             } catch (e) {
               sk.showModal({
-                css: 'modal-unpublish-failure',
+                message: i18n(sk, 'unpublish_failure'),
                 sticky: true,
                 level: 0,
               });
@@ -1219,339 +1561,352 @@
    * @param {Sidekick} sk The sidekick
    */
   function addBulkPlugins(sk) {
-    if (sk.isAdmin()) {
-      let bulkSelection = [];
+    let bulkSelection = [];
 
-      const isSharePoint = (location) => location.host.match(/\w+\.sharepoint.com/)
-        && location.pathname.endsWith('/Forms/AllItems.aspx');
+    const toWebPath = (folder, item) => {
+      const { path, type } = item;
+      const nameParts = path.split('.');
+      let [file, ext] = nameParts;
+      if (isSharePointFolder(sk, sk.location) && ext === 'docx') {
+        // omit docx extension on sharepoint
+        ext = '';
+      }
+      if (type === 'xlsx' || type.includes('vnd.google-apps.spreadsheet')) {
+        // use json extension for spreadsheets
+        ext = 'json';
+      }
+      if (file === 'index') {
+        // folder root
+        file = '';
+      }
+      file = file
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-|-$/g, '');
+      return `${folder}${folder.endsWith('/') ? '' : '/'}${file}${ext ? `.${ext}` : ''}`;
+    };
 
-      const toWebPath = (folder, item) => {
-        const { path, type } = item;
-        const nameParts = path.split('.');
-        if (folder === '/') {
-          folder = '';
-        }
-        const [file] = nameParts;
-        let [, ext] = nameParts;
-        if (isSharePoint(sk.location) && ext === 'docx') {
-          // omit docx extension on sharepoint
-          ext = '';
-        }
-        if (type === 'xlsx' || type.includes('vnd.google-apps.spreadsheet')) {
-          // use json extension for spreadsheets
-          ext = 'json';
-        }
-        return `${folder}/${file.toLowerCase().replace(/[^0-9a-z]/gi, '-')}${ext ? `.${ext}` : ''}`;
-      };
+    const getBulkSelection = () => {
+      const { location } = sk;
+      if (isSharePointFolder(sk, location)) {
+        const isGrid = document.querySelector('div[class~="ms-TilesList"]');
+        return [...document.querySelectorAll('#appRoot [role="presentation"] div[aria-selected="true"]')]
+          .filter((row) => !row.querySelector('img')?.getAttribute('src').includes('/foldericons/')
+            && !row.querySelector('img')?.getAttribute('src').endsWith('folder.svg')
+            && !row.querySelector('svg')?.parentElement.className.toLowerCase().includes('folder'))
+          .map((row) => ({
+            type: isGrid
+              ? row.querySelector(':scope i[aria-label]')?.getAttribute('aria-label').trim()
+              : new URL(row.querySelector('img')?.getAttribute('src'), sk.location.href).pathname.split('/').slice(-1)[0].split('.')[0],
+            path: isGrid
+              ? row.querySelector('div[data-automationid="name"]').textContent.trim()
+              : row.querySelector('button')?.textContent.trim(),
+          }));
+      } else {
+        // gdrive
+        return [...document.querySelectorAll('#drive_main_page [role="row"][aria-selected="true"]')]
+          .filter((row) => row.querySelector(':scope img'))
+          .map((row) => ({
+            type: new URL(row.querySelector('div > img').getAttribute('src'), sk.location.href).pathname.split('/').slice(-2).join('/'),
+            path: row.querySelector(':scope > div > div:nth-of-type(2)').textContent.trim() // list layout
+              || row.querySelector(':scope > div > div > div:nth-of-type(4)').textContent.trim(), // grid layout
+          }));
+      }
+    };
 
-      const getBulkSelection = () => {
+    const updateBulkInfo = () => {
+      if (!sk.isAdmin()) {
+        return;
+      }
+      const sel = getBulkSelection(sk);
+      bulkSelection = sel;
+      // update info
+      const label = sk.root.querySelector('#hlx-sk-bulk-info');
+      if (sel.length === 0) {
+        label.textContent = i18n(sk, 'bulk_selection_empty');
+      } else if (sel.length === 1) {
+        label.textContent = i18n(sk, 'bulk_selection_single');
+      } else {
+        label.textContent = i18n(sk, 'bulk_selection_multiple').replace('$1', sel.length);
+      }
+      // show/hide bulk buttons
+      const filesSelected = sel.length > 0;
+      ['preview', 'publish', 'copy-urls'].forEach((action) => {
+        const pluginId = `bulk-${action}`;
+        const plugin = sk.get(pluginId);
+        let customShow = true;
+        const customPlugin = sk.customPlugins[action];
+        if (customPlugin) {
+          customShow = customPlugin.condition(sk);
+        }
+        plugin.classList[filesSelected && customShow ? 'remove' : 'add']('hlx-sk-hidden');
+      });
+      // update copy url button texts based on selection size
+      ['', 'preview', 'live', 'prod'].forEach((env) => {
+        const text = i18n(sk, `copy_${env}${env ? '_' : ''}url${sel.length === 1 ? '' : 's'}`);
+        const button = sk.get(`bulk-copy-${env}${env ? '-' : ''}urls`)?.querySelector('button');
+        if (button) {
+          button.textContent = text;
+          button.title = text;
+        }
+      });
+    };
+
+    const getBulkText = ([num, total], type, action, mod) => {
+      let i18nKey = `bulk_${type}`;
+      if (num === 0) {
+        i18nKey = `${i18nKey}_empty`;
+      } else {
+        i18nKey = `${i18nKey}_${action}_${(total || num) === 1 ? 'single' : 'multiple'}${mod ? `_${mod}` : ''}`;
+      }
+      return i18n(sk, i18nKey)
+        .replace('$1', num)
+        .replace('$2', total);
+    };
+
+    const doBulkOperation = async (operation, method, concurrency, host) => {
+      const { config, status } = sk;
+      const sel = bulkSelection.map((item) => toWebPath(status.webPath, item));
+      const results = [];
+      const total = sel.length;
+      const { processQueue } = await import(`${config.scriptRoot}/lib/process-queue.js`);
+      await processQueue(sel, async (file) => {
+        results.push(await sk[method](file));
+        if (total > 1) {
+          sk.showModal(getBulkText([results.length, total], 'progress', operation), true);
+        }
+      }, concurrency);
+      const lines = [];
+      const ok = results.filter((res) => res.ok);
+      if (ok.length > 0) {
+        lines.push(getBulkText([ok.length], 'result', operation, 'success'));
+        const buttonGroup = createTag({
+          tag: 'span',
+          attrs: {
+            class: 'hlx-sk-modal-button-group',
+          },
+        });
+        buttonGroup.append(createTag({
+          tag: 'button',
+          text: i18n(sk, ok.length === 1 ? 'copy_url' : 'copy_urls'),
+          lstnrs: {
+            click: (evt) => {
+              evt.stopPropagation();
+              navigator.clipboard.writeText(ok.map((item) => `https://${host}${item.path}`)
+                .join('\n'));
+              sk.hideModal();
+            },
+          },
+        }));
+        buttonGroup.append(createTag({
+          tag: 'button',
+          text: i18n(sk, ok.length === 1 ? 'open_url' : 'open_urls'),
+          lstnrs: {
+            click: (evt) => {
+              evt.stopPropagation();
+              if (ok.length <= 20 || window.confirm(i18n(sk, 'open_urls_confirm').replace('$1', ok.length))) {
+                ok.forEach((item) => {
+                  const url = `https://${host}${item.path}`;
+                  const [{ viewer } = {}] = findViews(sk, VIEWS.CUSTOM, item.path);
+                  if (viewer) {
+                    const viewUrl = new URL(viewer, url);
+                    viewUrl.searchParams.set('path', item.path);
+                    window.open(viewUrl.toString());
+                  } else {
+                    window.open(url);
+                  }
+                });
+                sk.hideModal();
+              }
+            },
+          },
+        }));
+        lines.push(buttonGroup);
+      }
+      const failed = results.filter((res) => !res.ok);
+      if (failed.length > 0) {
+        const failureText = getBulkText([failed.length], 'result', operation, 'failure');
+        lines.push(failureText);
+        lines.push(...failed.map((item) => {
+          if (item.error.endsWith('docx with google not supported.')) {
+            item.error = getBulkText([1], 'result', operation, 'error_no_docx');
+          }
+          if (item.error.endsWith('xlsx with google not supported.')) {
+            item.error = getBulkText([1], 'result', operation, 'error_no_xlsx');
+          }
+          if (item.error.includes('source does not exist')) {
+            item.error = getBulkText([1], 'result', operation, 'error_no_source');
+          }
+          return `${item.path.split('/').pop()}: ${item.error}`;
+        }));
+      }
+      lines.push(createTag({
+        tag: 'button',
+        text: i18n(sk, 'close'),
+      }));
+      let level = 2;
+      if (failed.length > 0) {
+        level = 1;
+        if (ok.length === 0) {
+          level = 0;
+        }
+      }
+      sk.showModal(
+        lines,
+        true,
+        level,
+      );
+    };
+
+    const doBulkCopyUrls = async (hostProperty) => {
+      const { config, status } = sk;
+      const urls = bulkSelection.map((item) => `https://${config[hostProperty]}${toWebPath(status.webPath, item)}`);
+      navigator.clipboard.writeText(urls.join('\n'));
+      sk.showModal(i18n(sk, `copied_url${urls.length !== 1 ? 's' : ''}`));
+    };
+
+    // bulk info
+    sk.add({
+      id: 'bulk-info',
+      condition: (sidekick) => sidekick.isAdmin(),
+      elements: [{
+        tag: 'span',
+        attrs: {
+          id: 'hlx-sk-bulk-info',
+          class: 'hlx-sk-label',
+        },
+      }],
+      callback: (sidekick) => {
         const { location } = sk;
-        if (isSharePoint(location)) {
-          return [...document.querySelectorAll('#appRoot [role="presentation"] div[aria-selected="true"]')]
-            .filter((row) => !row.querySelector('img').getAttribute('src').endsWith('folder.svg'))
-            .map((row) => ({
-              type: new URL(row.querySelector('img').getAttribute('src'), sk.location.href).pathname.split('/').slice(-1)[0].split('.')[0],
-              path: row.querySelector('button').textContent.trim(),
-            }));
-        } else {
-          // gdrive
-          return [...document.querySelectorAll('#drive_main_page [role="row"][aria-selected="true"]')]
-            .filter((row) => row.querySelector(':scope img'))
-            .map((row) => ({
-              type: new URL(row.querySelector('div > img').getAttribute('src'), sk.location.href).pathname.split('/').slice(-2).join('/'),
-              path: row.querySelector(':scope > div > div:nth-of-type(2)').textContent.trim(),
-            }));
+        const listener = () => window.setTimeout(() => updateBulkInfo(sidekick), 100);
+        const rootEl = document.querySelector(isSharePointFolder(sk, location) ? '#appRoot' : 'body');
+        if (rootEl) {
+          rootEl.addEventListener('click', listener);
+          rootEl.addEventListener('keyup', listener);
         }
-      };
+        listener();
+      },
+    });
 
-      const updateBulkInfo = () => {
-        const sel = getBulkSelection(sk);
-        bulkSelection = sel;
-        const label = sk.root.querySelector('#hlx-sk-bulk-info');
-        label.textContent = '';
-        label.className = sel.length > 0 ? `selected-item${sel.length !== 1 ? 's' : ''}` : '';
-        if (sel.length > 1) {
-          label.textContent = getI18nText(label).replace('$1', sel.length);
-        }
-        // update buttons
-        ['preview', 'publish', 'copy-urls'].forEach((action) => {
-          sk.get(`bulk-${action}`).classList[sel.length === 0 ? 'add' : 'remove']('hlx-sk-hidden');
-        });
-        sk.get('bulk-copy-urls').classList[sel.length === 1 ? 'add' : 'remove']('single');
-      };
+    // bulk preview
+    sk.add({
+      id: 'bulk-preview',
+      condition: (sidekick) => sidekick.isAdmin(),
+      button: {
+        text: i18n(sk, 'preview'),
+        action: async () => {
+          const confirmText = getBulkText([bulkSelection.length], 'confirm', 'preview');
+          if (bulkSelection.length === 0) {
+            sk.showModal(confirmText);
+          } else if (window.confirm(confirmText)) {
+            sk.showWait();
+            sk.addEventListener('statusfetched', () => {
+              doBulkOperation('preview', 'update', 2, sk.config.innerHost);
+            }, { once: true });
+            sk.fetchStatus(true);
+          }
+        },
+        isEnabled: (s) => s.isAuthorized('preview', 'write') && s.status.webPath,
+      },
+    });
 
-      const getBulkText = ([num, total], type, action, mod) => {
-        let cls = `hlx-sk-bulk-${type}`;
-        if (num > 0) {
-          cls = `${cls}-${action}-item${(total || num) === 1 ? '' : 's'}${mod ? `-${mod}` : ''}`;
-        }
-        let placeholder = sk.get('bulk-info').querySelector(`.hlx-sk-placeholder.${cls}`);
-        if (!placeholder) {
-          placeholder = createTag({
-            tag: 'span',
-            attrs: {
-              class: `hlx-sk-placeholder ${cls}`,
-            },
-          });
-          sk.get('bulk-info').append(placeholder);
-        }
-        return getI18nText(placeholder)
-          .replace('$1', num)
-          .replace('$2', total);
-      };
+    // bulk publish
+    sk.add({
+      id: 'bulk-publish',
+      condition: (sidekick) => sidekick.isAdmin(),
+      button: {
+        text: i18n(sk, 'publish'),
+        action: async () => {
+          const confirmText = getBulkText([bulkSelection.length], 'confirm', 'publish');
+          if (bulkSelection.length === 0) {
+            sk.showModal(confirmText);
+          } else if (window.confirm(confirmText)) {
+            sk.showWait();
+            sk.addEventListener('statusfetched', () => {
+              doBulkOperation('publish', 'publish', 40, sk.config.host || sk.config.outerHost);
+            }, { once: true });
+            sk.fetchStatus(true);
+          }
+        },
+        isEnabled: (s) => s.isAuthorized('live', 'write') && s.status.webPath,
+      },
+    });
 
-      const isChangedUrl = () => {
-        const $test = document.getElementById('sidekick_test_location');
-        if ($test) {
-          return $test.value !== sk.location.href;
-        }
-        return window.location.href !== sk.location.href;
-      };
-
-      sk.addEventListener('statusfetched', () => {
-        // bulk info
-        sk.add({
-          id: 'bulk-info',
-          condition: (sidekick) => sidekick.isAdmin(),
-          elements: [{
-            tag: 'span',
-            attrs: {
-              id: 'hlx-sk-bulk-info',
-              class: 'hlx-sk-label hlx-sk-placeholder',
-            },
-          }],
-          callback: () => {
-            let fetchingStatus = false;
-            window.setInterval(() => {
-              updateBulkInfo();
-              if (isChangedUrl() && !fetchingStatus) {
-                // url changed, refetch status
-                sk.addEventListener('statusfetched', () => {
-                  fetchingStatus = false;
-                }, { once: true });
-                sk.fetchStatus(true);
-                fetchingStatus = true;
-              }
-            }, 500);
+    // bulk copy urls
+    sk.add({
+      id: 'bulk-copy-urls',
+      condition: (sidekick) => sidekick.isAdmin(),
+      button: {
+        isDropdown: true,
+      },
+    });
+    [{
+      env: 'preview',
+      hostProperty: 'innerHost',
+      condition: (sidekick) => sidekick.isAdmin(),
+    }, {
+      env: 'live',
+      hostProperty: 'outerHost',
+      condition: (sidekick) => sidekick.isAdmin(),
+      advanced: (sidekick) => !!sidekick.config.host,
+    }, {
+      env: 'prod',
+      hostProperty: 'host',
+      condition: (sidekick) => sidekick.isAdmin() && sidekick.config.host,
+    }].forEach(({
+      env,
+      hostProperty,
+      condition,
+      advanced = () => false,
+    }) => {
+      sk.add({
+        id: `bulk-copy-${env}-urls`,
+        container: 'bulk-copy-urls',
+        condition,
+        advanced,
+        button: {
+          text: i18n(sk, `copy_${env}_url`),
+          action: async () => {
+            const emptyText = getBulkText([bulkSelection.length], 'confirm');
+            if (bulkSelection.length === 0) {
+              sk.showModal(emptyText);
+            } else {
+              sk.showWait();
+              sk.addEventListener('statusfetched', () => {
+                doBulkCopyUrls(hostProperty);
+              }, { once: true });
+              sk.fetchStatus(true);
+            }
           },
-        });
+        },
+      });
+    });
+  }
 
-        // bulk preview
-        sk.add({
-          id: 'bulk-preview',
-          condition: (sidekick) => sidekick.isAdmin(),
-          button: {
-            action: async () => {
-              const confirmText = getBulkText([bulkSelection.length], 'confirm', 'preview');
-              if (bulkSelection.length === 0) {
-                sk.showModal(confirmText);
-              } else if (window.confirm(confirmText)) {
-                sk.showWait();
-                const { config, status } = sk;
-                const sel = bulkSelection.map((item) => toWebPath(status.webPath, item));
-                const results = [];
-                const total = sel.length;
-                const { processQueue } = await import(`${config.scriptRoot}/lib/process-queue.js`);
-                await processQueue(sel, async (file) => {
-                  results.push(await sk.update(file));
-                  if (total > 1) {
-                    sk.showModal(getBulkText([results.length, total], 'progress', 'preview'), true);
-                  }
-                }, 5);
-                const lines = [];
-                const ok = results.filter((res) => res.ok);
-                if (ok.length > 0) {
-                  lines.push(getBulkText([ok.length], 'result', 'preview', 'success'));
-                  lines.push(createTag({
-                    tag: 'button',
-                    attrs: {
-                      class: `hlx-sk-bulk-copy-url${ok.length > 1 ? 's' : ''}`,
-                    },
-                    lstnrs: {
-                      click: (evt) => {
-                        evt.stopPropagation();
-                        const host = config.innerHost;
-                        navigator.clipboard.writeText(ok.map((item) => `https://${host}${item.path}`)
-                          .join('\n'));
-                        sk.hideModal();
-                      },
-                    },
-                  }));
-                }
-                const failed = results.filter((res) => !res.ok);
-                if (failed.length > 0) {
-                  const failureText = getBulkText([failed.length], 'result', 'preview', 'failure');
-                  lines.push(failureText);
-                  lines.push(...failed.map((item) => {
-                    if (item.error.endsWith('docx with google not supported.')) {
-                      item.error = getBulkText([1], 'result', 'preview', 'error-no-docx');
-                    }
-                    if (item.error.endsWith('xlsx with google not supported.')) {
-                      item.error = getBulkText([1], 'result', 'preview', 'error-no-xlsx');
-                    }
-                    return `${item.path.split('/').pop()}: ${item.error}`;
-                  }));
-                }
-                lines.push(createTag({
-                  tag: 'button',
-                  attrs: {
-                    class: 'hlx-sk-bulk-close',
-                  },
-                }));
-                let level = 2;
-                if (failed.length > 0) {
-                  level = 1;
-                  if (ok.length === 0) {
-                    level = 0;
-                  }
-                }
-                sk.showModal(
-                  lines,
-                  true,
-                  level,
-                );
-              }
-            },
-            isEnabled: (s) => s.isAuthorized('preview', 'write') && s.status.webPath,
-          },
-        });
-
-        // bulk publish
-        sk.add({
-          id: 'bulk-publish',
-          condition: (sidekick) => sidekick.isAdmin(),
-          button: {
-            action: async () => {
-              const confirmText = getBulkText([bulkSelection.length], 'confirm', 'publish');
-              if (bulkSelection.length === 0) {
-                sk.showModal(confirmText);
-              } else if (window.confirm(confirmText)) {
-                sk.showWait();
-                const { config, status } = sk;
-                const sel = bulkSelection.map((item) => toWebPath(status.webPath, item));
-                const results = [];
-                const total = sel.length;
-                const { processQueue } = await import(`${config.scriptRoot}/lib/process-queue.js`);
-                await processQueue(sel, async (file) => {
-                  const resp = await sk.publish(file);
-                  results.push({
-                    ok: (resp.ok) || false,
-                    status: (resp.status) || 0,
-                    error: (resp.headers && resp.headers.get('x-error')) || '',
-                    path: (resp.ok && resp.json && (await resp.json()).webPath) || file,
-                  });
-                  if (total > 1) {
-                    sk.showModal(getBulkText([results.length, total], 'progress', 'publish'), true);
-                  }
-                }, 40);
-                const lines = [];
-                const ok = results.filter((res) => res.ok);
-                if (ok.length > 0) {
-                  lines.push(getBulkText([ok.length], 'result', 'publish', 'success'));
-                  lines.push(createTag({
-                    tag: 'button',
-                    attrs: {
-                      class: `hlx-sk-bulk-copy-url${ok.length > 1 ? 's' : ''}`,
-                    },
-                    lstnrs: {
-                      click: (evt) => {
-                        evt.stopPropagation();
-                        const host = config.host || config.outerHost;
-                        navigator.clipboard.writeText(ok.map((item) => `https://${host}${item.path}`)
-                          .join('\n'));
-                        sk.hideModal();
-                      },
-                    },
-                  }));
-                }
-                const failed = results.filter((res) => !res.ok);
-                if (failed.length > 0) {
-                  const failureText = getBulkText([failed.length], 'result', 'publish', 'failure');
-                  lines.push(failureText);
-                  lines.push(...failed.map((item) => {
-                    if (item.error.startsWith('source does not exist')) {
-                      item.error = getBulkText([1], 'result', 'publish', 'error-no-source');
-                    }
-                    return `${item.path.split('/').pop()}: ${item.error}`;
-                  }));
-                }
-                lines.push(createTag({
-                  tag: 'button',
-                  attrs: {
-                    class: 'hlx-sk-bulk-close',
-                  },
-                }));
-                let level = 2;
-                if (failed.length > 0) {
-                  level = 1;
-                  if (ok.length === 0) {
-                    level = 0;
-                  }
-                }
-                sk.showModal(
-                  lines,
-                  true,
-                  level,
-                );
-              }
-            },
-            isEnabled: (s) => s.isAuthorized('live', 'write') && s.status.webPath,
-          },
-        });
-
-        // bulk copy urls
-        sk.add({
-          id: 'bulk-copy-urls',
-          condition: (sidekick) => sidekick.isAdmin(),
-          button: {
-            isDropdown: true,
-          },
-        });
-        [{
-          env: 'preview',
-          hostProperty: 'innerHost',
-          condition: (sidekick) => sidekick.isAdmin(),
-        }, {
-          env: 'live',
-          hostProperty: 'outerHost',
-          condition: (sidekick) => sidekick.isAdmin(),
-          advanced: (sidekick) => !!sidekick.config.host,
-        }, {
-          env: 'prod',
-          hostProperty: 'host',
-          condition: (sidekick) => sidekick.isAdmin() && sidekick.config.host,
-        }].forEach(({
-          env,
-          hostProperty,
-          condition,
-          advanced = () => false,
-        }) => {
-          sk.add({
-            id: `bulk-copy-${env}-urls`,
-            container: 'bulk-copy-urls',
-            condition,
-            advanced,
-            button: {
-              action: async () => {
-                const emptyText = getBulkText([bulkSelection.length], 'confirm');
-                if (bulkSelection.length === 0) {
-                  sk.showModal(emptyText);
-                } else {
-                  sk.showWait();
-                  const { config, status } = sk;
-                  const urls = bulkSelection.map((item) => `https://${config[hostProperty]}${toWebPath(status.webPath, item)}`);
-                  navigator.clipboard.writeText(urls.join('\n'));
-                  sk.showModal({
-                    css: `bulk-copied-url${urls.length !== 1 ? 's' : ''}`,
-                  });
-                }
-              },
-            },
-          });
-        });
-
-        updateBulkInfo();
-      }, { once: true });
+  /**
+   * Adds UI to encourage users to log in.
+   * @private
+   * @param {Sidekick} sk The sidekick
+   * @param {boolean} show Whether to show the login encouragement or not
+   */
+  function encourageLogin(sk, show) {
+    const loginPlugin = sk.get('user-login');
+    const plugins = sk.pluginContainer;
+    if (show) {
+      if (loginPlugin.parentElement === plugins) {
+        // login already encouraged
+        return;
+      }
+      // hide all plugins and only show login
+      plugins.classList.add('hlx-sk-login-only');
+      loginPlugin.firstElementChild.classList.add('accent');
+      loginPlugin.firstElementChild.title = i18n(sk, 'user_login_hint');
+      plugins.append(loginPlugin);
+    } else {
+      // unhide plugins
+      plugins.classList.remove('hlx-sk-login-only');
     }
   }
 
@@ -1561,8 +1916,7 @@
    * @param {Sidekick} sk The sidekick
    */
   function addCustomPlugins(sk) {
-    const { location, config: { plugins, innerHost } = {} } = sk;
-    const language = navigator.language.split('-')[0];
+    const { location, config: { lang, plugins, innerHost } = {} } = sk;
     if (plugins && Array.isArray(plugins)) {
       plugins.forEach((cfg, i) => {
         if (typeof (cfg.button && cfg.button.action) === 'function'
@@ -1588,7 +1942,7 @@
           } = cfg;
           const condition = (s) => {
             let excluded = false;
-            const pathSearchHash = location.href.replace(location.origin, '');
+            const pathSearchHash = s.location.href.replace(s.location.origin, '');
             if (excludePaths && Array.isArray(excludePaths)
               && excludePaths.some((glob) => globToRegExp(glob).test(pathSearchHash))) {
               excluded = true;
@@ -1613,32 +1967,13 @@
             };
             return environments.some((env) => envChecks[env] && envChecks[env].call(s));
           };
-          const existingPlugin = sk.get(id);
-          if (existingPlugin) {
-            // extend existing plugin
-            if (!condition(sk)) {
-              sk.remove(id);
-            }
-          } else {
-            // check mandatory properties
-            let missingProperty = '';
-            // plugin config not extending existing plugin
-            if (!title) {
-              missingProperty = 'title';
-            } else if (!(url || eventName || isContainer)) {
-              missingProperty = 'url, event, or isContainer';
-            }
-            if (missingProperty) {
-              console.log(`plugin config missing required property: ${missingProperty}`, cfg);
-              return;
-            }
-          }
           // assemble plugin config
           const plugin = {
+            custom: true,
             id: id || `custom-plugin-${i}`,
             condition,
             button: {
-              text: (titleI18n && titleI18n[language]) || title,
+              text: (titleI18n && titleI18n[lang]) || title || '',
               action: () => {
                 if (url) {
                   const target = url.startsWith('/') ? new URL(url, `https://${innerHost}/`) : new URL(url);
@@ -1662,6 +1997,11 @@
                       } else {
                         palette.classList.remove('hlx-sk-hidden');
                         button.classList.add('pressed');
+                        // log telemetry
+                        sampleRUM('sidekick:paletteclosed', {
+                          source: sk.location.href,
+                          target: sk.status.webPath,
+                        });
                       }
                     };
                     if (!palette) {
@@ -1672,11 +2012,17 @@
                           id: `hlx-sk-palette-${id}`,
                           class: 'hlx-sk-palette hlx-sk-hidden',
                           style: paletteRect || '',
+                          tabindex: '0',
                         },
+                      });
+                      palette.addEventListener('keydown', async (e) => {
+                        if (e.key === 'Escape') {
+                          palette.classList.add('hlx-sk-hidden');
+                        }
                       });
                       const titleBar = appendTag(palette, {
                         tag: 'div',
-                        text: (titleI18n && titleI18n[language]) || title,
+                        text: (titleI18n && titleI18n[lang]) || title,
                         attrs: {
                           class: 'palette-title',
                         },
@@ -1684,6 +2030,7 @@
                       appendTag(titleBar, {
                         tag: 'button',
                         attrs: {
+                          title: i18n(sk, 'close'),
                           class: 'close',
                         },
                         lstnrs: {
@@ -1700,7 +2047,7 @@
                         tag: 'iframe',
                         attrs: {
                           src: target,
-                          allow: 'clipboard-write',
+                          allow: 'clipboard-write *',
                         },
                       });
                     }
@@ -1718,11 +2065,29 @@
             },
             container: containerId,
           };
-          // add plugin
-          sk.add(plugin);
+          sk.customPlugins[plugin.id] = plugin;
+          // check default plugin
+          const defaultPlugin = sk.plugins[plugin.id];
+          if (defaultPlugin) {
+            // extend default condition
+            const { condition: defaultCondition } = defaultPlugin;
+            defaultPlugin.condition = (s) => defaultCondition(s) && condition(s);
+          } else {
+            // add custom plugin
+            sk.add(plugin);
+          }
         }
       });
     }
+  }
+
+  async function checkProfileStatus(sk, status) {
+    const url = getAdminUrl(sk.config, 'profile');
+    const opts = getAdminFetchOptions();
+    return fetch(url, opts)
+      .then((res) => res.json())
+      .then((json) => (json.status === status))
+      .catch(() => false);
   }
 
   /**
@@ -1733,70 +2098,51 @@
    */
   function login(sk, selectAccount) {
     sk.showWait();
-    const loginUrl = getAdminUrl(
-      sk.config,
-      'login',
-      sk.isEditor() ? '' : sk.location.pathname,
-    );
-    loginUrl.searchParams.set('loginRedirect', 'https://www.hlx.live/tools/sidekick/login-success');
-    const extensionId = window.chrome?.runtime?.id;
-    if (extensionId) {
-      loginUrl.searchParams.set('extensionId', extensionId);
+    const loginUrl = getAdminUrl(sk.config, 'login');
+    let extensionId = window.chrome?.runtime?.id;
+    if (!extensionId || window.navigator.vendor.includes('Apple')) { // exclude safari
+      extensionId = 'cookie';
     }
+    loginUrl.searchParams.set('extensionId', extensionId);
     if (selectAccount) {
       loginUrl.searchParams.set('selectAccount', true);
     }
-    const profileUrl = new URL('https://admin.hlx.page/profile');
-    if (sk.config.adminVersion) {
-      profileUrl.searchParams.append('hlx-admin-version', sk.config.adminVersion);
-    }
     const loginWindow = window.open(loginUrl.toString());
 
-    async function checkLoggedIn() {
-      if ((await fetch(profileUrl.href, getAdminFetchOptions(sk.config))).ok) {
-        window.setTimeout(() => {
-          if (!loginWindow.closed) {
-            loginWindow.close();
-          }
-        }, 500);
-        delete sk.status.status;
-        sk.addEventListener('statusfetched', () => sk.hideModal(), { once: true });
-        sk.fetchStatus();
-        fireEvent(sk, 'loggedin');
-        return true;
-      }
-      return false;
-    }
+    let attempts = 0;
 
-    let seconds = 0;
-    const loginCheck = window.setInterval(async () => {
-      // give up after 2 minutes or window closed
-      if (seconds >= 120 || loginWindow.closed) {
-        window.clearInterval(loginCheck);
-        loginWindow.close();
-        // last check
-        if (await checkLoggedIn()) {
+    async function checkLoggedIn() {
+      if (loginWindow.closed) {
+        const { config, status, location } = sk;
+        attempts += 1;
+        // try 5 times after login window has been closed
+        if (await checkProfileStatus(sk, 200)) {
+          // logged in, stop checking
+          delete status.status;
+          sk.addEventListener('statusfetched', () => sk.hideModal(), { once: true });
+          sk.config = await initConfig(config, location);
+          sk.config.authToken = window.hlx.sidekickConfig.authToken;
+          sk.config.authTokenExpiry = window.hlx.sidekickConfig.authTokenExpiry || 0;
+          addCustomPlugins(sk);
+          encourageLogin(sk, false);
+          sk.fetchStatus();
+          fireEvent(sk, 'loggedin');
           return;
         }
-
-        if (seconds >= 120) {
+        if (attempts >= 5) {
+          // give up after 5 attempts
           sk.showModal({
-            css: 'modal-login-timeout',
+            message: i18n(sk, 'error_login_timeout'),
             sticky: true,
             level: 1,
           });
-        } else {
-          sk.showModal({
-            css: 'modal-login-aborted',
-          });
+          return;
         }
       }
-
-      seconds += 1;
-      if (await checkLoggedIn()) {
-        window.clearInterval(loginCheck);
-      }
-    }, 1000);
+      // try again after 1s
+      window.setTimeout(checkLoggedIn, 1000);
+    }
+    window.setTimeout(checkLoggedIn, 1000);
   }
 
   /**
@@ -1805,29 +2151,44 @@
    * @param {Sidekick} sk The sidekick
    */
   function logout(sk) {
-    const logoutUrl = new URL('https://admin.hlx.page/logout');
-    if (sk.config.adminVersion) {
-      logoutUrl.searchParams.append('hlx-admin-version', sk.config.adminVersion);
+    sk.showWait();
+    const logoutUrl = getAdminUrl(sk.config, 'logout');
+    let extensionId = window.chrome?.runtime?.id;
+    if (!extensionId || window.navigator.vendor.includes('Apple')) { // exclude safari
+      extensionId = 'cookie';
     }
+    logoutUrl.searchParams.set('extensionId', extensionId);
+    const logoutWindow = window.open(logoutUrl.toString());
 
-    fetch(logoutUrl.href, {
-      ...getAdminFetchOptions(sk.config),
-    })
-      .then(() => {
-        delete sk.config.authToken;
-        sk.status = {
-          loggedOut: true,
-        };
-      })
-      .then(() => fireEvent(sk, 'loggedout'))
-      .then(() => sk.fetchStatus())
-      .catch((e) => {
-        console.error('logout failed', e);
-        sk.showModal({
-          css: 'modal-logout-error',
-          level: 0,
-        });
-      });
+    let attempts = 0;
+
+    async function checkLoggedOut() {
+      if (logoutWindow.closed) {
+        attempts += 1;
+        // try 5 times after login window has been closed
+        if (await checkProfileStatus(sk, 401)) {
+          delete sk.status.profile;
+          delete sk.config.authToken;
+          delete sk.config.authTokenExpiry;
+          sk.addEventListener('statusfetched', () => sk.hideModal(), { once: true });
+          sk.fetchStatus();
+          fireEvent(sk, 'loggedout');
+          return;
+        }
+        if (attempts >= 5) {
+          // give up after 5 attempts
+          sk.showModal({
+            message: i18n(sk, 'error_logout_error'),
+            sticky: true,
+            level: 1,
+          });
+          return;
+        }
+      }
+      // try again after 1s
+      window.setTimeout(checkLoggedOut, 1000);
+    }
+    window.setTimeout(checkLoggedOut, 1000);
   }
 
   /**
@@ -1836,10 +2197,10 @@
    * @param {Sidekick} sk The sidekick
    */
   function checkUserState(sk) {
-    const toggle = sk.get('user').firstElementChild;
+    const toggle = sk.userMenu.firstElementChild;
     toggle.removeAttribute('disabled');
     const updateUserPicture = async (picture, name) => {
-      toggle.querySelectorAll('.user-picture').forEach((img) => img.remove());
+      toggle.querySelector('.user-picture')?.remove();
       if (picture) {
         if (picture.startsWith('https://admin.hlx.page/')) {
           // fetch the image with auth token
@@ -1848,20 +2209,23 @@
               'x-auth-token': sk.config.authToken,
             },
           });
-          picture = URL.createObjectURL(await resp.blob());
+          picture = resp.ok ? URL.createObjectURL(await resp.blob()) : null;
         }
-        toggle.querySelector('.user-icon').classList.add('user-icon-hidden');
-        appendTag(toggle, {
-          tag: 'img',
-          attrs: {
-            class: 'user-picture',
-            src: picture,
-            title: name,
-          },
-        });
+        if (picture) {
+          toggle.querySelector('.user-icon').classList.add('user-icon-hidden');
+          appendTag(toggle, {
+            tag: 'img',
+            attrs: {
+              class: 'user-picture',
+              src: picture,
+            },
+          });
+        }
+        toggle.title = name;
       } else {
         toggle.querySelector('.user-picture')?.remove();
         toggle.querySelector('.user-icon').classList.remove('user-icon-hidden');
+        toggle.title = i18n(sk, 'anonymous');
       }
     };
     const { profile } = sk.status;
@@ -1913,6 +2277,7 @@
         id: 'user-switch',
         condition: (sidekick) => sidekick.isAuthenticated(),
         button: {
+          text: i18n(sk, 'user_switch'),
           action: () => login(sk, true),
         },
       });
@@ -1922,6 +2287,7 @@
         id: 'user-logout',
         condition: (sidekick) => sidekick.isAuthenticated(),
         button: {
+          text: i18n(sk, 'user_logout'),
           action: () => logout(sk),
         },
       });
@@ -1930,7 +2296,7 @@
         sk.remove('user-info');
         sk.remove('user-switch');
         sk.remove('user-logout');
-      });
+      }, { once: true });
     } else {
       updateUserPicture();
       // login
@@ -1939,24 +2305,89 @@
         id: 'user-login',
         condition: (sidekick) => !sidekick.status.profile || !sidekick.isAuthenticated(),
         button: {
+          text: i18n(sk, 'user_login'),
           action: () => login(sk),
         },
       });
       // clean up on login
       sk.addEventListener('loggedin', () => {
         sk.remove('user-login');
-      });
-      if (!sk.status.loggedOut && !sk.isAuthenticated()) {
-        // // encourage login
-        toggle.click();
-        toggle.nextElementSibling.classList.add('highlight');
+      }, { once: true });
+      if (!sk.status.loggedOut && sk.status.status === 401 && !sk.isAuthenticated()) {
+        // encourage login
+        encourageLogin(sk, true);
+      }
+    }
+
+    const { authTokenExpiry } = sk.config;
+    if (authTokenExpiry) {
+      // alert user before and after token expiry
+      const now = Date.now();
+      if (authTokenExpiry > now && !sk.config.authTokenTimers) {
+        const showLoginDialog = (text) => {
+          const buttonGroup = createTag({
+            tag: 'span',
+            attrs: {
+              class: 'hlx-sk-modal-button-group',
+            },
+          });
+          buttonGroup.append(createTag({
+            tag: 'button',
+            text: i18n(sk, 'user_login'),
+            attrs: {
+              class: 'accent',
+            },
+            lstnrs: {
+              click: () => {
+                login(sk);
+              },
+            },
+          }));
+          buttonGroup.append(createTag({
+            tag: 'button',
+            text: i18n(sk, 'cancel'),
+            lstnrs: {
+              click: () => {
+                sk.hideModal();
+              },
+            },
+          }));
+          sk.showModal(
+            [text, buttonGroup],
+            true,
+          );
+        };
+
+        // alert user 1 second after token has expired
+        let delay = authTokenExpiry - now + 1000;
+        if (delay < 0) {
+          delay = 0;
+        }
+        window.setTimeout(async () => {
+          // fetch status and double check
+          sk.addEventListener('statusfetched', async ({ detail }) => {
+            const { data: status } = detail;
+            if (sk.config.authTokenExpiry === authTokenExpiry && status.status === 401) {
+              delete sk.config.authToken;
+              delete sk.config.authTokenExpiry;
+              delete sk.config.authTokenTimers;
+              showLoginDialog(i18n(sk, 'user_login_expired'));
+            } else if (sk.config.authTokenTimers) {
+              // clean up existing warning dialogs
+              sk.hideModal();
+              delete sk.config.authTokenTimers;
+            }
+          }, { once: true });
+          sk.fetchStatus();
+        }, delay);
+        sk.config.authTokenTimers = true;
       }
     }
   }
 
-  function getTimeAgo(dateParam) {
+  function getTimeAgo(sk, dateParam) {
     if (!dateParam) {
-      return '';
+      return i18n(sk, 'never');
     }
     const date = typeof dateParam === 'object' ? dateParam : new Date(dateParam);
 
@@ -1967,33 +2398,38 @@
     const isToday = today.toDateString() === date.toDateString();
     const isYesterday = yesterday.toDateString() === date.toDateString();
     const isThisYear = today.getFullYear() === date.getFullYear();
-
-    if (seconds < 30) {
-      return '<span class="now">';
-    } else if (seconds < 120) {
-      return `${seconds} <span class="seconds-ago">`;
-    } else if (minutes < 60) {
-      return `${minutes} <span class="minutes-ago">`;
-    } else if (isToday) {
-      return `<span class="today"> ${date.toLocaleTimeString([], { timeStyle: 'short' })}`;
-    } else if (isYesterday) {
-      return `<span class="yesterday"> ${date.toLocaleTimeString([], { timeStyle: 'short' })}`;
-    } else if (isThisYear) {
-      return date.toLocaleString([], {
-        month: 'short',
-        day: 'numeric',
-        hour: 'numeric',
-        minute: 'numeric',
-      });
-    }
-
-    return date.toLocaleString([], {
+    const timeToday = date.toLocaleTimeString([], {
+      timeStyle: 'short',
+    });
+    const dateThisYear = date.toLocaleString([], {
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: 'numeric',
+    });
+    const fullDate = date.toLocaleString([], {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
       hour: 'numeric',
       minute: 'numeric',
     });
+
+    if (seconds < 30) {
+      return i18n(sk, 'now');
+    } else if (seconds < 120) {
+      return i18n(sk, 'seconds_ago').replace('$1', seconds);
+    } else if (minutes < 60) {
+      return i18n(sk, 'minutes_ago').replace('$1', minutes);
+    } else if (isToday) {
+      return i18n(sk, 'today_at').replace('$1', timeToday);
+    } else if (isYesterday) {
+      return i18n(sk, 'yesterday_at').replace('$1', timeToday);
+    } else if (isThisYear) {
+      return dateThisYear;
+    }
+
+    return fullDate;
   }
 
   function updateModifiedDates(sk) {
@@ -2011,9 +2447,9 @@
     const previewLastMod = (status.preview && status.preview.lastModified) || null;
     const liveLastMod = (status.live && status.live.lastModified) || null;
 
-    editEl.innerHTML = getTimeAgo(editLastMod);
-    previewEl.innerHTML = getTimeAgo(previewLastMod);
-    publishEl.innerHTML = getTimeAgo(liveLastMod);
+    editEl.innerHTML = getTimeAgo(sk, editLastMod);
+    previewEl.innerHTML = getTimeAgo(sk, previewLastMod);
+    publishEl.innerHTML = getTimeAgo(sk, liveLastMod);
   }
 
   /**
@@ -2036,40 +2472,44 @@
             {
               tag: 'div',
               attrs: {
-                class: 'edit-date',
+                class: 'edit-date-container',
               },
             },
             {
               tag: 'div',
               attrs: {
-                class: 'preview-date',
+                class: 'preview-date-container',
               },
             },
             {
               tag: 'div',
               attrs: {
-                class: 'publish-date',
+                class: 'publish-date-container',
               },
             },
           ],
         });
       }
+      sk.get('page-info').querySelector('.edit-date-container')
+        .innerHTML = `<span>${i18n(sk, 'edit_date')}</span><span class="edit-date"></span>`;
+      sk.get('page-info').querySelector('.preview-date-container')
+        .innerHTML = `<span>${i18n(sk, 'preview_date')}</span><span class="preview-date"></span>`;
+      sk.get('page-info').querySelector('.publish-date-container')
+        .innerHTML = `<span>${i18n(sk, 'publish_date')}</span><span class="publish-date"></span>`;
       updateModifiedDates(sk);
     }
   }
 
   /**
-   * Registers a plugin for re-evaluation if it should be shown or hidden,
-   * and if its button should be enabled or disabled.
+   * Checks existing plugins based on the status of the current resource.
    * @private
    * @param {Sidekick} sk The sidekick
-   * @param {Plugin} plugin The plugin configuration
-   * @param {HTMLElement} $plugin The plugin
-   * @returns {HTMLElement} The plugin or {@code null}
    */
-  function registerPlugin(sk, plugin, $plugin) {
-    // re-evaluate plugin when status fetched
-    sk.addEventListener('statusfetched', () => {
+  function checkPlugins(sk) {
+    const { status, plugins, pluginContainer } = sk;
+    Object.keys(plugins).forEach((id) => {
+      const plugin = plugins[id];
+      const $plugin = sk.get(id);
       if (typeof plugin.condition === 'function') {
         if ($plugin && !plugin.condition(sk)) {
           // plugin exists but condition now false
@@ -2078,6 +2518,10 @@
           // plugin doesn't exist but condition now true
           sk.add(plugin);
         }
+      }
+      if ($plugin && plugin.custom && status.status === 401) {
+        // custom plugin exists but user logged out now
+        sk.remove(plugin.id);
       }
       const isEnabled = plugin.button && plugin.button.isEnabled;
       if (typeof isEnabled === 'function') {
@@ -2093,22 +2537,18 @@
         }
       }
     });
-    if (typeof plugin.callback === 'function') {
-      plugin.callback(sk, $plugin);
-    }
-    return $plugin || null;
-  }
-
-  /**
-   * Checks existing plugins based on the status of the current resource.
-   * @private
-   * @param {Sidekick} sk The sidekick
-   */
-  function checkPlugins(sk) {
+    pluginContainer.classList.remove('hlx-sk-concealed');
     window.setTimeout(() => {
-      if (!sk.pluginContainer.querySelector(':scope div.plugin')) {
+      if (!pluginContainer.querySelector(':scope div.plugin')) {
         // add empty text
-        sk.pluginContainer.classList.remove('loading');
+        pluginContainer.innerHTML = '';
+        pluginContainer.append(createTag({
+          tag: 'span',
+          text: i18n(sk, 'plugins_empty'),
+          attrs: {
+            class: 'hlx-sk-label',
+          },
+        }));
         sk.checkPushDownContent();
       }
     }, 5000);
@@ -2174,13 +2614,13 @@
   }
 
   /**
-   * Creates and/or returns a special view.
+   * Creates and/or returns a view overlay.
    * @private
    * @param {Sidekick} sk The sidekick
-   * @param {boolean} create Create the special view if none exists
-   * @returns {HTMLELement} The special view
+   * @param {boolean} create Create the view if none exists
+   * @returns {HTMLELement} The view overlay
    */
-  function getSpecialView(sk, create) {
+  function getViewOverlay(sk, create) {
     const view = sk.shadowRoot.querySelector('.hlx-sk-special-view')
       || (create
         ? appendTag(sk.shadowRoot, {
@@ -2189,20 +2629,26 @@
         })
         : null);
     if (create && view) {
-      const description = appendTag(view, {
+      const header = appendTag(view, {
         tag: 'div',
-        attrs: { class: 'description' },
+        attrs: { class: 'header' },
       });
-      appendTag(description, {
+      appendTag(header, {
+        tag: 'span',
+        attrs: { class: 'title' },
+      });
+      appendTag(header, {
         tag: 'button',
+        text: i18n(sk, 'close'),
         attrs: { class: 'close' },
         // eslint-disable-next-line no-use-before-define
-        lstnrs: { click: () => hideSpecialView(sk) },
+        lstnrs: { click: () => hideView(sk, true) },
       });
       appendTag(view, {
-        tag: 'div',
+        tag: 'iframe',
         attrs: {
           class: 'container',
+          allow: 'clipboard-write *',
         },
       });
     }
@@ -2214,41 +2660,31 @@
    * @private
    * @param {Sidekick} sk The sidekick
    */
-  async function showSpecialView(sk) {
+  async function showView(sk) {
+    if (!sk.isProject()) {
+      return;
+    }
     const {
-      config: {
-        specialView,
-        pushDownElements,
-      },
       location: {
+        origin,
         href,
-        pathname,
       },
     } = sk;
-    if (specialView && !getSpecialView(sk)) {
-      try {
-        const resp = await fetch(href);
-        if (!resp.ok) {
-          return;
-        }
-        const { js, css, cssLoaded } = specialView;
-        if (css && !cssLoaded) {
-          if (css.startsWith('https://') || css.startsWith('/')) {
-            // load external css file
-            sk.loadCSS(css);
-          } else {
-            // load inline css
-            const style = appendTag(sk.shadowRoot, {
-              tag: 'style',
-              attrs: {
-                type: 'text/css',
-              },
-            });
-            style.textContent = css;
-          }
-          specialView.cssLoaded = true;
-        }
-
+    const searchParams = new URLSearchParams(window.location.search);
+    if (searchParams.get('path')) {
+      // custom view
+      return;
+    }
+    const [view] = findViews(sk, VIEWS.DEFAULT);
+    if (view && !getViewOverlay(sk)) {
+      const { viewer, title } = view;
+      if (viewer) {
+        const viewUrl = new URL(viewer, origin);
+        viewUrl.searchParams.set('url', href);
+        const viewOverlay = getViewOverlay(sk, true);
+        viewOverlay.querySelector('.title').textContent = title(sk);
+        viewOverlay.querySelector('.container')
+          .setAttribute('src', viewUrl.toString());
         // hide original content
         [...sk.parentElement.children].forEach((el) => {
           if (el !== sk) {
@@ -2259,25 +2695,6 @@
             }
           }
         });
-
-        const view = getSpecialView(sk, true);
-        view.classList.add(pathname.split('.').pop());
-        pushDownElements.push(view);
-
-        const data = await resp.text();
-        let callback;
-        if (typeof js === 'function') {
-          callback = js;
-        } else if (typeof js === 'string') {
-          // load external module
-          const mod = await import(js);
-          callback = mod.default;
-        } else {
-          throw new Error('invalid view callback');
-        }
-        callback(view.querySelector(':scope .container'), data);
-      } catch (e) {
-        console.log('failed to draw view', e);
       }
     }
   }
@@ -2286,13 +2703,12 @@
    * Hides the special view.
    * @private
    * @param {Sidekick} sk The sidekick
+   * @param {boolean} click {@code true} if triggered by user
    */
-  function hideSpecialView(sk) {
-    const { config } = sk;
-    const view = getSpecialView(sk);
-    if (view) {
-      config.pushDownElements = config.pushDownElements.filter((el) => el !== view);
-      view.replaceWith('');
+  function hideView(sk, userAction) {
+    const viewOverlay = getViewOverlay(sk);
+    if (viewOverlay) {
+      viewOverlay.replaceWith('');
 
       // show original content
       [...sk.parentElement.children].forEach((el) => {
@@ -2305,6 +2721,35 @@
         }
       });
     }
+    if (userAction) {
+      // log telemetry
+      sampleRUM('sidekick:viewhidden', {
+        source: sk.location.href,
+        target: sk.status.webPath,
+      });
+    }
+  }
+
+  /**
+   * Fetches the dictionary for a language.
+   * @private
+   * @param {Sidekick} sk The sidekick
+   * @param {string} lang The language
+   * @returns {Object} The dictionary
+   */
+  async function fetchDict(sk, lang) {
+    const dict = {};
+    const dictPath = `${sk.config.scriptRoot}/_locales/${lang || sk.config.lang}/messages.json`;
+    try {
+      const res = await fetch(dictPath);
+      const messages = await res.json();
+      Object.keys(messages).forEach((key) => {
+        dict[key] = messages[key].message;
+      });
+    } catch (e) {
+      console.error(`failed to fetch dictionary from ${dictPath}`);
+    }
+    return dict;
   }
 
   /**
@@ -2326,22 +2771,96 @@
         attrs: {
           class: 'hlx-sk hlx-sk-hidden',
         },
-        lstnrs: {
-          keydown: ({ altKey }) => {
-            if (altKey) {
-              // enable advanced mode
-              this.root.classList.add('hlx-sk-advanced');
-            }
-          },
-          keyup: ({ altKey }) => {
-            if (!altKey) {
-              // disable advanced mode
-              this.root.classList.remove('hlx-sk-advanced');
-            }
-          },
-        },
       });
       this.addEventListener('contextloaded', () => {
+        this.loadCSS();
+        // containers
+        this.pluginContainer = appendTag(this.root, {
+          tag: 'div',
+          attrs: {
+            class: 'plugin-container hlx-sk-concealed',
+          },
+        });
+        this.pluginContainer.append(createTag({
+          tag: 'span',
+          text: i18n(this, 'plugins_loading'),
+          attrs: {
+            class: 'hlx-sk-label',
+          },
+        }));
+        this.featureContainer = appendTag(this.root, {
+          tag: 'div',
+          attrs: {
+            class: 'feature-container',
+          },
+        });
+        // info button
+        appendTag(
+          this.featureContainer,
+          createDropdown(this, {
+            id: 'info',
+            lstnrs: {
+              click: () => {
+                this.fetchStatus();
+                updateModifiedDates(this);
+              },
+            },
+            button: {
+              attrs: {
+                disabled: '',
+                title: i18n(this, 'info'),
+              },
+              elements: [{
+                tag: 'div',
+                attrs: {
+                  class: 'info-icon',
+                },
+              }],
+            },
+          }),
+        );
+        // user button
+        this.userMenu = appendTag(
+          this.featureContainer,
+          createDropdown(this, {
+            id: 'user',
+            button: {
+              attrs: {
+                disabled: '',
+                title: i18n(this, 'anonymous'),
+              },
+              elements: [{
+                tag: 'div',
+                attrs: {
+                  class: 'user-icon',
+                },
+              }],
+            },
+          }),
+        );
+        // share button
+        const share = appendTag(this.featureContainer, {
+          tag: 'button',
+          attrs: {
+            class: 'share',
+            title: i18n(this, 'share_description'),
+          },
+          lstnrs: {
+            click: () => shareSidekick(this),
+          },
+        });
+        appendTag(share, { tag: 'i' });
+        // close button
+        appendTag(this.featureContainer, {
+          tag: 'button',
+          attrs: {
+            title: i18n(this, 'close'),
+            class: 'close',
+          },
+          lstnrs: {
+            click: () => this.hide(),
+          },
+        });
         // add default plugins
         addEditPlugin(this);
         addEnvPlugins(this);
@@ -2350,108 +2869,63 @@
         addDeletePlugin(this);
         addPublishPlugin(this);
         addUnpublishPlugin(this);
-        addCustomPlugins(this);
         addBulkPlugins(this);
+        addCustomPlugins(this);
+        // fetch status
+        this.fetchStatus();
+        // push down content
+        pushDownContent(this);
+
+        // reveal advanced features via alt key
+        document.addEventListener('keydown', ({ altKey }) => {
+          if (altKey) {
+            // enable advanced mode
+            this.root.classList.add('hlx-sk-advanced');
+          }
+        });
+        document.addEventListener('keyup', ({ altKey }) => {
+          if (!altKey) {
+            // disable advanced mode
+            this.root.classList.remove('hlx-sk-advanced');
+          }
+        });
+        // announce to the document that the sidekick is ready
+        document.dispatchEvent(new CustomEvent('sidekick-ready'));
+        document.dispatchEvent(new CustomEvent('helix-sidekick-ready')); // legacy
       }, { once: true });
       this.addEventListener('statusfetched', () => {
+        showView(this);
         checkUserState(this);
         checkPlugins(this);
         checkLastModified(this);
         enableInfoBtn(this);
       });
       this.addEventListener('shown', async () => {
-        await showSpecialView(this);
         pushDownContent(this);
       });
       this.addEventListener('hidden', () => {
-        hideSpecialView(this);
+        hideView(this);
         revertPushDownContent(this);
       });
       this.status = {};
-      this.plugins = [];
-      this.pluginContainer = appendTag(this.root, {
-        tag: 'div',
-        attrs: {
-          class: 'plugin-container loading',
-        },
-      });
-      this.featureContainer = appendTag(this.root, {
-        tag: 'div',
-        attrs: {
-          class: 'feature-container',
-        },
-      });
-      // info button
-      appendTag(
-        this.featureContainer,
-        createDropdown(this, {
-          id: 'info',
-          lstnrs: {
-            click: () => {
-              this.fetchStatus();
-              updateModifiedDates(this);
-            },
-          },
-          button: {
-            attrs: {
-              disabled: '',
-            },
-            elements: [{
-              tag: 'div',
-              attrs: {
-                class: 'info-icon',
-              },
-            }],
-          },
-        }),
-      );
-      // user button
-      this.userMenu = appendTag(
-        this.featureContainer,
-        createDropdown(this, {
-          id: 'user',
-          button: {
-            attrs: {
-              disabled: '',
-            },
-            elements: [{
-              tag: 'div',
-              attrs: {
-                class: 'user-icon',
-              },
-            }],
-          },
-        }),
-      );
-      // share button
-      const share = appendTag(this.featureContainer, {
-        tag: 'button',
-        attrs: {
-          class: 'share',
-        },
-        lstnrs: {
-          click: () => shareSidekick(this),
-        },
-      });
-      appendTag(share, { tag: 'i' });
-      // close button
-      appendTag(this.featureContainer, {
-        tag: 'button',
-        attrs: {
-          class: 'close',
-        },
-        lstnrs: {
-          click: () => this.hide(),
-        },
-      });
+      this.plugins = {};
+      this.customPlugins = {};
+      this.config = {};
 
       this.loadContext(cfg);
-      this.fetchStatus();
-      this.loadCSS();
       checkForIssues(this);
 
       // collapse dropdowns when document is clicked
       document.addEventListener('click', () => collapseDropdowns(this));
+      // listen to URL changes
+      window.setInterval(() => {
+        if (isNewLocation(this)) {
+          this.fetchStatus(true);
+        }
+      }, 500);
+      window.addEventListener('popstate', () => {
+        this.fetchStatus(true);
+      });
     }
 
     /**
@@ -2470,21 +2944,24 @@
       }
       if (!this.status.apiUrl || refreshLocation) {
         const { href, pathname } = this.location;
+        const isDM = this.isEditor() || this.isAdmin(); // is document management
         const apiUrl = getAdminUrl(
           this.config,
           'status',
-          (this.isEditor() || this.isAdmin()) ? '' : pathname,
+          isDM ? '' : pathname,
         );
-        apiUrl.searchParams.append('editUrl', (this.isEditor() || this.isAdmin()) ? href : 'auto');
-        this.status.apiUrl = apiUrl.toString();
+
+        apiUrl.searchParams.append('editUrl', isDM ? href : 'auto');
+        this.status.apiUrl = apiUrl;
       }
+
       fetch(this.status.apiUrl, {
-        ...getAdminFetchOptions(this.config),
+        ...getAdminFetchOptions(),
       })
         .then((resp) => {
           // check for error status
           if (!resp.ok) {
-            let css = '';
+            let errorKey = '';
             switch (resp.status) {
               case 401:
                 // unauthorized, ask user to log in
@@ -2494,14 +2971,14 @@
                   }),
                 };
               case 404:
-                css = this.isEditor()
-                  ? 'modal-status-404-document'
-                  : 'modal-status-404-content';
+                errorKey = this.isEditor()
+                  ? 'error_status_404_document'
+                  : 'error_status_404_content';
                 break;
               default:
-                css = `modal-status-${resp.status}`;
+                errorKey = `error_status_${resp.status}`;
             }
-            throw new Error(css);
+            throw new Error(errorKey);
           }
           return resp;
         })
@@ -2509,14 +2986,21 @@
           try {
             return resp.json();
           } catch (e) {
-            throw new Error('modal-status-invalid');
+            throw new Error('error_status_invalid');
           }
         })
-        .then((json) => Object.assign(this.status, json))
+        .then((json) => {
+          this.status = json;
+          return json;
+        })
         .then((json) => fireEvent(this, 'statusfetched', json))
-        .catch((e) => {
-          this.status.error = e.message;
+        .catch(({ message }) => {
+          this.status.error = message;
           const modal = {
+            message: message.startsWith('error_') ? i18n(this, message) : [
+              i18n(this, 'error_status_fatal'),
+              'https://status.hlx.live/',
+            ],
             sticky: true,
             level: 0,
             callback: () => {
@@ -2528,27 +3012,28 @@
               }
             },
           };
-          if (e.message.startsWith('modal-status-')) {
-            // add error mesasage as css class
-            modal.css = e.message;
-          } else {
-            // add error mesasage as text
-            modal.message = e.message;
-          }
           this.showModal(modal);
         });
       return this;
     }
 
     /**
-     * Loads the sidekick configuration and retrieves the location of the current document.
+     * Loads the sidekick configuration and language dictionary,
+     * and retrieves the location of the current document.
      * @param {SidekickConfig} cfg The sidekick config
      * @fires Sidekick#contextloaded
      * @returns {Sidekick} The sidekick
      */
-    loadContext(cfg) {
+    async loadContext(cfg) {
       this.location = getLocation();
-      this.config = initConfig(cfg, this.location);
+      this.config = await initConfig(cfg, this.location);
+
+      // load dictionary based on user language
+      this.dict = await fetchDict(this);
+      if (!this.dict.title) {
+        // unsupported language, default to english
+        this.dict = await fetchDict(this, 'en');
+      }
       fireEvent(this, 'contextloaded', {
         config: this.config,
         location: this.location,
@@ -2627,11 +3112,12 @@
       if (typeof plugin !== 'object') {
         return null;
       }
+      this.plugins[plugin.id] = plugin;
       // determine if plugin can be shown
       plugin.isShown = typeof plugin.condition === 'undefined'
           || (typeof plugin.condition === 'function' && plugin.condition(this));
       if (!plugin.isShown) {
-        return registerPlugin(this, plugin, null);
+        return null;
       }
 
       // find existing plugin
@@ -2661,12 +3147,12 @@
           return $plugin;
         }
         // add plugin
-        $plugin = appendTag($pluginContainer, getPluginCfg(plugin), $before);
         if ($pluginContainer === this.pluginContainer
-            && this.pluginContainer.classList.contains('loading')) {
-          // remove loading text
-          this.pluginContainer.classList.remove('loading');
+          && !$pluginContainer.querySelector(':scope div.plugin')) {
+          // first plugin, remove loading text
+          $pluginContainer.innerHTML = '';
         }
+        $plugin = appendTag($pluginContainer, getPluginCfg(plugin), $before);
       } else if (!plugin.isShown) {
         // remove existing plugin
         $plugin.remove();
@@ -2719,7 +3205,11 @@
       if (typeof plugin.advanced === 'function' && plugin.advanced(this)) {
         $plugin.classList.add('hlx-sk-advanced-only');
       }
-      return registerPlugin(this, plugin, $plugin);
+      // callback
+      if (typeof plugin.callback === 'function') {
+        plugin.callback(this, $plugin);
+      }
+      return $plugin;
     }
 
     /**
@@ -2750,10 +3240,17 @@
      */
     isEditor() {
       const { config, location } = this;
-      return (/.*\.sharepoint\.com/.test(location.host) && location.pathname.endsWith('_layouts/15/Doc.aspx'))
-        || location.host === 'docs.google.com'
-        || (config.mountpoint && new URL(config.mountpoint).host === location.host
-          && !this.isAdmin());
+      const { host } = location;
+      if (isSharePointEditor(this, location) || isSharePointViewer(this, location)) {
+        return true;
+      }
+      if (host === 'docs.google.com') {
+        return true;
+      }
+      if (config.mountpoint && new URL(config.mountpoint).host === host && !this.isAdmin()) {
+        return true;
+      }
+      return false;
     }
 
     /**
@@ -2762,8 +3259,7 @@
      */
     isAdmin() {
       const { location } = this;
-      return (location.host === 'drive.google.com')
-        || (location.host.match(/\w+\.sharepoint.com/) && location.pathname.endsWith('/Forms/AllItems.aspx'));
+      return isSharePointFolder(this, location) || location.host === 'drive.google.com';
     }
 
     /**
@@ -2771,10 +3267,10 @@
      * @returns {boolean} <code>true</code> if development URL, else <code>false</code>
      */
     isDev() {
-      const { location } = this;
+      const { config, location } = this;
       return [
         '', // for unit testing
-        DEV_URL.host, // for development and browser testing
+        config.devUrl.host, // for development and browser testing
       ].includes(location.host);
     }
 
@@ -2784,7 +3280,8 @@
      */
     isInner() {
       const { config, location } = this;
-      return matchProjectHost(config.innerHost, location.host);
+      return matchProjectHost(config.innerHost, location.host)
+       || matchProjectHost(config.stdInnerHost, location.host);
     }
 
     /**
@@ -2793,7 +3290,8 @@
      */
     isOuter() {
       const { config, location } = this;
-      return matchProjectHost(config.outerHost, location.host);
+      return matchProjectHost(config.outerHost, location.host)
+        || matchProjectHost(config.stdOuterHost, location.host);
     }
 
     /**
@@ -2828,10 +3326,8 @@
      * @returns {boolean} <code>true</code> if content URL, else <code>false</code>
      */
     isContent() {
-      const file = this.location.pathname.split('/').pop();
-      const ext = file && file.split('.').pop();
-      return this.isEditor() || this.isAdmin() || ext === file || ext === 'html'
-        || ext === 'json' || ext === 'pdf';
+      const extSupported = isSupportedFileExtension(this.location.pathname);
+      return this.isEditor() || this.isAdmin() || extSupported;
     }
 
     /**
@@ -2840,8 +3336,7 @@
      * else <code>false</code>
      */
     isAuthenticated() {
-      const { status } = this.status;
-      return status !== 401;
+      return !!this.status?.profile;
     }
 
     /**
@@ -2879,7 +3374,7 @@
      * Displays a sticky notification asking the user to wait.
      */
     showWait() {
-      this.showModal({ css: 'modal-wait', sticky: true });
+      this.showModal({ message: i18n(this, 'please_wait'), sticky: true });
     }
 
     /**
@@ -3000,9 +3495,6 @@
      * @returns {Sidekick} The sidekick
      */
     showHelp(topic, step = 0) {
-      if (!this.isAuthenticated()) {
-        return this;
-      }
       const { id, steps } = topic;
       // contextualize and consolidate help steps
       const cSteps = steps.filter(({ selector }) => {
@@ -3049,6 +3541,7 @@
             tag: 'a',
             attrs: {
               class: `help-step help-${type}`,
+              title: i18n(this, `help_${type}`),
             },
             lstnrs: {
               click: (evt) => {
@@ -3070,16 +3563,12 @@
         const close = appendTag(buttonControls, createDropdown(this, {
           id: 'help-close',
           button: {
-            attrs: {
-              class: 'dropdown-toggle close',
-            },
+            text: i18n(this, 'close'),
           },
         }));
         appendTag(close.lastElementChild, {
           tag: 'button',
-          attrs: {
-            class: 'help-close-dismiss',
-          },
+          text: i18n(this, 'help_close_dismiss'),
           lstnrs: {
             click: () => {
               fireEvent(this, 'helpdismissed', id);
@@ -3088,9 +3577,7 @@
         });
         appendTag(close.lastElementChild, {
           tag: 'button',
-          attrs: {
-            class: 'help-close-acknowledge',
-          },
+          text: i18n(this, 'help_close_acknowledge'),
           lstnrs: {
             click: () => {
               fireEvent(this, 'helpacknowledged', id);
@@ -3099,9 +3586,7 @@
         });
         appendTag(close.lastElementChild, {
           tag: 'button',
-          attrs: {
-            class: 'help-close-opt-out',
-          },
+          text: i18n(this, 'help_close_opt_out'),
           lstnrs: {
             click: () => {
               fireEvent(this, 'helpoptedout', id);
@@ -3110,6 +3595,7 @@
         });
         appendTag(buttonControls, {
           tag: 'button',
+          text: i18n(this, 'help_next'),
           attrs: {
             class: 'help-next',
           },
@@ -3125,6 +3611,7 @@
         // last help step
         appendTag(buttonControls, {
           tag: 'button',
+          text: i18n(this, 'help_acknowledge'),
           attrs: {
             class: 'help-acknowledge',
           },
@@ -3168,20 +3655,6 @@
         .addEventListener('load', () => {
           fireEvent(this, 'cssloaded');
         });
-      // i18n
-      if (!path && !navigator.language.startsWith('en')) {
-        // look for language file in same directory
-        const langHref = `${href.substring(0, href.lastIndexOf('/'))}/${navigator.language.split('-')[0]}.css`;
-        appendTag(this.shadowRoot, {
-          tag: 'link',
-          attrs: {
-            rel: 'stylesheet',
-            href: langHref,
-          },
-        }).addEventListener('load', () => {
-          fireEvent(this, 'langloaded');
-        });
-      }
       return this;
     }
 
@@ -3194,6 +3667,7 @@
      * @returns {Sidekick} The sidekick
      */
     async switchEnv(targetEnv, open) {
+      this.showWait();
       const hostType = ENVS[targetEnv];
       if (!hostType) {
         console.error('invalid environment', targetEnv);
@@ -3203,21 +3677,27 @@
         return this;
       }
       const { config, location: { href, search, hash }, status } = this;
-      this.showWait();
+      let envHost = config[hostType];
+      if (targetEnv === 'prod' && !envHost) {
+        // no production host defined yet, use live instead
+        envHost = config.outerHost;
+      }
       if (!status.webPath) {
         console.log('not ready yet, trying again in a second ...');
         window.setTimeout(() => this.switchEnv(targetEnv, open), 1000);
         return this;
       }
-      const envOrigin = targetEnv === 'dev' ? DEV_URL.origin : `https://${config[hostType]}`;
+      const envOrigin = targetEnv === 'dev' ? config.devUrl.origin : `https://${envHost}`;
       let envUrl = `${envOrigin}${status.webPath}`;
       if (!this.isEditor()) {
         envUrl += `${search}${hash}`;
       }
-      fireEvent(this, 'envswitched', {
-        sourceUrl: href,
-        targetUrl: envUrl,
-      });
+      const [customView] = findViews(this, VIEWS.CUSTOM);
+      if (customView) {
+        const customViewUrl = new URL(customView.viewer, envUrl);
+        customViewUrl.searchParams.set('path', status.webPath);
+        envUrl = customViewUrl;
+      }
       // switch or open env
       if (open || this.isEditor()) {
         window.open(envUrl, open
@@ -3226,6 +3706,10 @@
       } else {
         window.location.href = envUrl;
       }
+      fireEvent(this, 'envswitched', {
+        sourceUrl: href,
+        targetUrl: envUrl,
+      });
       return this;
     }
 
@@ -3245,7 +3729,7 @@
           getAdminUrl(config, this.isContent() ? 'preview' : 'code', path),
           {
             method: 'POST',
-            ...getAdminFetchOptions(this.config),
+            ...getAdminFetchOptions(),
           },
         );
         if (resp.ok) {
@@ -3282,7 +3766,7 @@
           getAdminUrl(config, this.isContent() ? 'preview' : 'code', path),
           {
             method: 'DELETE',
-            ...getAdminFetchOptions(this.config),
+            ...getAdminFetchOptions(),
           },
         );
         // also unpublish if published
@@ -3314,7 +3798,9 @@
         return null;
       }
 
-      const purgeURL = new URL(path, this.isEditor() ? `https://${config.innerHost}/` : location.href);
+      const purgeURL = new URL(path, this.isEditor()
+        ? `https://${config.innerHost}/`
+        : location.href);
       console.log(`publishing ${purgeURL.pathname}`);
       let resp = {};
       try {
@@ -3322,24 +3808,24 @@
           getAdminUrl(config, 'live', purgeURL.pathname),
           {
             method: 'POST',
-            ...getAdminFetchOptions(this.config),
+            ...getAdminFetchOptions(),
           },
         );
         // bust client cache for live and production
         if (config.outerHost) {
           // reuse purgeURL to ensure page relative paths (e.g. when publishing dependencies)
-          purgeURL.hostname = config.outerHost;
-          await fetch(purgeURL.href, { cache: 'reload', mode: 'no-cors' });
+          await fetch(`https://${config.outerHost}${purgeURL.pathname}`, { cache: 'reload', mode: 'no-cors' });
         }
         if (config.host) {
           // reuse purgeURL to ensure page relative paths (e.g. when publishing dependencies)
-          purgeURL.hostname = config.host;
-          await fetch(purgeURL.href, { cache: 'reload', mode: 'no-cors' });
+          await fetch(`https://${config.host}${purgeURL.pathname}`, { cache: 'reload', mode: 'no-cors' });
         }
         fireEvent(this, 'published', path);
       } catch (e) {
         console.error('failed to publish', path, e);
       }
+      resp.path = path;
+      resp.error = (resp.headers && resp.headers.get('x-error')) || '';
       return resp;
     }
 
@@ -3361,7 +3847,7 @@
           getAdminUrl(config, 'live', path),
           {
             method: 'DELETE',
-            ...getAdminFetchOptions(this.config),
+            ...getAdminFetchOptions(),
           },
         );
         fireEvent(this, 'unpublished', path);
@@ -3397,10 +3883,6 @@
       window.hlx.sidekick = document.createElement('helix-sidekick');
       document.body.prepend(window.hlx.sidekick);
       window.hlx.sidekick.show();
-
-      // announce to the document that the sidekick is ready
-      document.dispatchEvent(new CustomEvent('sidekick-ready'));
-      document.dispatchEvent(new CustomEvent('helix-sidekick-ready')); // legacy
     } else {
       // toggle sidekick
       window.hlx.sidekick.toggle();

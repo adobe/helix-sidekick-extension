@@ -1,6 +1,6 @@
-# Franklin Sidekick Extension
+# AEM Sidekick Extension
 
-> Browser extension for authoring Franklin projects
+> Browser extension for authoring AEM sites
 
 ## Status
 [![codecov](https://img.shields.io/codecov/c/github/adobe/helix-sidekick-extension.svg)](https://codecov.io/gh/adobe/helix-sidekick-extension)
@@ -28,8 +28,8 @@ Navigate to https://www.hlx.live/tools/sidekick/ and follow the instructions the
 1. Click the pin button next to it to make sure it always stays visible.
 
 ##### Adding projects to the Chrome extension
-1. Click the extension's icon and select _Options_:<br />
-![Extension box](docs/imgs/install_contextmenu_options.png)<br />
+1. Right-click the extension's icon and select _Options_:<br />
+![Extension box](docs/imgs/install_contextmenu_options.jpg)<br />
 On this page, you can add projects by either pasting a share URL* or a GitHub URL in the respective fields and clicking _Add_. This page will also allow you to view, edit and delete existing projects.
    1. Alternatively, you can also navigate to a share URL* or a GitHub project, click the extension's icon and select _Add project_.
 1. Navigate to your project's homepage and click on the extension's icon to toggle the Sidekick.
@@ -84,7 +84,7 @@ _Note: Mirrored development branches in https://github.com/adobe/helix-website/b
 ![Load unpacked](docs/imgs/install_load_unpacked.png)
 1. Navigate to the `dist > chrome` folder and click _Select_ to install and activate the Sidekick extension.
 1. Verify that your _Extensions_ page displays a box like this:<br />
-![Extension box](docs/imgs/install_extension_box.png)<br />
+![Extension box](docs/imgs/install_extension_box.jpg)<br />
 1. Follow the steps under [Adding projects to the extension](#adding-projects-to-the-extension)
 
 #### Testing a local project config
@@ -93,7 +93,7 @@ If you want to test a config file before deploying it to your project:
 1. Run `hlx up` on your local checkout of the project repository
 1. [Add your project](#adding-projects-to-the-chrome-extension) to the sidekick extension
 1. Enable local project configruation:
-   1. Click the extension's icon and select _Options_
+   1. Right-click the extension's icon and select _Options_
    1. Click _Advanced_ on the left
    1. Click _Edit_ on the project configuration you want to test locally
    1. Tick the _Test project configuration locally_ checkbox
@@ -102,7 +102,7 @@ If you want to test a config file before deploying it to your project:
 
 ## Deployment
 
-### Deploying the bookmarklet
+### Deploying the Bookmarklet
 The Sidekick bookmarklet gets staged automatically each time a pull request is merged into `main`.
 1. Go to [`helix-website` pull requests](https://github.com/adobe/helix-website/pulls)
 1. Click the _Sidekick Release Candidate_ PR
@@ -111,17 +111,19 @@ The Sidekick bookmarklet gets staged automatically each time a pull request is m
    `https://sidekick-rc-*--helix-website--adobe.hlx.page/tools/sidekick/`
 1. Once approved, merge the RC PR to deploy the changes into production
 
-### Deploying the Chrome extension
-The Chrome extension is built and uploaded automatically each time a pull request is merged into `main` and, once reviewed by Google, auto-published and pushed to users' browsers.
+### Deploying Chrome Extension
 
-#### CI setup
-The following environment variables are required to be set in the CircleCI project settings: `GOOGLE_APP_ID`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` and `GOOGLE_REFRESH_TOKEN`. See [here](https://circleci.com/blog/continuously-deploy-a-chrome-extension/) for detailed instructions how to obtain and generate them.
+The Chrome extension is [automatically built and uploaded](https://github.com/adobe/helix-sidekick-extension/blob/main/.releaserc.cjs#L28) to Chrome Web Store every time a pull request triggering a `semantic-release` is merged into `main`. Once reviewed by Google, it will be auto-published and pushed to end users' browsers.
 
-If you have to re-deploy manually or make changes to the store page, you can gain access to the Chrome Developer Dashboard by following [these instructions](https://adobe.sharepoint.com/sites/Adobe-GooglePartnership/SitePages/Publishing-Chrome-Browser-Plugins.aspx):
-1. Go to the [Chrome Developer Dashboard](https://chrome.google.com/webstore/devconsole/3b37cd65-9569-47a0-a13c-da1857a2c9dc)
-1. Switch to the _Adobe Inc._ publisher at the top right
-1. Click the _Sidekick_ item in the extension list
-1. Switch to _Package_
-1. Click _Upload new package_
-1. Upload `dist > chrome.zip`
-1. Click _Submit for review_
+The following environment variables are required in the CircleCI project settings: `GOOGLE_APP_ID`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` and `GOOGLE_REFRESH_TOKEN`. See [here](https://circleci.com/blog/continuously-deploy-a-chrome-extension/) for detailed instructions how to obtain and generate them.
+
+#### Chrome Developer Dashboard (Adobe only)
+As an Adobe developer, see https://wiki.corp.adobe.com/x/xJlMqQ for instructions how to get access to the Chrome Developer Dashboard and make changes to the Chrome Web Store listing.
+
+### Safari Extension
+
+The Safari Extension is built, signed and uploaded to App Store Connect automatically each time a pull request triggering a `semantic-release` is merged into `main`.
+
+An Xcode Cloud workflow is listening for changes made to the [change log file](./CHANGELOG.md) in the `main` branch.
+#### App Store Connect (Adobe only)
+As an Adobe developer, see https://wiki.corp.adobe.com/x/xJlMqQ for instructions how to get access to the App Store Connect and make new builds available via TestFlight and public release.

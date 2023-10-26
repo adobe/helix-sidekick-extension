@@ -1,6 +1,6 @@
-# Contributing to Franklin Sidekick Extension
+# Contributing to Sidekick Extension
 
-This project (like almost all of Project Franklin) is an Open Development project and welcomes contributions from everyone who finds it useful or lacking.
+This project is an Open Development project and welcomes contributions from everyone who finds it useful or lacking.
 
 ## Code Of Conduct
 
