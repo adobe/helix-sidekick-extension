@@ -2659,6 +2659,7 @@
     }
     if (userAction) {
       // log telemetry
+      /* c8 ignore next */
       sk.config.sampleRUM('sidekick:viewhidden', {
         source: sk.location.href,
         target: sk.status.webPath,
