@@ -629,7 +629,7 @@
     // prepend custom views
     views = (specialViews || []).concat(views);
 
-    const sampleRUM = await import(`${config.scriptRoot}/rum.js`);
+    const sampleRUM = await import(`${scriptRoot}/rum.js`);
 
     return {
       ...config,
