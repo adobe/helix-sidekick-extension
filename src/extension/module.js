@@ -1784,6 +1784,12 @@
           },
         });
 
+        if (bulkResp.status === 401 && paths.length > 100) {
+          throw new Error(i18n(sk, 'bulk_error_login_required'));
+        } else if (!bulkResp.ok) {
+          throw new Error(bulkResp.headers['x-error']);
+        }
+
         // start showing progress
         const defaultProgress = {
           processed: 0,
@@ -1796,43 +1802,39 @@
 
         // update progress based on job
         const { job } = await bulkResp.json();
-        if (job) {
-          const { name: jobName } = job;
-          const jobStatusUrl = getAdminUrl(config, 'job', `/${operation}/${jobName}`);
-          const jobStatusPoll = window.setInterval(async () => {
-            try {
-              const jobStatusResp = await fetch(jobStatusUrl, getAdminFetchOptions());
-              const jobStatus = await jobStatusResp.json();
-              const { state, progress } = jobStatus;
-              if (state === 'stopped') {
-                // stop polling
-                window.clearInterval(jobStatusPoll);
-                // get job details
-                const jobDetailsUrl = getAdminUrl(config, 'job', `/${operation}/${jobName}/details`);
-                const jobDetailsResp = await fetch(jobDetailsUrl, getAdminFetchOptions());
-                const jobDetails = await jobDetailsResp.json();
-                const { data: { resources } = {} } = jobDetails;
-                showBulkOperationSummary({ operation, resources, host });
-              } else {
-                showBulkOperationProgress({
-                  operation,
-                  progress: progress || defaultProgress,
-                });
-              }
-            } catch (e) {
-              console.error(`failed to get status for job ${jobName}: ${e}`);
+        const { name: jobName } = job;
+        const jobStatusUrl = getAdminUrl(config, 'job', `/${operation}/${jobName}`);
+        const jobStatusPoll = window.setInterval(async () => {
+          try {
+            const jobStatusResp = await fetch(jobStatusUrl, getAdminFetchOptions());
+            const jobStatus = await jobStatusResp.json();
+            const { state, progress } = jobStatus;
+            if (state === 'stopped') {
+              // stop polling
               window.clearInterval(jobStatusPoll);
+              // get job details
+              const jobDetailsUrl = getAdminUrl(config, 'job', `/${operation}/${jobName}/details`);
+              const jobDetailsResp = await fetch(jobDetailsUrl, getAdminFetchOptions());
+              const jobDetails = await jobDetailsResp.json();
+              const { data: { resources } = {} } = jobDetails;
+              showBulkOperationSummary({ operation, resources, host });
+            } else {
+              showBulkOperationProgress({
+                operation,
+                progress: progress || defaultProgress,
+              });
             }
-          }, 1000);
-        } else {
-          throw new Error('no job created');
-        }
+          } catch (e) {
+            console.error(`failed to get status for job ${jobName}: ${e}`);
+            window.clearInterval(jobStatusPoll);
+          }
+        }, 1000);
       } catch (e) {
-        console.error(`bulk ${operation} failed: ${e}`);
+        console.error(`bulk ${operation} failed: ${e.message}`);
         sk.showModal({
           message: [
             getBulkText([paths.length], 'result', operation, 'failure'),
-            e.message,
+            i18n(sk, 'bulk_error'),
           ],
           level: 0,
           sticky: true,

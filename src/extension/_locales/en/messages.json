@@ -30,6 +30,12 @@
   "bulk_confirm_publish_single": {
     "message": "Are you sure you want to publish this file?"
   },
+  "bulk_error": {
+    "message": "Bulk operation failed. Please try again later."
+  },
+  "bulk_error_login_required": {
+    "message": "Selection too large. Select 100 or less files, or sign in first."
+  },
   "bulk_progress_preview_multiple": {
     "message": "Preview for $1 of $2 files generated..."
   },
