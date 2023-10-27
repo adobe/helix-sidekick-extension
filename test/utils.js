@@ -751,6 +751,79 @@ export function Nock() {
     return n[method](/.*/).reply(() => [status.length === 1 ? status[0] : status.shift(), setup.apiResponse(type)]);
   };
 
+  nocker.bulkJob = (
+    /** @type Setup */ setup,
+    {
+      route = 'preview',
+      topic = route,
+      resources = [],
+      failed = 0,
+    } = {},
+  ) => {
+    const { owner, repo, ref } = setup.sidekickConfig;
+    nocker('https://admin.hlx.page')
+      .get(/^\/status\//)
+      .twice()
+      .reply(200, setup.apiResponse('admin'))
+      .post(`/${route}/${owner}/${repo}/${ref}/*`) // job created
+      .reply(() => ([
+        202,
+        {
+          status: 202,
+          job: {
+            topic,
+            name: 'job-123',
+            state: 'created',
+          },
+        },
+        {
+          'content-type': 'application/json',
+        },
+      ]))
+      .get(`/job/${owner}/${repo}/${ref}/${topic}/job-123`) // job executing
+      .reply(() => ([
+        200,
+        {
+          state: 'running',
+          progress: {
+            total: resources.length,
+            processed: Math.ceil(resources.length / 2),
+            failed,
+          },
+        },
+        {
+          'content-type': 'application/json',
+        },
+      ]))
+      .get(`/job/${owner}/${repo}/${ref}/${topic}/job-123`) // job done
+      .reply(() => ([
+        200,
+        {
+          state: 'stopped',
+          progress: {
+            total: resources.length,
+            processed: resources.length,
+            failed,
+          },
+        },
+        {
+          'content-type': 'application/json',
+        },
+      ]))
+      .get(`/job/${owner}/${repo}/${ref}/${topic}/job-123/details`) // job details
+      .reply(() => ([
+        200,
+        {
+          data: {
+            resources,
+          },
+        },
+        {
+          'content-type': 'application/json',
+        },
+      ]));
+  };
+
   nocker.login = () => {
     nocker('https://login.microsoftonline.com')
       .get(/.*/)

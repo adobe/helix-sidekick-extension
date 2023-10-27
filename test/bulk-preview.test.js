@@ -139,20 +139,13 @@ describe('Test bulk preview plugin', () => {
 
   TESTS.forEach(({ env, fixture, setup }) => {
     it(`Bulk preview plugin previews existing selection in ${env}`, async () => {
-      const { owner, repo, ref } = setup.sidekickConfig;
       nock.sidekick();
-      nock.admin(setup, {
-        route: 'status',
-        type: 'admin',
-        persist: true,
+      nock.bulkJob(setup, {
+        resources: [
+          { path: '/documents/file.pdf', status: 200 },
+        ],
       });
-      nock.admin(setup, {
-        route: 'preview',
-        type: 'html',
-        method: 'post',
-        persist: true,
-      });
-      const { requestsMade } = await new SidekickTest({
+      const { notification } = await new SidekickTest({
         browser,
         page,
         fixture,
@@ -160,31 +153,26 @@ describe('Test bulk preview plugin', () => {
         configJson: setup.configJson,
         url: setup.getUrl('edit', 'admin'),
         plugin: 'bulk-preview',
-        pluginSleep: 500,
+        pluginSleep: 5000,
         loadModule: true,
         acceptDialogs: true,
       }).run();
-      const updateReq = requestsMade
-        .filter((r) => r.method === 'POST')
-        .find((r) => r.url === `https://admin.hlx.page/preview/${owner}/${repo}/${ref}/documents/file.pdf`);
-      assert.ok(updateReq, `Preview URL not updated in ${env}`);
+      assert.ok(
+        notification?.message.startsWith('Preview of this file successfully generated'),
+        'Did not bulk preview existing selection',
+      );
     }).timeout(IT_DEFAULT_TIMEOUT);
 
     it(`Bulk preview plugin previews user selection in ${env}, copies preview URLs to clipboard and opens them`, async () => {
-      const { owner, repo, ref } = setup.sidekickConfig;
       nock.sidekick();
-      nock.admin(setup, {
-        route: 'status',
-        type: 'admin',
-        persist: true,
+      nock.bulkJob(setup, {
+        resources: [
+          { path: '/documents/file.pdf', status: 200 },
+          { path: `/documents/document${env === 'gdrive' ? '.docx' : ''}`, status: 304 },
+          { path: `/documents/spreadsheet${env === 'gdrive' ? '.xlsx' : ''}`, status: 304 },
+        ],
       });
-      nock.admin(setup, {
-        route: 'preview',
-        type: 'html',
-        method: 'post',
-        persist: true,
-      });
-      const { requestsMade, checkPageResult } = await new SidekickTest({
+      const { notification, checkPageResult } = await new SidekickTest({
         browser,
         page,
         fixture,
@@ -192,7 +180,7 @@ describe('Test bulk preview plugin', () => {
         configJson: setup.configJson,
         url: setup.getUrl('edit', 'admin'),
         plugin: 'bulk-preview',
-        pluginSleep: 1000,
+        pluginSleep: 5000,
         pre: (p) => p.evaluate(() => {
           // user selects more files
           document.getElementById('file-word').click();
@@ -218,18 +206,10 @@ describe('Test bulk preview plugin', () => {
         loadModule: true,
         acceptDialogs: true,
       }).run();
-      const updateReqs = requestsMade
-        .filter((r) => r.method === 'POST')
-        .map((r) => r.url);
       const [clipboardText, openedWindows] = checkPageResult;
-      assert.deepEqual(
-        updateReqs,
-        [
-          `https://admin.hlx.page/preview/${owner}/${repo}/${ref}/documents/file.pdf`,
-          `https://admin.hlx.page/preview/${owner}/${repo}/${ref}/documents/document${env === 'gdrive' ? '.docx' : ''}`,
-          `https://admin.hlx.page/preview/${owner}/${repo}/${ref}/documents/spreadsheet${env === 'gdrive' ? '.xlsx' : '.json'}`,
-        ],
-        `User selection not recognized in ${env}`,
+      assert.ok(
+        notification?.message.startsWith('Preview of 3 files successfully generated'),
+        'Did not bulk preview user selection',
       );
       assert.strictEqual(clipboardText.split('\n').length, 3, `3 URLs not copied to clipboard in ${env}: \n${clipboardText}`);
       assert.strictEqual(openedWindows.length, 3, `3 URLs not opened in ${env}: \n${openedWindows.join('\n')}`);
@@ -269,17 +249,12 @@ describe('Test bulk preview plugin', () => {
   it('Bulk preview plugin handles partial error response', async () => {
     const { setup } = TESTS[0];
     nock.sidekick();
-    nock.admin(setup, {
-      route: 'status',
-      type: 'admin',
-      persist: true,
-    });
-    nock.admin(setup, {
-      route: 'preview',
-      type: 'html',
-      method: 'post',
-      status: [200, 404],
-      persist: true,
+    nock.bulkJob(setup, {
+      resources: [
+        { path: '/documents/file.pdf', status: 200 },
+        { path: '/documents/document', status: 404 },
+      ],
+      failed: 1,
     });
     const { notification } = await new SidekickTest({
       browser,
@@ -287,7 +262,7 @@ describe('Test bulk preview plugin', () => {
       fixture: SHAREPOINT_FIXTURE,
       url: setup.getUrl('edit', 'admin'),
       plugin: 'bulk-preview',
-      pluginSleep: 1000,
+      pluginSleep: 5000,
       pre: (p) => p.evaluate(() => {
         // select another file
         document.getElementById('file-word').click();
@@ -304,22 +279,16 @@ describe('Test bulk preview plugin', () => {
   it('Bulk preview plugin refetches status after navigation', async () => {
     const { setup } = TESTS[0];
     nock.sidekick(setup);
-    nock.admin(setup, {
-      route: 'status',
-      type: 'admin',
-      persist: true,
-    });
-    nock.admin(setup, {
-      route: 'preview',
-      type: 'html',
-      method: 'post',
-      status: [200],
+    nock.bulkJob(setup, {
+      resources: [
+        { path: '/documents/file.pdf', status: 200 },
+      ],
     });
     const { requestsMade } = await new SidekickTest({
       browser,
       page,
       plugin: 'bulk-preview',
-      pluginSleep: 1000,
+      pluginSleep: 5000,
       acceptDialogs: true,
       fixture: SHAREPOINT_FIXTURE,
       url: setup.getUrl('edit', 'admin'),
