@@ -216,7 +216,7 @@ describe('Test bulk preview plugin', () => {
     }).timeout(IT_DEFAULT_TIMEOUT);
   });
 
-  it('Bulk preview plugin handles error response', async () => {
+  it('Bulk preview plugin handles API error', async () => {
     const { setup } = TESTS[0];
     nock.sidekick();
     nock.admin(setup, {
@@ -230,7 +230,7 @@ describe('Test bulk preview plugin', () => {
       method: 'post',
       status: [404],
     });
-    const { notification } = await new SidekickTest({
+    const { notification: apiError } = await new SidekickTest({
       browser,
       page,
       fixture: SHAREPOINT_FIXTURE,
@@ -241,8 +241,33 @@ describe('Test bulk preview plugin', () => {
       acceptDialogs: true,
     }).run();
     assert.ok(
-      notification.className.includes('level-0'),
-      'Did not handle error',
+      apiError.className.includes('level-0'),
+      'Did not handle API error',
+    );
+  }).timeout(IT_DEFAULT_TIMEOUT);
+
+  it('Bulk preview plugin handles content error', async () => {
+    const { setup } = TESTS[0];
+    nock.sidekick();
+    nock.bulkJob(setup, {
+      resources: [
+        { path: '/documents/file.pdf', status: 404 },
+      ],
+      failed: 1,
+    });
+    const { notification: contentError } = await new SidekickTest({
+      browser,
+      page,
+      fixture: SHAREPOINT_FIXTURE,
+      url: setup.getUrl('edit', 'admin'),
+      plugin: 'bulk-preview',
+      pluginSleep: 5000,
+      loadModule: true,
+      acceptDialogs: true,
+    }).run();
+    assert.ok(
+      contentError.className.includes('level-0'),
+      'Did not handle content error',
     );
   }).timeout(IT_DEFAULT_TIMEOUT);
 
@@ -252,7 +277,8 @@ describe('Test bulk preview plugin', () => {
     nock.bulkJob(setup, {
       resources: [
         { path: '/documents/file.pdf', status: 200 },
-        { path: '/documents/document', status: 404 },
+        { path: '/documents/document', status: 500, error: 'docx with google not supported.' },
+        { path: '/documents/spreadsheet', status: 500, error: 'xlsx with google not supported.' },
       ],
       failed: 1,
     });
