@@ -228,9 +228,10 @@ describe('Test bulk preview plugin', () => {
       route: 'preview',
       type: 'html',
       method: 'post',
-      status: [404],
+      persist: true,
+      status: [500, 401],
     });
-    const { notification: apiError } = await new SidekickTest({
+    const test = await new SidekickTest({
       browser,
       page,
       fixture: SHAREPOINT_FIXTURE,
@@ -239,10 +240,29 @@ describe('Test bulk preview plugin', () => {
       pluginSleep: 1000,
       loadModule: true,
       acceptDialogs: true,
-    }).run();
+    });
+    const { notification: api500 } = await test.run();
     assert.ok(
-      apiError.className.includes('level-0'),
-      'Did not handle API error',
+      api500.className?.includes('level-0'),
+      'Did not handle 500 error',
+    );
+    test.pre = (p) => p.evaluate(() => {
+      // create 100+ selection
+      const file = document.getElementById('file-pdf');
+      const container = document.querySelector('body > div > div');
+      const files = [];
+      for (let i = 0; i < 100; i += 1) {
+        const clone = file.cloneNode(true);
+        const button = clone.querySelector('button');
+        button.textContent = `file${i}.pdf`;
+        files.push(clone);
+      }
+      container.append(...files);
+    });
+    const { notification: api401 } = await test.run();
+    assert.ok(
+      api401.message?.includes('need to sign in'),
+      'Did not handle 401 error',
     );
   }).timeout(IT_DEFAULT_TIMEOUT);
 
