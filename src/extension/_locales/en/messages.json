@@ -33,8 +33,11 @@
   "bulk_error": {
     "message": "Bulk operation failed. Please try again later."
   },
-  "bulk_error_login_required": {
-    "message": "Selection too large. Select 100 or less files, or sign in first."
+  "bulk_error_preview_login_required": {
+    "message": "You need to sign in to generate the preview of more than 100 files."
+  },
+  "bulk_error_publish_login_required": {
+    "message": "You need to sign in to publish more than 100 files."
   },
   "bulk_progress_preview_multiple": {
     "message": "Preview for $1 of $2 files generated..."

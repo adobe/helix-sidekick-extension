@@ -1785,7 +1785,12 @@
         });
 
         if (bulkResp.status === 401 && paths.length > 100) {
-          throw new Error(i18n(sk, 'bulk_error_login_required'));
+          sk.showModal({
+            message: i18n(sk, `bulk_error_${operation}_login_required`),
+            level: 2,
+            sticky: true,
+          });
+          return;
         } else if (!bulkResp.ok) {
           throw new Error(bulkResp.headers['x-error']);
         }
@@ -1834,7 +1839,7 @@
         sk.showModal({
           message: [
             getBulkText([paths.length], 'result', operation, 'failure'),
-            i18n(sk, 'bulk_error'),
+            e.message || i18n(sk, 'bulk_error'),
           ],
           level: 0,
           sticky: true,
