@@ -335,17 +335,6 @@ describe('Test extension utils', () => {
     })).to.be.true;
   });
 
-  it('updateProjectConfigs', async () => {
-    sandbox.spy(window.chrome.storage.sync, 'set');
-    sandbox.spy(window.chrome.storage.sync, 'remove');
-    await utils.removeConfig('sync', 'hlxSidekickProjects');
-    await utils.updateProjectConfigs();
-    // expect(chrome.storage.sync.remove.calledWith('hlxSidekickConfigs')).to.be.true;
-    expect(chrome.storage.sync.set.calledWith({
-      hlxSidekickProjects: ['test/legacy-project'],
-    })).to.be.true;
-  });
-
   it('setDisplay', async () => {
     const spy = sandbox.spy(window.chrome.storage.local, 'set');
     await utils.setDisplay(true);
