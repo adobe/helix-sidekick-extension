@@ -28,7 +28,6 @@ import {
   getGitHubSettings,
   setConfig,
   getConfig,
-  updateProjectConfigs,
   populateUrlCache,
   queryUrlCache,
   setDisplay,
@@ -732,7 +731,6 @@ const internalActions = {
   // });
 
   await updateHelpContent();
-  await updateProjectConfigs();
   await setUserAgentHeader();
   await updateAdminAuthHeaderRules();
   log.info('sidekick extension initialized');
