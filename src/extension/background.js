@@ -336,8 +336,13 @@ function getLanguage() {
  * while respecting previous user acknowledgements.
  */
 async function updateHelpContent() {
-  const hlxSidekickHelpContent = await getConfig('sync', 'hlxSidekickHelpContent') || [];
-  log.debug('existing help content', hlxSidekickHelpContent);
+  // don't fetch new help content for at least 4 hours
+  const helpContentFetched = await getConfig('local', 'hlxSidekickHelpContentFetched');
+  if ((helpContentFetched || 0) > Date.now() - 14400000) {
+    return;
+  }
+  const helpContent = await getConfig('sync', 'hlxSidekickHelpContent') || [];
+  log.debug('existing help content', helpContent);
   const lang = getLanguage();
   const resp = await fetch(`https://www.hlx.live/tools/sidekick/${lang}/help.json`);
   if (resp.ok) {
@@ -361,9 +366,9 @@ async function updateHelpContent() {
           return true;
         })
         .map((incoming) => {
-          const index = hlxSidekickHelpContent.findIndex((existing) => existing.id === incoming.id);
+          const index = helpContent.findIndex((existing) => existing.id === incoming.id);
           return {
-            ...(index >= 0 ? hlxSidekickHelpContent[index] : {}),
+            ...(index >= 0 ? helpContent[index] : {}),
             ...incoming,
             steps: incoming.steps
               .split(',')
@@ -374,6 +379,10 @@ async function updateHelpContent() {
       log.info('updated help content', updatedHelpContent);
       await setConfig('sync', {
         hlxSidekickHelpContent: updatedHelpContent,
+      });
+      // remember when help content was last fetched
+      await setConfig('local', {
+        hlxSidekickHelpContentFetched: Date.now(),
       });
     } catch (e) {
       log.error('failed to update help content', e);
