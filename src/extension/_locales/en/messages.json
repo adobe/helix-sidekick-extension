@@ -33,6 +33,12 @@
   "bulk_error": {
     "message": "Bulk operation failed. Please try again later."
   },
+  "bulk_error_illegal_file_name": {
+    "message": "Only normalized, small latin letters, digits and hyphens are allowed in file names. The following file name contains illegal characters:"
+  },
+  "bulk_error_illegal_file_names": {
+    "message": "Only normalized, small latin letters, digits and hyphens are allowed in file names. The following file names contain illegal characters:"
+  },
   "bulk_error_preview_login_required": {
     "message": "You need to sign in to generate the preview of more than 100 files."
   },

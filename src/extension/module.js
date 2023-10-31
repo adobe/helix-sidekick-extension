@@ -1565,6 +1565,9 @@
 
     const toWebPath = (folder, item) => {
       const { path, type } = item;
+      if (['/', '*', '\\', '!', '?'].find((pattern) => path.includes(pattern))) {
+        return `!ILLEGAL!_${path}`;
+      }
       const nameParts = path.split('.');
       let [file, ext] = nameParts;
       if (isSharePointFolder(sk, sk.location) && ext === 'docx') {
@@ -1586,6 +1589,29 @@
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/^-|-$/g, '');
       return `${folder}${folder.endsWith('/') ? '' : '/'}${file}${ext ? `.${ext}` : ''}`;
+    };
+
+    const validateWebPaths = (paths) => {
+      const illegal = paths
+        .filter((path) => path.startsWith('!ILLEGAL!_'))
+        .map((path) => path.substring(10));
+      if (illegal.length > 0) {
+        sk.showModal({
+          message: [
+            i18n(sk, `bulk_error_illegal_file_name${illegal.length > 1 ? 's' : ''}`),
+            ...illegal,
+            createTag({
+              tag: 'button',
+              text: i18n(sk, 'close'),
+            }),
+          ],
+          level: 2,
+          sticky: true,
+        });
+        return [];
+      } else {
+        return paths;
+      }
     };
 
     const getBulkSelection = () => {
@@ -1770,7 +1796,11 @@
       host,
     }) => {
       const { config, status } = sk;
-      const paths = bulkSelection.map((item) => toWebPath(status.webPath, item));
+      const paths = validateWebPaths(bulkSelection
+        .map((item) => toWebPath(status.webPath, item)));
+      if (paths.length === 0) {
+        return;
+      }
       try {
         const bulkUrl = getAdminUrl(config, route, '/*');
         const bulkResp = await fetch(bulkUrl, {
@@ -1788,7 +1818,6 @@
           sk.showModal({
             message: i18n(sk, `bulk_error_${operation}_login_required`),
             level: 2,
-            sticky: true,
           });
           return;
         } else if (!bulkResp.ok) {
@@ -1849,7 +1878,12 @@
 
     const doBulkCopyUrls = async (hostProperty) => {
       const { config, status } = sk;
-      const urls = bulkSelection.map((item) => `https://${config[hostProperty]}${toWebPath(status.webPath, item)}`);
+      const paths = validateWebPaths(bulkSelection
+        .map((item) => toWebPath(status.webPath, item)));
+      if (paths.length === 0) {
+        return;
+      }
+      const urls = paths.map((path) => `https://${config[hostProperty]}${path}`);
       navigator.clipboard.writeText(urls.join('\n'));
       sk.showModal(i18n(sk, `copied_url${urls.length !== 1 ? 's' : ''}`));
     };

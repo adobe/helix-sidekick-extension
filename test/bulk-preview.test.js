@@ -355,4 +355,27 @@ describe('Test bulk preview plugin', () => {
       'Did not refetch status after navigation',
     );
   }).timeout(IT_DEFAULT_TIMEOUT);
+
+  it('Bulk preview plugin rejects illegal file name in gdrive', async () => {
+    const { setup, fixture } = TESTS[1];
+    nock.sidekick(setup);
+    nock.admin(setup, { persist: true });
+    const { notification } = await new SidekickTest({
+      browser,
+      page,
+      plugin: 'bulk-preview',
+      acceptDialogs: true,
+      fixture,
+      url: setup.getUrl('edit', 'admin'),
+      loadModule: true,
+      pre: (p) => p.evaluate(() => {
+        // select file with illegal name
+        document.getElementById('file-illegal').click();
+      }),
+    }).run();
+    assert.ok(
+      notification.message?.includes('illegal characters'),
+      'Did not reject illegal file name',
+    );
+  }).timeout(IT_DEFAULT_TIMEOUT);
 });
