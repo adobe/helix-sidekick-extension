@@ -46,10 +46,10 @@ const LANGS = [
   'fr',
   'it',
   'ja',
-  'ko-kr',
-  'pt-br',
-  'zh-cn',
-  'zh-tw',
+  'ko',
+  'pt_BR',
+  'zh_CN',
+  'zh_TW',
 ];
 
 /**
@@ -321,15 +321,16 @@ function toggle(id) {
 }
 
 /**
- * Retrieves the sidekick language preferred by the user.
+ * Retrieves the help language based on the language preferred by the user.
  * The default language is <code>en</code>.
  * @private
  * @return {string} The language
  */
-function getLanguage() {
-  return navigator.languages
-    .map((prefLang) => LANGS.find((lang) => prefLang.toLowerCase().startsWith(lang)))
-    .filter((lang) => !!lang)[0] || LANGS[0];
+function getHelpLanguage() {
+  const uLang = chrome.i18n.getUILanguage();
+  const lang = LANGS.find((l) => uLang.replace('-', '_') === l
+    || l.startsWith(uLang.split('_')[0])) || LANGS[0];
+  return lang.replace('_', '-').toLowerCase();
 }
 
 /**
@@ -339,7 +340,7 @@ function getLanguage() {
 async function updateHelpContent() {
   const hlxSidekickHelpContent = await getConfig('sync', 'hlxSidekickHelpContent') || [];
   log.debug('existing help content', hlxSidekickHelpContent);
-  const lang = getLanguage();
+  const lang = getHelpLanguage();
   const resp = await fetch(`https://www.hlx.live/tools/sidekick/${lang}/help.json`);
   if (resp.ok) {
     try {
