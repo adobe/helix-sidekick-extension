@@ -474,6 +474,9 @@
   "open_view_doc_source": {
     "message": "View document source"
   },
+  "view_doc_source_copied": {
+    "message": "Copied!"
+  },
   "open_url": {
     "message": "Open URL"
   },
