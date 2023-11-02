@@ -48,7 +48,6 @@
         "fr.css",
         "lib/js-yaml.min.js",
         "lib/polyfills.min.js",
-        "lib/process-queue.js",
         "module.js",
         "sidekick.js",
         "utils.js",

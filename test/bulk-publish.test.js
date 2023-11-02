@@ -24,18 +24,10 @@ const TESTS = [{
   env: 'sharepoint',
   setup: new Setup('blog'),
   fixture: SHAREPOINT_FIXTURE,
-  mockRequests: (nock) => {
-    nock('https://main--blog--adobe.hlx.live').persist().get(/.*/).reply(200, '');
-    nock('https://blog.adobe.com').persist().get(/.*/).reply(200, '');
-  },
 }, {
   env: 'gdrive',
   setup: new Setup('pages'),
   fixture: GDRIVE_FIXTURE,
-  mockRequests: (nock) => {
-    nock('https://main--pages--adobe.hlx.live').persist().get(/.*/).reply(200, '');
-    nock('https://pages.adobe.com').persist().get(/.*/).reply(200, '');
-  },
 }];
 
 describe('Test bulk publish plugin', () => {
@@ -150,23 +142,17 @@ describe('Test bulk publish plugin', () => {
     env,
     fixture,
     setup,
-    mockRequests,
   }) => {
     it(`Bulk publish plugin publishes existing selection in ${env}`, async () => {
-      mockRequests(nock);
-      const { owner, repo, ref } = setup.sidekickConfig;
       nock.sidekick(setup);
-      nock.admin(setup, {
-        route: 'status',
-        type: 'admin',
-        persist: true,
+      nock.bulkJob(setup, {
+        route: 'live',
+        topic: 'publish',
+        resources: [
+          { path: '/documents/file.pdf', status: 200 },
+        ],
       });
-      nock.admin(setup, {
-        route: 'preview',
-        type: 'html',
-        method: 'post',
-      });
-      const { requestsMade } = await new SidekickTest({
+      const { notification } = await new SidekickTest({
         browser,
         page,
         fixture,
@@ -174,32 +160,28 @@ describe('Test bulk publish plugin', () => {
         configJson: setup.configJson,
         url: setup.getUrl('edit', 'admin'),
         plugin: 'bulk-publish',
-        pluginSleep: 500,
+        pluginSleep: 5000,
         loadModule: true,
         acceptDialogs: true,
       }).run();
-      const updateReq = requestsMade
-        .filter((r) => r.method === 'POST')
-        .find((r) => r.url === `https://admin.hlx.page/live/${owner}/${repo}/${ref}/documents/file.pdf`);
-      assert.ok(updateReq, `Publish URL not updated in ${env}`);
+      assert.ok(
+        notification?.message.startsWith('1 file successfully published'),
+        'Did not bulk publish existing selection',
+      );
     }).timeout(IT_DEFAULT_TIMEOUT);
 
     it(`Bulk publish plugin publishes user selection in ${env}, copies publish URLs to clipboard and opens them`, async () => {
-      mockRequests(nock);
-      const { owner, repo, ref } = setup.sidekickConfig;
       nock.sidekick(setup);
-      nock.admin(setup, {
-        route: 'status',
-        type: 'admin',
-        persist: true,
+      nock.bulkJob(setup, {
+        route: 'live',
+        topic: 'publish',
+        resources: [
+          { path: '/documents/file.pdf', status: 200 },
+          { path: `/documents/document${env === 'gdrive' ? '.docx' : ''}`, status: 304 },
+          { path: `/documents/spreadsheet${env === 'gdrive' ? '.xlsx' : ''}`, status: 304 },
+        ],
       });
-      nock.admin(setup, {
-        route: 'preview',
-        type: 'html',
-        method: 'post',
-        persist: true,
-      });
-      const { requestsMade, checkPageResult } = await new SidekickTest({
+      const { notification, checkPageResult } = await new SidekickTest({
         browser,
         page,
         fixture,
@@ -207,7 +189,7 @@ describe('Test bulk publish plugin', () => {
         configJson: setup.configJson,
         url: setup.getUrl('edit', 'admin'),
         plugin: 'bulk-publish',
-        pluginSleep: 1000,
+        pluginSleep: 5000,
         pre: (p) => p.evaluate(() => {
           // user selects more files
           document.getElementById('file-word').click();
@@ -233,18 +215,10 @@ describe('Test bulk publish plugin', () => {
         loadModule: true,
         acceptDialogs: true,
       }).run();
-      const updateReqs = requestsMade
-        .filter((r) => r.method === 'POST')
-        .map((r) => r.url);
       const [clipboardText, openedWindows] = checkPageResult;
-      assert.deepEqual(
-        updateReqs,
-        [
-          `https://admin.hlx.page/live/${owner}/${repo}/${ref}/documents/file.pdf`,
-          `https://admin.hlx.page/live/${owner}/${repo}/${ref}/documents/document${env === 'gdrive' ? '.docx' : ''}`,
-          `https://admin.hlx.page/live/${owner}/${repo}/${ref}/documents/spreadsheet${env === 'gdrive' ? '.xlsx' : '.json'}`,
-        ],
-        `User selection not recognized in ${env}`,
+      assert.ok(
+        notification?.message.startsWith('3 files successfully published'),
+        'Did not bulk publish user selection',
       );
       assert.strictEqual(clipboardText.split('\n').length, 3, `3 URLs not copied to clipboard in ${env}: \n${clipboardText}`);
       assert.strictEqual(openedWindows.length, 3, `3 URLs not opened in ${env}: \n${openedWindows.join('\n')}`);
@@ -252,7 +226,6 @@ describe('Test bulk publish plugin', () => {
   });
 
   it('Bulk publish plugin handles error response', async () => {
-    TESTS[0].mockRequests(nock);
     const { setup } = TESTS[0];
     nock.sidekick(setup);
     nock.admin(setup, {
@@ -261,7 +234,7 @@ describe('Test bulk publish plugin', () => {
       persist: true,
     });
     nock.admin(setup, {
-      route: 'preview',
+      route: 'live',
       type: 'html',
       method: 'post',
       status: [404],
@@ -283,20 +256,16 @@ describe('Test bulk publish plugin', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Bulk publish plugin handles partial error response', async () => {
-    TESTS[0].mockRequests(nock);
     const { setup } = TESTS[0];
     nock.sidekick(setup);
-    nock.admin(setup, {
-      route: 'status',
-      type: 'admin',
-      persist: true,
-    });
-    nock.admin(setup, {
-      route: 'preview',
-      type: 'html',
-      method: 'post',
-      status: [200, 404],
-      persist: true,
+    nock.bulkJob(setup, {
+      route: 'live',
+      topic: 'publish',
+      resources: [
+        { path: '/documents/file.pdf', status: 200 },
+        { path: '/documents/document', status: 404 },
+      ],
+      failed: 1,
     });
     const { notification } = await new SidekickTest({
       browser,
@@ -304,7 +273,7 @@ describe('Test bulk publish plugin', () => {
       fixture: SHAREPOINT_FIXTURE,
       url: setup.getUrl('edit', 'admin'),
       plugin: 'bulk-publish',
-      pluginSleep: 1000,
+      pluginSleep: 5000,
       pre: (p) => p.evaluate(() => {
         // select another file
         document.getElementById('file-word').click();
@@ -319,25 +288,20 @@ describe('Test bulk publish plugin', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Bulk publish plugin refetches status after navigation', async () => {
-    TESTS[0].mockRequests(nock);
     const { setup } = TESTS[0];
     nock.sidekick(setup);
-    nock.admin(setup, {
-      route: 'status',
-      type: 'admin',
-      persist: true,
-    });
-    nock.admin(setup, {
+    nock.bulkJob(setup, {
       route: 'live',
-      type: 'html',
-      method: 'post',
-      status: [200],
+      topic: 'publish',
+      resources: [
+        { path: '/documents/file.pdf', status: 200 },
+      ],
     });
     const { requestsMade } = await new SidekickTest({
       browser,
       page,
       plugin: 'bulk-publish',
-      pluginSleep: 1000,
+      pluginSleep: 5000,
       acceptDialogs: true,
       fixture: SHAREPOINT_FIXTURE,
       url: setup.getUrl('edit', 'admin'),
