@@ -4,7 +4,7 @@
   "description": "AEM Sidekick Extension",
   "type": "module",
   "scripts": {
-    "lint": "eslint .",
+    "lint": "npm run build:module && eslint .",
     "test:mocha": "c8 mocha",
     "test:mocha-ci": "c8 mocha",
     "test:wtr": "wtr \"./test/unit/*.test.js\" \"./test/extension/*.test.js\" \"./test/view-doc-source/*.test.js\"",
