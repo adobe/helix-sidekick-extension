@@ -11,6 +11,8 @@
  */
 /* eslint-disable no-console, no-alert */
 
+import sampleRUM from './rum.js';
+
 (() => {
   /**
    * @typedef {Object} ElemConfig
@@ -629,8 +631,6 @@
     // prepend custom views
     views = (specialViews || []).concat(views);
 
-    const sampleRUM = await import(`${scriptRoot}/rum.js`);
-
     return {
       ...config,
       ref,
@@ -645,7 +645,6 @@
       views,
       devUrl,
       lang: lang || getLanguage(),
-      sampleRUM,
     };
   }
 
@@ -935,7 +934,7 @@
       sk.showModal(i18n(sk, 'config_shareurl_copied').replace('$1', config.project));
     }
     // log telemetry
-    config.sampleRUM('sidekick:share', {
+    sampleRUM('sidekick:share', {
       source: sk.location.href,
       target: shareUrl,
     });
@@ -989,7 +988,7 @@
       ];
       if (name.startsWith('custom:') || userEvents.includes(name)) {
         // log telemetry
-        config.sampleRUM(`sidekick:${name}`, {
+        sampleRUM(`sidekick:${name}`, {
           source: data?.sourceUrl || sk.location.href,
           target: data?.targetUrl || sk.status.webPath,
         });
@@ -1102,6 +1101,10 @@
             editUrl,
             `hlx-sk-edit--${config.owner}/${config.repo}/${config.ref}${status.webPath}`,
           );
+          sampleRUM('sidekick:edit', {
+            source: sk.location.href,
+            target: editUrl,
+          });
         },
         isEnabled: (sidekick) => sidekick.status.edit && sidekick.status.edit.url,
       },
@@ -1934,7 +1937,7 @@
                         palette.classList.remove('hlx-sk-hidden');
                         button.classList.add('pressed');
                         // log telemetry
-                        sk.config.sampleRUM('sidekick:paletteclosed', {
+                        sampleRUM('sidekick:paletteclosed', {
                           source: sk.location.href,
                           target: sk.status.webPath,
                         });
@@ -2660,7 +2663,7 @@
     if (userAction) {
       // log telemetry
       /* c8 ignore next */
-      sk.config.sampleRUM('sidekick:viewhidden', {
+      sampleRUM('sidekick:viewhidden', {
         source: sk.location.href,
         target: sk.status.webPath,
       });
@@ -3001,8 +3004,8 @@
     show() {
       if (this.root.classList.contains('hlx-sk-hidden')) {
         this.root.classList.remove('hlx-sk-hidden');
+        fireEvent(this, 'shown');
       }
-      fireEvent(this, 'shown');
       return this;
     }
 

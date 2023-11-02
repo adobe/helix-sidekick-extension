@@ -18,7 +18,7 @@ import {
   addMetadataBlock,
 } from './blocks.js';
 
-import { sampleRUM } from '../../rum.js';
+import sampleRUM from '../../rum.js';
 
 /**
  * Returns the current tab
