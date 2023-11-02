@@ -267,9 +267,6 @@
   "copy": {
     "message": "Copia"
   },
-  "copied": {
-    "message": "Copied"
-  },
   "copy_live_url": {
     "message": "Copia URL live"
   },
@@ -470,6 +467,9 @@
   },
   "open_view_doc_source": {
     "message": "Visualizza origine del documento"
+  },
+  "view_doc_source_copied": {
+    "message": "Copied!"
   },
   "please_wait": {
     "message": "Attendi..."
