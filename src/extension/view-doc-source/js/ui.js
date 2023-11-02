@@ -222,7 +222,7 @@ const load = async () => {
   const copyButton = document.getElementById('copy');
   copyButton.addEventListener('click', () => {
     copyHTMLToClipboard(editor.innerHTML);
-    copyButton.innerHTML = chrome.i18n.getMessage('doc_source_copied');
+    copyButton.innerHTML = chrome.i18n.getMessage('view_doc_source_copied');
     copyButton.classList.add('copied');
     setTimeout(() => {
       copyButton.innerHTML = chrome.i18n.getMessage('copy');

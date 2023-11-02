@@ -468,7 +468,7 @@
   "open_view_doc_source": {
     "message": "Dokumentenquelle anzeigen"
   },
-  "doc_source_copied": {
+  "view_doc_source_copied": {
     "message": "Copied!"
   },
   "please_wait": {
