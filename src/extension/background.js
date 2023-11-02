@@ -143,7 +143,7 @@ async function guessIfFranklinSite({ id }) {
     chrome.scripting.executeScript({
       target: { tabId: id },
       func: () => {
-        const isFranklinSite = document.body.querySelector('main > div') !== null;
+        const isFranklinSite = document.body.querySelector(':scope > main > div') !== null;
         chrome.runtime.sendMessage({ isFranklinSite });
       },
     });
@@ -211,6 +211,14 @@ async function checkContextMenu({ url: tabUrl, id, active }, configs = []) {
           chrome.contextMenus.create({
             id: 'openViewDocSource',
             title: i18n('open_view_doc_source'),
+            contexts: [
+              'action',
+            ],
+          });
+        } else {
+          chrome.contextMenus.create({
+            id: 'openImport',
+            title: i18n('open_import'),
             contexts: [
               'action',
             ],
@@ -389,6 +397,18 @@ async function updateHelpContent() {
 function openViewDocSource(id) {
   chrome.windows.create({
     url: chrome.runtime.getURL(`/view-doc-source/index.html?tabId=${id}`),
+    type: 'popup',
+    width: 740,
+  });
+}
+
+/**
+ * Open the import popup
+ * @param {String} id The tab id
+ */
+function openImport(id) {
+  chrome.windows.create({
+    url: chrome.runtime.getURL(`/import/index.html?tabId=${id}`),
     type: 'popup',
     width: 740,
   });
@@ -647,6 +667,7 @@ const internalActions = {
     }
   },
   openViewDocSource: async ({ id }) => openViewDocSource(id),
+  openImport: async ({ id }) => openImport(id),
   openPreview: ({ url }) => {
     const { owner, repo, ref = 'main' } = getGitHubSettings(url);
     if (owner && repo) {

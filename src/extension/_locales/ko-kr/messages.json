@@ -468,6 +468,9 @@
   "open_view_doc_source": {
     "message": "문서 소스 보기"
   },
+  "open_import": {
+    "message": "Try default import"
+  },
   "please_wait": {
     "message": "잠시 기다려 주십시오."
   },

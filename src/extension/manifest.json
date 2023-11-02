@@ -53,7 +53,8 @@
         "sidekick.js",
         "utils.js",
         "view/json/json.html",
-        "view-doc-source/js/content.js"
+        "view-doc-source/js/content.js",
+        "import/js/content.js"
       ],
       "matches": [
         "<all_urls>"

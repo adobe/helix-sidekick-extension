@@ -19,7 +19,9 @@ module.exports = {
       'assets': [
         'package.json',
         'CHANGELOG.md',
-        'src/safari/helix-sidekick-extension.xcodeproj/project.pbxproj'
+        'src/safari/helix-sidekick-extension.xcodeproj/project.pbxproj',
+        'src/extension/lib/importer.lib.js',
+        'src/extension/lib/importer.lib.js.LICENSE.txt',
       ],
       'message': 'chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}',
     }],

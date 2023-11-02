@@ -459,6 +459,9 @@
   "open_view_doc_source": {
     "message": "View document source"
   },
+  "open_import": {
+    "message": "Try default import"
+  },
   "open_url": {
     "message": "Open URL"
   },
@@ -533,7 +536,7 @@
     "message": "View"
   },
   "title": {
-    "message": "AEM Sidekick"
+    "message": "(experimental) AEM Sidekick - try default import"
   },
   "today_at": {
     "message": "Today at $1"

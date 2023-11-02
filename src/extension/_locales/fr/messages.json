@@ -468,6 +468,9 @@
   "open_view_doc_source": {
     "message": "Afficher la source du document"
   },
+  "open_import": {
+    "message": "Try default import"
+  },
   "please_wait": {
     "message": "Veuillez patienter..."
   },

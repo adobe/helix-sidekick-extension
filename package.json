@@ -16,7 +16,8 @@
     "start": "node ./debug/debug.js",
     "semantic-release": "semantic-release",
     "update-version": "node ./build/updateVersion.js",
-    "build": "npm run build:safari && npm run build:chrome",
+    "build": "npm run build:module && npm run build:safari && npm run build:chrome",
+    "build:module": "webpack --config src/module/webpack.cjs",
     "build:safari": "node ./build/build.js safari",
     "build:chrome": "node ./build/build.js chrome",
     "publish:chrome": "node ./build/publish.js chrome",
@@ -64,15 +65,30 @@
     "mocha": "10.2.0",
     "mocha-multi-reporters": "1.5.1",
     "nock": "13.3.6",
+    "node-polyfill-webpack-plugin": "2.0.1",
     "puppeteer": "21.1.1",
     "puppeteer-core": "21.1.1",
     "puppeteer-to-istanbul": "1.4.0",
     "semantic-release": "22.0.5",
     "semantic-release-react-native": "1.8.2",
     "shelljs": "0.8.5",
-    "sinon": "17.0.0"
+    "sinon": "17.0.0",
+    "webpack": "5.88.2",
+    "webpack-cli": "5.1.4"
   },
   "lint-staged": {
     "*.js": "eslint"
+  },
+  "dependencies": {
+    "@adobe/helix-importer": "file:../helix-importer",
+    "@adobe/mdast-util-gridtables": "3.0.2",
+    "@adobe/remark-gridtables": "2.0.2",
+    "hast-util-raw": "9.0.1",
+    "hast-util-to-html": "9.0.0",
+    "mdast-util-to-hast": "13.0.2",
+    "rehype-format": "5.0.0",
+    "remark-gfm": "4.0.0",
+    "remark-parse": "11.0.0",
+    "unified": "11.0.4"
   }
 }
