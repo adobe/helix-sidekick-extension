@@ -468,6 +468,9 @@
   "open_view_doc_source": {
     "message": "ドキュメントソースを表示"
   },
+  "doc_source_copied": {
+    "message": "Copied!"
+  },
   "please_wait": {
     "message": "お待ちください..."
   },

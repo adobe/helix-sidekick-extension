@@ -267,6 +267,9 @@
   "copy": {
     "message": "Copia"
   },
+  "copied": {
+    "message": "Copied"
+  },
   "copy_live_url": {
     "message": "Copia URL live"
   },

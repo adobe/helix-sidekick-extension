@@ -468,6 +468,9 @@
   "open_view_doc_source": {
     "message": "Afficher la source du document"
   },
+  "doc_source_copied": {
+    "message": "Copié !"
+  },
   "please_wait": {
     "message": "Veuillez patienter..."
   },
