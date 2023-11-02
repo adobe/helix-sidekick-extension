@@ -2743,6 +2743,9 @@ import sampleRUM from './rum.js';
               click: () => {
                 this.fetchStatus();
                 updateModifiedDates(this);
+                sampleRUM('sidekick:info', {
+                  source: this.location.href,
+                });
               },
             },
             button: {
