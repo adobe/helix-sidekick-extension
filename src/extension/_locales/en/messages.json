@@ -460,7 +460,7 @@
     "message": "View document source"
   },
   "open_import": {
-    "message": "Try default import"
+    "message": "View imported document"
   },
   "open_url": {
     "message": "Open URL"
