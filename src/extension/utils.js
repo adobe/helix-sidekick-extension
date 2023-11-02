@@ -711,23 +711,3 @@ export function toggleDisplay(cb) {
     setDisplay(!display, cb);
   });
 }
-
-/**
- * Updates the legacy project configurations to the new format.
- * @deprecated
- * @todo remove
- */
-export async function updateProjectConfigs() {
-  const configs = await getConfig('sync', 'hlxSidekickConfigs');
-  const projects = await getConfig('sync', 'hlxSidekickProjects');
-  if (configs && !projects) {
-    // migrate old to new project configs
-    for (let i = 0; i < configs.length; i += 1) {
-      // eslint-disable-next-line no-await-in-loop
-      await setProject(configs[i]);
-    }
-    // TODO: remove old project configs
-    // await removeConfig('sync', 'hlxSidekickConfigs');
-    log.info('project config updated');
-  }
-}

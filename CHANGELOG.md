@@ -1,3 +1,15 @@
+# [6.34.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.33.0...v6.34.0) (2023-11-02)
+
+
+### Bug Fixes
+
+* localization issues ([ab777eb](https://github.com/adobe/helix-sidekick-extension/commit/ab777ebccd7ec67c79d015be470ca4c165093774))
+
+
+### Features
+
+* cache help content for 4 hours ([251f828](https://github.com/adobe/helix-sidekick-extension/commit/251f8288c20d7b09211cfb8cba16868eccafff73))
+
 # [6.33.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.32.0...v6.33.0) (2023-10-24)
 
 

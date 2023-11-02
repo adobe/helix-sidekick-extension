@@ -1,6 +1,6 @@
 {
   "name": "@adobe/helix-sidekick-extension",
-  "version": "6.33.0",
+  "version": "6.34.0",
   "description": "AEM Sidekick Extension",
   "type": "module",
   "scripts": {
@@ -42,8 +42,8 @@
     "reporter-options": "configFile=.mocha-multi.json"
   },
   "devDependencies": {
-    "@adobe/eslint-config-helix": "2.0.3",
-    "@adobe/fetch": "4.1.0",
+    "@adobe/eslint-config-helix": "2.0.4",
+    "@adobe/fetch": "4.1.1",
     "@babel/eslint-parser": "7.22.15",
     "@esm-bundle/chai": "4.3.4-fix.0",
     "@semantic-release/changelog": "6.0.3",
