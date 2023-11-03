@@ -22,6 +22,7 @@ jobs:
         run: |
           cp src/bookmarklet/app.js _target/tools/sidekick/
           cp src/extension/module.js _target/tools/sidekick/
+          cp src/extension/rum.js _target/tools/sidekick/
           cp src/extension/app.css _target/tools/sidekick/
           cp -r src/extension/_locales _target/tools/sidekick/
           cp -r src/extension/view _target/tools/sidekick/

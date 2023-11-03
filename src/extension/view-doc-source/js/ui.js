@@ -18,6 +18,8 @@ import {
   addMetadataBlock,
 } from './blocks.js';
 
+import sampleRUM from '../../rum.js';
+
 /**
  * Returns the current tab
  * @returns {chrome.tabs.Tab} The current tab
@@ -228,11 +230,19 @@ const load = async () => {
       copyButton.innerHTML = chrome.i18n.getMessage('copy');
       copyButton.classList.remove('copied');
     }, 2000);
+
+    sampleRUM('sidekick:copydocsource', {
+      source: tab.url,
+    });
   });
 
   editor.addEventListener('input', debounce(() => {
     sendMessage({ fct: 'setMain', params: { html: htmlEditionToSource() } });
   }, 500));
+
+  sampleRUM('sidekick:viewdocsource', {
+    source: tab.url,
+  });
 };
 
 load();

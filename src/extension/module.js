@@ -11,6 +11,8 @@
  */
 /* eslint-disable no-console, no-alert */
 
+import sampleRUM from './rum.js';
+
 (() => {
   /**
    * @typedef {Object} ElemConfig
@@ -288,73 +290,6 @@
     DEFAULT: 0,
     CUSTOM: 1,
   };
-
-  /**
-   * Log RUM for sidekick telemetry.
-   * @private
-   * @param {string} checkpoint identifies the checkpoint in funnel
-   * @param {Object} data additional data for RUM sample
-   */
-  function sampleRUM(checkpoint, data = {}) {
-    sampleRUM.defer = sampleRUM.defer || [];
-    const defer = (fnname) => {
-      sampleRUM[fnname] = sampleRUM[fnname]
-        || ((...args) => sampleRUM.defer.push({ fnname, args }));
-    };
-    sampleRUM.drain = sampleRUM.drain
-      || ((dfnname, fn) => {
-        sampleRUM[dfnname] = fn;
-        sampleRUM.defer
-          .filter(({ fnname }) => dfnname === fnname)
-          .forEach(({ fnname, args }) => sampleRUM[fnname](...args));
-      });
-    sampleRUM.on = (chkpnt, fn) => {
-      sampleRUM.cases[chkpnt] = fn;
-    };
-    defer('observe');
-    defer('cw');
-    try {
-      window.hlx = window.hlx || {};
-      const sk = window.hlx.sidekick;
-      if (!window.hlx.rum) {
-        const usp = new URLSearchParams(sk.location.search);
-        const weight = (usp.get('hlx-sk-rum') === 'on') ? 1 : 10; // with parameter, weight is 1. Defaults to 10.
-        // eslint-disable-next-line no-bitwise
-        const hashCode = (s) => s.split('').reduce((a, b) => (((a << 5) - a) + b.charCodeAt(0)) | 0, 0);
-        const id = `${hashCode(sk.location.href)}-${new Date().getTime()}-${Math.random().toString(16).substr(2, 14)}`;
-        const random = Math.random();
-        const isSelected = (random * weight < 1);
-        // eslint-disable-next-line object-curly-newline
-        window.hlx.rum = { weight, id, random, isSelected, sampleRUM };
-      }
-      const { weight, id } = window.hlx.rum;
-      if (window.hlx && window.hlx.rum && window.hlx.rum.isSelected) {
-        const sendPing = () => {
-          // eslint-disable-next-line object-curly-newline, max-len, no-use-before-define
-          const body = JSON.stringify({ weight, id, referer: sk.location.href, generation: window.hlx.RUM_GENERATION, checkpoint, ...data });
-          const url = `https://rum.hlx.page/.rum/${weight}`;
-          // eslint-disable-next-line no-unused-expressions
-          navigator.sendBeacon(url, body);
-        };
-        sampleRUM.cases = sampleRUM.cases || {
-          cwv: () => sampleRUM.cwv(data) || true,
-          lazy: () => {
-            // use classic script to avoid CORS issues
-            const script = document.createElement('script');
-            script.src = 'https://rum.hlx.page/.rum/@adobe/helix-rum-enhancer@^1/src/index.js';
-            document.head.appendChild(script);
-            return true;
-          },
-        };
-        sendPing(data);
-        if (sampleRUM.cases[checkpoint]) {
-          sampleRUM.cases[checkpoint]();
-        }
-      }
-    } catch (error) {
-      // something went wrong
-    }
-  }
 
   /**
    * Retrieves project details from a host name.
@@ -1000,7 +935,6 @@
       navigator.clipboard.writeText(shareUrl);
       sk.showModal(i18n(sk, 'config_shareurl_copied').replace('$1', config.project));
     }
-    // log telemetry
     sampleRUM('sidekick:share', {
       source: sk.location.href,
       target: shareUrl,
@@ -1044,8 +978,6 @@
         'unpublished',
         'deleted',
         'envswitched',
-        'page-info',
-        'user',
         'loggedin',
         'loggedout',
         'helpnext',
@@ -1054,7 +986,6 @@
         'helpoptedout',
       ];
       if (name.startsWith('custom:') || userEvents.includes(name)) {
-        // log telemetry
         sampleRUM(`sidekick:${name}`, {
           source: data?.sourceUrl || sk.location.href,
           target: data?.targetUrl || sk.status.webPath,
@@ -1168,6 +1099,10 @@
             editUrl,
             `hlx-sk-edit--${config.owner}/${config.repo}/${config.ref}${status.webPath}`,
           );
+          sampleRUM('sidekick:editoropened', {
+            source: sk.location.href,
+            target: editUrl,
+          });
         },
         isEnabled: (sidekick) => sidekick.status.edit && sidekick.status.edit.url,
       },
@@ -2133,7 +2068,6 @@
                       } else {
                         palette.classList.remove('hlx-sk-hidden');
                         button.classList.add('pressed');
-                        // log telemetry
                         sampleRUM('sidekick:paletteclosed', {
                           source: sk.location.href,
                           target: sk.status.webPath,
@@ -2858,7 +2792,6 @@
       });
     }
     if (userAction) {
-      // log telemetry
       sampleRUM('sidekick:viewhidden', {
         source: sk.location.href,
         target: sk.status.webPath,
@@ -2939,6 +2872,9 @@
               click: () => {
                 this.fetchStatus();
                 updateModifiedDates(this);
+                sampleRUM('sidekick:info', {
+                  source: this.location.href,
+                });
               },
             },
             button: {
@@ -3174,6 +3110,12 @@
         config: this.config,
         location: this.location,
       });
+
+      const skMode = this.config.scriptUrl.startsWith('https://www.hlx.live/')
+        ? 'bookmarklet' : 'extension';
+      sampleRUM(`sidekick:load:${skMode}`, {
+        source: this.location.href,
+      });
       return this;
     }
 
@@ -3200,8 +3142,8 @@
     show() {
       if (this.root.classList.contains('hlx-sk-hidden')) {
         this.root.classList.remove('hlx-sk-hidden');
+        fireEvent(this, 'shown');
       }
-      fireEvent(this, 'shown');
       return this;
     }
 
