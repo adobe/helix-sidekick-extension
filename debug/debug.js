@@ -11,6 +11,7 @@
  */
 
 import express from 'express';
+import request from 'request';
 
 const debugServer = express();
 const title = 'Sidekick Debug Server';
@@ -19,6 +20,16 @@ const port = 3001;
 debugServer.get('/', (_, res) => {
   res.redirect(301, '/debug/index.html')
 });
+
+debugServer.get('/tools/sidekick/app.js', (req, res) => {
+  request(`${req.protocol}://${req.hostname}:${port}/src/bookmarklet/app.js`).pipe(res);
+});
+
+debugServer.get('/tools/sidekick/*', (req, res) => {
+  const path = req.url.replace('/tools/sidekick', '');
+  request(`${req.protocol}://${req.hostname}:${port}/src/extension${path}`).pipe(res);
+});
+
 
 debugServer.use(express.static('.', {
   index: false,

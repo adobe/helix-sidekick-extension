@@ -22,12 +22,12 @@ jobs:
         run: |
           cp src/bookmarklet/app.js _target/tools/sidekick/
           cp src/extension/module.js _target/tools/sidekick/
+          cp src/extension/rum.js _target/tools/sidekick/
           cp src/extension/app.css _target/tools/sidekick/
           cp -r src/extension/_locales _target/tools/sidekick/
           cp -r src/extension/view _target/tools/sidekick/
           cp docs/config.schema.json _target/tools/sidekick/
           mkdir -p _target/tools/sidekick/lib
-          cp src/extension/lib/process-queue.js _target/tools/sidekick/lib/
       - name: Create branch commit and pull request in target repo
         uses: peter-evans/create-pull-request@v5
         with:

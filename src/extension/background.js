@@ -142,7 +142,7 @@ async function guessIfFranklinSite({ id }) {
     chrome.scripting.executeScript({
       target: { tabId: id },
       func: () => {
-        const isFranklinSite = document.body.querySelector('main > div') !== null;
+        const isFranklinSite = document.body.querySelector(':scope > main > div') !== null;
         chrome.runtime.sendMessage({ isFranklinSite });
       },
     });

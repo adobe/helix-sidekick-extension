@@ -468,6 +468,9 @@
   "open_view_doc_source": {
     "message": "查看文档源"
   },
+  "view_doc_source_copied": {
+    "message": "Copied!"
+  },
   "please_wait": {
     "message": "请稍候..."
   },
