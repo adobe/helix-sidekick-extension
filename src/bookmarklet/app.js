@@ -104,6 +104,7 @@
     moduleScript.id = 'hlx-sk-module';
     moduleScript.src = (appScript && appScript.getAttribute('src').replace('app.js', 'module.js'))
       || 'https://www.hlx.live/tools/sidekick/module.js';
+    moduleScript.type = 'module';
     moduleScript.addEventListener('load', async () => {
       // get base config from script data attribute
       const baseConfig = appScript
