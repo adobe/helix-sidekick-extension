@@ -10,11 +10,11 @@
  * governing permissions and limitations under the License.
  */
 /**
-   * Log RUM for sidekick telemetry.
-   * @private
-   * @param {string} checkpoint identifies the checkpoint in funnel
-   * @param {Object} data additional data for RUM sample
-   */
+ * Log RUM for sidekick telemetry.
+ * @private
+ * @param {string} checkpoint identifies the checkpoint in funnel
+ * @param {Object} data additional data for RUM sample
+ */
 export default function sampleRUM(checkpoint, data = {}) {
   sampleRUM.defer = sampleRUM.defer || [];
   const defer = (fnname) => {
