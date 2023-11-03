@@ -366,6 +366,7 @@ export class SidekickTest extends EventEmitter {
             const moduleScript = document.createElement('script');
             moduleScript.id = 'hlx-sk-module';
             moduleScript.src = '../../src/extension/module.js';
+            moduleScript.type = 'module';
             moduleScript.addEventListener('load', async () => {
               skCfg.scriptUrl = 'https://www.hlx.live/tools/sidekick/module.js';
               window.hlx.sidekickConfig = skCfg;
