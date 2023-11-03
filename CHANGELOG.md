@@ -1,3 +1,18 @@
+# [6.35.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.34.0...v6.35.0) (2023-11-03)
+
+
+### Bug Fixes
+
+* reject illegal file names ([ed6b939](https://github.com/adobe/helix-sidekick-extension/commit/ed6b9390fc300f6882d8bf2178493aed2dce225a))
+* tests reveal flow ([cba9f2f](https://github.com/adobe/helix-sidekick-extension/commit/cba9f2f57f6c0c8ab7d9240ee75f08a226d14de0))
+
+
+### Features
+
+* import rum.js and add missing event ([34d8035](https://github.com/adobe/helix-sidekick-extension/commit/34d80355d190ce170c3c619af5baf66f68fddbaf))
+* track info click ([3b0424d](https://github.com/adobe/helix-sidekick-extension/commit/3b0424d992ecfde5bfc334da69527811027d9339))
+* **view-doc-source:** add rum instrumentation ([c2f3aea](https://github.com/adobe/helix-sidekick-extension/commit/c2f3aeafca34fa292f217dcdd97a4d5e1b4a1282))
+
 # [6.34.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.33.0...v6.34.0) (2023-11-02)
 
 
