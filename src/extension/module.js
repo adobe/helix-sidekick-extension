@@ -933,7 +933,6 @@ import sampleRUM from './rum.js';
       navigator.clipboard.writeText(shareUrl);
       sk.showModal(i18n(sk, 'config_shareurl_copied').replace('$1', config.project));
     }
-    // log telemetry
     sampleRUM('sidekick:share', {
       source: sk.location.href,
       target: shareUrl,
@@ -977,8 +976,6 @@ import sampleRUM from './rum.js';
         'unpublished',
         'deleted',
         'envswitched',
-        'page-info',
-        'user',
         'loggedin',
         'loggedout',
         'helpnext',
@@ -987,7 +984,6 @@ import sampleRUM from './rum.js';
         'helpoptedout',
       ];
       if (name.startsWith('custom:') || userEvents.includes(name)) {
-        // log telemetry
         sampleRUM(`sidekick:${name}`, {
           source: data?.sourceUrl || sk.location.href,
           target: data?.targetUrl || sk.status.webPath,
@@ -1101,7 +1097,7 @@ import sampleRUM from './rum.js';
             editUrl,
             `hlx-sk-edit--${config.owner}/${config.repo}/${config.ref}${status.webPath}`,
           );
-          sampleRUM('sidekick:edit', {
+          sampleRUM('sidekick:editoropened', {
             source: sk.location.href,
             target: editUrl,
           });
@@ -1936,7 +1932,6 @@ import sampleRUM from './rum.js';
                       } else {
                         palette.classList.remove('hlx-sk-hidden');
                         button.classList.add('pressed');
-                        // log telemetry
                         sampleRUM('sidekick:paletteclosed', {
                           source: sk.location.href,
                           target: sk.status.webPath,
@@ -2661,8 +2656,6 @@ import sampleRUM from './rum.js';
       });
     }
     if (userAction) {
-      // log telemetry
-      /* c8 ignore next */
       sampleRUM('sidekick:viewhidden', {
         source: sk.location.href,
         target: sk.status.webPath,
@@ -2980,6 +2973,12 @@ import sampleRUM from './rum.js';
       fireEvent(this, 'contextloaded', {
         config: this.config,
         location: this.location,
+      });
+
+      const skMode = this.config.scriptUrl.startsWith('https://www.hlx.live/')
+        ? 'bookmarklet' : 'extension';
+      sampleRUM(`sidekick:load:${skMode}`, {
+        source: this.location.href,
       });
       return this;
     }
