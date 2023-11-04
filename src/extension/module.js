@@ -1561,8 +1561,7 @@ import sampleRUM from './rum.js';
             && !row.querySelector('svg')?.parentElement.className.toLowerCase().includes('folder'))
           // extract file name and type
           .map((row) => {
-            const [path, type] = (row.getAttribute('aria-label') || row.querySelector('span')
-              ?.textContent)
+            const [path, type] = (row.getAttribute('aria-label') || row.querySelector('span')?.textContent)
               ?.split(',')
               .map((detail) => detail.trim()) || [];
             return {
