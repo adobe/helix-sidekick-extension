@@ -1,3 +1,10 @@
+## [6.35.1](https://github.com/adobe/helix-sidekick-extension/compare/v6.35.0...v6.35.1) (2023-11-06)
+
+
+### Bug Fixes
+
+* **bulk:** pinned files break selection ([5977776](https://github.com/adobe/helix-sidekick-extension/commit/5977776481bbb4a64ca871e6c675c597a168534d))
+
 # [6.35.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.34.0...v6.35.0) (2023-11-03)
 
 
