@@ -474,6 +474,9 @@
   "open_import": {
     "message": "View imported document"
   },
+  "import_copied": {
+    "message": "Copied!"
+  },
   "please_wait": {
     "message": "Espere..."
   },

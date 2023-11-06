@@ -10,6 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import { html2md, md2html } from '../../lib/importer.lib.js';
+import sampleRUM from '../../rum.js';
 
 /**
  * Returns the current tab
@@ -152,12 +153,20 @@ const load = async () => {
   const copyButton = document.getElementById('copy');
   copyButton.addEventListener('click', () => {
     copyHTMLToClipboard(editor.innerHTML);
-    copyButton.innerHTML = 'Copied!';
+    copyButton.innerHTML = chrome.i18n.getMessage('import_copied');
     copyButton.classList.add('copied');
     setTimeout(() => {
-      copyButton.innerHTML = 'Copy';
+      copyButton.innerHTML = chrome.i18n.getMessage('copy');
       copyButton.classList.remove('copied');
     }, 2000);
+
+    sampleRUM('sidekick:copyimport', {
+      source: tab.url,
+    });
+  });
+
+  sampleRUM('sidekick:import', {
+    source: tab.url,
   });
 };
 
