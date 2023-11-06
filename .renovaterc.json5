@@ -4,7 +4,7 @@
     {
       // current problem with Fetch.enable probably introduced in 21.2
       packageNames: ['puppeteer', 'puppeteer-core'],
-      allowedVersions: '>=21.5.0'
+      allowedVersions: '>21.5.0'
     },
   ]
 }
