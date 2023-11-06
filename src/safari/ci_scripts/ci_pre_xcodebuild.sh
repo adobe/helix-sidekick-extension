@@ -5,7 +5,6 @@
 #
 
 cd ../../..
-brew install node
 npm install
 npm run build:safari
 

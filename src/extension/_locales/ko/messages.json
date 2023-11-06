@@ -468,6 +468,9 @@
   "open_view_doc_source": {
     "message": "문서 소스 보기"
   },
+  "view_doc_source_copied": {
+    "message": "Copied!"
+  },
   "open_import": {
     "message": "View imported document"
   },
