@@ -42,7 +42,7 @@ describe('Test sidekick logout', () => {
     nock.done();
   });
 
-  it('Logout removes auth token from config', async () => {
+  it('Logout removes auth token expiry from config', async () => {
     const setup = new Setup('blog');
     nock.sidekick(setup);
     nock.admin(setup);
@@ -62,9 +62,9 @@ describe('Test sidekick logout', () => {
       checkPage: async (p) => p.evaluate(() => window.hlx.sidekick.config),
       loadModule: true,
     });
-    test.sidekickConfig.authToken = 'foobar';
+    test.sidekickConfig.authTokenExpiry = Date.now() + 60000;
     const { checkPageResult: config } = await test.run();
 
-    assert.ok(!config.authToken, 'Did not remove auth token from config');
+    assert.ok(!config.authTokenExpiry, 'Did not remove auth token expiry from config');
   }).timeout(IT_DEFAULT_TIMEOUT);
 });
