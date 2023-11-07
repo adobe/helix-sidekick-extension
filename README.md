@@ -66,7 +66,7 @@ A release candidate will be mirrored in https://github.com/adobe/helix-website w
 
 1. Merge changes into `main`
 2. Note the `sidekick-rc-<id>` branch in https://github.com/adobe/helix-website/branches
-3. Go to `https://sidekick-rc-<id>--helix-website--adobe.hlx.page/tools/sidekick/` to install a development version of the bookmarklet for your project
+3. Go to `https://sidekick-rc-<id>--helix-website--adobe.hlx.live/tools/sidekick/` to install a development version of the bookmarklet for your project
 
 ### Local testing
 #### Testing a local bookmarklet
