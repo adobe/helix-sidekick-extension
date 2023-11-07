@@ -1,3 +1,10 @@
+## [6.35.2](https://github.com/adobe/helix-sidekick-extension/compare/v6.35.1...v6.35.2) (2023-11-07)
+
+
+### Bug Fixes
+
+* tighter host checks ([e959c8e](https://github.com/adobe/helix-sidekick-extension/commit/e959c8e820038327e6230e9ffd593c599c669d64))
+
 ## [6.35.1](https://github.com/adobe/helix-sidekick-extension/compare/v6.35.0...v6.35.1) (2023-11-06)
 
 
