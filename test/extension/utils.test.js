@@ -168,8 +168,8 @@ describe('Test extension utils', () => {
   });
 
   it('isValidShareURL', async () => {
-    const res = utils.isValidShareURL('https://www.hlx.live/tools/sidekick/?giturl=https%3A%2F%2Fgithub.com%2Ffoo%2Fbar');
-    expect(res).to.be.true;
+    expect(utils.isValidShareURL('https://www.hlx.live/tools/sidekick/?giturl=https%3A%2F%2Fgithub.com%2Ffoo%2Fbar')).to.be.true;
+    expect(utils.isValidShareURL('https://www.example.com/tools/sidekick/?giturl=https%3A%2F%2Fgithub.com%2Ffoo%2Fbar')).to.be.false;
   });
 
   it('populateUrlCache', async () => {
@@ -218,6 +218,12 @@ describe('Test extension utils', () => {
     // static url
     results = await utils.queryUrlCache('https://random.foo.bar/');
     expect(results.length).to.equal(1);
+  });
+
+  it('isValidProjectHost', () => {
+    expect(utils.isValidProjectHost('https://main--bar--foo.hlx.page', 'foo', 'bar')).to.be.true;
+    expect(utils.isValidProjectHost('https://main--bar--fake.hlx.live', 'foo', 'bar')).to.be.false;
+    expect(utils.isValidProjectHost('https://main--bar--foo.hlx.random', 'foo', 'bar')).to.be.false;
   });
 
   it('getProjectMatches', async () => {
