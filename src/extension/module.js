@@ -292,6 +292,26 @@ import sampleRUM from './rum.js';
   };
 
   /**
+   * Detects the browser.
+   * @private
+   * @param {string} userAgent The user agent
+   * @returns {string} The browser
+   */
+  function detectBrowser(userAgent) {
+    userAgent = userAgent.toLowerCase();
+    if (userAgent.includes('edg/')) {
+      return 'edge';
+    } else if (userAgent.includes('chrome/')) {
+      return 'chrome';
+    } else if (userAgent.includes('safari/')) {
+      return 'safari';
+    } else if (userAgent.includes('firefox/')) {
+      return 'firefox';
+    }
+    return 'unknown';
+  }
+
+  /**
    * Retrieves project details from a host name.
    * @private
    * @param {string} host The host name
@@ -3108,10 +3128,12 @@ import sampleRUM from './rum.js';
         location: this.location,
       });
 
-      const skMode = this.config.scriptUrl.startsWith('https://www.hlx.live/')
+      const browser = detectBrowser(navigator.userAgent);
+      const skMode = this.config.scriptUrl.startsWith('https://')
         ? 'bookmarklet' : 'extension';
-      sampleRUM(`sidekick:load:${skMode}`, {
+      sampleRUM('sidekick:loaded', {
         source: this.location.href,
+        target: `${browser}:${skMode}`,
       });
       return this;
     }
