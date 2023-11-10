@@ -307,6 +307,8 @@ import sampleRUM from './rum.js';
       return 'macos';
     } else if (userAgent.includes('android')) {
       return 'android';
+    } else if (userAgent.includes('linux')) {
+      return 'linux';
     }
     return 'other';
   }
