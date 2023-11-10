@@ -92,6 +92,7 @@ import {
  * @param {SidekickTest~Pre} o.pre A function to call before loading the sidekick
  * @param {SidekickTest~Post} o.post A function to call after loading the sidekick
  * @param {SidekickTest~CheckPage} o.checkPage A function to call at the end of the test run
+ * @param {Function} o.checkRUM A function to check RUM data sent by the sidekick
  * @param {string[]} o.checkPlugins An array of plugin IDs to check for
  * @param {string[]} o.checkEvents An array of event names to check for
  * @param {number} o.timeoutSuccess=0 A number of milliseconds to wait before passing the test
@@ -164,6 +165,7 @@ export class SidekickTest extends EventEmitter {
     this.checkPlugins = o.checkPlugins;
     this.checkEvents = o.checkEvents;
     this.checkPage = o.checkPage;
+    this.checkRUM = o.checkRUM;
 
     // optional request handler
     this.requestHandler = o.requestHandler;
@@ -238,7 +240,7 @@ export class SidekickTest extends EventEmitter {
     }
 
     let browserRequestHandler = async (req) => {
-      const { url } = req;
+      const { url, postData } = req;
       if (DEBUG_LOGS) {
         // eslint-disable-next-line no-console
         console.log(`[pup]${req.isNavigationRequest ? ' navigation' : ''} request`, req.method, url);
@@ -271,8 +273,7 @@ export class SidekickTest extends EventEmitter {
       }
       if (url.startsWith('http')) {
         if (url.startsWith('https://rum.hlx.page/')) {
-          // dummy response for rum requests
-          return toResp('');
+          return toResp(this.checkRUM ? this.checkRUM(url, JSON.parse(postData)) : '');
         } else {
           requestsMade.push(reqObj);
           if (url.startsWith('https://admin.hlx.page/sidekick/') && url.endsWith('/config.json')) {
@@ -334,92 +335,103 @@ export class SidekickTest extends EventEmitter {
       this.page
         .goto(`file://${__testdir}/fixtures/${this.fixture}`, { waitUntil: 'load' })
         .then(() => this.pre(this.page))
-        .then(() => this.page.evaluate(async (
-          testLocation,
-          skCfg,
-          isBookmarklet,
-          checkEvents = [],
-        ) => {
-          // set test location
-          if (testLocation) {
-            let input = document.getElementById('sidekick_test_location');
-            if (!input) {
-              input = document.body.appendChild(document.createElement('input'));
-              input.id = 'sidekick_test_location';
-              input.type = 'hidden';
+        .then(() => this.page.evaluate(
+          async (
+            testLocation,
+            skCfg,
+            isBookmarklet,
+            checkEvents = [],
+            forceRUM = false,
+          ) => {
+            // set test location
+            if (testLocation) {
+              if (forceRUM) {
+                testLocation = `${testLocation}?hlx-sk-rum=on`;
+              }
+              let input = document.getElementById('sidekick_test_location');
+              if (!input) {
+                input = document.body.appendChild(document.createElement('input'));
+                input.id = 'sidekick_test_location';
+                input.type = 'hidden';
+              }
+              input.value = testLocation;
             }
-            input.value = testLocation;
-          }
-          // inject sidekick
-          if (isBookmarklet) {
-            const s = document.createElement('script');
-            s.id = 'hlx-sk-app';
-            s.src = '../../src/bookmarklet/app.js';
-            skCfg.scriptRoot = 'https://www.hlx.live/tools/sidekick';
-            s.dataset.config = JSON.stringify(skCfg);
-            if (document.head.querySelector('script#hlx-sk-app')) {
-              document.head.querySelector('script#hlx-sk-app').replaceWith(s);
+            // inject sidekick
+            if (isBookmarklet) {
+              const s = document.createElement('script');
+              s.id = 'hlx-sk-app';
+              s.src = '../../src/bookmarklet/app.js';
+              skCfg.scriptRoot = 'https://www.hlx.live/tools/sidekick';
+              s.dataset.config = JSON.stringify(skCfg);
+              if (document.head.querySelector('script#hlx-sk-app')) {
+                document.head.querySelector('script#hlx-sk-app').replaceWith(s);
+              } else {
+                document.head.append(s);
+              }
             } else {
-              document.head.append(s);
+              const moduleScript = document.createElement('script');
+              moduleScript.id = 'hlx-sk-module';
+              moduleScript.src = '../../src/extension/module.js';
+              moduleScript.type = 'module';
+              moduleScript.addEventListener('load', async () => {
+                skCfg.scriptUrl = 'https://www.hlx.live/tools/sidekick/module.js';
+                window.hlx.sidekickConfig = skCfg;
+                window.hlx.initSidekick(skCfg);
+              });
+              if (document.head.querySelector('script#hlx-sk-module')) {
+                document.head.querySelector('script#hlx-sk-module').replaceWith(moduleScript);
+              } else {
+                document.head.append(moduleScript);
+              }
             }
-          } else {
-            const moduleScript = document.createElement('script');
-            moduleScript.id = 'hlx-sk-module';
-            moduleScript.src = '../../src/extension/module.js';
-            moduleScript.type = 'module';
-            moduleScript.addEventListener('load', async () => {
-              skCfg.scriptUrl = 'https://www.hlx.live/tools/sidekick/module.js';
-              window.hlx.sidekickConfig = skCfg;
-              window.hlx.initSidekick(skCfg);
-            });
-            if (document.head.querySelector('script#hlx-sk-module')) {
-              document.head.querySelector('script#hlx-sk-module').replaceWith(moduleScript);
-            } else {
-              document.head.append(moduleScript);
-            }
-          }
 
-          // wait for sidekick to initialize
-          await new Promise((res) => {
-            document.addEventListener('helix-sidekick-ready', res);
-          });
-
-          // listen for all sidekick events
-          window.hlx.sidekickEvents = {};
-          [
-            'shown',
-            'hidden',
-            'contextloaded',
-            'statusfetched',
-            'pluginused',
-            'envswitched',
-            'updated',
-            'published',
-            'unpublished',
-            'deleted',
-            'cssloaded',
-            'pluginsloaded',
-            ...checkEvents,
-          ].forEach((eventType) => {
-            window.hlx.sidekick.addEventListener(eventType, (evt) => {
-              window.hlx.sidekickEvents[eventType] = evt.detail;
-              // eslint-disable-next-line no-console
-              console.log(`event fired: ${eventType}`, JSON.stringify(evt));
+            // wait for sidekick to initialize
+            await new Promise((res) => {
+              document.addEventListener('helix-sidekick-ready', res);
             });
-          });
-          // wait for some events
-          await new Promise((res) => {
-            const events = new Set(['cssloaded']);
-            events.forEach((evt) => {
-              window.hlx.sidekick.addEventListener(evt, () => {
-                events.delete(evt);
-                if (events.size === 0) {
-                  res();
-                }
+
+            // listen for all sidekick events
+            window.hlx.sidekickEvents = {};
+            [
+              'shown',
+              'hidden',
+              'contextloaded',
+              'statusfetched',
+              'pluginused',
+              'envswitched',
+              'updated',
+              'published',
+              'unpublished',
+              'deleted',
+              'cssloaded',
+              'pluginsloaded',
+              ...checkEvents,
+            ].forEach((eventType) => {
+              window.hlx.sidekick.addEventListener(eventType, (evt) => {
+                window.hlx.sidekickEvents[eventType] = evt.detail;
+                // eslint-disable-next-line no-console
+                console.log(`event fired: ${eventType}`, JSON.stringify(evt));
               });
             });
-          });
-        }, pageUrl || this.url, this.sidekickConfig, !this.loadModule, this.checkEvents))
+            // wait for some events
+            await new Promise((res) => {
+              const events = new Set(['cssloaded']);
+              events.forEach((evt) => {
+                window.hlx.sidekick.addEventListener(evt, () => {
+                  events.delete(evt);
+                  if (events.size === 0) {
+                    res();
+                  }
+                });
+              });
+            });
+          },
+          pageUrl || this.url,
+          this.sidekickConfig,
+          !this.loadModule,
+          this.checkEvents,
+          !!this.checkRUM,
+        ))
         // wait until sidekick is fully loaded
         .then(() => sleep(+this.sleep))
         .then(() => this.post(this.page))
