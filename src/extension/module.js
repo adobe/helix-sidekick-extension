@@ -292,6 +292,52 @@ import sampleRUM from './rum.js';
   };
 
   /**
+   * Detects the platform.
+   * @private
+   * @param {string} userAgent The user agent
+   * @returns {string} The platform
+   */
+  function detectPlatform(userAgent) {
+    userAgent = userAgent.toLowerCase();
+    if (userAgent.includes('(windows')) {
+      return 'windows';
+    } else if (userAgent.includes('(iphone') || userAgent.includes('(ipad')) {
+      return 'ios';
+    } else if (userAgent.includes('(macintosh')) {
+      return 'macos';
+    } else if (userAgent.includes('android')) {
+      return 'android';
+    } else if (userAgent.includes('linux')) {
+      return 'linux';
+    }
+    return 'other';
+  }
+
+  /**
+   * Detects the browser.
+   * @private
+   * @param {string} userAgent The user agent
+   * @returns {string} The browser
+   */
+  function detectBrowser(userAgent) {
+    userAgent = userAgent.toLowerCase();
+    if (userAgent.includes('edg/')) {
+      return 'edge';
+    } else if (userAgent.includes('opr/')) {
+      return 'opera';
+    } else if (userAgent.includes('samsung')) {
+      return 'samsung';
+    } else if (userAgent.includes('chrome/')) {
+      return 'chrome';
+    } else if (userAgent.includes('safari/')) {
+      return 'safari';
+    } else if (userAgent.includes('firefox/')) {
+      return 'firefox';
+    }
+    return 'other';
+  }
+
+  /**
    * Retrieves project details from a host name.
    * @private
    * @param {string} host The host name
@@ -1554,19 +1600,23 @@ import sampleRUM from './rum.js';
     const getBulkSelection = () => {
       const { location } = sk;
       if (isSharePointFolder(sk, location)) {
-        const isGrid = document.querySelector('div[class~="ms-TilesList"]');
         return [...document.querySelectorAll('#appRoot [role="presentation"] div[aria-selected="true"]')]
+          // exclude folders
           .filter((row) => !row.querySelector('img')?.getAttribute('src').includes('/foldericons/')
             && !row.querySelector('img')?.getAttribute('src').endsWith('folder.svg')
             && !row.querySelector('svg')?.parentElement.className.toLowerCase().includes('folder'))
-          .map((row) => ({
-            type: isGrid
-              ? row.querySelector(':scope i[aria-label]')?.getAttribute('aria-label').trim()
-              : new URL(row.querySelector('img')?.getAttribute('src'), sk.location.href).pathname.split('/').slice(-1)[0].split('.')[0],
-            path: isGrid
-              ? row.querySelector('div[data-automationid="name"]').textContent.trim()
-              : row.querySelector('button')?.textContent.trim(),
-          }));
+          // extract file name and type
+          .map((row) => {
+            const [path, type] = (row.getAttribute('aria-label') || row.querySelector('span')?.textContent)
+              ?.split(',')
+              .map((detail) => detail.trim()) || [];
+            return {
+              path,
+              type: type?.split(' ')[0],
+            };
+          })
+          // validate selection
+          .filter((sel) => sel.path && sel.type);
       } else {
         // gdrive
         return [...document.querySelectorAll('#drive_main_page [role="row"][aria-selected="true"]')]
@@ -2191,7 +2241,6 @@ import sampleRUM from './rum.js';
           delete status.status;
           sk.addEventListener('statusfetched', () => sk.hideModal(), { once: true });
           sk.config = await initConfig(config, location);
-          sk.config.authToken = window.hlx.sidekickConfig.authToken;
           sk.config.authTokenExpiry = window.hlx.sidekickConfig.authTokenExpiry || 0;
           addCustomPlugins(sk);
           encourageLogin(sk, false);
@@ -2238,7 +2287,6 @@ import sampleRUM from './rum.js';
         // try 5 times after login window has been closed
         if (await checkProfileStatus(sk, 401)) {
           delete sk.status.profile;
-          delete sk.config.authToken;
           delete sk.config.authTokenExpiry;
           sk.addEventListener('statusfetched', () => sk.hideModal(), { once: true });
           sk.fetchStatus();
@@ -2273,11 +2321,7 @@ import sampleRUM from './rum.js';
       if (picture) {
         if (picture.startsWith('https://admin.hlx.page/')) {
           // fetch the image with auth token
-          const resp = await fetch(picture, {
-            headers: {
-              'x-auth-token': sk.config.authToken,
-            },
-          });
+          const resp = await fetch(picture);
           picture = resp.ok ? URL.createObjectURL(await resp.blob()) : null;
         }
         if (picture) {
@@ -2438,7 +2482,6 @@ import sampleRUM from './rum.js';
           sk.addEventListener('statusfetched', async ({ detail }) => {
             const { data: status } = detail;
             if (sk.config.authTokenExpiry === authTokenExpiry && status.status === 401) {
-              delete sk.config.authToken;
               delete sk.config.authTokenExpiry;
               delete sk.config.authTokenTimers;
               showLoginDialog(i18n(sk, 'user_login_expired'));
@@ -2961,6 +3004,14 @@ import sampleRUM from './rum.js';
             this.root.classList.remove('hlx-sk-advanced');
           }
         });
+        // platform and browser data
+        const platform = detectPlatform(navigator.userAgent);
+        const browser = detectBrowser(navigator.userAgent);
+        const mode = this.config.scriptUrl.startsWith('https://') ? 'bookmarklet' : 'extension';
+        sampleRUM('sidekick:loaded', {
+          source: this.location.href,
+          target: `${platform}:${browser}:${mode}`,
+        });
         // announce to the document that the sidekick is ready
         document.dispatchEvent(new CustomEvent('sidekick-ready'));
         document.dispatchEvent(new CustomEvent('helix-sidekick-ready')); // legacy
@@ -3109,12 +3160,6 @@ import sampleRUM from './rum.js';
       fireEvent(this, 'contextloaded', {
         config: this.config,
         location: this.location,
-      });
-
-      const skMode = this.config.scriptUrl.startsWith('https://www.hlx.live/')
-        ? 'bookmarklet' : 'extension';
-      sampleRUM(`sidekick:load:${skMode}`, {
-        source: this.location.href,
       });
       return this;
     }

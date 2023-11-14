@@ -12,7 +12,6 @@
 
 import {
   GH_URL,
-  SHARE_PREFIX,
   DEV_URL,
   MANIFEST,
   log,
@@ -31,6 +30,7 @@ import {
   populateUrlCache,
   queryUrlCache,
   setDisplay,
+  isValidShareURL,
 } from './utils.js';
 
 /**
@@ -294,7 +294,7 @@ function checkTab(id) {
       if (tab.active) {
         await checkContextMenu(tab, projects);
       }
-      if (new URL(checkUrl).pathname === SHARE_PREFIX) {
+      if (isValidShareURL(checkUrl)) {
         log.debug('share url detected, inject install helper');
         try {
           // instrument generator page
@@ -739,7 +739,7 @@ const internalActions = {
   // listen for add/remove project calls from the install helper
   chrome.runtime.onMessage.addListener(({ action: actionFromTab }, { tab }) => {
     // check if message contains action and is sent from right tab
-    if (tab && tab.url && new URL(tab.url).pathname.startsWith(SHARE_PREFIX)
+    if (tab && tab.url && isValidShareURL(tab.url)
       && actionFromTab && typeof internalActions[actionFromTab] === 'function') {
       internalActions[actionFromTab](tab);
     }

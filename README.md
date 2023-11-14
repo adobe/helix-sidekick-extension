@@ -60,15 +60,13 @@ $ npm test
 $ npm run lint
 ```
 
-### Branch testing a bookmarklet
+### Testing a bookmarklet release candidate (RC)
 
-Every development branch in this repository will be mirrored in https://github.com/adobe/helix-website with a `sidekick-` prefix to enable enable branch testing:
+A release candidate will be mirrored in https://github.com/adobe/helix-website with a `sidekick-rc-` prefix to enable enable pre-release testing:
 
-1. Push changes to a branch `issue-77`
-2. Note the `sidekick-issue-77` branch in https://github.com/adobe/helix-website/branches
-3. Go to `https://sidekick-issue-77--helix-website--adobe.hlx.page/tools/sidekick/` to install a development version of the bookmarklet for your project
-
-_Note: Mirrored development branches in https://github.com/adobe/helix-website/branches must be deleted manually when no longer needed._
+1. Merge changes into `main`
+2. Note the `sidekick-rc-<id>` branch in https://github.com/adobe/helix-website/branches
+3. Go to `https://sidekick-rc-<id>--helix-website--adobe.hlx.live/tools/sidekick/` to install a development version of the bookmarklet for your project
 
 ### Local testing
 #### Testing a local bookmarklet

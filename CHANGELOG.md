@@ -1,3 +1,17 @@
+## [6.35.2](https://github.com/adobe/helix-sidekick-extension/compare/v6.35.1...v6.35.2) (2023-11-07)
+
+
+### Bug Fixes
+
+* tighter host checks ([e959c8e](https://github.com/adobe/helix-sidekick-extension/commit/e959c8e820038327e6230e9ffd593c599c669d64))
+
+## [6.35.1](https://github.com/adobe/helix-sidekick-extension/compare/v6.35.0...v6.35.1) (2023-11-06)
+
+
+### Bug Fixes
+
+* **bulk:** pinned files break selection ([5977776](https://github.com/adobe/helix-sidekick-extension/commit/5977776481bbb4a64ca871e6c675c597a168534d))
+
 # [6.35.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.34.0...v6.35.0) (2023-11-03)
 
 

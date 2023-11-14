@@ -12,8 +12,6 @@
 
 export const MANIFEST = chrome.runtime.getManifest();
 
-export const SHARE_PREFIX = '/tools/sidekick/';
-
 export const GH_URL = 'https://github.com/';
 
 export const DEV_URL = 'http://localhost:3000';
@@ -333,6 +331,22 @@ export async function populateUrlCache(tabUrl, config = {}) {
 }
 
 /**
+ * Checks if a host is a valid project host.
+ * @private
+ * @param {string} host The base host
+ * @param {string} owner The owner
+ * @param {string} host The repo
+ * @returns {boolean} <code>true</code> if project host, else <code>false</code>
+ */
+export function isValidProjectHost(host, owner, repo) {
+  const [third, second, first] = host.split('.');
+  return host.endsWith(first)
+    && ['page', 'live'].includes(first)
+    && ['aem', 'hlx'].includes(second)
+    && third.endsWith(`--${repo}--${owner}`);
+}
+
+/**
  * Returns matching configured projects for a given URL.
  * @param {Object[]} configs The project configurations
  * @param {string} tabUrl The tab URL
@@ -355,7 +369,7 @@ export async function getProjectMatches(configs, tabUrl) {
     return checkHost === prodHost // production host
       || checkHost === previewHost // custom inner
       || checkHost === liveHost // custom outer
-      || checkHost.split('.hlx.')[0].endsWith(`${repo}--${owner}`); // inner or outer
+      || isValidProjectHost(checkHost, owner, repo); // inner or outer
   });
   (await queryUrlCache(tabUrl)).forEach((e) => {
     // add non-duplicate matches from url cache
@@ -380,8 +394,10 @@ export async function getProjectMatches(configs, tabUrl) {
  * @returns {Object} The share settings
  */
 export function getShareSettings(shareurl) {
-  if (typeof shareurl === 'string' && new URL(shareurl).pathname === SHARE_PREFIX) {
-    try {
+  try {
+    const surl = new URL(shareurl);
+    if (['www.aem.live', 'www.hlx.live'].includes(surl.host)
+      && surl.pathname === '/tools/sidekick/') {
       const params = new URL(shareurl).searchParams;
       const giturl = params.get('giturl');
       if (giturl) {
@@ -394,9 +410,9 @@ export function getShareSettings(shareurl) {
           project: params.get('project'),
         };
       }
-    } catch (e) {
-      log.error('error getting sidekick settings from share url', e);
     }
+  } catch (e) {
+    log.error('error getting sidekick settings from share url', e);
   }
   return {};
 }

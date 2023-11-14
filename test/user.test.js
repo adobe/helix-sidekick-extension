@@ -96,7 +96,6 @@ describe('Test user auth handling', () => {
       page,
       sidekickConfig: {
         ...setup.sidekickConfig,
-        authToken: 'abcd1234',
         authTokenExpiry: Date.now() + 500, // token expires in 1 seconds
       },
       loadModule: true,

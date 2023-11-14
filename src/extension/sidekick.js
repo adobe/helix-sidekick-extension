@@ -46,7 +46,6 @@ export default async function injectSidekick(config, display) {
         'devOrigin',
         'pushDown',
         'adminVersion',
-        'authToken',
         'authTokenExpiry',
       ].includes(k)));
     curatedConfig.scriptUrl = url('module.js');
@@ -65,11 +64,9 @@ export default async function injectSidekick(config, display) {
 
     // todo: improve config change handling. currently we only update the authToken
     chrome.storage.session.onChanged.addListener((changes) => {
-      const { authToken } = changes[`${owner}/${repo}`]?.newValue || {};
-      if (authToken) {
-        const { authTokenExpiry } = changes[`${owner}/${repo}`]?.newValue || {};
-        log.debug(`adding authToken to config ${owner}/${repo} and refreshig sidekick`);
-        window.hlx.sidekickConfig.authToken = authToken;
+      if (changes[`${owner}/${repo}`]) {
+        const { authTokenExpiry } = changes[`${owner}/${repo}`].newValue || {};
+        log.debug(`updating auth token expiry for ${owner}/${repo} in sidekick config`);
         window.hlx.sidekickConfig.authTokenExpiry = authTokenExpiry;
       }
     });
