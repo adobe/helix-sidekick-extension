@@ -4,7 +4,7 @@
   "description": "AEM Sidekick Extension",
   "type": "module",
   "scripts": {
-    "lint": "eslint .",
+    "lint": "npm run build:module && eslint .",
     "test:mocha": "c8 mocha",
     "test:mocha-ci": "c8 mocha",
     "test:wtr": "wtr \"./test/unit/*.test.js\" \"./test/extension/*.test.js\" \"./test/view-doc-source/*.test.js\"",
@@ -15,7 +15,9 @@
     "docs": "npx jsdoc2md -c .jsdoc.json --files './src/extension/module.js'  > docs/API.md",
     "start": "node ./debug/debug.js",
     "semantic-release": "semantic-release",
-    "build": "npm run build:safari && npm run build:chrome",
+    "update-version": "node ./build/updateVersion.js",
+    "build": "npm run build:module && npm run build:safari && npm run build:chrome",
+    "build:module": "webpack --config src/module/webpack.cjs",
     "build:safari": "node ./build/build.js safari",
     "build:chrome": "node ./build/build.js chrome",
     "publish:chrome": "node ./build/publish.js chrome",
@@ -63,15 +65,30 @@
     "mocha": "10.2.0",
     "mocha-multi-reporters": "1.5.1",
     "nock": "13.3.8",
+    "node-polyfill-webpack-plugin": "2.0.1",
     "puppeteer": "21.1.1",
     "puppeteer-core": "21.1.1",
     "puppeteer-to-istanbul": "1.4.0",
     "request": "2.88.2",
     "semantic-release": "22.0.7",
     "semantic-release-react-native": "1.8.2",
-    "sinon": "17.0.1"
+    "sinon": "17.0.1",
+    "webpack": "5.88.2",
+    "webpack-cli": "5.1.4"
   },
   "lint-staged": {
     "*.js": "eslint"
+  },
+  "dependencies": {
+    "@adobe/helix-importer": "3.1.0",
+    "@adobe/mdast-util-gridtables": "3.0.2",
+    "@adobe/remark-gridtables": "2.0.2",
+    "hast-util-raw": "9.0.1",
+    "hast-util-to-html": "9.0.0",
+    "mdast-util-to-hast": "13.0.2",
+    "rehype-format": "5.0.0",
+    "remark-gfm": "4.0.0",
+    "remark-parse": "11.0.0",
+    "unified": "11.0.4"
   }
 }

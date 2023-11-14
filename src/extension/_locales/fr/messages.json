@@ -469,7 +469,13 @@
     "message": "Afficher la source du document"
   },
   "view_doc_source_copied": {
-    "message": "Copié !"
+    "message": "Copied!"
+  },
+  "open_import": {
+    "message": "View imported document"
+  },
+  "import_copied": {
+    "message": "Copied!"
   },
   "please_wait": {
     "message": "Veuillez patienter..."

@@ -214,6 +214,14 @@ async function checkContextMenu({ url: tabUrl, id, active }, configs = []) {
               'action',
             ],
           });
+        } else {
+          chrome.contextMenus.create({
+            id: 'openImport',
+            title: i18n('open_import'),
+            contexts: [
+              'action',
+            ],
+          });
         }
       });
     });
@@ -398,6 +406,18 @@ async function updateHelpContent() {
 function openViewDocSource(id) {
   chrome.windows.create({
     url: chrome.runtime.getURL(`/view-doc-source/index.html?tabId=${id}`),
+    type: 'popup',
+    width: 740,
+  });
+}
+
+/**
+ * Open the import popup
+ * @param {String} id The tab id
+ */
+function openImport(id) {
+  chrome.windows.create({
+    url: chrome.runtime.getURL(`/import/index.html?tabId=${id}`),
     type: 'popup',
     width: 740,
   });
@@ -656,6 +676,7 @@ const internalActions = {
     }
   },
   openViewDocSource: async ({ id }) => openViewDocSource(id),
+  openImport: async ({ id }) => openImport(id),
   openPreview: ({ url }) => {
     const { owner, repo, ref = 'main' } = getGitHubSettings(url);
     if (owner && repo) {

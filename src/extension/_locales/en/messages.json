@@ -477,6 +477,12 @@
   "view_doc_source_copied": {
     "message": "Copied!"
   },
+  "open_import": {
+    "message": "View imported document"
+  },
+  "import_copied": {
+    "message": "Copied!"
+  },
   "open_url": {
     "message": "Open URL"
   },
@@ -551,7 +557,7 @@
     "message": "View"
   },
   "title": {
-    "message": "AEM Sidekick"
+    "message": "(experimental) AEM Sidekick - try default import"
   },
   "today_at": {
     "message": "Today at $1"

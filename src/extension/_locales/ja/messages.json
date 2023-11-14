@@ -471,6 +471,12 @@
   "view_doc_source_copied": {
     "message": "Copied!"
   },
+  "open_import": {
+    "message": "View imported document"
+  },
+  "import_copied": {
+    "message": "Copied!"
+  },
   "please_wait": {
     "message": "お待ちください..."
   },

@@ -10,5 +10,6 @@ junit
 logs
 test-results.xml
 tmp
+src/extension/lib/importer.lib.js*
 **/xcuserdata/*
 **/xcshareddata/*
