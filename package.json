@@ -81,7 +81,7 @@
     "*.js": "eslint"
   },
   "dependencies": {
-    "@adobe/helix-importer": "github:adobe/helix-importer#improve-defaults",
+    "@adobe/helix-importer": "3.1.0",
     "@adobe/mdast-util-gridtables": "3.0.2",
     "@adobe/remark-gridtables": "2.0.2",
     "hast-util-raw": "9.0.1",
