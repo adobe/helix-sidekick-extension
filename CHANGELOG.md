@@ -1,3 +1,10 @@
+## [6.35.3](https://github.com/adobe/helix-sidekick-extension/compare/v6.35.2...v6.35.3) (2023-11-17)
+
+
+### Bug Fixes
+
+* do not change user agent ([f08f6a6](https://github.com/adobe/helix-sidekick-extension/commit/f08f6a6bd7f761050db7763fb2849653c6c3c421))
+
 ## [6.35.2](https://github.com/adobe/helix-sidekick-extension/compare/v6.35.1...v6.35.2) (2023-11-07)
 
 
