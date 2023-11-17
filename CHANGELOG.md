@@ -1,3 +1,10 @@
+## [6.35.4](https://github.com/adobe/helix-sidekick-extension/compare/v6.35.3...v6.35.4) (2023-11-17)
+
+
+### Bug Fixes
+
+* trigger release ([c95c7aa](https://github.com/adobe/helix-sidekick-extension/commit/c95c7aae862a6e1eba47696e2d7cdb188bfaae92))
+
 ## [6.35.3](https://github.com/adobe/helix-sidekick-extension/compare/v6.35.2...v6.35.3) (2023-11-17)
 
 
