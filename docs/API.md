@@ -36,7 +36,7 @@
 <dd><p>The global variable referencing the <a href="#Sidekick">Sidekick</a> singleton.</p>
 </dd>
 <dt><a href="#external_window.hlx.sidekickScript">window.hlx.sidekickScript</a> : <code>Element</code></dt>
-<dd><p>The <pre>script</pre> element which loaded the sidekick module.</p>
+<dd><p>The <code>script</code> element which loaded the sidekick module.</p>
 </dd>
 <dt><a href="#external_window.hlx.initSidekick">window.hlx.initSidekick</a> ⇒ <code><a href="#Sidekick">Sidekick</a></code></dt>
 <dd><p>Initializes the sidekick and stores a reference to it in
@@ -85,22 +85,22 @@ The sidekick provides helper tools for authors.
     * [.delete()](#Sidekick+delete) ⇒ <code>Response</code>
     * [.publish(path)](#Sidekick+publish) ⇒ <code>Response</code>
     * [.unpublish()](#Sidekick+unpublish) ⇒ <code>Response</code>
-    * ["shown"](#Sidekick+event_shown)
-    * ["hidden"](#Sidekick+event_hidden)
-    * ["pluginused"](#Sidekick+event_pluginused)
-    * ["contextloaded"](#Sidekick+event_contextloaded)
-    * ["statusfetched"](#Sidekick+event_statusfetched)
-    * ["envswitched"](#Sidekick+event_envswitched)
-    * ["updated"](#Sidekick+event_updated)
-    * ["deleted"](#Sidekick+event_deleted)
-    * ["published"](#Sidekick+event_published)
-    * ["unpublished"](#Sidekick+event_unpublished)
-    * ["loggedin"](#Sidekick+event_loggedin)
-    * ["loggedout"](#Sidekick+event_loggedout)
-    * ["helpnext"](#Sidekick+event_helpnext)
-    * ["helpdismissed"](#Sidekick+event_helpdismissed)
-    * ["helpacknowledged"](#Sidekick+event_helpacknowledged)
-    * ["helpoptedout"](#Sidekick+event_helpoptedout)
+    * ["shown" (e)](#Sidekick+event_shown)
+    * ["hidden" (e)](#Sidekick+event_hidden)
+    * ["pluginused" (e)](#Sidekick+event_pluginused)
+    * ["contextloaded" (e)](#Sidekick+event_contextloaded)
+    * ["statusfetched" (e)](#Sidekick+event_statusfetched)
+    * ["envswitched" (e)](#Sidekick+event_envswitched)
+    * ["updated" (e)](#Sidekick+event_updated)
+    * ["deleted" (e)](#Sidekick+event_deleted)
+    * ["published" (e)](#Sidekick+event_published)
+    * ["unpublished" (e)](#Sidekick+event_unpublished)
+    * ["loggedin" (e)](#Sidekick+event_loggedin)
+    * ["loggedout" (e)](#Sidekick+event_loggedout)
+    * ["helpnext" (e)](#Sidekick+event_helpnext)
+    * ["helpdismissed" (e)](#Sidekick+event_helpdismissed)
+    * ["helpacknowledged" (e)](#Sidekick+event_helpacknowledged)
+    * ["helpoptedout" (e)](#Sidekick+event_helpoptedout)
 
 <a name="new_Sidekick_new"></a>
 
@@ -147,6 +147,7 @@ page content by that amount to make room for the sidekick.
 
 **Kind**: instance method of [<code>Sidekick</code>](#Sidekick)  
 **Returns**: [<code>Sidekick</code>](#Sidekick) - The sidekick  
+**See**: SidekickConfig.pushDown  
 <a name="Sidekick+show"></a>
 
 ### sidekick.show() ⇒ [<code>Sidekick</code>](#Sidekick)
@@ -260,8 +261,11 @@ Checks if the current location is a configured project URL.
 ### ~~sidekick.isHelix() ⇒ <code>boolean</code>~~
 ***Deprecated***
 
+Checks if the current location is a configured project URL.
+
 **Kind**: instance method of [<code>Sidekick</code>](#Sidekick)  
 **Returns**: <code>boolean</code> - <code>true</code> if project URL, else <code>false</code>  
+**See**: isProject  
 <a name="Sidekick+isContent"></a>
 
 ### sidekick.isContent() ⇒ <code>boolean</code>
@@ -298,6 +302,7 @@ Checks if the user is allowed to use a feature.
 Displays a non-sticky notification.
 
 **Kind**: instance method of [<code>Sidekick</code>](#Sidekick)  
+**See**: showModal  
 
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
@@ -377,8 +382,8 @@ Switches to (or opens) a given environment.
 
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
-| targetEnv | <code>string</code> |  | One of the following environments:        <pre>dev</pre>, <pre>preview</pre>, <pre>live</pre> or <pre>prod</pre> |
-| open | <code>boolean</code> | <code>false</code> | <pre>true</pre> if environment should be opened in new tab |
+| targetEnv | <code>string</code> |  | One of the following environments:        <code>dev</code>, <code>preview</code>, <code>live</code> or <code>prod</code> |
+| open | <code>boolean</code> | <code>false</code> | <code>true</code> if environment should be opened in new tab |
 
 <a name="Sidekick+update"></a>
 
@@ -399,7 +404,7 @@ Deletes the preview or code of the current resource.
 <a name="Sidekick+publish"></a>
 
 ### sidekick.publish(path) ⇒ <code>Response</code>
-Publishes the page at the specified path if <pre>config.host</pre> is defined.
+Publishes the page at the specified path if <code>config.host</code> is defined.
 
 **Kind**: instance method of [<code>Sidekick</code>](#Sidekick)  
 **Returns**: <code>Response</code> - The response object  
@@ -419,121 +424,282 @@ Unpublishes the current page.
 **Emits**: [<code>unpublished</code>](#Sidekick+event_unpublished)  
 <a name="Sidekick+event_shown"></a>
 
-### "shown"
+### "shown" (e)
 This event is fired when the sidekick has been shown.
 
 **Kind**: event emitted by [<code>Sidekick</code>](#Sidekick)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| e | <code>CustomEvent</code> | The event |
+
+**Properties**
+
+| Name | Type | Description |
+| --- | --- | --- |
+| e.detail.data | [<code>Sidekick</code>](#Sidekick) | The sidekick |
+
 <a name="Sidekick+event_hidden"></a>
 
-### "hidden"
+### "hidden" (e)
 This event is fired when the sidekick has been hidden.
 
 **Kind**: event emitted by [<code>Sidekick</code>](#Sidekick)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| e | <code>CustomEvent</code> | The event |
+
+**Properties**
+
+| Name | Type | Description |
+| --- | --- | --- |
+| e.detail.data | [<code>Sidekick</code>](#Sidekick) | The sidekick |
+
 <a name="Sidekick+event_pluginused"></a>
 
-### "pluginused"
+### "pluginused" (e)
 This event is fired when a sidekick plugin has been used.
 
 **Kind**: event emitted by [<code>Sidekick</code>](#Sidekick)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| e | <code>CustomEvent</code> | The event |
+
 **Properties**
 
 | Name | Type | Description |
 | --- | --- | --- |
-| id | <code>string</code> | The plugin ID |
-| button | <code>Element</code> | The button element |
+| e.detail.data | <code>Object</code> | The event payload |
+| e.detail.data.id | <code>string</code> | The plugin ID |
+| e.detail.data.button | <code>Element</code> | The button element |
 
 <a name="Sidekick+event_contextloaded"></a>
 
-### "contextloaded"
+### "contextloaded" (e)
 This event is fired when the context has been loaded.
 
 **Kind**: event emitted by [<code>Sidekick</code>](#Sidekick)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| e | <code>CustomEvent</code> | The event |
+
 **Properties**
 
 | Name | Type | Description |
 | --- | --- | --- |
-| config | [<code>SidekickConfig</code>](#SidekickConfig) | The sidekick configuration |
-| location | <code>Location</code> | The sidekick location |
+| e.detail.data | <code>Object</code> | The event payload |
+| e.detail.data.config | [<code>SidekickConfig</code>](#SidekickConfig) | The sidekick configuration |
+| e.detail.data.location | <code>Location</code> | The sidekick location |
 
 <a name="Sidekick+event_statusfetched"></a>
 
-### "statusfetched"
+### "statusfetched" (e)
 This event is fired when the status has been fetched.
 
 **Kind**: event emitted by [<code>Sidekick</code>](#Sidekick)  
-<a name="Sidekick+event_envswitched"></a>
 
-### "envswitched"
-This event is fired when the environment has been switched
+| Param | Type | Description |
+| --- | --- | --- |
+| e | <code>CustomEvent</code> | The event |
 
-**Kind**: event emitted by [<code>Sidekick</code>](#Sidekick)  
 **Properties**
 
 | Name | Type | Description |
 | --- | --- | --- |
-| sourceUrl | <code>string</code> | The URL of the source environment |
-| targetUrl | <code>string</code> | The URL of the target environment |
+| e.detail.data | <code>Object</code> | The status object |
+
+<a name="Sidekick+event_envswitched"></a>
+
+### "envswitched" (e)
+This event is fired when the environment has been switched
+
+**Kind**: event emitted by [<code>Sidekick</code>](#Sidekick)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| e | <code>CustomEvent</code> | The event |
+
+**Properties**
+
+| Name | Type | Description |
+| --- | --- | --- |
+| e.detail.data | <code>Object</code> | The event payload |
+| e.detail.data.sourceUrl | <code>string</code> | The URL of the source environment |
+| e.detail.data.targetUrl | <code>string</code> | The URL of the target environment |
 
 <a name="Sidekick+event_updated"></a>
 
-### "updated"
-This event is fired when a path has been updated.
+### "updated" (e)
+This event is fired when content or code has been updated.
 
 **Kind**: event emitted by [<code>Sidekick</code>](#Sidekick)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| e | <code>CustomEvent</code> | The event |
+
+**Properties**
+
+| Name | Type | Description |
+| --- | --- | --- |
+| e.detail.data | <code>string</code> | The updated path |
+
 <a name="Sidekick+event_deleted"></a>
 
-### "deleted"
-This event is fired when a path has been deleted.
+### "deleted" (e)
+This event is fired when a resource has been deleted.
 
 **Kind**: event emitted by [<code>Sidekick</code>](#Sidekick)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| e | <code>CustomEvent</code> | The event |
+
+**Properties**
+
+| Name | Type | Description |
+| --- | --- | --- |
+| e.detail.data | <code>string</code> | The deleted path |
+
 <a name="Sidekick+event_published"></a>
 
-### "published"
-This event is fired when a path has been published.
+### "published" (e)
+This event is fired when content has been published.
 
 **Kind**: event emitted by [<code>Sidekick</code>](#Sidekick)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| e | <code>CustomEvent</code> | The event |
+
+**Properties**
+
+| Name | Type | Description |
+| --- | --- | --- |
+| e.detail.data | <code>string</code> | The published path |
+
 <a name="Sidekick+event_unpublished"></a>
 
-### "unpublished"
-This event is fired when a path has been unpublished.
+### "unpublished" (e)
+This event is fired when content has been unpublished.
 
 **Kind**: event emitted by [<code>Sidekick</code>](#Sidekick)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| e | <code>CustomEvent</code> | The event |
+
+**Properties**
+
+| Name | Type | Description |
+| --- | --- | --- |
+| e.detail.data | <code>string</code> | The unpublished path |
+
 <a name="Sidekick+event_loggedin"></a>
 
-### "loggedin"
+### "loggedin" (e)
 This event is fired when a user has logged in.
 
 **Kind**: event emitted by [<code>Sidekick</code>](#Sidekick)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| e | <code>CustomEvent</code> | The event |
+
+**Properties**
+
+| Name | Type | Description |
+| --- | --- | --- |
+| e.detail.data | [<code>Sidekick</code>](#Sidekick) | The sidekick |
+
 <a name="Sidekick+event_loggedout"></a>
 
-### "loggedout"
+### "loggedout" (e)
 This event is fired when a user has logged out.
 
 **Kind**: event emitted by [<code>Sidekick</code>](#Sidekick)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| e | <code>CustomEvent</code> | The event |
+
+**Properties**
+
+| Name | Type | Description |
+| --- | --- | --- |
+| e.detail.data | [<code>Sidekick</code>](#Sidekick) | The sidekick |
+
 <a name="Sidekick+event_helpnext"></a>
 
-### "helpnext"
+### "helpnext" (e)
 This event is fired when a user clicks next on a help dialog.
 
 **Kind**: event emitted by [<code>Sidekick</code>](#Sidekick)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| e | <code>CustomEvent</code> | The event |
+
+**Properties**
+
+| Name | Type | Description |
+| --- | --- | --- |
+| e.detail.data | <code>string</code> | The help topic |
+
 <a name="Sidekick+event_helpdismissed"></a>
 
-### "helpdismissed"
+### "helpdismissed" (e)
 This event is fired when a help dialog has been dismissed.
 
 **Kind**: event emitted by [<code>Sidekick</code>](#Sidekick)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| e | <code>CustomEvent</code> | The event |
+
+**Properties**
+
+| Name | Type | Description |
+| --- | --- | --- |
+| e.detail.data | <code>string</code> | The help topic |
+
 <a name="Sidekick+event_helpacknowledged"></a>
 
-### "helpacknowledged"
+### "helpacknowledged" (e)
 This event is fired when a help dialog has been acknowledged.
 
 **Kind**: event emitted by [<code>Sidekick</code>](#Sidekick)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| e | <code>CustomEvent</code> | The event |
+
+**Properties**
+
+| Name | Type | Description |
+| --- | --- | --- |
+| e.detail.data | <code>string</code> | The help topic |
+
 <a name="Sidekick+event_helpoptedout"></a>
 
-### "helpoptedout"
+### "helpoptedout" (e)
 This event is fired when a user decides to opt out of help content.
 
 **Kind**: event emitted by [<code>Sidekick</code>](#Sidekick)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| e | <code>CustomEvent</code> | The event |
+
+**Properties**
+
+| Name | Type | Description |
+| --- | --- | --- |
+| e.detail.data | <code>string</code> | The help topic |
+
 <a name="Plugin"></a>
 
 ## Plugin : <code>Object</code>
@@ -617,10 +783,10 @@ The sidekick configuration.
 | previewHost | <code>string</code> |  | The host name of a custom preview CDN (optional) |
 | liveHost | <code>string</code> |  | The host name of a custom live CDN (optional) |
 | host | <code>string</code> |  | The production host name to publish content to (optional) |
-| byocdn | <code>boolean</code> | <code>false</code> | <pre>true</pre> if the production host is a 3rd party CDN |
+| byocdn | <code>boolean</code> | <code>false</code> | <code>true</code> if the production host is a 3rd party CDN |
 | devMode | <code>boolean</code> | <code>false</code> | Loads configuration and plugins from the development environment |
 | devOrigin | <code>boolean</code> | <code>http://localhost:3000</code> | URL of the local development environment |
-| pushDown | <code>boolean</code> | <code>false</code> | <pre>true</pre> to have the sidekick push down page content |
+| pushDown | <code>boolean</code> | <code>false</code> | <code>true</code> to have the sidekick push down page content |
 | pushDownSelector | <code>string</code> |  | The CSS selector for absolute elements to also push down |
 | specialViews | [<code>Array.&lt;ViewConfig&gt;</code>](#ViewConfig) |  | An array of custom [view configurations](#ViewConfig) |
 | adminVersion | <code>number</code> |  | The specific version of admin service to use (optional) |
@@ -640,7 +806,7 @@ The global variable referencing the [Sidekick](#Sidekick) singleton.
 <a name="external_window.hlx.sidekickScript"></a>
 
 ## window.hlx.sidekickScript : <code>Element</code>
-The <pre>script</pre> element which loaded the sidekick module.
+The <code>script</code> element which loaded the sidekick module.
 
 **Kind**: global external  
 <a name="external_window.hlx.initSidekick"></a>
