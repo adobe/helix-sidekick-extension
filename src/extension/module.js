@@ -167,10 +167,18 @@ import sampleRUM from './rum.js';
    */
 
   /**
+   * @event Sidekick#previewed
+   * @arg {CustomEvent} e The event
+   * @prop {string} e.detail.data The previewed path
+   * @description This event is fired when content has been previewed.
+   */
+
+  /**
    * @event Sidekick#updated
    * @arg {CustomEvent} e The event
    * @prop {string} e.detail.data  The updated path
    * @description This event is fired when content or code has been updated.
+   * This event is deprecated for content, use {@link Sidekick#previewed} instead.
    */
 
   /**
@@ -1015,6 +1023,7 @@ import sampleRUM from './rum.js';
         'shown',
         'hidden',
         'updated',
+        'previewed',
         'published',
         'unpublished',
         'deleted',
@@ -3837,6 +3846,7 @@ import sampleRUM from './rum.js';
     /**
      * Updates the preview or code of the current resource.
      * @fires Sidekick#updated
+     * @fires Sidekick#previewed
      * @returns {Response} The response object
      */
     async update(path) {
@@ -3859,7 +3869,10 @@ import sampleRUM from './rum.js';
             await fetch(`https://${config.innerHost}${path}`, { cache: 'reload', mode: 'no-cors' });
           }
           respPath = (await resp.json()).webPath;
-          fireEvent(this, 'updated', respPath);
+          fireEvent(this, 'updated', respPath); // @deprecated for content, use for code only
+          if (this.isContent()) {
+            fireEvent(this, 'previewed', respPath);
+          }
         }
       } catch (e) {
         console.error('failed to update', path, e);
