@@ -11,6 +11,8 @@
 		C638071F2A7BF63100276EBD /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = C638071D2A7BF63100276EBD /* InfoPlist.strings */; };
 		C63807232A7BF63100276EBD /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = C63807212A7BF63100276EBD /* InfoPlist.strings */; };
 		C63807262A7BF63100276EBD /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = C63807242A7BF63100276EBD /* InfoPlist.strings */; };
+		C63F67402B0A66FA00637449 /* rum.js in Resources */ = {isa = PBXBuildFile; fileRef = C63F673F2B0A66FA00637449 /* rum.js */; };
+		C63F67412B0A66FA00637449 /* rum.js in Resources */ = {isa = PBXBuildFile; fileRef = C63F673F2B0A66FA00637449 /* rum.js */; };
 		C6D4D20629687069002248E8 /* module.js in Resources */ = {isa = PBXBuildFile; fileRef = C6D4D20529687068002248E8 /* module.js */; };
 		C6D4D20729687069002248E8 /* module.js in Resources */ = {isa = PBXBuildFile; fileRef = C6D4D20529687068002248E8 /* module.js */; };
 		C6D4D209296871BD002248E8 /* background.html in Resources */ = {isa = PBXBuildFile; fileRef = C6D4D208296871BD002248E8 /* background.html */; };
@@ -162,6 +164,7 @@
 		C638074C2A7BF84100276EBD /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/Main.strings; sourceTree = "<group>"; };
 		C638074D2A7BF84100276EBD /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		C638074E2A7BF84100276EBD /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		C63F673F2B0A66FA00637449 /* rum.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = rum.js; sourceTree = "<group>"; };
 		C68016502A474B16000A950D /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.html; name = fr; path = ../fr.lproj/Main.html; sourceTree = "<group>"; };
 		C68016512A474B35000A950D /* de */ = {isa = PBXFileReference; lastKnownFileType = text.html; name = de; path = ../de.lproj/Main.html; sourceTree = "<group>"; };
 		C68016522A474B62000A950D /* es */ = {isa = PBXFileReference; lastKnownFileType = text.html; name = es; path = ../es.lproj/Main.html; sourceTree = "<group>"; };
@@ -372,6 +375,7 @@
 				C6FFCFE62968641900F1393C /* options.css */,
 				C6FFCFE12968641900F1393C /* options.html */,
 				C6FFCFD82968641900F1393C /* options.js */,
+				C63F673F2B0A66FA00637449 /* rum.js */,
 				C6FFCFE52968641900F1393C /* sidekick.js */,
 				C6FFCFE22968641900F1393C /* utils.js */,
 			);
@@ -560,6 +564,7 @@
 				C6FFCFFB2968641900F1393C /* background.js in Resources */,
 				C6FFD0012968641900F1393C /* icons in Resources */,
 				C6FFD0052968641900F1393C /* view in Resources */,
+				C63F67402B0A66FA00637449 /* rum.js in Resources */,
 				C6FFD0032968641900F1393C /* view-doc-source in Resources */,
 				C6D4D209296871BD002248E8 /* background.html in Resources */,
 			);
@@ -587,6 +592,7 @@
 				C6FFCFE82968641900F1393C /* background.js in Resources */,
 				C6FFCFEE2968641900F1393C /* icons in Resources */,
 				C6FFCFF22968641900F1393C /* view in Resources */,
+				C63F67412B0A66FA00637449 /* rum.js in Resources */,
 				C6FFCFF02968641900F1393C /* view-doc-source in Resources */,
 				C6D4D20A296871BD002248E8 /* background.html in Resources */,
 			);
