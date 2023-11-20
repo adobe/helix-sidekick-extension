@@ -1,3 +1,10 @@
+# [6.36.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.35.4...v6.36.0) (2023-11-20)
+
+
+### Features
+
+* new event "previewed" ([4489ff2](https://github.com/adobe/helix-sidekick-extension/commit/4489ff21bf4866102c1990f0a245e0ed442c1d87))
+
 ## [6.35.4](https://github.com/adobe/helix-sidekick-extension/compare/v6.35.3...v6.35.4) (2023-11-17)
 
 
