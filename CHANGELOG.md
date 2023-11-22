@@ -1,3 +1,10 @@
+# [6.37.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.36.0...v6.37.0) (2023-11-22)
+
+
+### Features
+
+* **release:** announce releases on discord ([c6c59e6](https://github.com/adobe/helix-sidekick-extension/commit/c6c59e6f2d8b9e2847593a3c7987e84dc5fda849))
+
 # [6.36.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.35.4...v6.36.0) (2023-11-20)
 
 
