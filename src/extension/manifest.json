@@ -33,6 +33,10 @@
     "page": "background.html",
     "persistent": false
   },
+  "__firefox__background": {
+    "page": "background.html",
+    "persistent": false
+  },
   "__chrome__externally_connectable": {
     "matches": [
       "http://localhost:3000/*",
