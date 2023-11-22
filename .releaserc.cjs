@@ -27,6 +27,12 @@ module.exports = {
     ['@semantic-release/exec', {
       publishCmd: 'npm run release:chrome',
     }],
+    [
+      'semantic-release-discord-bot',
+      {
+        "notifications": [{ "branch": "main" }],
+      }
+    ]
   ],
   branches: ['main'],
 };
