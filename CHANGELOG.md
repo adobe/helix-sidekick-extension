@@ -1,3 +1,10 @@
+# [6.38.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.37.0...v6.38.0) (2023-11-30)
+
+
+### Features
+
+* always fire custom event ([8839ed9](https://github.com/adobe/helix-sidekick-extension/commit/8839ed984a0b10b0ce25a1e35294131a3d24bdc4))
+
 # [6.37.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.36.0...v6.37.0) (2023-11-22)
 
 
