@@ -392,6 +392,7 @@ describe('Test sidekick', () => {
         assert.ok(configLoaded, 'Did not load project config');
         assert.ok(plugins.find((p) => p.id === 'bar'), 'Did not load plugins from project');
         assert.ok(palette, 'Did not show palette');
+        assert.ok(checkEventFired(page, 'custom:bar'), 'Did not fire plugin event');
         assert.deepStrictEqual(palette, {
           title: 'Bar<button title="Close" class="close" tabindex="0"></button>',
           content: '<iframe src="https://www.adobe.com/" allow="clipboard-write *"></iframe>',
