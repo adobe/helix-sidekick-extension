@@ -500,6 +500,7 @@ export function assembleProject({
   devOrigin,
   disabled,
   authToken,
+  hlx5 = false,
 }) {
   if (giturl && !owner && !repo) {
     const gh = getGitHubSettings(giturl);
@@ -526,6 +527,7 @@ export function assembleProject({
     ref,
     mountpoints,
     authToken,
+    hlx5,
   };
 }
 

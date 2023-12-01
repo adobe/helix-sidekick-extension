@@ -220,6 +220,7 @@ function editProject(i) {
         host: document.querySelector('#edit-host').value,
         devMode: document.querySelector('#edit-devMode').checked,
         devOrigin: document.querySelector('#edit-devOrigin').value,
+        hlx5: document.querySelector('#edit-hlx5').checked,
       };
       projects[i] = {
         ...project,
@@ -256,7 +257,7 @@ function editProject(i) {
       field.setAttribute('placeholder', i18n(`config_manual_${key}_placeholder`));
       const label = document.querySelector(`#configEditor label[for="${field.id}"]`);
       if (label) {
-        label.textContent = i18n(`config_manual_${key}`);
+        label.textContent = i18n(`config_manual_${key}`) || label.textContent;
       }
     });
     // focus first field
