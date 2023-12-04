@@ -374,10 +374,14 @@ import sampleRUM from './rum.js';
     if (baseHost === host) {
       return true;
     }
-    // matching project domains
-    const projectDomains = ['.aem.page', '.aem.live', '.hlx.page', '.hlx.live'];
-    if (!projectDomains.find((domain) => baseHost.endsWith(domain)
-      && host.endsWith(domain))) {
+    // check for matching domain suffixes
+    const previewSuffixes = ['.aem.page', '.hlx.page'];
+    const liveSuffixes = ['.aem.live', '.hlx.live'];
+    const isPreview = previewSuffixes.some((suffix) => baseHost.endsWith(suffix))
+      && previewSuffixes.some((suffix) => host.endsWith(suffix));
+    const isLive = liveSuffixes.some((suffix) => baseHost.endsWith(suffix))
+      && liveSuffixes.some((suffix) => host.endsWith(suffix));
+    if (!isPreview && !isLive) {
       return false;
     }
     // project details

@@ -908,9 +908,7 @@ describe('Test sidekick', () => {
           'Did not detect preview URL with different ref',
         );
         // check again with aem.page
-        nock.sidekick(setup, {
-          configJson: '{"hlx5":true}',
-        });
+        nock.sidekick(setup);
         nock.admin(setup);
         assert.ok(
           (await test.run('https://main--blog--adobe.aem.page/')).checkPageResult,

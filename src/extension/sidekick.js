@@ -47,6 +47,7 @@ export default async function injectSidekick(config, display) {
         'pushDown',
         'adminVersion',
         'authTokenExpiry',
+        'hlx5',
       ].includes(k)));
     curatedConfig.scriptUrl = url('module.js');
     [curatedConfig.mountpoint] = config.mountpoints || [];
