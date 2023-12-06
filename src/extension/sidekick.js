@@ -48,6 +48,7 @@ export default async function injectSidekick(config, display) {
         'adminVersion',
         'authTokenExpiry',
         'hlx5',
+        'transient',
       ].includes(k)));
     curatedConfig.scriptUrl = url('module.js');
     [curatedConfig.mountpoint] = config.mountpoints || [];
@@ -111,6 +112,11 @@ export default async function injectSidekick(config, display) {
                 });
               }
             }
+          });
+        }
+        if (curatedConfig.transient) {
+          sk.addEventListener('projectadded', () => {
+            chrome.runtime.sendMessage({ action: 'addRemoveProject' });
           });
         }
       }
