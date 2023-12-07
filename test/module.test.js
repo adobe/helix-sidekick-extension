@@ -64,6 +64,35 @@ describe('Test sidekick', () => {
         assert.strictEqual(plugins.length, 14, `Wrong number of plugins: ${plugins.length}`);
       }).timeout(IT_DEFAULT_TIMEOUT);
 
+      it('Detects user-preferred language', async () => {
+        [
+          { navLangs: ['en-US', 'en-UK'], expectedLang: 'en' },
+          { navLangs: ['zh-TW', 'zh-CN', 'en'], expectedLang: 'zn_TW' },
+          { navLangs: ['ar', 'es-ES'], expectedLang: 'es' },
+        ].forEach(async ({ navLangs, expectedLang }) => {
+          page = await browser.openPage();
+          const setup = new Setup('blog');
+          nock.sidekick(setup);
+          nock.admin(setup);
+          const { checkPageResult: detectedLang } = await new SidekickTest({
+            browser,
+            page,
+            loadModule,
+            pre: (p) => p.evaluate(() => Object.defineProperty(
+              window.navigator,
+              'languages',
+              { value: navLangs, configurable: true },
+            )),
+            checkPage: (p) => p.evaluate(() => window.hlx.sidekick.config.lang),
+          }).run();
+          assert.strictEqual(
+            detectedLang,
+            expectedLang,
+            `Expected ${expectedLang} but got ${detectedLang}`,
+          );
+        });
+      }).timeout(IT_DEFAULT_TIMEOUT);
+
       it('Handles errors fetching status from admin API', async () => {
         const errors = [
           { status: 404, body: 'Not found' },
