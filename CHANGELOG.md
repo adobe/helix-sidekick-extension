@@ -1,3 +1,10 @@
+## [6.38.1](https://github.com/adobe/helix-sidekick-extension/compare/v6.38.0...v6.38.1) (2023-12-07)
+
+
+### Bug Fixes
+
+* 403 error message ([1df1b1d](https://github.com/adobe/helix-sidekick-extension/commit/1df1b1da92df935a9e2f09df49465e275a453d7b))
+
 # [6.38.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.37.0...v6.38.0) (2023-11-30)
 
 
