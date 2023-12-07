@@ -67,12 +67,15 @@ describe('Test sidekick', () => {
       it('Handles errors fetching status from admin API', async () => {
         const errors = [
           { status: 404, body: 'Not found' },
+          { status: 403, body: 'Forbidden' },
           { status: 500, body: 'Server error' },
           { status: 504, body: 'Gateway timeout' },
         ];
         nock('https://admin.hlx.page')
           .get('/status/adobe/blog/main/en/topics/bla?editUrl=auto')
           .reply(404)
+          .get('/status/adobe/blog/main/en/topics/bla?editUrl=auto')
+          .reply(403)
           .get('/status/adobe/blog/main/en/topics/bla?editUrl=auto')
           .reply(500)
           .get('/status/adobe/blog/main/en/topics/bla?editUrl=auto')
