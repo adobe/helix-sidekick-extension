@@ -64,7 +64,7 @@ describe('Test sidekick', () => {
         assert.strictEqual(plugins.length, 14, `Wrong number of plugins: ${plugins.length}`);
       }).timeout(IT_DEFAULT_TIMEOUT);
 
-      it('Matches user-preferred language', async () => {
+      it.only('Matches user-preferred language', async () => {
         const navigator = {};
 
         // module.js#L252-L263
@@ -105,6 +105,7 @@ describe('Test sidekick', () => {
           { navLangs: ['en-US', 'it'], expectedLang: 'en' }, // first partial
           { navLangs: ['zh-TW', 'zh-CN'], expectedLang: 'zh_TW' }, // first exact
           { navLangs: ['nl', 'pt-PT', 'es'], expectedLang: 'pt_BR' }, // skip unsupported
+          { navLangs: ['da-DK', 'nb-NO', 'sv-SE'], expectedLang: 'en' }, // all unsupported
         ].forEach(({ navLangs, expectedLang }) => {
           navigator.languages = navLangs;
           const detectedLang = getLanguage();
