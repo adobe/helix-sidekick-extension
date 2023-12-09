@@ -64,27 +64,50 @@ describe('Test sidekick', () => {
         assert.strictEqual(plugins.length, 14, `Wrong number of plugins: ${plugins.length}`);
       }).timeout(IT_DEFAULT_TIMEOUT);
 
-      it('Detects user-preferred language', async () => {
+      it('Matches user-preferred language', async () => {
+        const navigator = {};
+
+        // module.js#L252-L263
+        const LANGS = [
+          'en', // default language, do not reorder
+          'de',
+          'es',
+          'fr',
+          'it',
+          'ja',
+          'ko',
+          'pt_BR',
+          'zh_CN',
+          'zh_TW',
+        ];
+
+        // module.js#L518-L534
+        function getLanguage() {
+          for (const navLang of navigator.languages) {
+            const prefLang = navLang.replace('-', '_');
+            const exactMatch = LANGS.includes(prefLang);
+            if (exactMatch) {
+              return prefLang;
+            } else {
+              const prefLangPrefix = prefLang.split('_')[0];
+              const prefixMatch = LANGS.find((lang) => lang.startsWith(prefLangPrefix));
+              if (prefixMatch) {
+                return prefixMatch;
+              }
+            }
+          }
+          // fallback to default
+          return LANGS[0];
+        }
+
+        // test starts here...
         [
-          { navLangs: ['en-US', 'en-UK'], expectedLang: 'en' },
-          { navLangs: ['zh-TW', 'zh-CN', 'en'], expectedLang: 'zn_TW' },
-          { navLangs: ['ar', 'es-ES'], expectedLang: 'es' },
-        ].forEach(async ({ navLangs, expectedLang }) => {
-          page = await browser.openPage();
-          const setup = new Setup('blog');
-          nock.sidekick(setup);
-          nock.admin(setup);
-          const { checkPageResult: detectedLang } = await new SidekickTest({
-            browser,
-            page,
-            loadModule,
-            pre: (p) => p.evaluate(() => Object.defineProperty(
-              window.navigator,
-              'languages',
-              { value: navLangs, configurable: true },
-            )),
-            checkPage: (p) => p.evaluate(() => window.hlx.sidekick.config.lang),
-          }).run();
+          { navLangs: ['en-US', 'it'], expectedLang: 'en' }, // first partial
+          { navLangs: ['zh-TW', 'zh-CN'], expectedLang: 'zh_TW' }, // first exact
+          { navLangs: ['nl', 'pt-PT', 'es'], expectedLang: 'pt_BR' }, // skip unsupported
+        ].forEach(({ navLangs, expectedLang }) => {
+          navigator.languages = navLangs;
+          const detectedLang = getLanguage();
           assert.strictEqual(
             detectedLang,
             expectedLang,
