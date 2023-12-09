@@ -65,56 +65,44 @@ describe('Test sidekick', () => {
       }).timeout(IT_DEFAULT_TIMEOUT);
 
       it('Matches user-preferred language', async () => {
-        const navigator = {};
-
-        // module.js#L252-L263
-        const LANGS = [
-          'en', // default language, do not reorder
-          'de',
-          'es',
-          'fr',
-          'it',
-          'ja',
-          'ko',
-          'pt_BR',
-          'zh_CN',
-          'zh_TW',
-        ];
-
-        // module.js#L518-L534
-        function getLanguage() {
-          for (const navLang of navigator.languages) {
-            const prefLang = navLang.replace('-', '_');
-            const exactMatch = LANGS.includes(prefLang);
-            if (exactMatch) {
-              return prefLang;
-            } else {
-              const prefLangPrefix = prefLang.split('_')[0];
-              const prefixMatch = LANGS.find((lang) => lang.startsWith(prefLangPrefix));
-              if (prefixMatch) {
-                return prefixMatch;
-              }
-            }
-          }
-          // fallback to default
-          return LANGS[0];
-        }
-
-        // test starts here...
-        [
+        const tests = [
           { navLangs: ['en-US', 'it'], expectedLang: 'en' }, // first partial
           { navLangs: ['zh-TW', 'zh-CN'], expectedLang: 'zh_TW' }, // first exact
           { navLangs: ['nl', 'pt-PT', 'es'], expectedLang: 'pt_BR' }, // skip unsupported
           { navLangs: ['da-DK', 'nb-NO', 'sv-SE'], expectedLang: 'en' }, // all unsupported
-        ].forEach(({ navLangs, expectedLang }) => {
-          navigator.languages = navLangs;
-          const detectedLang = getLanguage();
-          assert.strictEqual(
-            detectedLang,
-            expectedLang,
-            `Expected ${expectedLang} but got ${detectedLang}`,
-          );
-        });
+        ];
+        const expectedResult = tests.map((test) => test.expectedLang);
+        const setup = new Setup('blog');
+        const { sidekickConfig } = setup;
+        nock.sidekick(setup, { persist: true });
+        const { checkPageResult } = await new SidekickTest({
+          browser,
+          page,
+          loadModule,
+          checkPage: (p) => p.evaluate(async (cfg, combos) => {
+            const langs = [];
+            const sk = window.hlx.sidekick;
+            for (const combo of combos) {
+              const { navLangs } = combo;
+              // redefine navigator.languages
+              Object.defineProperty(window.navigator, 'languages', {
+                value: navLangs,
+                configurable: true,
+              });
+              // reload sidekick config
+              // eslint-disable-next-line no-await-in-loop
+              await sk.loadContext(cfg);
+              // store detected language
+              langs.push(sk.config.lang);
+            }
+            return langs;
+          }, sidekickConfig, tests),
+        }).run();
+        assert.deepStrictEqual(
+          checkPageResult,
+          expectedResult,
+          `Expected ${expectedResult}, but got ${checkPageResult}`,
+        );
       }).timeout(IT_DEFAULT_TIMEOUT);
 
       it('Handles errors fetching status from admin API', async () => {

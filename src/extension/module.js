@@ -516,7 +516,6 @@ import sampleRUM from './rum.js';
    * @return {string} The language
    */
   function getLanguage() {
-    /* c8 ignore start */
     for (const navLang of navigator.languages) {
       const prefLang = navLang.replace('-', '_');
       const exactMatch = LANGS.includes(prefLang);
@@ -532,7 +531,6 @@ import sampleRUM from './rum.js';
     }
     // fallback to default
     return LANGS[0];
-    /* c8 ignore stop */
   }
 
   /**
