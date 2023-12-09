@@ -64,7 +64,7 @@ describe('Test sidekick', () => {
         assert.strictEqual(plugins.length, 14, `Wrong number of plugins: ${plugins.length}`);
       }).timeout(IT_DEFAULT_TIMEOUT);
 
-      it.only('Matches user-preferred language', async () => {
+      it('Matches user-preferred language', async () => {
         const navigator = {};
 
         // module.js#L252-L263
