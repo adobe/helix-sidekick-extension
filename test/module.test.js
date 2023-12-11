@@ -809,24 +809,31 @@ describe('Test sidekick', () => {
         assert.ok(eventsFired.hidden, 'Event hidden not fired');
       }).timeout(IT_DEFAULT_TIMEOUT);
 
-      it('Copies sharing URL to clipboard on share button click', async () => {
+      it('Uses navigator.share() or copies sharing URL to clipboard on share button click', async () => {
         const setup = new Setup('blog');
         nock.sidekick(setup);
         nock.admin(setup);
-        const { notification } = await new SidekickTest({
+        const { notification, checkPageResult: usedNavigatorShare } = await new SidekickTest({
           browser,
           page,
           loadModule,
-          post: (p) => p.evaluate(() => window.hlx.sidekick
-            .shadowRoot
-            .querySelector('.hlx-sk button.share')
-            .click()),
+          post: (p) => p.evaluate(() => {
+            const share = window.hlx.sidekick.shadowRoot.querySelector('.hlx-sk button.share');
+            share.click();
+            // mock navigator.share()
+            window.navigator.share = () => {
+              window.hlx.usedNavigatorShare = true;
+            };
+            share.click();
+          }),
+          checkPage: (p) => p.evaluate(() => window.hlx.usedNavigatorShare),
         }).run();
         assert.strictEqual(
           notification.message,
           'Sharing URL for Blog copied to clipboard',
           'Did not copy sharing URL to clipboard',
         );
+        assert.ok(usedNavigatorShare, 'Did not use navigator.share()');
       }).timeout(IT_DEFAULT_TIMEOUT);
 
       it('Displays page modified info on info button click', async () => {

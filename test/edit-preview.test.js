@@ -170,6 +170,31 @@ describe('Test editor preview plugin', () => {
     );
   }).timeout(IT_DEFAULT_TIMEOUT);
 
+  it('Editor preview plugin shows generic error message', async () => {
+    const url = 'https://adobe.sharepoint.com/:w:/r/sites/TheBlog/_layouts/15/Doc.aspx?sourcedoc=%7BE8EC80CB-24C3-4B95-B082-C51FD8BC8760%7D&file=bla.docx&action=default&mobileredirect=true';
+    const setup = new Setup('blog');
+    nock.sidekick(setup);
+    nock.admin(setup, { persist: true });
+    nock('https://admin.hlx.page')
+      .post('/preview/adobe/blog/main/en/topics/bla')
+      .twice()
+      .reply(500);
+    const { popupOpened, notification } = await new SidekickTest({
+      browser,
+      page,
+      url,
+      plugin: 'edit-preview',
+      pluginSleep: 1000,
+      loadModule: true,
+    }).run();
+    assert.ok(!popupOpened, 'Unexpected popup opened');
+    assert.strictEqual(
+      notification.message,
+      'Preview generation failed. Please try again later.',
+      `Unexpected notification message: ${notification.message}`,
+    );
+  }).timeout(IT_DEFAULT_TIMEOUT);
+
   it('Editor preview plugin shows /.helix/* error message from server', async () => {
     const url = 'https://adobe.sharepoint.com/:x:/r/sites/TheBlog/_layouts/15/Doc.aspx?sourcedoc=%7BE8EC80CB-24C3-4B95-B082-C51FD8BC8760%7D&file=config.xlsx&action=default&mobileredirect=true';
     const setup = new Setup('blog');
