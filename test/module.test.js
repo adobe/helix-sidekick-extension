@@ -64,6 +64,47 @@ describe('Test sidekick', () => {
         assert.strictEqual(plugins.length, 14, `Wrong number of plugins: ${plugins.length}`);
       }).timeout(IT_DEFAULT_TIMEOUT);
 
+      it('Matches user-preferred language', async () => {
+        const tests = [
+          { navLangs: ['en-US', 'it'], expectedLang: 'en' }, // first partial
+          { navLangs: ['zh-TW', 'zh-CN'], expectedLang: 'zh_TW' }, // first exact
+          { navLangs: ['nl', 'pt-PT', 'es'], expectedLang: 'pt_BR' }, // skip unsupported
+          { navLangs: ['da-DK', 'nb-NO', 'sv-SE'], expectedLang: 'en' }, // all unsupported
+        ];
+        const expectedResult = tests.map((test) => test.expectedLang);
+        const setup = new Setup('blog');
+        const { sidekickConfig } = setup;
+        nock.sidekick(setup, { persist: true });
+        const { checkPageResult } = await new SidekickTest({
+          browser,
+          page,
+          loadModule,
+          checkPage: (p) => p.evaluate(async (cfg, combos) => {
+            const langs = [];
+            const sk = window.hlx.sidekick;
+            for (const combo of combos) {
+              const { navLangs } = combo;
+              // redefine navigator.languages
+              Object.defineProperty(window.navigator, 'languages', {
+                value: navLangs,
+                configurable: true,
+              });
+              // reload sidekick config
+              // eslint-disable-next-line no-await-in-loop
+              await sk.loadContext(cfg);
+              // store detected language
+              langs.push(sk.config.lang);
+            }
+            return langs;
+          }, sidekickConfig, tests),
+        }).run();
+        assert.deepStrictEqual(
+          checkPageResult,
+          expectedResult,
+          `Expected ${expectedResult}, but got ${checkPageResult}`,
+        );
+      }).timeout(IT_DEFAULT_TIMEOUT);
+
       it('Handles errors fetching status from admin API', async () => {
         const errors = [
           { status: 404, body: 'Not found' },

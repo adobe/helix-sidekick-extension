@@ -516,11 +516,21 @@ import sampleRUM from './rum.js';
    * @return {string} The language
    */
   function getLanguage() {
-    return navigator.languages
-      .map((uLang) => LANGS
-        .find((lang) => ((uLang.replace('-', '_') === lang || lang.startsWith(uLang.split('-')[0]))
-          ? lang : undefined)))
-      .filter((lang) => !!lang)[0] || LANGS[0];
+    for (const navLang of navigator.languages) {
+      const prefLang = navLang.replace('-', '_');
+      const exactMatch = LANGS.includes(prefLang);
+      if (exactMatch) {
+        return prefLang;
+      } else {
+        const prefLangPrefix = prefLang.split('_')[0];
+        const prefixMatch = LANGS.find((lang) => lang.startsWith(prefLangPrefix));
+        if (prefixMatch) {
+          return prefixMatch;
+        }
+      }
+    }
+    // fallback to default
+    return LANGS[0];
   }
 
   /**
