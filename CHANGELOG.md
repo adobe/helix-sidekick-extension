@@ -1,3 +1,10 @@
+## [6.38.2](https://github.com/adobe/helix-sidekick-extension/compare/v6.38.1...v6.38.2) (2023-12-11)
+
+
+### Bug Fixes
+
+* language detection ([fa42b8b](https://github.com/adobe/helix-sidekick-extension/commit/fa42b8b4557b8eadab377a3e5b2f810f6cff18dd))
+
 ## [6.38.1](https://github.com/adobe/helix-sidekick-extension/compare/v6.38.0...v6.38.1) (2023-12-07)
 
 
