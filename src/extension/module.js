@@ -1526,17 +1526,6 @@ import sampleRUM from './rum.js';
       return `${year}-${month}-${day}T${hours}:${minutes}`;
     };
 
-    const updateMinMaxDate = (input) => {
-      const d = new Date();
-      d.setMinutes(d.getMinutes() + 5);
-      const minValue = toLocalDateTime(d);
-      d.setMonth(d.getMonth() + 6);
-      const maxValue = toLocalDateTime(d);
-
-      input.setAttribute('min', minValue);
-      input.setAttribute('max', maxValue);
-    };
-
     sk.add({
       id: 'publish-later',
       condition: (sidekick) => sidekick.isProject() && sk.isContent(),
@@ -1559,10 +1548,6 @@ import sampleRUM from './rum.js';
                 attrs: {
                   type: 'datetime-local',
                   value,
-                },
-                lstnrs: {
-                  change: ({ target }) => updateMinMaxDate(target),
-                  focus: ({ target }) => updateMinMaxDate(target),
                 },
               }),
               createTag({
