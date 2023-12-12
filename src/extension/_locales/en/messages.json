@@ -470,6 +470,9 @@
   "now": {
     "message": "Now"
   },
+  "ok": {
+    "message": "OK"
+  },
   "open_preview": {
     "message": "Open preview URL",
     "description": "Opens the preview URL for a given GitHub branch"
@@ -524,6 +527,23 @@
   },
   "publish_failure": {
     "message": "Publication failed. Please try again later."
+  },
+  "publish_later": {
+    "message": "Publish later"
+  },
+  "publish_later_description": {
+    "message": "Pick a date and time:",
+    "description": "Instructions in publish later dialog"
+  },
+  "publish_later_timezone": {
+    "message": "Your timezone:",
+    "description": "Prefix for timezone diplayed in publish later dialog"
+  },
+  "publish_later_error_date_range": {
+    "message": "Select a date between 5 minutes and 6 months in the future."
+  },
+  "publish_later_success": {
+    "message": "Publication scheduled at:"
   },
   "push_down_content": {
     "message": "Push down content instead of overlaying"

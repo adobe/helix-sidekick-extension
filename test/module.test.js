@@ -61,7 +61,7 @@ describe('Test sidekick', () => {
         assert.strictEqual(innerHost, 'main--blog--adobe.hlx.page', `Unexpected innerHost: ${innerHost}`);
         assert.strictEqual(outerHost, 'main--blog--adobe.hlx.live', `Unexpected outerHost: ${innerHost}`);
         // check plugins
-        assert.strictEqual(plugins.length, 14, `Wrong number of plugins: ${plugins.length}`);
+        assert.strictEqual(plugins.length, 15, `Wrong number of plugins: ${plugins.length}`);
       }).timeout(IT_DEFAULT_TIMEOUT);
 
       it('Matches user-preferred language', async () => {

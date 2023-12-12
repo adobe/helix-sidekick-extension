@@ -61,6 +61,8 @@
   --hlx-sk-modal-help-color: white;
   --hlx-sk-modal-help-dropdown-container-bg: #1473e6be;
   --hlx-sk-modal-font-size: 1.25rem;
+  --hlx-sk-modal-input-color: var(--hlx-sk-color);
+  --hlx-sk-modal-input-invalid: #e60016;
   --hlx-sk-special-view-button-color: rgba(0,0,0, 0.5);
   --hlx-sk-special-view-table-border: rgba(0,0,0, 0.5);
   --hlx-sk-palette-title-bg: rgba(0 0 0 / 10%);
@@ -86,6 +88,7 @@
     --hlx-sk-special-view-table-border: rgba(127, 127, 127, 0.8);
     --hlx-sk-palette-title-bg: rgba(127 127 127 / 20%);
     --hlx-sk-user-bg: #909090;
+    --hlx-sk-modal-input-color: var(--hlx-sk-bg);
   }
 }
 
@@ -242,7 +245,7 @@
   height: 100%;
 }
 
-.hlx-sk .hlx-sk-label,
+.hlx-sk-label,
 .hlx-sk .plugin > span {
   display: inline-block;
   margin: 7px 8px 0 0;
@@ -628,6 +631,16 @@
   word-break: break-all;
 }
 
+.hlx-sk-overlay .modal input {
+  font-family: var(--hlx-sk-font-family);
+  font-size: var(--hlx-sk-modal-font-size);
+  color: var(--hlx-sk-modal-input-color);
+}
+
+.hlx-sk-overlay .modal input:invalid {
+  color: var(--hlx-sk-modal-input-invalid);
+}
+
 .hlx-sk-overlay .level-0 {
   background-color: var(--hlx-sk-modal-bg-0);
   color: var(--hlx-sk-modal-color);
@@ -767,6 +780,10 @@
 
 .hlx-sk.hlx-sk-advanced .hlx-sk-advanced-only {
   display: initial;
+}
+
+.hlx-sk.hlx-sk-advanced .plugin.publish {
+  display: none;
 }
 
 .hlx-sk-hidden {

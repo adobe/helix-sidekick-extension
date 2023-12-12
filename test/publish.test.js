@@ -190,4 +190,96 @@ describe('Test publish plugin', () => {
       'Publish plugin without update class',
     );
   }).timeout(IT_DEFAULT_TIMEOUT);
+
+  it('Publish later plugin uses live API with date parameter', async () => {
+    const setup = new Setup('blog');
+    nock.sidekick(setup);
+    nock.admin(setup);
+    nock('https://admin.hlx.page')
+      .post(/\/live\/.*/)
+      .reply(200);
+    const { requestsMade } = await new SidekickTest({
+      browser,
+      page,
+      plugin: 'publish-later',
+      pluginSleep: 500,
+      loadModule: true,
+      checkPage: (p) => p.evaluate(async () => {
+        // click ok button and wait 1s
+        const ok = window.hlx.sidekick.shadowRoot.querySelector('button[title="OK"]');
+        ok.click();
+        await new Promise((resolve) => {
+          setTimeout(resolve, 1000);
+        });
+      }),
+    }).run();
+    const publishReq = requestsMade.find((r) => r.method === 'POST');
+    assert.ok(
+      publishReq
+        && publishReq.url.startsWith('https://admin.hlx.page/live/')
+        && publishReq.url.includes('?date='),
+      'Live API not called with date parameter',
+    );
+  }).timeout(IT_DEFAULT_TIMEOUT);
+
+  it('Publish later plugin checks date range', async () => {
+    const setup = new Setup('blog');
+    nock.sidekick(setup);
+    nock.admin(setup);
+    const { checkPageResult: errorMsg } = await new SidekickTest({
+      browser,
+      page,
+      plugin: 'publish-later',
+      pluginSleep: 500,
+      loadModule: true,
+      checkPage: (p) => p.evaluate(async () => {
+        const pad = (num) => `${num < 10 ? '0' : ''}${num}`;
+        const toLocalDateTime = (d) => {
+          const year = d.getFullYear();
+          const month = pad(d.getMonth() + 1);
+          const day = pad(d.getDate());
+          const hours = pad(d.getHours());
+          const minutes = pad(d.getMinutes());
+          return `${year}-${month}-${day}T${hours}:${minutes}`;
+        };
+        // set invalid date, click ok button return notification
+        const date = window.hlx.sidekick.shadowRoot.querySelector('.dialog input');
+        date.value = toLocalDateTime(new Date()); // date too early
+        const ok = window.hlx.sidekick.shadowRoot.querySelector('button[title="OK"]');
+        ok.click();
+        // eslint-disable-next-line no-underscore-dangle
+        const modal = window.hlx.sidekick._modal;
+        return modal && modal.textContent.includes('Select a date between');
+      }),
+    }).run();
+    assert.ok(errorMsg, 'Date range not checked');
+  }).timeout(IT_DEFAULT_TIMEOUT);
+
+  it('Publish later handles API error', async () => {
+    const xError = 'error: something went wrong with the foo';
+    const setup = new Setup('blog');
+    nock.sidekick(setup);
+    nock.admin(setup);
+    nock('https://admin.hlx.page')
+      .post(/\/live\/.*/)
+      .reply(() => ([500, 'Internal Server Error', { 'x-error': xError }]));
+    const { checkPageResult: errorMsg } = await new SidekickTest({
+      browser,
+      page,
+      plugin: 'publish-later',
+      pluginSleep: 500,
+      loadModule: true,
+      checkPage: (p) => p.evaluate(async () => {
+        const ok = window.hlx.sidekick.shadowRoot.querySelector('button[title="OK"]');
+        ok.click();
+        await new Promise((resolve) => {
+          setTimeout(resolve, 500);
+        });
+        // eslint-disable-next-line no-underscore-dangle
+        const modal = window.hlx.sidekick._modal;
+        return modal && modal.textContent;
+      }),
+    }).run();
+    assert.ok(errorMsg?.includes(xError), 'Error message not displayed');
+  }).timeout(IT_DEFAULT_TIMEOUT);
 });

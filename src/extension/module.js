@@ -196,6 +196,15 @@ import sampleRUM from './rum.js';
    */
 
   /**
+   * @event Sidekick#publishedlater
+   * @arg {CustomEvent} e The event
+   * @prop {Object} e.detail.data The event payload
+   * @prop {string} e.detail.data.path The published path
+   * @prop {string} e.detail.data.date The date in UTC milliseconds
+   * @description This event is fired when content has been published.
+   */
+
+  /**
    * @event Sidekick#unpublished
    * @arg {CustomEvent} e The event
    * @prop {string} e.detail.data The unpublished path
@@ -1039,6 +1048,7 @@ import sampleRUM from './rum.js';
         'updated',
         'previewed',
         'published',
+        'publishedlater',
         'unpublished',
         'deleted',
         'envswitched',
@@ -1495,6 +1505,121 @@ import sampleRUM from './rum.js';
         },
         isEnabled: (sidekick) => sidekick.isAuthorized('live', 'write') && sidekick.status.edit
           && sidekick.status.edit.url, // enable only if edit url exists
+      },
+    });
+  }
+
+  /**
+ * Adds the publish plugin to the sidekick.
+ * @private
+ * @param {Sidekick} sk The sidekick
+ */
+  function addPublishLaterPlugin(sk) {
+    const pad = (num) => `${num < 10 ? '0' : ''}${num}`;
+
+    const toLocalDateTime = (d) => {
+      const year = d.getFullYear();
+      const month = pad(d.getMonth() + 1);
+      const day = pad(d.getDate());
+      const hours = pad(d.getHours());
+      const minutes = pad(d.getMinutes());
+      return `${year}-${month}-${day}T${hours}:${minutes}`;
+    };
+
+    const updateMinMaxDate = (input) => {
+      const d = new Date();
+      d.setMinutes(d.getMinutes() + 5);
+      const minValue = toLocalDateTime(d);
+      d.setMonth(d.getMonth() + 6);
+      const maxValue = toLocalDateTime(d);
+
+      input.setAttribute('min', minValue);
+      input.setAttribute('max', maxValue);
+    };
+
+    sk.add({
+      id: 'publish-later',
+      condition: (sidekick) => sidekick.isProject() && sk.isContent(),
+      container: 'publish',
+      advanced: () => true,
+      button: {
+        text: i18n(sk, 'publish_later'),
+        action: () => {
+          const d = new Date();
+          d.setMinutes(d.getMinutes() + 5);
+          d.setMinutes(60); // jump to next full hour 5 minutes from now
+          const value = toLocalDateTime(d);
+          const { timeZone } = Intl.DateTimeFormat().resolvedOptions();
+          const offset = new Date().getTimezoneOffset();
+          sk.showDialog({
+            message: [
+              i18n(sk, 'publish_later_description'),
+              createTag({
+                tag: 'input',
+                attrs: {
+                  type: 'datetime-local',
+                  value,
+                },
+                lstnrs: {
+                  change: ({ target }) => updateMinMaxDate(target),
+                  focus: ({ target }) => updateMinMaxDate(target),
+                },
+              }),
+              createTag({
+                tag: 'span',
+                attrs: {
+                  class: 'hlx-sk-label',
+                },
+                text: `${i18n(sk, 'publish_later_timezone')}
+                  ${timeZone} (UTC${offset <= 0 ? '+' : ''}${offset / -60})`,
+              }),
+            ],
+            okHandler: async (dlg) => {
+              const { location } = sk;
+              const path = location.pathname;
+              const { value: localDateString } = dlg
+                .querySelector('input[type="datetime-local"]');
+              const publishDate = new Date(localDateString);
+              const publishMs = publishDate.valueOf();
+              const now = new Date();
+              const minMs = now.setMinutes(now.getMinutes() + 5);
+              const maxMs = now.setMonth(now.getMonth() + 6);
+              // validate date range
+              if (publishMs <= minMs || publishMs >= maxMs) {
+                sk.showModal({
+                  message: i18n(sk, 'publish_later_error_date_range'),
+                  level: 1,
+                });
+                return;
+              }
+              sk.showWait();
+              try {
+                const resp = await sk.publish(path, new Date(publishDate.toUTCString()).valueOf());
+                if (!resp.ok) {
+                  throw new Error(resp.headers.get('x-error'));
+                }
+                const options = {
+                  year: 'numeric',
+                  month: '2-digit',
+                  day: '2-digit',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                };
+                sk.showModal(`${i18n(sk, 'publish_later_success')}
+                  ${publishDate.toLocaleString(options)}`);
+              } catch (e) {
+                console.error(e);
+                sk.showModal({
+                  message: [
+                    i18n(sk, 'publish_failure'),
+                    e.message || '',
+                  ],
+                  level: 0,
+                });
+              }
+            },
+          });
+        },
       },
     });
   }
@@ -3000,6 +3125,7 @@ import sampleRUM from './rum.js';
         addReloadPlugin(this);
         addDeletePlugin(this);
         addPublishPlugin(this);
+        addPublishLaterPlugin(this);
         addUnpublishPlugin(this);
         addBulkPlugins(this);
         addCustomPlugins(this);
@@ -3632,6 +3758,70 @@ import sampleRUM from './rum.js';
     }
 
     /**
+     * Displays a dialog.
+     * @param {object|string|string[]} cfg The message (object or lines)
+     * @param {string|HTMLElement[]} cfg.message The message
+     * @param {Function} cfg.okHandler The function to call when the dialog's OK button is pressed
+     * @param {boolean} cfg.cancel=true <code>false</code> if dialog should not be cancelable
+     * @param {string} css The CSS class to add
+     * @fires Sidekick#dialogshown
+     * @returns {HTMLDivElement} The dialog
+     */
+    showDialog({
+      message = '',
+      okHandler = () => this.hideModal(),
+      okText,
+      cancel = true,
+      css,
+    }) {
+      if (typeof message === 'string') {
+        message = [
+          createTag({
+            tag: 'span',
+            text: message,
+          }),
+        ];
+      }
+      const buttonGroup = createTag({
+        tag: 'span',
+      });
+      appendTag(buttonGroup, createTag({
+        tag: 'button',
+        text: okText || i18n(this, 'ok'),
+        lstnrs: {
+          click: () => okHandler(this._modal),
+        },
+      }));
+      if (cancel) {
+        appendTag(buttonGroup, createTag({
+          tag: 'button',
+          text: i18n(this, 'cancel'),
+          lstnrs: {
+            click: () => {
+              this.hideModal();
+            },
+          },
+        }));
+      }
+      this.showModal(
+        [
+          ...message,
+          buttonGroup,
+        ],
+        true,
+      );
+      // eslint-disable-next-line no-underscore-dangle
+      const dialog = this._modal;
+      dialog.classList.add('dialog');
+      if (css) {
+        dialog.classList.add(css);
+      }
+      dialog.addEventListener('click', (e) => e.stopPropagation());
+      dialog.querySelector('input, select, textarea')?.focus();
+      return dialog;
+    }
+
+    /**
      * Displays a balloon with help content.
      * @param {HelpTopic} topic The topic
      * @param {number} step The step number to display (starting with 0)
@@ -3934,10 +4124,11 @@ import sampleRUM from './rum.js';
     /**
      * Publishes the page at the specified path if <code>config.host</code> is defined.
      * @param {string} path The path of the page to publish
+     * @param {number} date An optional UTC date in milliseconds for scheduled publishing
      * @fires Sidekick#published
      * @returns {Response} The response object
      */
-    async publish(path) {
+    async publish(path, date) {
       const { config, location } = this;
 
       // publish content only
@@ -3949,25 +4140,34 @@ import sampleRUM from './rum.js';
         ? `https://${config.innerHost}/`
         : location.href);
       console.log(`publishing ${purgeURL.pathname}`);
+
+      const adminURL = getAdminUrl(config, 'live', purgeURL.pathname);
+      if (date) {
+        adminURL.searchParams.set('date', date);
+      }
       let resp = {};
       try {
         resp = await fetch(
-          getAdminUrl(config, 'live', purgeURL.pathname),
+          adminURL,
           {
             method: 'POST',
             ...getAdminFetchOptions(),
           },
         );
-        // bust client cache for live and production
-        if (config.outerHost) {
-          // reuse purgeURL to ensure page relative paths (e.g. when publishing dependencies)
-          await fetch(`https://${config.outerHost}${purgeURL.pathname}`, { cache: 'reload', mode: 'no-cors' });
+        if (!date) {
+          // bust client cache for live and production
+          if (config.outerHost) {
+            // reuse purgeURL to ensure page relative paths (e.g. when publishing dependencies)
+            await fetch(`https://${config.outerHost}${purgeURL.pathname}`, { cache: 'reload', mode: 'no-cors' });
+          }
+          if (config.host) {
+            // reuse purgeURL to ensure page relative paths (e.g. when publishing dependencies)
+            await fetch(`https://${config.host}${purgeURL.pathname}`, { cache: 'reload', mode: 'no-cors' });
+          }
+          fireEvent(this, 'published', path);
+        } else {
+          fireEvent(this, 'publishedlater', { path, date });
         }
-        if (config.host) {
-          // reuse purgeURL to ensure page relative paths (e.g. when publishing dependencies)
-          await fetch(`https://${config.host}${purgeURL.pathname}`, { cache: 'reload', mode: 'no-cors' });
-        }
-        fireEvent(this, 'published', path);
       } catch (e) {
         console.error('failed to publish', path, e);
       }
