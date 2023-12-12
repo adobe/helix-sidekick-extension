@@ -3757,16 +3757,7 @@ import sampleRUM from './rum.js';
       okHandler = () => this.hideModal(),
       okText,
       cancel = true,
-      css,
     }) {
-      if (typeof message === 'string') {
-        message = [
-          createTag({
-            tag: 'span',
-            text: message,
-          }),
-        ];
-      }
       const buttonGroup = createTag({
         tag: 'span',
       });
@@ -3777,7 +3768,7 @@ import sampleRUM from './rum.js';
           click: () => okHandler(this._modal),
         },
       }));
-      if (cancel) {
+      if (cancel !== false) {
         appendTag(buttonGroup, createTag({
           tag: 'button',
           text: i18n(this, 'cancel'),
@@ -3798,9 +3789,6 @@ import sampleRUM from './rum.js';
       // eslint-disable-next-line no-underscore-dangle
       const dialog = this._modal;
       dialog.classList.add('dialog');
-      if (css) {
-        dialog.classList.add(css);
-      }
       dialog.addEventListener('click', (e) => e.stopPropagation());
       dialog.querySelector('input, select, textarea')?.focus();
       return dialog;
