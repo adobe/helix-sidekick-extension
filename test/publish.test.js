@@ -255,6 +255,26 @@ describe('Test publish plugin', () => {
     assert.ok(errorMsg, 'Date range not checked');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
+  it('Publish later plugin closes dialog on cancel', async () => {
+    const setup = new Setup('blog');
+    nock.sidekick(setup);
+    nock.admin(setup);
+    const { checkPageResult: dialogText } = await new SidekickTest({
+      browser,
+      page,
+      plugin: 'publish-later',
+      loadModule: true,
+      checkPage: (p) => p.evaluate(async () => {
+        const cancel = window.hlx.sidekick.shadowRoot.querySelector('button[title="Cancel"]');
+        cancel.click();
+        // eslint-disable-next-line no-underscore-dangle
+        const modal = window.hlx.sidekick._modal;
+        return modal && modal.innerHTML;
+      }),
+    }).run();
+    assert.ok(!dialogText, 'Dialog not closed');
+  }).timeout(IT_DEFAULT_TIMEOUT);
+
   it('Publish later handles API error', async () => {
     const xError = 'error: something went wrong with the foo';
     const setup = new Setup('blog');
