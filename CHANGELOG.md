@@ -1,3 +1,11 @@
+## [6.38.3](https://github.com/adobe/helix-sidekick-extension/compare/v6.38.2...v6.38.3) (2023-12-13)
+
+
+### Bug Fixes
+
+* create a minimal config for sampleRUM ([#632](https://github.com/adobe/helix-sidekick-extension/issues/632)) ([62503f4](https://github.com/adobe/helix-sidekick-extension/commit/62503f42193fd0d1a3e0cdfc4f092d47c7aa1d64))
+* **safari:** path to zh-CN.lproj/InfoPlist.strings ([#633](https://github.com/adobe/helix-sidekick-extension/issues/633)) [skip ci] ([d4ef0f3](https://github.com/adobe/helix-sidekick-extension/commit/d4ef0f324ffedd90347420a9e739c83899553a5c))
+
 ## [6.38.2](https://github.com/adobe/helix-sidekick-extension/compare/v6.38.1...v6.38.2) (2023-12-11)
 
 
