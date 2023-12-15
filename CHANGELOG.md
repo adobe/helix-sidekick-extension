@@ -1,3 +1,10 @@
+# [6.39.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.38.3...v6.39.0) (2023-12-15)
+
+
+### Features
+
+* transient mode ([4196091](https://github.com/adobe/helix-sidekick-extension/commit/4196091a9fadd270f753fc3c8f16a312b6d80c21))
+
 ## [6.38.3](https://github.com/adobe/helix-sidekick-extension/compare/v6.38.2...v6.38.3) (2023-12-13)
 
 
