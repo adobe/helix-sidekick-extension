@@ -53,8 +53,7 @@ describe('Test sidekick', () => {
           browser,
           page,
           loadModule,
-          sleep: 500,
-          setup: 'blog',
+          setup,
         }).run();
         const { plugins, sidekick: { config: { innerHost, outerHost } } } = result;
         // check sidekick config
@@ -62,6 +61,22 @@ describe('Test sidekick', () => {
         assert.strictEqual(outerHost, 'main--blog--adobe.hlx.live', `Unexpected outerHost: ${innerHost}`);
         // check plugins
         assert.strictEqual(plugins.length, 14, `Wrong number of plugins: ${plugins.length}`);
+      }).timeout(IT_DEFAULT_TIMEOUT);
+
+      it('Renders with transient config', async () => {
+        const setup = new Setup('blog');
+        setup.sidekickConfig.transient = true;
+        nock.sidekick(setup);
+        nock.admin(setup);
+        const result = await new SidekickTest({
+          browser,
+          page,
+          loadModule,
+          setup,
+        }).run();
+        const { plugins } = result;
+        // check plugins
+        assert.ok(plugins.find((p) => p.id === 'add-project'), 'Add project plugin not found');
       }).timeout(IT_DEFAULT_TIMEOUT);
 
       it('Handles errors fetching status from admin API', async () => {
