@@ -107,6 +107,32 @@ describe('Test user auth handling', () => {
     );
   }).timeout(IT_DEFAULT_TIMEOUT);
 
+  it('isAuthorized respects permissions', async () => {
+    const setup = new Setup('blog');
+    setup.apiResponse().live.permissions = ['read'];
+    nock.sidekick(setup);
+    nock.admin(setup);
+    const { checkPageResult: canWriteLive } = await new SidekickTest({
+      browser,
+      page,
+      checkPage: (p) => p.evaluate(() => window.hlx.sidekick.isAuthorized('live', 'write')),
+    }).run();
+    assert.ok(!canWriteLive, 'Did not respect permissions');
+  }).timeout(IT_DEFAULT_TIMEOUT);
+
+  it('isAuthorized respects 403 status', async () => {
+    const setup = new Setup('blog');
+    setup.apiResponse().live.status = 403;
+    nock.sidekick(setup);
+    nock.admin(setup);
+    const { checkPageResult: canReadLive } = await new SidekickTest({
+      browser,
+      page,
+      checkPage: (p) => p.evaluate(() => window.hlx.sidekick.isAuthorized('live', 'read')),
+    }).run();
+    assert.ok(!canReadLive, 'Did not respect 403 status');
+  }).timeout(IT_DEFAULT_TIMEOUT);
+
   it('Keeps plugin buttons disabled based on permissions', async () => {
     const setup = new Setup('blog');
     setup.apiResponse().live.permissions = ['read'];

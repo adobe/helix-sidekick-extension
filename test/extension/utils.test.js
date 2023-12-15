@@ -243,6 +243,11 @@ describe('Test extension utils', () => {
     expect((await utils.getProjectMatches(CONFIGS, 'https://6-live.foo.bar/')).length).to.equal(1);
     // match production host
     expect((await utils.getProjectMatches(CONFIGS, 'https://1.foo.bar/')).length).to.equal(1);
+    // match transient url
+    expect((await utils.getProjectMatches(CONFIGS, 'https://main--bar0--foo.hlx.live/')).length).to.equal(1);
+    // match transient url from cache
+    await utils.populateUrlCache('https://transient.foo.bar/', { owner: 'bar', repo: 'random' });
+    expect((await utils.getProjectMatches(CONFIGS, 'https://transient.foo.bar/')).length).to.equal(1);
     // ignore disabled config
     expect((await utils.getProjectMatches(CONFIGS, 'https://main--bar2--foo.hlx.live/')).length).to.equal(0);
   });
@@ -370,5 +375,27 @@ describe('Test extension utils', () => {
   it('isGoogleDriveHost', async () => {
     expect(utils.isGoogleDriveHost('https://drive.google.com/drive/folders/1234567890')).to.be.true;
     expect(utils.isGoogleDriveHost('https://docs.google.com/document/d/1234567890/edit')).to.be.true;
+  });
+
+  it('storeAuthToken', async () => {
+    const spy = sandbox.spy(window.chrome.storage.session, 'set');
+    const token = '1234';
+    const exp = (Date.now() / 1000) + 120;
+    await utils.storeAuthToken('foo', 'bar', token, exp);
+    expect(spy.calledWith({
+      'foo/bar': {
+        owner: 'foo',
+        repo: 'bar',
+        authToken: token,
+        authTokenExpiry: exp * 1000,
+      },
+    })).to.be.true;
+    expect(spy.calledWith({ hlxSidekickProjects: ['foo/bar'] })).to.be.true;
+  });
+
+  it('storeAuthToken (delete)', async () => {
+    const spy = sandbox.spy(window.chrome.storage.session, 'remove');
+    await utils.storeAuthToken('foo', 'bar', '');
+    expect(spy.calledWith('foo/bar')).to.be.true;
   });
 });

@@ -31,6 +31,8 @@ import {
   queryUrlCache,
   setDisplay,
   isValidShareURL,
+  storeAuthToken,
+  updateAdminAuthHeaderRules,
 } from './utils.js';
 
 /**
@@ -423,81 +425,6 @@ function checkViewDocSource(id) {
 }
 
 /**
- * Sets the x-auth-token header for all requests to admin.hlx.page if project config
- * has an auth token.
- */
-async function updateAdminAuthHeaderRules() {
-  try {
-    // remove all rules first
-    await chrome.declarativeNetRequest.updateSessionRules({
-      removeRuleIds: (await chrome.declarativeNetRequest.getSessionRules())
-        .map((rule) => rule.id),
-    });
-    // find projects with auth tokens and add rules for each
-    let id = 2;
-    const projects = await getConfig('sync', 'hlxSidekickProjects') || [];
-    const addRules = [];
-    const projectConfigs = (await Promise.all(projects
-      .map((handle) => getConfig('session', handle))))
-      .filter((cfg) => !!cfg);
-    projectConfigs.forEach(({ owner, repo, authToken }) => {
-      if (authToken) {
-        addRules.push({
-          id,
-          priority: 1,
-          action: {
-            type: 'modifyHeaders',
-            requestHeaders: [{
-              operation: 'set',
-              header: 'x-auth-token',
-              value: authToken,
-            }],
-          },
-          condition: {
-            regexFilter: `^https://admin.hlx.page/[a-z]+/${owner}/${repo}/.*`,
-            requestDomains: ['admin.hlx.page'],
-            requestMethods: ['get', 'post', 'delete'],
-            resourceTypes: ['xmlhttprequest'],
-          },
-        });
-        id += 1;
-        log.debug('added admin auth header rule for ', owner, repo);
-      }
-    });
-    if (addRules.length > 0) {
-      await chrome.declarativeNetRequest.updateSessionRules({
-        addRules,
-      });
-      log.debug(`setAdminAuthHeaderRule: ${addRules.length} rule(s) set`);
-    }
-  } catch (e) {
-    log.error(`updateAdminAuthHeaderRules: ${e.message}`);
-  }
-}
-
-async function storeAuthToken(owner, repo, token, exp) {
-  // find config tab with owner/repo
-  const project = await getProject({ owner, repo });
-  if (project) {
-    if (token) {
-      project.authToken = token;
-      if (exp) {
-        project.authTokenExpiry = exp * 1000; // store expiry in milliseconds
-      }
-    } else {
-      delete project.authToken;
-      delete project.authTokenExpiry;
-    }
-    await setProject(project);
-    log.debug(`updated auth token for ${owner}--${repo}`);
-  } else {
-    log.debug(`unable to update auth token for ${owner}--${repo}: no such config`);
-  }
-  // auth token changed, set/update admin auth header
-  updateAdminAuthHeaderRules();
-}
-
-/**
  * Actions for external use via messaging API
  * @type {Object}
  */
@@ -682,8 +609,7 @@ const internalActions = {
   // listen for add/remove project calls from the install helper
   chrome.runtime.onMessage.addListener(({ action: actionFromTab }, { tab }) => {
     // check if message contains action and is sent from right tab
-    if (tab && tab.url && isValidShareURL(tab.url)
-      && actionFromTab && typeof internalActions[actionFromTab] === 'function') {
+    if (tab && tab.url && actionFromTab && typeof internalActions[actionFromTab] === 'function') {
       internalActions[actionFromTab](tab);
     }
   });

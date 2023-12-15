@@ -1048,6 +1048,7 @@ import sampleRUM from './rum.js';
         'helpdismissed',
         'helpacknowlegded',
         'helpoptedout',
+        'projectadded',
       ];
       if (name.startsWith('custom:') || userEvents.includes(name)) {
         sampleRUM(`sidekick:${name}`, {
@@ -1143,6 +1144,26 @@ import sampleRUM from './rum.js';
     }
     sk.hideModal();
     sk.switchEnv('preview');
+  }
+
+  /**
+   * Adds the transient add project plugin the sidekick.
+   * @private
+   * @param {Sidekick} sk The sidekick
+   */
+  function addTransientAddProjectPlugin(sk) {
+    sk.add({
+      id: 'add-project',
+      feature: true,
+      condition: (sidekick) => sidekick.config.transient,
+      button: {
+        text: i18n(sk, 'config_project_add'),
+        action: async () => {
+          // instrumented by extension
+          fireEvent(sk, 'projectadded');
+        },
+      },
+    });
   }
 
   /**
@@ -1411,8 +1432,8 @@ import sampleRUM from './rum.js';
       id: 'delete',
       condition: (s) => s.isProject()
         && s.isAuthorized('preview', 'delete') // show only if authorized and
-        && s.status.preview.status !== 404 // preview exists and
-        && s.status.code !== 200 // not code
+        && s.status.preview.status < 400 // preview exists and
+        && s.status.code.status !== 200 // not code
         && !RESTRICTED_PATHS.includes(s.location.pathname),
       advanced: (s) => s.status.edit.url, // keep hidden if source still exists
       button: {
@@ -1509,8 +1530,8 @@ import sampleRUM from './rum.js';
       id: 'unpublish',
       condition: (s) => s.isProject() && s.isContent()
         && s.isAuthorized('live', 'delete') // show only if authorized and
-        && s.status.live.status !== 404 // published and
-        && s.status.code !== 200 // not code
+        && s.status.live.status < 400 // published and
+        && s.status.code.status !== 200 // not code
         && !RESTRICTED_PATHS.includes(s.location.pathname),
       advanced: (s) => s.status.edit.url, // keep hidden if source still exists
       button: {
@@ -2042,7 +2063,7 @@ import sampleRUM from './rum.js';
       plugins.classList.add('hlx-sk-login-only');
       loginPlugin.firstElementChild.classList.add('accent');
       loginPlugin.firstElementChild.title = i18n(sk, 'user_login_hint');
-      plugins.append(loginPlugin);
+      plugins.prepend(loginPlugin);
     } else {
       // unhide plugins
       plugins.classList.remove('hlx-sk-login-only');
@@ -3003,6 +3024,7 @@ import sampleRUM from './rum.js';
         addUnpublishPlugin(this);
         addBulkPlugins(this);
         addCustomPlugins(this);
+        addTransientAddProjectPlugin(this);
         // fetch status
         this.fetchStatus();
         // push down content
@@ -3490,6 +3512,10 @@ import sampleRUM from './rum.js';
     isAuthorized(feature, permission) {
       if (!this.status[feature]) {
         // unknown feature
+        return false;
+      }
+      if (this.status[feature].status === 403) {
+        // forbidden
         return false;
       }
       if (!this.status[feature].permissions) {

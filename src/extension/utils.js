@@ -334,16 +334,33 @@ export async function populateUrlCache(tabUrl, config = {}) {
  * Checks if a host is a valid project host.
  * @private
  * @param {string} host The base host
- * @param {string} owner The owner
- * @param {string} host The repo
+ * @param {string} owner The owner (optional)
+ * @param {string} host The repo (optional)
  * @returns {boolean} <code>true</code> if project host, else <code>false</code>
  */
 export function isValidProjectHost(host, owner, repo) {
   const [third, second, first] = host.split('.');
+  const any = '([0-9a-z-]+)';
   return host.endsWith(first)
     && ['page', 'live'].includes(first)
     && ['aem', 'hlx'].includes(second)
-    && third.endsWith(`--${repo}--${owner}`);
+    && new RegExp(`--${repo || any}--${owner || any}$`, 'i').test(third);
+}
+
+/**
+ * Retrieves project details from a host name.
+ * @private
+ * @param {string} host The host name
+ * @returns {string[]} The project details as <code>[ref, repo, owner]</code>
+ */
+function getProjectDetails(host) {
+  if (isValidProjectHost(host)) {
+    const details = host.split('.')[0].split('--');
+    if (details.length >= 2) {
+      return details;
+    }
+  }
+  return [];
 }
 
 /**
@@ -356,22 +373,19 @@ export async function getProjectMatches(configs, tabUrl) {
   const {
     host: checkHost,
   } = new URL(tabUrl);
-  // exclude disabled configs
-  configs = configs.filter((cfg) => !cfg.disabled);
-  let matches = configs.filter((cfg) => {
-    const {
-      owner,
-      repo,
-      host: prodHost,
-      previewHost,
-      liveHost,
-    } = cfg;
-    return checkHost === prodHost // production host
-      || checkHost === previewHost // custom inner
-      || checkHost === liveHost // custom outer
-      || isValidProjectHost(checkHost, owner, repo); // inner or outer
-  });
-  (await queryUrlCache(tabUrl)).forEach((e) => {
+  const matches = configs.filter(({
+    owner,
+    repo,
+    host: prodHost,
+    previewHost,
+    liveHost,
+  }) => checkHost === prodHost // production host
+    || checkHost === previewHost // custom inner
+    || checkHost === liveHost // custom outer
+    || isValidProjectHost(checkHost, owner, repo)); // inner or outer
+
+  const urlCache = await queryUrlCache(tabUrl);
+  urlCache.forEach((e) => {
     // add non-duplicate matches from url cache
     const filteredByUrlCache = configs.filter(({ owner, repo }) => {
       if (e.owner === owner && e.repo === repo) {
@@ -382,10 +396,36 @@ export async function getProjectMatches(configs, tabUrl) {
       }
       return false;
     });
-    matches = matches.concat(filteredByUrlCache);
+    matches.push(...filteredByUrlCache);
   });
+  // check if transient match can be derived from url or url cache
+  if (matches.length === 0) {
+    const [ref, repo, owner] = getProjectDetails(checkHost);
+    if (owner && repo && ref) {
+      matches.push({
+        owner,
+        repo,
+        ref,
+        transient: true,
+      });
+    }
+  }
+  if (matches.length === 0) {
+    const { owner, repo } = urlCache.find((r) => r.originalRepository) || {};
+    if (owner && repo) {
+      matches.push({
+        owner,
+        repo,
+        ref: 'main',
+        transient: true,
+      });
+    }
+  }
   log.debug(`${matches.length} project match(es) found for ${tabUrl}`, matches);
-  return matches;
+  return matches
+    // exclude disabled configs
+    .filter(({ owner, repo }) => !configs
+      .find((cfg) => cfg.owner === owner && cfg.repo === repo && cfg.disabled));
 }
 
 /**
@@ -539,20 +579,7 @@ export function assembleProject({
 export async function getProject(project) {
   const { owner, repo } = project;
   const handle = `${owner}/${repo}`;
-  const projectConfig = await getConfig('sync', handle);
-  if (projectConfig) {
-    // if service worker, check session storage for auth token
-    if (typeof window === 'undefined') {
-      const auth = await getConfig('session', handle) || {};
-      return {
-        ...projectConfig,
-        ...auth,
-      };
-    } else {
-      return projectConfig;
-    }
-  }
-  return undefined;
+  return getConfig('sync', handle);
 }
 
 /**
@@ -570,22 +597,6 @@ export async function setProject(project, cb) {
     }
   });
   const handle = `${owner}/${repo}`;
-  // put auth token to session storage
-  const { authToken, authTokenExpiry } = project;
-  if (authToken !== undefined) {
-    delete project.authToken;
-    delete project.authTokenExpiry;
-    await setConfig('session', {
-      [handle]: {
-        owner,
-        repo,
-        authToken,
-        authTokenExpiry,
-      },
-    });
-  } else {
-    await removeConfig('session', handle);
-  }
   // update project config
   await setConfig('sync', {
     [handle]: project,
@@ -617,7 +628,7 @@ export async function addProject(input, cb) {
     // defer adding project and have user sign in
     const { id: loginTabId } = await chrome.tabs.create({
       url: `https://admin.hlx.page/login/${owner}/${repo}/${ref}?extensionId=${chrome.runtime.id}`,
-      active: false,
+      active: true,
     });
     // retry adding project after sign in
     const retryAddProjectListener = async (message = {}) => {
@@ -728,4 +739,86 @@ export function toggleDisplay(cb) {
   getState(({ display }) => {
     setDisplay(!display, cb);
   });
+}
+
+/**
+ * Sets the x-auth-token header for all requests to admin.hlx.page if project config
+ * has an auth token.
+ */
+export async function updateAdminAuthHeaderRules() {
+  try {
+    // remove all rules first
+    await chrome.declarativeNetRequest.updateSessionRules({
+      removeRuleIds: (await chrome.declarativeNetRequest.getSessionRules())
+        .map((rule) => rule.id),
+    });
+    // find projects with auth tokens and add rules for each
+    let id = 2;
+    const projects = await getConfig('session', 'hlxSidekickProjects') || [];
+    const addRules = [];
+    const projectConfigs = (await Promise.all(projects
+      .map((handle) => getConfig('session', handle))))
+      .filter((cfg) => !!cfg);
+    projectConfigs.forEach(({ owner, repo, authToken }) => {
+      if (authToken) {
+        addRules.push({
+          id,
+          priority: 1,
+          action: {
+            type: 'modifyHeaders',
+            requestHeaders: [{
+              operation: 'set',
+              header: 'x-auth-token',
+              value: authToken,
+            }],
+          },
+          condition: {
+            regexFilter: `^https://admin.hlx.page/[a-z]+/${owner}/${repo}/.*`,
+            requestDomains: ['admin.hlx.page'],
+            requestMethods: ['get', 'post', 'delete'],
+            resourceTypes: ['xmlhttprequest'],
+          },
+        });
+        id += 1;
+        log.debug('added admin auth header rule for ', owner, repo);
+      }
+    });
+    if (addRules.length > 0) {
+      await chrome.declarativeNetRequest.updateSessionRules({
+        addRules,
+      });
+      log.debug(`setAdminAuthHeaderRule: ${addRules.length} rule(s) set`);
+    }
+  } catch (e) {
+    log.error(`updateAdminAuthHeaderRules: ${e.message}`);
+  }
+}
+
+export async function storeAuthToken(owner, repo, token, exp) {
+  const handle = `${owner}/${repo}`;
+  const projects = await getConfig('session', 'hlxSidekickProjects') || [];
+  const projectIndex = projects.indexOf(handle);
+  if (token) {
+    // store auth token in session storage
+    await setConfig('session', {
+      [handle]: {
+        owner,
+        repo,
+        authToken: token,
+        authTokenExpiry: exp ? exp * 1000 : 0, // store expiry in milliseconds
+      },
+    });
+    if (projectIndex < 0) {
+      projects.push(handle);
+    }
+  } else {
+    await removeConfig('session', handle);
+    if (projectIndex >= 0) {
+      projects.splice(projectIndex, 1);
+    }
+  }
+  await setConfig('session', { hlxSidekickProjects: projects });
+  log.debug(`updated auth token for ${owner}--${repo}`);
+  // auth token changed, set/update admin auth header
+  updateAdminAuthHeaderRules();
 }

@@ -49,19 +49,33 @@ describe('Test sidekick', () => {
         const setup = new Setup('blog');
         nock.sidekick(setup);
         nock.admin(setup);
-        const result = await new SidekickTest({
+        const { plugins, sidekick: { config: { innerHost, outerHost } } } = await new SidekickTest({
           browser,
           page,
           loadModule,
-          sleep: 500,
-          setup: 'blog',
+          setup,
         }).run();
-        const { plugins, sidekick: { config: { innerHost, outerHost } } } = result;
         // check sidekick config
         assert.strictEqual(innerHost, 'main--blog--adobe.hlx.page', `Unexpected innerHost: ${innerHost}`);
         assert.strictEqual(outerHost, 'main--blog--adobe.hlx.live', `Unexpected outerHost: ${innerHost}`);
         // check plugins
         assert.strictEqual(plugins.length, 14, `Wrong number of plugins: ${plugins.length}`);
+      }).timeout(IT_DEFAULT_TIMEOUT);
+
+      it('Renders in transient mode and fires project added avent', async () => {
+        const setup = new Setup('blog');
+        setup.sidekickConfig.transient = true;
+        nock.sidekick(setup);
+        nock.admin(setup);
+        const { eventsFired } = await new SidekickTest({
+          browser,
+          page,
+          loadModule,
+          plugin: 'add-project',
+          setup,
+        }).run();
+        // check plugins
+        assert.ok(eventsFired.projectadded, 'Add project plugin not found');
       }).timeout(IT_DEFAULT_TIMEOUT);
 
       it('Matches user-preferred language', async () => {
