@@ -212,6 +212,12 @@ const load = async () => {
 
   const tab = await getCurrentTab();
 
+  window.hlx = {
+    sidekick: {
+      location: new URL(tab.url),
+    },
+  };
+
   await chrome.scripting.executeScript({
     target: { tabId: tab.id },
     files: ['/view-doc-source/js/content.js'],

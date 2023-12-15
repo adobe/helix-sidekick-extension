@@ -79,15 +79,59 @@ describe('Test sidekick', () => {
         assert.ok(plugins.find((p) => p.id === 'add-project'), 'Add project plugin not found');
       }).timeout(IT_DEFAULT_TIMEOUT);
 
+      it('Matches user-preferred language', async () => {
+        const tests = [
+          { navLangs: ['en-US', 'it'], expectedLang: 'en' }, // first partial
+          { navLangs: ['zh-TW', 'zh-CN'], expectedLang: 'zh_TW' }, // first exact
+          { navLangs: ['nl', 'pt-PT', 'es'], expectedLang: 'pt_BR' }, // skip unsupported
+          { navLangs: ['da-DK', 'nb-NO', 'sv-SE'], expectedLang: 'en' }, // all unsupported
+        ];
+        const expectedResult = tests.map((test) => test.expectedLang);
+        const setup = new Setup('blog');
+        const { sidekickConfig } = setup;
+        nock.sidekick(setup, { persist: true });
+        const { checkPageResult } = await new SidekickTest({
+          browser,
+          page,
+          loadModule,
+          checkPage: (p) => p.evaluate(async (cfg, combos) => {
+            const langs = [];
+            const sk = window.hlx.sidekick;
+            for (const combo of combos) {
+              const { navLangs } = combo;
+              // redefine navigator.languages
+              Object.defineProperty(window.navigator, 'languages', {
+                value: navLangs,
+                configurable: true,
+              });
+              // reload sidekick config
+              // eslint-disable-next-line no-await-in-loop
+              await sk.loadContext(cfg);
+              // store detected language
+              langs.push(sk.config.lang);
+            }
+            return langs;
+          }, sidekickConfig, tests),
+        }).run();
+        assert.deepStrictEqual(
+          checkPageResult,
+          expectedResult,
+          `Expected ${expectedResult}, but got ${checkPageResult}`,
+        );
+      }).timeout(IT_DEFAULT_TIMEOUT);
+
       it('Handles errors fetching status from admin API', async () => {
         const errors = [
           { status: 404, body: 'Not found' },
+          { status: 403, body: 'Forbidden' },
           { status: 500, body: 'Server error' },
           { status: 504, body: 'Gateway timeout' },
         ];
         nock('https://admin.hlx.page')
           .get('/status/adobe/blog/main/en/topics/bla?editUrl=auto')
           .reply(404)
+          .get('/status/adobe/blog/main/en/topics/bla?editUrl=auto')
+          .reply(403)
           .get('/status/adobe/blog/main/en/topics/bla?editUrl=auto')
           .reply(500)
           .get('/status/adobe/blog/main/en/topics/bla?editUrl=auto')
@@ -780,24 +824,31 @@ describe('Test sidekick', () => {
         assert.ok(eventsFired.hidden, 'Event hidden not fired');
       }).timeout(IT_DEFAULT_TIMEOUT);
 
-      it('Copies sharing URL to clipboard on share button click', async () => {
+      it('Uses navigator.share() or copies sharing URL to clipboard on share button click', async () => {
         const setup = new Setup('blog');
         nock.sidekick(setup);
         nock.admin(setup);
-        const { notification } = await new SidekickTest({
+        const { notification, checkPageResult: usedNavigatorShare } = await new SidekickTest({
           browser,
           page,
           loadModule,
-          post: (p) => p.evaluate(() => window.hlx.sidekick
-            .shadowRoot
-            .querySelector('.hlx-sk button.share')
-            .click()),
+          post: (p) => p.evaluate(() => {
+            const share = window.hlx.sidekick.shadowRoot.querySelector('.hlx-sk button.share');
+            share.click();
+            // mock navigator.share()
+            window.navigator.share = () => {
+              window.hlx.usedNavigatorShare = true;
+            };
+            share.click();
+          }),
+          checkPage: (p) => p.evaluate(() => window.hlx.usedNavigatorShare),
         }).run();
         assert.strictEqual(
           notification.message,
           'Sharing URL for Blog copied to clipboard',
           'Did not copy sharing URL to clipboard',
         );
+        assert.ok(usedNavigatorShare, 'Did not use navigator.share()');
       }).timeout(IT_DEFAULT_TIMEOUT);
 
       it('Displays page modified info on info button click', async () => {
