@@ -797,7 +797,7 @@ export async function updateAdminAuthHeaderRules() {
 export async function storeAuthToken(owner, repo, token, exp) {
   const handle = `${owner}/${repo}`;
   const projects = await getConfig('session', 'hlxSidekickProjects') || [];
-  const i = projects.indexOf(handle);
+  const projectIndex = projects.indexOf(handle);
   if (token) {
     // store auth token in session storage
     await setConfig('session', {
@@ -808,13 +808,13 @@ export async function storeAuthToken(owner, repo, token, exp) {
         authTokenExpiry: exp ? exp * 1000 : 0, // store expiry in milliseconds
       },
     });
-    if (i < 0) {
+    if (projectIndex < 0) {
       projects.push(handle);
     }
   } else {
     await removeConfig('session', handle);
-    if (i >= 0) {
-      projects.splice(i, 1);
+    if (projectIndex >= 0) {
+      projects.splice(projectIndex, 1);
     }
   }
   await setConfig('session', { hlxSidekickProjects: projects });

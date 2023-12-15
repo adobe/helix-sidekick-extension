@@ -1137,11 +1137,11 @@ import sampleRUM from './rum.js';
   }
 
   /**
-   * Adds the transient plugin to the sidekick.
+   * Adds the transient add project plugin the sidekick.
    * @private
    * @param {Sidekick} sk The sidekick
    */
-  function addTransientPlugin(sk) {
+  function addTransientAddProjectPlugin(sk) {
     sk.add({
       id: 'add-project',
       feature: true,
@@ -3014,7 +3014,7 @@ import sampleRUM from './rum.js';
         addUnpublishPlugin(this);
         addBulkPlugins(this);
         addCustomPlugins(this);
-        addTransientPlugin(this);
+        addTransientAddProjectPlugin(this);
         // fetch status
         this.fetchStatus();
         // push down content
