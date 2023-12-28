@@ -20,7 +20,7 @@ const DISCOVERY_CACHE_TTL = 7200000;
 
 function createLogger() {
   const log = {
-    LEVEL: 4,
+    LEVEL: 2,
   };
   const logLevels = {
     debug: { level: 3, color: 'grey' },
