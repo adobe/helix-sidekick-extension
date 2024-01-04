@@ -31,8 +31,10 @@ function createLogger() {
   Object.keys(logLevels).forEach((method) => {
     const color = `color: ${logLevels[method].color}`;
     const prefix = `%c[${method.toUpperCase()}]`;
-    /* eslint-disable no-console */
-    log[method] = log.LEVEL > logLevels[method].level && console.log.bind(console, prefix, color);
+    log[method] = log.LEVEL > logLevels[method].level
+      // eslint-disable-next-line no-console
+      ? console[method].bind(console, prefix, color)
+      : () => {};
     /* eslint-enable no-console */
   });
   return log;
