@@ -18,29 +18,41 @@ export const DEV_URL = 'http://localhost:3000';
 
 const DISCOVERY_CACHE_TTL = 7200000;
 
-function createLogger() {
-  const log = {
-    LEVEL: 2,
-  };
-  const logLevels = {
-    debug: { level: 3, color: 'grey' },
-    info: { level: 2, color: '' },
-    warn: { level: 1, color: 'orange' },
-    error: { level: 0, color: 'red' },
-  };
-  Object.keys(logLevels).forEach((method) => {
-    const color = `color: ${logLevels[method].color}`;
-    const prefix = `%c[${method.toUpperCase()}]`;
-    log[method] = log.LEVEL > logLevels[method].level
-      // eslint-disable-next-line no-console
-      ? console[method].bind(console, prefix, color)
-      : () => {};
-    /* eslint-enable no-console */
-  });
-  return log;
+class Logger {
+  constructor(level = 2) {
+    this.__LEVEL = level;
+    this.config = {
+      debug: { level: 3, color: 'grey' },
+      info: { level: 2, color: '' },
+      warn: { level: 1, color: 'orange' },
+      error: { level: 0, color: 'red' },
+    };
+    this.createMethods();
+  }
+
+  get LEVEL() {
+    return this.__LEVEL;
+  }
+
+  set LEVEL(level) {
+    this.__LEVEL = level;
+    this.createMethods();
+  }
+
+  createMethods() {
+    Object.keys(this.config).forEach((method) => {
+      const color = `color: ${this.config[method].color}`;
+      const prefix = `%c[${method.toUpperCase()}]`;
+      this[method] = this.LEVEL > this.config[method].level
+        // eslint-disable-next-line no-console
+        ? console[method].bind(console, prefix, color)
+        : () => {};
+      /* eslint-enable no-console */
+    });
+  }
 }
 
-export const log = createLogger();
+export const log = new Logger(2);
 
 // shows a window.alert (noop if headless)
 function alert(msg) {
