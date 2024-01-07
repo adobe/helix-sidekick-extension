@@ -113,10 +113,10 @@ describe('Test extension utils', () => {
     utils.log.warn('level 1');
     // 1 callCount is from previous log
     expect(consoleSpy.warn.callCount).to.equal(1);
-    utils.log.LEVEL = 3;
+    utils.log.LEVEL = 6;
     utils.log.warn('level 3');
     expect(consoleSpy.warn.callCount).to.equal(2);
-    // reset level top default
+    // reset level to default
     utils.log.LEVEL = 2;
   });
 

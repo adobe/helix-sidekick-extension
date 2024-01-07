@@ -47,7 +47,6 @@ class Logger {
         // eslint-disable-next-line no-console
         ? console[method].bind(console, prefix, color)
         : () => {};
-      /* eslint-enable no-console */
     });
   }
 }
