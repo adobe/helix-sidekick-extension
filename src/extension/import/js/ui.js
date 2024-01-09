@@ -11,6 +11,7 @@
  */
 import { html2md, md2html } from '../../lib/importer.lib.js';
 import sampleRUM from '../../rum.js';
+import { getState } from '../../utils.js';
 
 /**
  * Returns the current tab
@@ -162,6 +163,24 @@ const load = async () => {
 
     sampleRUM('sidekick:copyimport', {
       source: tab.url,
+    });
+  });
+
+  const importDAButton = document.getElementById('import-da');
+  importDAButton.addEventListener('click', () => {
+    getState(async ({ projects = [] }) => {
+      const project = projects.find((p) => tab.url.indexOf(p.host) !== -1);
+      if (project) {
+        const html = `<html><body><header></header><main><div>${editor.innerHTML}</div></main><footer></footer></body></html>`;
+        const blob = new Blob([html], { type: 'text/html' });
+        const formData = new FormData();
+        formData.append('data', blob);
+        const opts = { method: 'PUT', body: formData };
+        const importPath = new URL(tab.url).pathname;
+        const putResp = await fetch(`https://admin.da.live/source/${project.owner}/${project.repo}${importPath}`, opts);
+        if (!putResp.ok) return;
+        await fetch(`https://admin.hlx.page/preview/${project.owner}/${project.repo}/main${importPath.replaceAll('.html', '')}`, { method: 'POST' });
+      }
     });
   });
 

@@ -449,6 +449,9 @@
   "homepage": {
     "message": "https://www.hlx.live/tools/sidekick/"
   },
+  "import": {
+    "message": "Import into DA"
+  },
   "info": {
     "message": "Information"
   },
