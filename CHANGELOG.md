@@ -1,3 +1,19 @@
+# [6.40.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.39.0...v6.40.0) (2024-01-09)
+
+
+### Bug Fixes
+
+* add silent fallback for invalid Log Levels ([ce0ebb5](https://github.com/adobe/helix-sidekick-extension/commit/ce0ebb58f1116eb9375d11656e25e3eb0e1b3652))
+* fix logger src file ([fb5135e](https://github.com/adobe/helix-sidekick-extension/commit/fb5135eabeacf098ff2491f3ff83682e6c79ab39))
+* Remove unused eslint comment ([e295d2f](https://github.com/adobe/helix-sidekick-extension/commit/e295d2f3580ddc5a06c0fc9f44bf63c94ac05820))
+* revert to initial log level (2) ([84b7dee](https://github.com/adobe/helix-sidekick-extension/commit/84b7dee68e1bd94bd1d07b4e642557e4b637dcf4))
+* Update logger to have configurable LEVEL. Update logger tests. ([11ea8a7](https://github.com/adobe/helix-sidekick-extension/commit/11ea8a7ab5f4ea00de356e6d001c50731c69dad9))
+
+
+### Features
+
+* detect hlx5 based on custom preview host ([cf1b5c2](https://github.com/adobe/helix-sidekick-extension/commit/cf1b5c2bfbfeafde29bc72216eb87e2149f8fe52))
+
 # [6.39.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.38.3...v6.39.0) (2023-12-15)
 
 
