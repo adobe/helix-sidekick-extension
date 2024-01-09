@@ -18,15 +18,40 @@ export const DEV_URL = 'http://localhost:3000';
 
 const DISCOVERY_CACHE_TTL = 7200000;
 
-export const log = {
-  LEVEL: 2,
-  /* eslint-disable no-console */
-  debug: (...args) => log.LEVEL > 3 && console.log('DEBUG', ...args),
-  info: (...args) => log.LEVEL > 2 && console.log('INFO', ...args),
-  warn: (...args) => log.LEVEL > 1 && console.log('WARN', ...args),
-  error: (...args) => log.LEVEL > 0 && console.log('ERROR', ...args),
-  /* eslint-enable no-console */
-};
+class Logger {
+  constructor(level = 2) {
+    this.__LEVEL = level;
+    this.config = {
+      debug: { level: 3, color: 'grey' },
+      info: { level: 2, color: '' },
+      warn: { level: 1, color: 'orange' },
+      error: { level: 0, color: 'red' },
+    };
+    this.createMethods();
+  }
+
+  get LEVEL() {
+    return this.__LEVEL;
+  }
+
+  set LEVEL(level) {
+    this.__LEVEL = level;
+    this.createMethods();
+  }
+
+  createMethods() {
+    Object.keys(this.config).forEach((method) => {
+      const color = `color: ${this.config[method].color}`;
+      const prefix = `%c[${method.toUpperCase()}]`;
+      this[method] = this.LEVEL > this.config[method].level
+        // eslint-disable-next-line no-console
+        ? console[method].bind(console, prefix, color)
+        : () => {};
+    });
+  }
+}
+
+export const log = new Logger(2);
 
 // shows a window.alert (noop if headless)
 function alert(msg) {
