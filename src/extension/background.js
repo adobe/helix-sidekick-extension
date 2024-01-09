@@ -177,9 +177,7 @@ async function checkContextMenu({ url: tabUrl, id, active }, configs = []) {
           chrome.contextMenus.create({
             id: 'addRemoveProject',
             title: config ? i18n('config_project_remove') : i18n('config_project_add'),
-            contexts: [
-              'action',
-            ],
+            contexts: ['action'],
           });
           if (config) {
             // add context menu item for enabling/disabling project config
@@ -187,17 +185,13 @@ async function checkContextMenu({ url: tabUrl, id, active }, configs = []) {
             chrome.contextMenus.create({
               id: 'enableDisableProject',
               title: disabled ? i18n('config_project_enable') : i18n('config_project_disable'),
-              contexts: [
-                'action',
-              ],
+              contexts: ['action'],
             });
             // open preview
             chrome.contextMenus.create({
               id: 'openPreview',
               title: i18n('open_preview'),
-              contexts: [
-                'action',
-              ],
+              contexts: ['action'],
               visible: tabUrl.startsWith(GH_URL),
             });
           }
@@ -210,18 +204,27 @@ async function checkContextMenu({ url: tabUrl, id, active }, configs = []) {
           chrome.contextMenus.create({
             id: 'openViewDocSource',
             title: i18n('open_view_doc_source'),
-            contexts: [
-              'action',
-            ],
+            contexts: ['action'],
           });
         } else {
           chrome.contextMenus.create({
             id: 'openImport',
             title: i18n('open_import'),
-            contexts: [
-              'action',
-            ],
+            contexts: ['action'],
           });
+          const config = configs.find((c) => c.mountpoints.join().indexOf('da.live') !== -1);
+          if (config) {
+            chrome.contextMenus.create({
+              id: 'openDAImport',
+              title: i18n('da_import'),
+              contexts: ['action'],
+            });
+            chrome.contextMenus.create({
+              id: 'openDAImport',
+              title: i18n('da_import_edit'),
+              contexts: ['action'],
+            });
+          }
         }
       });
     });
@@ -279,12 +282,7 @@ function checkTab(id) {
       if (!tab.url) return;
       let checkUrl = tab.url;
       // check if active tab has a local dev URL
-      const devUrls = [
-        DEV_URL,
-        ...projects
-          .filter((p) => !!p.devOrigin)
-          .map((p) => p.devOrigin),
-      ];
+      const devUrls = [DEV_URL, ...projects.filter((p) => !!p.devOrigin).map((p) => p.devOrigin)];
       if (devUrls.find((devUrl) => checkUrl.startsWith(devUrl))) {
         // retrieve proxy url
         log.debug('local dev url detected, retrieve proxy url');
@@ -335,8 +333,8 @@ function toggle(id) {
  */
 function getHelpLanguage() {
   const uLang = chrome.i18n.getUILanguage();
-  const lang = LANGS.find((l) => uLang.replace('-', '_') === l
-    || l.startsWith(uLang.split('_')[0])) || LANGS[0];
+  const lang = LANGS.find((l) => uLang.replace('-', '_') === l || l.startsWith(uLang.split('_')[0]))
+    || LANGS[0];
   return lang.replace('_', '-').toLowerCase();
 }
 
@@ -350,7 +348,7 @@ async function updateHelpContent() {
   if ((helpContentFetched || 0) > Date.now() - 14400000) {
     return;
   }
-  const helpContent = await getConfig('sync', 'hlxSidekickHelpContent') || [];
+  const helpContent = (await getConfig('sync', 'hlxSidekickHelpContent')) || [];
   log.debug('existing help content', helpContent);
   const lang = getHelpLanguage();
   const resp = await fetch(`https://www.hlx.live/tools/sidekick/${lang}/help.json`);
@@ -366,9 +364,11 @@ async function updateHelpContent() {
           const { targetVersion } = incoming;
           if (targetVersion) {
             const [targetMajor, targetMinor, targetPatch] = targetVersion.split('.');
-            if ((targetMajor && +major < +targetMajor)
+            if (
+              (targetMajor && +major < +targetMajor)
               || (targetMinor && +minor < +targetMinor)
-              || (targetPatch && +patch < +targetPatch)) {
+              || (targetPatch && +patch < +targetPatch)
+            ) {
               return false;
             }
           }
@@ -421,6 +421,40 @@ function openImport(id) {
     type: 'popup',
     width: 740,
   });
+}
+
+const sendMessage = async (tab, message) => new Promise((resolve) => {
+  chrome.tabs.sendMessage(tab.id, message, resolve);
+});
+
+/**
+ * Open the import popup
+ * @param {String} id The tab id
+ */
+async function openDAImport(id) {
+  const tab = await chrome.tabs.get(id);
+  await chrome.scripting.executeScript({
+    target: { tabId: tab.id },
+    files: ['/import/js/content.js'],
+  });
+  const msg = await sendMessage(tab, { fct: 'getDOM' });
+
+  chrome.windows.create(
+    {
+      // TODO fix URL !!!
+      url: 'http://localhost:3000/import#/mhaack/da-aem-boilerplate',
+      type: 'popup',
+      width: 740,
+    },
+    async (window) => {
+      const popupTab = window.tabs[0];
+      await chrome.scripting.executeScript({
+        target: { tabId: popupTab.id },
+        files: ['/import/js/content.js'],
+      });
+      sendMessage(popupTab, { fct: 'setHTML', params: msg.html });
+    },
+  );
 }
 
 /**
@@ -486,16 +520,15 @@ async function updateAdminAuthHeaderRules() {
   try {
     // remove all rules first
     await chrome.declarativeNetRequest.updateSessionRules({
-      removeRuleIds: (await chrome.declarativeNetRequest.getSessionRules())
-        .map((rule) => rule.id),
+      removeRuleIds: (await chrome.declarativeNetRequest.getSessionRules()).map((rule) => rule.id),
     });
     // find projects with auth tokens and add rules for each
     let id = 2;
-    const projects = await getConfig('sync', 'hlxSidekickProjects') || [];
+    const projects = (await getConfig('sync', 'hlxSidekickProjects')) || [];
     const addRules = [];
-    const projectConfigs = (await Promise.all(projects
-      .map((handle) => getConfig('session', handle))))
-      .filter((cfg) => !!cfg);
+    const projectConfigs = (
+      await Promise.all(projects.map((handle) => getConfig('session', handle)))
+    ).filter((cfg) => !!cfg);
     projectConfigs.forEach(({ owner, repo, authToken }) => {
       if (authToken) {
         addRules.push({
@@ -503,11 +536,13 @@ async function updateAdminAuthHeaderRules() {
           priority: 1,
           action: {
             type: 'modifyHeaders',
-            requestHeaders: [{
-              operation: 'set',
-              header: 'x-auth-token',
-              value: authToken,
-            }],
+            requestHeaders: [
+              {
+                operation: 'set',
+                header: 'x-auth-token',
+                value: authToken,
+              },
+            ],
           },
           condition: {
             regexFilter: `^https://admin.hlx.page/[a-z]+/${owner}/${repo}/.*`,
@@ -582,7 +617,8 @@ const externalActions = {
         target: { tabId: tab.id },
         args: [id],
         func: (paletteId) => {
-          const palette = window.hlx && window.hlx.sidekick
+          const palette = window.hlx
+            && window.hlx.sidekick
             && window.hlx.sidekick.shadowRoot.getElementById(`hlx-sk-palette-${paletteId}`);
           if (palette) {
             palette.classList.add('hlx-sk-hidden');
@@ -677,6 +713,7 @@ const internalActions = {
   },
   openViewDocSource: async ({ id }) => openViewDocSource(id),
   openImport: async ({ id }) => openImport(id),
+  openDAImport: async ({ id }) => openDAImport(id),
   openPreview: ({ url }) => {
     const { owner, repo, ref = 'main' } = getGitHubSettings(url);
     if (owner && repo) {
@@ -739,8 +776,13 @@ const internalActions = {
   // listen for add/remove project calls from the install helper
   chrome.runtime.onMessage.addListener(({ action: actionFromTab }, { tab }) => {
     // check if message contains action and is sent from right tab
-    if (tab && tab.url && isValidShareURL(tab.url)
-      && actionFromTab && typeof internalActions[actionFromTab] === 'function') {
+    if (
+      tab
+      && tab.url
+      && isValidShareURL(tab.url)
+      && actionFromTab
+      && typeof internalActions[actionFromTab] === 'function'
+    ) {
       internalActions[actionFromTab](tab);
     }
   });

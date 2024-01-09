@@ -306,6 +306,12 @@
   "copy_urls": {
     "message": "Copy URLs"
   },
+  "da_import": {
+    "message": "Import into DA and Preview"
+  },
+  "da_import_edit": {
+    "message": "Import into DA and Edit"
+  },
   "delete": {
     "message": "Delete"
   },

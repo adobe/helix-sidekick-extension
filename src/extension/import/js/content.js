@@ -49,11 +49,18 @@
     return { html };
   };
 
+  const setHTML = (originalHtml) => {
+    const textArea = document.querySelector('da-import').shadowRoot.querySelector('textarea');
+    textArea.value = originalHtml;
+  };
+
   chrome.runtime.onMessage.addListener(({ fct, params }, sender, sendResponse) => {
     const handleResponse = async () => {
       let result;
       if (fct === 'getDOM') {
         result = await getDOM(params);
+      } else if (fct === 'setHTML') {
+        await setHTML(params);
       } else {
         result = { error: 'Unknown function' };
       }
