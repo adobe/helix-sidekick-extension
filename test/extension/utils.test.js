@@ -71,14 +71,14 @@ window.fetch = fetchMock;
 
 describe('Test extension utils', () => {
   let utils = {};
+  let consoleSpy;
   const sandbox = sinon.createSandbox();
 
   before(async () => {
-    // eslint-disable-next-line no-var
+    // console spy needs to be called before console.bind in utils.log
+    consoleSpy = sandbox.spy(console);
     const exports = await import('../../src/extension/utils.js');
-    utils = {
-      ...exports,
-    };
+    utils = { ...exports };
     await setUserAgent('HeadlessChrome');
   });
 
@@ -87,11 +87,37 @@ describe('Test extension utils', () => {
   });
 
   it('log', async () => {
-    const spy = sandbox.spy(console, 'log');
-    utils.log.error('foo');
-    expect(spy.calledWith('ERROR', 'foo')).to.be.true;
+    // Default log Level is 2
     utils.log.warn('foo');
-    expect(spy.calledWith('WARN', 'foo')).to.be.true;
+    expect(typeof utils.log.warn).to.equal('function');
+    expect(consoleSpy.warn.callCount).to.equal(1);
+    expect(consoleSpy.warn.getCall(0).args[0]).to.include('[WARN]');
+    expect(consoleSpy.warn.getCall(0).args[1]).to.include('color: orange');
+    expect(consoleSpy.warn.calledWith('%c[WARN]', 'color: orange', 'foo')).to.be.true;
+
+    utils.log.error('foo');
+    expect(typeof utils.log.error).to.equal('function');
+    expect(consoleSpy.error.callCount).to.equal(1);
+    expect(consoleSpy.error.getCall(0).args[0]).to.include('[ERROR]');
+    expect(consoleSpy.error.getCall(0).args[1]).to.include('color: red');
+    expect(consoleSpy.error.calledWith('%c[ERROR]', 'color: red', 'foo')).to.be.true;
+
+    // Should not Log messages below the log level 2
+    utils.log.debug('foo');
+    utils.log.info('foo');
+    expect(consoleSpy.debug.callCount).to.equal(0);
+    expect(consoleSpy.info.callCount).to.equal(0);
+
+    // Should not Log messages below the log level 1
+    utils.log.LEVEL = 1;
+    utils.log.warn('level 1');
+    // 1 callCount is from previous log
+    expect(consoleSpy.warn.callCount).to.equal(1);
+    utils.log.LEVEL = 6;
+    utils.log.warn('level 3');
+    expect(consoleSpy.warn.callCount).to.equal(2);
+    // reset level to default
+    utils.log.LEVEL = 2;
   });
 
   it('i18n', async () => {
