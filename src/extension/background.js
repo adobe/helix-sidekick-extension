@@ -219,11 +219,6 @@ async function checkContextMenu({ url: tabUrl, id, active }, configs = []) {
               title: i18n('da_import'),
               contexts: ['action'],
             });
-            chrome.contextMenus.create({
-              id: 'openDAImport',
-              title: i18n('da_import_edit'),
-              contexts: ['action'],
-            });
           }
         }
       });

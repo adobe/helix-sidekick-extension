@@ -50,8 +50,12 @@
   };
 
   const setHTML = (originalHtml) => {
-    const textArea = document.querySelector('da-import').shadowRoot.querySelector('textarea');
-    textArea.value = originalHtml;
+    const importMain = document.querySelector('main');
+    const textArea = document.createElement('textarea');
+    textArea.id = 'source-html';
+    textArea.style.display = 'none';
+    textArea.textContent = originalHtml;
+    importMain.appendChild(textArea);
   };
 
   chrome.runtime.onMessage.addListener(({ fct, params }, sender, sendResponse) => {
