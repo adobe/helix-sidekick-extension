@@ -403,7 +403,7 @@ window.addEventListener('DOMContentLoaded', () => {
         // create file link on the fly
         const exportLink = document.createElement('a');
         exportLink.download = `helix-sidekick-backup-${Date.now()}.json`;
-        exportLink.href = `data:application/json;charset=utf-8,${encodeURIComponent(data)}`;
+        exportLink.href = `data:application/x-file-download;charset=utf-8,${encodeURIComponent(data)}`;
         // exportLink.classList.add('hidden');
         document.body.append(exportLink);
         exportLink.click();
