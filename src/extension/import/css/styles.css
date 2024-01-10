@@ -50,10 +50,10 @@ body {
 
 header {
   display: grid;
-  grid-template-columns: 1fr 130px;
+  grid-template-columns: 1fr 130px 130px;
 }
 
-#copy, #import-da {
+#copy {
   font-size: var(--hlx-import-main-button-font-size);
   background-color: var(--hlx-import-main-button-background-color);
   color: var(--hlx-import-main-button-color);
@@ -65,12 +65,12 @@ header {
   align-self: center;
 }
 
-#copy:hover, #import-da:hover {
+#copy:hover {
   background-color: #909090;
   color: #303030;
 }
 
-#copy.copied, #import-da.done {
+#copy.copied {
   background-color: rgb(25, 179, 25);
 }
 

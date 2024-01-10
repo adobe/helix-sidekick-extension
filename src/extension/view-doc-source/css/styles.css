@@ -50,7 +50,7 @@ body {
 
 header {
   display: grid;
-  grid-template-columns: 1fr 130px;
+  grid-template-columns: 1fr 130px 130px;
 }
 
 #copy {

@@ -19,6 +19,7 @@ import {
 } from './blocks.js';
 
 import sampleRUM from '../../rum.js';
+import setupImportButton from '../../da/js/da.js';
 
 /**
  * Returns the current tab
@@ -239,6 +240,8 @@ const load = async () => {
   editor.addEventListener('input', debounce(() => {
     sendMessage({ fct: 'setMain', params: { html: htmlEditionToSource() } });
   }, 500));
+
+  setupImportButton(tab, editor);
 
   sampleRUM('sidekick:viewdocsource', {
     source: tab.url,
