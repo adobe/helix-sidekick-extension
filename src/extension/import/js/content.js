@@ -49,12 +49,14 @@
     return { html };
   };
 
-  const setHTML = (originalHtml) => {
+  const setHTML = (params) => {
+    const { content, origin } = params;
     const importMain = document.querySelector('main');
     const textArea = document.createElement('textarea');
     textArea.id = 'source-html';
     textArea.style.display = 'none';
-    textArea.textContent = originalHtml;
+    textArea.textContent = content;
+    textArea.setAttribute('data-origin', origin);
     importMain.appendChild(textArea);
   };
 

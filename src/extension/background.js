@@ -450,7 +450,7 @@ async function openDAImport(id) {
             target: { tabId: popupTab.id },
             files: ['/import/js/content.js'],
           });
-          sendMessage(popupTab, { fct: 'setHTML', params: msg.html });
+          sendMessage(popupTab, { fct: 'setHTML', params: { content: msg.html, origin: tab.url } });
         },
       );
     } else {
