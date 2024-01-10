@@ -994,9 +994,7 @@ describe('Test sidekick', () => {
         });
         assert.ok((await test.run()).checkPageResult, 'Did not detect live URL with hlx.live');
         // check again with aem.live
-        nock.sidekick(setup, {
-          configJson: '{"hlx5":true}',
-        });
+        nock.sidekick(setup);
         nock.admin(setup);
         assert.ok(
           (await test.run('https://test--blog--adobe.aem.live/')).checkPageResult,
