@@ -439,22 +439,29 @@ async function openDAImport(id) {
   });
   const msg = await sendMessage(tab, { fct: 'getDOM' });
 
-  chrome.windows.create(
-    {
-      // TODO fix URL !!!
-      url: 'http://localhost:3000/import#/mhaack/da-aem-boilerplate',
-      type: 'popup',
-      width: 740,
-    },
-    async (window) => {
-      const popupTab = window.tabs[0];
-      await chrome.scripting.executeScript({
-        target: { tabId: popupTab.id },
-        files: ['/import/js/content.js'],
-      });
-      sendMessage(popupTab, { fct: 'setHTML', params: msg.html });
-    },
-  );
+  await getState(({ projects = [] }) => {
+    const project = projects.find((p) => tab.url.indexOf(p.host) !== -1);
+    if (project) {
+      chrome.windows.create(
+        {
+          // TODO fix URL !!!
+          url: `http://localhost:3000/import#/${project.owner}/${project.repo}`,
+          type: 'popup',
+          width: 740,
+        },
+        async (window) => {
+          const popupTab = window.tabs[0];
+          await chrome.scripting.executeScript({
+            target: { tabId: popupTab.id },
+            files: ['/import/js/content.js'],
+          });
+          sendMessage(popupTab, { fct: 'setHTML', params: msg.html });
+        },
+      );
+    } else {
+      // TODO message no mapping config found
+    }
+  });
 }
 
 /**
