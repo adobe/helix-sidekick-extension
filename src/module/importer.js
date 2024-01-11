@@ -13,6 +13,7 @@
 
 import {
   DOMUtils,
+  Blocks,
   html2md,
 } from '@adobe/helix-importer';
 
@@ -72,6 +73,7 @@ async function html2mdWrapper(url, document, transformCfg, params) {
 export { default as md2html } from './md2html.js';
 
 export {
+  Blocks,
   DOMUtils,
   html2mdWrapper as html2md,
 };

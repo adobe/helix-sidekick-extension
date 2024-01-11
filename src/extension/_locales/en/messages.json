@@ -467,6 +467,9 @@
   "live": {
     "message": "Live"
   },
+  "map_element_on_the_page": {
+    "message": "Map Element on the Page"
+  },
   "minutes_ago": {
     "message": "$1 minutes ago"
   },
@@ -554,6 +557,9 @@
   },
   "seconds_ago": {
     "message": "$1 seconds ago"
+  },
+  "sections_mapping": {
+    "message": "Sections Mapping"
   },
   "share_description": {
     "message": "Share your Sidekick"

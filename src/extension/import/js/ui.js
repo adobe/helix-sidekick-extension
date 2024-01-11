@@ -9,9 +9,209 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { html2md, md2html } from '../../lib/importer.lib.js';
+import {
+  html2md, md2html, DOMUtils, Blocks,
+} from '../../lib/importer.lib.js';
 import sampleRUM from '../../rum.js';
+import { getConfig } from '../../utils.js';
 import setupImportButton from '../../da/js/da.js';
+
+/**
+ * sections mapping importer transformDOM function
+ */
+
+function sanitize(str) {
+  return str.replace(/[$<>"'`=]/g, '-');
+}
+
+function getMetadata(name, document) {
+  const attr = name && name.includes(':') ? 'property' : 'name';
+  const meta = [...document.head.querySelectorAll(`meta[${attr}="${name}"]`)]
+    .map((m) => m.content)
+    .join(', ');
+  return meta || '';
+}
+
+const createMetadata = (main, document) => {
+  const meta = {};
+
+  const title = document.querySelector('title');
+  if (title) {
+    meta.Title = title.textContent.replace(/[\n\t]/gm, '');
+  }
+
+  const desc = getMetadata('description', document);
+  if (desc) {
+    meta.Description = desc;
+  }
+
+  const img = getMetadata('og:image', document);
+  if (img) {
+    const el = document.createElement('img');
+    el.src = img;
+    meta.Image = el;
+
+    const imgAlt = getMetadata('og:image:alt', document);
+    if (imgAlt) {
+      el.alt = imgAlt;
+    }
+  }
+
+  const ogtitle = getMetadata('og:title', document);
+  if (ogtitle && ogtitle !== meta.Title) {
+    if (meta.Title) {
+      meta['og:title'] = ogtitle;
+    } else {
+      meta.Title = ogtitle;
+    }
+  }
+
+  const ogdesc = getMetadata('og:description', document);
+  if (ogdesc && ogdesc !== meta.Description) {
+    if (meta.Description) {
+      meta['og:description'] = ogdesc;
+    } else {
+      meta.Description = ogdesc;
+    }
+  }
+
+  const ttitle = getMetadata('twitter:title', document);
+  if (ttitle && ttitle !== meta.Title) {
+    if (meta.Title) {
+      meta['twitter:title'] = ttitle;
+    } else {
+      meta.Title = ttitle;
+    }
+  }
+
+  const tdesc = getMetadata('twitter:description', document);
+  if (tdesc && tdesc !== meta.Description) {
+    if (meta.Description) {
+      meta['twitter:description'] = tdesc;
+    } else {
+      meta.Description = tdesc;
+    }
+  }
+
+  const timg = getMetadata('twitter:image', document);
+  if (timg && timg !== img) {
+    const el = document.createElement('img');
+    el.src = timg;
+    meta['twitter:image'] = el;
+
+    const imgAlt = getMetadata('twitter:image:alt', document);
+    if (imgAlt) {
+      el.alt = imgAlt;
+    }
+  }
+
+  if (Object.keys(meta).length > 0) {
+    const block = Blocks.getMetadataBlock(document, meta);
+    main.append(block);
+  }
+
+  return meta;
+};
+
+const adjustImageUrls = (main, url) => {
+  [...main.querySelectorAll('img')].forEach((img) => {
+    const src = img.getAttribute('src');
+    if (src && (src.startsWith('./') || src.startsWith('/') || src.startsWith('../'))) {
+      try {
+        const u = new URL(src, url);
+        // eslint-disable-next-line no-param-reassign
+        img.src = u.toString();
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.log(`Unable to adjust image URL ${img.src} - removing image`);
+        img.remove();
+      }
+    }
+  });
+};
+
+const convertIcons = (main, document) => {
+  [...main.querySelectorAll('img')].forEach((img) => {
+    const src = img.getAttribute('src');
+    if (src && src.endsWith('.svg')) {
+      const span = document.createElement('span');
+      const name = src.split('/').pop().split('.')[0].toLowerCase().trim().replace(/[^a-z0-9]/g, '-');
+      if (name) {
+        span.innerHTML = `:${name}:`;
+        img.replaceWith(span);
+      }
+    }
+  });
+};
+
+const transformBackgroundImages = (main, document) => {
+  [...main.querySelectorAll('[style*="background-image: url"]')].forEach((element) => {
+    const img = DOMUtils.getImgFromBackground(element, document);
+    element.prepend(img);
+    element.style.removeProperty('background-image');
+  });
+};
+
+const transformerCfg = {
+  transformDOM: function t({
+    // eslint-disable-next-line no-unused-vars
+    url, document, html, params,
+  }) {
+    const main = document.body;
+
+    const { sectionsMapping } = params;
+
+    if (sectionsMapping) {
+      if (sectionsMapping.header) {
+        DOMUtils.remove(main, [sectionsMapping.header.selectors.main]);
+      }
+      if (sectionsMapping.footer) {
+        DOMUtils.remove(main, [sectionsMapping.footer.selectors.main]);
+      }
+      if (sectionsMapping.carousel) {
+        [...document.querySelectorAll(sectionsMapping.carousel.selectors.main)].forEach((el) => {
+          [...el.querySelectorAll('[class]')].forEach((child) => {
+            child.removeAttribute('class');
+          });
+          el.before(DOMUtils.createTable([
+            ['carousel'],
+            [el.outerHTML],
+          ], document));
+          el.remove();
+        });
+      }
+      if (sectionsMapping.hero) {
+        [...document.querySelectorAll(sectionsMapping.hero.selectors.main)].forEach((el) => {
+          [...el.querySelectorAll('[class]')].forEach((child) => {
+            child.removeAttribute('class');
+          });
+          el.before(DOMUtils.createTable([
+            ['hero'],
+            [el.outerHTML],
+          ], document));
+          el.remove();
+        });
+      }
+    }
+
+    // attempt to remove non-content elements
+    DOMUtils.remove(main, [
+      'nav',
+      '.nav',
+      'iframe',
+      'noscript',
+      'script',
+      'style',
+    ]);
+
+    createMetadata(main, document);
+    transformBackgroundImages(main, document);
+    adjustImageUrls(main, url);
+    convertIcons(main, document);
+
+    return main;
+  },
+};
 
 /**
  * Returns the current tab
@@ -113,9 +313,12 @@ const loadEditor = async (url) => {
   // const req = await fetch(url);
   // const source = await req.text();
 
+  const u = new URL(url);
   const msg = await sendMessage({ fct: 'getDOM' });
 
-  const res = await html2md(url, msg.html);
+  const sectionsMapping = await getConfig('sync', `sectionsMapping_${sanitize(u.hostname)}`);
+
+  const res = await html2md(url, msg.html, transformerCfg, { sectionsMapping });
   const html = await md2html(res.md);
 
   const editor = getEditorElement();

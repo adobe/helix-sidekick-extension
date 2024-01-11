@@ -212,6 +212,24 @@ async function checkContextMenu({ url: tabUrl, id, active }, configs = []) {
             title: i18n('open_import'),
             contexts: ['action'],
           });
+          chrome.contextMenus.create({
+            id: 'sectionsMapping',
+            title: i18n('sections_mapping'),
+            contexts: ['action'],
+          });
+          chrome.contextMenus.create({
+            id: 'mapElementOnThePage',
+            title: i18n('map_element_on_the_page'),
+            contexts: ['action'],
+          });
+          // const config = configs.find((c) => c.mountpoints.join().indexOf('da.live') !== -1);
+          // if (config) {
+          //   chrome.contextMenus.create({
+          //     id: 'openDAImport',
+          //     title: i18n('da_import'),
+          //     contexts: ['action'],
+          //   });
+          // }
         }
       });
     });
@@ -407,6 +425,71 @@ function openImport(id) {
     url: chrome.runtime.getURL(`/import/index.html?tabId=${id}`),
     type: 'popup',
     width: 740,
+  });
+}
+
+const sendMessage = async (tab, message) => new Promise((resolve) => {
+  chrome.tabs.sendMessage(tab.id, message, resolve);
+});
+
+/**
+ * Open the import popup
+ * @param {String} id The tab id
+ */
+async function sectionsMapping(id) {
+  const tab = await chrome.tabs.get(id);
+  await chrome.scripting.executeScript({
+    target: { tabId: tab.id },
+    files: ['/import/js/content.js', '/lib/blocks-mapping-lib.js'],
+  });
+
+  await sendMessage(tab, { fct: 'blocksMapping:analysePage' });
+}
+
+async function mapElementOnThePage(id) {
+  const tab = await chrome.tabs.get(id);
+  await chrome.scripting.executeScript({
+    target: { tabId: tab.id },
+    files: ['/import/js/content.js', '/lib/blocks-mapping-lib.js'],
+  });
+
+  await sendMessage(tab, { fct: 'blocksMapping:mapElement' });
+}
+
+/**
+ * Open the import popup
+ * @param {String} id The tab id
+ */
+async function openDAImport(id) {
+  const tab = await chrome.tabs.get(id);
+  await chrome.scripting.executeScript({
+    target: { tabId: tab.id },
+    files: ['/import/js/content.js'],
+  });
+  const msg = await sendMessage(tab, { fct: 'getDOM' });
+
+  await getState(({ projects = [] }) => {
+    const project = projects.find((p) => tab.url.indexOf(p.host) !== -1);
+    if (project) {
+      chrome.windows.create(
+        {
+          // TODO fix URL !!!
+          url: `http://localhost:3000/import#/${project.owner}/${project.repo}`,
+          type: 'popup',
+          width: 740,
+        },
+        async (window) => {
+          const popupTab = window.tabs[0];
+          await chrome.scripting.executeScript({
+            target: { tabId: popupTab.id },
+            files: ['/import/js/content.js'],
+          });
+          sendMessage(popupTab, { fct: 'setHTML', params: { content: msg.html, origin: tab.url } });
+        },
+      );
+    } else {
+      // TODO message no mapping config found
+    }
   });
 }
 
@@ -666,6 +749,9 @@ const internalActions = {
   },
   openViewDocSource: async ({ id }) => openViewDocSource(id),
   openImport: async ({ id }) => openImport(id),
+  openDAImport: async ({ id }) => openDAImport(id),
+  sectionsMapping: async ({ id }) => sectionsMapping(id),
+  mapElementOnThePage: async ({ id }) => mapElementOnThePage(id),
   openPreview: ({ url }) => {
     const { owner, repo, ref = 'main' } = getGitHubSettings(url);
     if (owner && repo) {

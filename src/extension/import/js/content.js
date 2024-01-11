@@ -9,8 +9,32 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+
+import { BlocksMapping } from '../../lib/blocks-mapping-lib.js';
+import { setConfig } from '../../utils.js';
+
+function sanitize(str) {
+  return str.replace(/[$<>"'`=]/g, '-');
+}
+
 {
   const DEFAULT_SUPPORTED_STYLES = [{ name: 'background-image', exclude: /none/g }];
+
+  const storeSectionsMapping = async (boxes) => {
+    const url = new URL(window.location.href);
+    const configKey = `sectionsMapping_${sanitize(url.hostname)}`;
+
+    const sm = {};
+    sm[configKey] = {};
+
+    boxes.children.forEach((box) => {
+      if (box.prediction && box.prediction.fingerPrint) {
+        sm[configKey][box.prediction.sectionType] = box.prediction.fingerPrint;
+      }
+    });
+
+    await setConfig('sync', sm);
+  };
 
   // deep clone a document
   // and port over predfined styles (i.e. write inline style attribute to not rely on CSS)
@@ -60,6 +84,44 @@
     importMain.appendChild(textArea);
   };
 
+  const blocksMappingTestHandler = async () => {
+    const boxes = await BlocksMapping.analysePage(window);
+
+    storeSectionsMapping(boxes);
+  };
+
+  const blocksMappingMapElementHandler = () => {
+    const overlay = document.createElement('div');
+    overlay.style.position = 'fixed';
+    overlay.style.border = '2px solid red';
+    overlay.style.pointerEvents = 'none';
+    overlay.style.zIndex = '100000';
+    overlay.style.top = '0px';
+    overlay.style.left = '0px';
+    overlay.style.width = '0px';
+    overlay.style.height = '0px';
+    document.body.appendChild(overlay);
+
+    const mouseMoveHandler = (e) => {
+      const { target } = e;
+      const {
+        top, left, width, height,
+      } = target.getBoundingClientRect();
+      // draw a rectangle around the element
+      overlay.style.top = `${top}px`;
+      overlay.style.left = `${left}px`;
+      overlay.style.width = `${width}px`;
+      overlay.style.height = `${height}px`;
+    };
+
+    document.addEventListener('mousemove', mouseMoveHandler);
+
+    document.addEventListener('click', () => {
+      document.removeEventListener('mousemove', mouseMoveHandler);
+      overlay.remove();
+    });
+  };
+
   chrome.runtime.onMessage.addListener(({ fct, params }, sender, sendResponse) => {
     const handleResponse = async () => {
       let result;
@@ -67,6 +129,10 @@
         result = await getDOM(params);
       } else if (fct === 'setHTML') {
         await setHTML(params);
+      } else if (fct === 'blocksMapping:analysePage') {
+        await blocksMappingTestHandler(params);
+      } else if (fct === 'blocksMapping:mapElement') {
+        await blocksMappingMapElementHandler(params);
       } else {
         result = { error: 'Unknown function' };
       }
