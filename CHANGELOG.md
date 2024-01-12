@@ -1,3 +1,10 @@
+## [6.40.1](https://github.com/adobe/helix-sidekick-extension/compare/v6.40.0...v6.40.1) (2024-01-12)
+
+
+### Bug Fixes
+
+* detect sharepoint folder URL with RootFolder param ([62b0874](https://github.com/adobe/helix-sidekick-extension/commit/62b087499eacdd10a87ab466fc8be4326ae665c6))
+
 # [6.40.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.39.0...v6.40.0) (2024-01-09)
 
 
