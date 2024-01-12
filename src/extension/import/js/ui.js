@@ -159,41 +159,6 @@ const transformerCfg = {
   }) {
     const main = document.body;
 
-    const { sectionsMapping } = params;
-
-    if (sectionsMapping) {
-      if (sectionsMapping.header) {
-        DOMUtils.remove(main, [sectionsMapping.header.selectors.main]);
-      }
-      if (sectionsMapping.footer) {
-        DOMUtils.remove(main, [sectionsMapping.footer.selectors.main]);
-      }
-      if (sectionsMapping.carousel) {
-        [...document.querySelectorAll(sectionsMapping.carousel.selectors.main)].forEach((el) => {
-          [...el.querySelectorAll('[class]')].forEach((child) => {
-            child.removeAttribute('class');
-          });
-          el.before(DOMUtils.createTable([
-            ['carousel'],
-            [el.outerHTML],
-          ], document));
-          el.remove();
-        });
-      }
-      if (sectionsMapping.hero) {
-        [...document.querySelectorAll(sectionsMapping.hero.selectors.main)].forEach((el) => {
-          [...el.querySelectorAll('[class]')].forEach((child) => {
-            child.removeAttribute('class');
-          });
-          el.before(DOMUtils.createTable([
-            ['hero'],
-            [el.outerHTML],
-          ], document));
-          el.remove();
-        });
-      }
-    }
-
     // attempt to remove non-content elements
     DOMUtils.remove(main, [
       'nav',
@@ -203,6 +168,62 @@ const transformerCfg = {
       'script',
       'style',
     ]);
+
+    const { sectionsMapping } = params;
+
+    console.log('sectionsMapping', sectionsMapping);
+
+    main.querySelectorAll('div[data-hlx-imp-hidden-div]').forEach((el) => {
+      el.remove();
+    });
+
+    if (sectionsMapping) {
+      if (sectionsMapping.ignore) {
+        sectionsMapping.ignore.forEach((ignore) => {
+          [...document.querySelectorAll(ignore.selectors.main)].forEach((el) => {
+            el.remove();
+          });
+        });
+      }
+      if (sectionsMapping.header) {
+        sectionsMapping.header.forEach((header) => {
+          DOMUtils.remove(main, [header.selectors.main]);
+        });
+      }
+      if (sectionsMapping.footer) {
+        sectionsMapping.footer.forEach((footer) => {
+          DOMUtils.remove(main, [footer.selectors.main]);
+        });
+      }
+      if (sectionsMapping.carousel) {
+        sectionsMapping.carousel.forEach((carousel) => {
+          [...document.querySelectorAll(carousel.selectors.main)].forEach((el) => {
+            [...el.querySelectorAll('[class]')].forEach((child) => {
+              child.removeAttribute('class');
+            });
+            el.before(DOMUtils.createTable([
+              ['carousel'],
+              [el.outerHTML],
+            ], document));
+            el.remove();
+          });
+        });
+      }
+      if (sectionsMapping.hero) {
+        sectionsMapping.hero.forEach((hero) => {
+          [...document.querySelectorAll(hero.selectors.main)].forEach((el) => {
+            [...el.querySelectorAll('[class]')].forEach((child) => {
+              child.removeAttribute('class');
+            });
+            el.before(DOMUtils.createTable([
+              ['hero'],
+              [el.outerHTML],
+            ], document));
+            el.remove();
+          });
+        });
+      }
+    }
 
     createMetadata(main, document);
     transformBackgroundImages(main, document);
@@ -316,6 +337,8 @@ const loadEditor = async (url) => {
   const u = new URL(url);
   const msg = await sendMessage({ fct: 'getDOM' });
 
+  console.log(msg);
+  console.log(`sectionsMapping_${sanitize(u.hostname)}`);
   const sectionsMapping = await getConfig('sync', `sectionsMapping_${sanitize(u.hostname)}`);
 
   const res = await html2md(url, msg.html, transformerCfg, { sectionsMapping });

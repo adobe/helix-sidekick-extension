@@ -2,6 +2,8 @@
 // (() => {
 //   const xp = window.xp ?? {};
 
+  window.xp = {};
+
   /**
    * classes
    */
@@ -20,7 +22,7 @@
           font-size: 14px;
           position:fixed;
           left:400px;
-          z-index:100000;
+          z-index:2999999999;
           backgroumd-color: #333;
         }
         .xp-ui-content ul {
@@ -62,7 +64,7 @@
           left:0;
           top:0;
           z-index:90000;
-          display:none;
+          /*display:none;*/
         }
         .xp-overlay:hover {
             background-color: rgba(255, 0, 0, .1);
@@ -81,162 +83,172 @@
         }
         </style>
         <ul>
-          <li data-action="analyse" onclick="xp.ui.run(event);">Analyse</li>
-          <li data-action="ignore-select" class="disabled" onclick="xp.ui.run(event);">Ignore Element</li>
-          <li data-action="predict" class="disabled" onclick="xp.ui.run(event);">Predict</li>
-          <li data-action="toggle-overlays" class="disabled" onclick="xp.ui.run(event);">Toggle Overlays</li>
-        </ul>
-      </template>
-    </body>
-  </html>
+          <li data-action="analyse" onclick="document.dispatchEvent(new CustomEvent('sm:Event', { detail: { type: 'analysePage'}}));">Analyse</li>
+          <li data-action="ignore-select" onclick="document.dispatchEvent(new CustomEvent('sm:Event', { detail: { type: 'ignoreElement'}}));">Exclude Element</li>
+          <li data-action="toggle-overlays" onclick="document.dispatchEvent(new CustomEvent('sm:Event', { detail: { type: 'toggleOverlays'}}));">Toggle Overlays</li>
+          </ul>
+          </template>
+          </body>
+          </html>
 `;
+          // <li data-action="predict" class="disabled" onclick="xp.ui.run(event);">Predict</li>
 
-  // class UI {
-  //   constructor() {
-  //     ready(() => {
-  //       document.body.querySelector('.xp-ui')?.remove();
+  class UI {
+    constructor() {
+      ready(() => {
+        document.body.querySelector('.xp-ui')?.remove();
 
-  //       // overlays
-  //       const overlays = window.document.createElement('div');
-  //       overlays.className = 'xp-overlays';
-  //       overlays.innerHTML = `<style>
-  //       .xp-overlays {
-  //         position:absolute;
-  //         left:0;
-  //         top:0;
-  //         z-index:90000;
-  //         display:none;
-  //       }
-  //       .xp-overlay:hover {
-  //           background-color: rgba(0, 0, 255, .1);
-  //       }  
-  //       </style>`;
-  //       // document.body.prepend(overlays);
+        // overlays
+        const overlays = window.document.createElement('div');
+        overlays.className = 'xp-overlays';
+        overlays.innerHTML = `<style>
+        .xp-overlays {
+          position:absolute;
+          left:0;
+          top:0;
+          z-index:999999;
+          /*display:none;*/
+        }
+        .xp-overlay:hover {
+            background-color: rgba(0, 0, 255, .1);
+        }  
+        </style>`;
+        // document.body.prepend(overlays);
 
-  //       const div = window.document.createElement('div');
-  //       div.className = 'xp-ui';
+        const div = window.document.createElement('div');
+        div.className = 'xp-ui';
         
-  //       document.body.prepend(div);
+        document.body.prepend(div);
         
-  //       const shadow = div.attachShadow({ mode: "open" });
+        const shadow = div.attachShadow({ mode: "open" });
 
-  //       const divUI = window.document.createElement('div');
-  //       divUI.className = 'xp-ui-content';
+        const divUI = window.document.createElement('div');
+        divUI.className = 'xp-ui-content';
 
-  //       const parser = new DOMParser();
-  //       const doc3 = parser.parseFromString(UI_HTML, "text/html");
+        const parser = new DOMParser();
+        const doc3 = parser.parseFromString(UI_HTML, "text/html");
 
-  //       divUI.append(doc3.querySelector('template').content);
-  //       shadow.append(divUI);
-  //       shadow.append(overlays);
+        divUI.append(doc3.querySelector('template').content);
+        shadow.append(overlays);
+        shadow.append(divUI);
 
-  //       const uiDiv = document.body.querySelector('.xp-ui');
+        const uiDiv = document.body.querySelector('.xp-ui');
 
-  //       var observer = new MutationObserver(function(mutations) {
-  //         mutations.forEach(function(mutation) {
-  //           if (mutation.type === "attributes") {
-  //             if (mutation.target.dataset.status === 'analysed') {
-  //               [...document.body.querySelector('.xp-ui').shadowRoot.querySelectorAll('li')].forEach((li) => {
-  //                 li.classList.remove('disabled');
-  //               });
-  //             }
-  //             if (mutation.attributeName === 'style') {
-  //               const uiDiv = mutation.target;
-  //               const uiRect = mutation.target.getBoundingClientRect();
-  //               if (uiDiv) {
-  //                 if (uiRect.y > 0) {
-  //                   uiDiv.style.position = 'relative';
-  //                   uiDiv.style.top = `-${uiRect.y}px`;
-  //                 } else {
-  //                   uiDiv.style.position = 'absolute';
-  //                   uiDiv.style.top = `0px`;
-  //                 }
-  //               }
-  //             }
-  //           }
-  //         });
-  //       });
-  //       observer.observe(uiDiv, {
-  //         attributes: true,
-  //       });
+        var observer = new MutationObserver(function(mutations) {
+          mutations.forEach(function(mutation) {
+            if (mutation.type === "attributes") {
+              if (mutation.target.dataset.status === 'analysed') {
+                [...document.body.querySelector('.xp-ui').shadowRoot.querySelectorAll('li')].forEach((li) => {
+                  li.classList.remove('disabled');
+                });
+              }
+              if (mutation.attributeName === 'style') {
+                const uiDiv = mutation.target;
+                const uiRect = mutation.target.getBoundingClientRect();
+                if (uiDiv) {
+                  if (uiRect.y > 0) {
+                    uiDiv.style.position = 'relative';
+                    uiDiv.style.top = `-${uiRect.y}px`;
+                  } else {
+                    uiDiv.style.position = 'absolute';
+                    uiDiv.style.top = `0px`;
+                  }
+                }
+              }
+            }
+          });
+        });
+        observer.observe(uiDiv, {
+          attributes: true,
+        });
 
-  //       const uiRect = uiDiv.getBoundingClientRect();
-  //       if (uiDiv) {
-  //         if (uiRect.y > 0) {
-  //           uiDiv.style.position = 'relative';
-  //           uiDiv.style.top = `-${uiRect.y}px`;
-  //         } else {
-  //           uiDiv.style.position = 'absolute';
-  //           uiDiv.style.top = `0px`;
-  //         }
-  //       }
-  //     });
-  //   };
+        const uiRect = uiDiv.getBoundingClientRect();
+        if (uiDiv) {
+          if (uiRect.y > 0) {
+            uiDiv.style.position = 'relative';
+            uiDiv.style.top = `-${uiRect.y}px`;
+          } else {
+            uiDiv.style.position = 'absolute';
+            uiDiv.style.top = `0px`;
+          }
+        }
 
-  //   get div() {
-  //     return document.querySelector('.xp-ui');
-  //   };
+        document.addEventListener('sm:Event', (event) => {
+          switch (event.detail.type) {
+            case 'toggleOverlays':
+              UI.toggleOverlays();
+              break;
+            default:
+              break;
+          }
+        });
+      });
+    };
 
-  //   overlaysDiv() {
-  //     return document.querySelector('.xp-ui').shadowRoot.querySelector('.xp-overlays');
-  //   };
+    get div() {
+      return document.querySelector('.xp-ui');
+    };
 
-  //   show() {
-  //     if (this.div) this.div.style.display = 'block';
-  //   };
+    static overlaysDiv() {
+      return document.querySelector('.xp-ui').shadowRoot.querySelector('.xp-overlays');
+    };
 
-  //   hide() {
-  //     if (this.div) this.div.style.display = 'none';
-  //   };
+    show() {
+      if (this.div) this.div.style.display = 'block';
+    };
 
-  //   isVisible() {
-  //     return this.div?.style.display === 'block';
-  //   };
+    hide() {
+      if (this.div) this.div.style.display = 'none';
+    };
 
-  //   resetOverlays() {
-  //     document.querySelector('.xp-ui').shadowRoot.querySelector('.xp-overlays').querySelectorAll('div').forEach((div) => div.remove());
-  //   };
+    isVisible() {
+      return this.div?.style.display === 'block';
+    };
 
-  //   toggleOverlays(show = null) {
-  //     const d = document.querySelector('.xp-ui').shadowRoot.querySelector('.xp-overlays');
-  //     if (show !== null) {
-  //       d.style.display = show === true ? 'block' : 'none';
-  //     } else {
-  //       d.style.display = d.style.display === 'block' ? 'none' : 'block';
-  //     }
-  //   };
+    resetOverlays() {
+      document.querySelector('.xp-ui').shadowRoot.querySelector('.xp-overlays').querySelectorAll('div').forEach((div) => div.remove());
+    };
 
-  //   async run(event) {
-  //     if (event.target.classList.contains('disabled')) {
-  //       return;
-  //     }
+    static toggleOverlays(show = null) {
+      const d = document.querySelector('.xp-ui').shadowRoot.querySelector('.xp-overlays');
+      if (show !== null) {
+        d.style.display = show === true ? 'block' : 'none';
+      } else {
+        d.style.display = d.style.display === 'block' ? 'none' : 'block';
+      }
+    };
 
-  //     const action = event.target.dataset.action
-  //     console.log('run', action);
+    async run(event) {
+      if (event.target.classList.contains('disabled')) {
+        return;
+      }
 
-  //     switch (action) {
-  //       case 'analyse':
-  //         await xp.analysePage();
-  //         this.div.dataset.status = 'analysed';
-  //         break;
-  //       case 'predict':
-  //         xp.predictPage();
-  //         break;
-  //       case 'ignore-select':
-  //         xp.selectElementToIgnore();
-  //         break;
-  //       case 'ignore-element':
-  //         const boxId = event.target.dataset.boxId;
-  //         if (boxId) {
-  //           xp.ignoreElementForDection(boxId);
-  //         }
-  //         break;
-  //       case 'toggle-overlays':
-  //         xp.ui.toggleOverlays();
-  //         break;
-  //     }
-  //   };
-  // }
+      const action = event.target.dataset.action
+      console.log('run', action);
+
+      switch (action) {
+        case 'analyse':
+          await BlocksMapping.analysePage();
+          this.div.dataset.status = 'analysed';
+          break;
+        // case 'predict':
+        //   xp.predictPage();
+        //   break;
+        case 'ignore-select':
+          xp.selectElementToIgnore();
+          break;
+        case 'ignore-element':
+          const boxId = event.target.dataset.boxId;
+          if (boxId) {
+            xp.ignoreElementForDection(boxId);
+          }
+          break;
+        case 'toggle-overlays':
+          UI.toggleOverlays();
+          break;
+      }
+    };
+  }
 
   class Color {
     constructor({ r, g, b, a = 1, name = '' }) {
@@ -329,11 +341,11 @@
           fp.selectors.main = tagName;
         }
         else if (el.id?.toLowerCase().includes('header')) {
-          fp.selectors.main += `#${el.id}`;
+          fp.selectors.main = `#${el.id}`;
         }
         else if (el.classList?.toString().toLowerCase().includes('header')) {
           const headerClasses = [...el.classList].filter((c) => c.toLowerCase().includes('header'));
-          fp.selectors.main += `.${headerClasses.join('.')}`;
+          fp.selectors.main = `.${headerClasses.join('.')}`;
         }
 
         return fp;
@@ -374,11 +386,11 @@
           fp.selectors.main = tagName;
         }
         else if (el.id?.toLowerCase().includes('footer')) {
-          fp.selectors.main += `#${el.id}`;
+          fp.selectors.main = `#${el.id}`;
         }
         else if (el.classList?.toString().toLowerCase().includes('footer')) {
           const headerClasses = [...el.classList].filter((c) => c.toLowerCase().includes('footer'));
-          fp.selectors.main += `.${headerClasses.join('.')}`;
+          fp.selectors.main = `.${headerClasses.join('.')}`;
         }
 
         return fp;
@@ -450,11 +462,11 @@
           fp.selectors.main = tagName;
         }
         else if (el.id?.toLowerCase().includes('carousel')) {
-          fp.selectors.main += `#${el.id}`;
+          fp.selectors.main = `#${el.id}`;
         }
         else if (el.classList?.toString().toLowerCase().includes('carousel')) {
           const headerClasses = [...el.classList].filter((c) => c.toLowerCase().includes('carousel'));
-          fp.selectors.main += `.${headerClasses.join('.')}`;
+          fp.selectors.main = `.${headerClasses.join('.')}`;
         }
 
         return fp;
@@ -486,11 +498,11 @@
           fp.selectors.main = tagName;
         }
         else if (el.id?.toLowerCase().includes('hero')) {
-          fp.selectors.main += `#${el.id}`;
+          fp.selectors.main = `#${el.id}`;
         }
         else if (el.classList?.toString().toLowerCase().includes('hero')) {
           const headerClasses = [...el.classList].filter((c) => c.toLowerCase().includes('hero'));
-          fp.selectors.main += `.${headerClasses.join('.')}`;
+          fp.selectors.main = `.${headerClasses.join('.')}`;
         }
 
         return fp;
@@ -581,10 +593,10 @@
   
     return percentage;
   }
-  
-  class Box {
+
+  export class Box {
     // constructor
-    constructor(x, y, w, h, div) {
+    constructor(x, y, w, h, div, exclude = false) {
       this.id = crypto.randomUUID();
       this.x = Math.round(x);
       this.y = Math.round(y);
@@ -594,6 +606,17 @@
       this.children = [];
       this.prediction = null;
       this.layout = null;
+      this.exclude = exclude;
+
+      if (this.exclude) {
+        this.prediction = new SectionPrediction({
+          sectionType: 'ignore',
+          sectionFeatures: null,
+          template: null,
+          confidence: 1,
+          fingerPrint: this.computeFingerPrintForElementToExclude(div),
+        });
+      }
     };
 
     static fromDiv(div) {
@@ -601,7 +624,23 @@
       const offset = getOffset(div);
       return new Box(offset.left, offset.top, rect.width, rect.height, div);
     };
+  
+    computeFingerPrintForElementToExclude(el) {
+      const fp = {
+        selectors: {
+          main: null,
+          children: null,
+        },
+      };
 
+      if (el.classList) {
+        fp.selectors.main = `.${[...el.classList].filter((c) => !c.includes('.')).join('.')}`;
+      }
+
+      return fp;
+
+    }
+  
     // methods
     contains(box, strict = true) {
       if (strict) {
@@ -1054,7 +1093,7 @@
   //   return d2;
   // };
 
-  const HIGHLIGHT_DIV_STYLE_TPL = template`position:absolute;left:${0}px;top:${1}px;width:${2}px;height:${3}px;border:2px solid ${4};z-index:999999`;
+  const HIGHLIGHT_DIV_STYLE_TPL = template`position:absolute;left:${0}px;top:${1}px;width:${2}px;height:${3}px;border:2px solid ${4};z-index:9999`;
 
   const highlightBox = (box, padding = 0, color = null, label = null) => {
     let c = color || 'rgba(0, 0, 255, 1)';
@@ -1074,8 +1113,8 @@
       d.appendChild(l);
     }
 
-    // xp.ui.overlaysDiv().appendChild(d);
-    document.body.appendChild(d);
+    UI.overlaysDiv().appendChild(d);
+    // document.body.appendChild(d);
   };
 
   function highlightAllBoxes(root, padding = 0, color = null, colorLevel = 0) {
@@ -1818,6 +1857,8 @@ predictPage = (boxes) => {
 };
 
 export class BlocksMapping {
+  static initUI() {
+  }
   
   static analysePage = async(window) => {
     // // scroll down and up
@@ -1828,11 +1869,16 @@ export class BlocksMapping {
     const boxes = buildBoxTree(divs, window);
     
     const detectedBoxes = predictPage(boxes);
-
+    
     // highlightAllBoxes(detectedBoxes);
     
     console.log(detectedBoxes);
-
+    
     return detectedBoxes;
   };
+}
+
+if (!xp.ui) {
+  xp.ui = new UI();
+  xp.ui.show();
 }

@@ -10,26 +10,73 @@
  * governing permissions and limitations under the License.
  */
 
-import { BlocksMapping } from '../../lib/blocks-mapping-lib.js';
-import { setConfig } from '../../utils.js';
+import { BlocksMapping, Box } from '../../lib/blocks-mapping-lib.js';
+import { getConfig, setConfig } from '../../utils.js';
 
 function sanitize(str) {
   return str.replace(/[$<>"'`=]/g, '-');
 }
 
+let ALL_BOXES = [];
+
+async function getDOMElementFromUserInteraction() {
+  return new Promise((resolve) => {
+    const overlay = document.createElement('div');
+    overlay.id = 'hlx-imp-overlay';
+    overlay.style.position = 'fixed';
+    overlay.style.backgroundColor = 'rgba(255, 0, 0, 0.2)';
+    overlay.style.border = '2px solid red';
+    overlay.style.pointerEvents = 'none';
+    overlay.style.zIndex = '2999999999';
+    overlay.style.top = '0px';
+    overlay.style.left = '0px';
+    overlay.style.width = '0px';
+    overlay.style.height = '0px';
+    document.body.appendChild(overlay);
+
+    const mouseMoveHandler = (e) => {
+      const { target } = e;
+      const {
+        top, left, width, height,
+      } = target.getBoundingClientRect();
+      // draw a rectangle around the element
+      overlay.style.top = `${top}px`;
+      overlay.style.left = `${left}px`;
+      overlay.style.width = `${width}px`;
+      overlay.style.height = `${height}px`;
+    };
+
+    const mouseClickHandler = (e) => {
+      // e.stopImmediatePropagation();
+      if (e.target !== document.querySelector('.xp-ui')) {
+        document.removeEventListener('mousemove', mouseMoveHandler);
+        document.removeEventListener('click', mouseClickHandler);
+        overlay.remove();
+        resolve(e.srcElement);
+      }
+    };
+
+    document.addEventListener('mousemove', mouseMoveHandler);
+    document.addEventListener('click', mouseClickHandler);
+  });
+}
+
 {
   const DEFAULT_SUPPORTED_STYLES = [{ name: 'background-image', exclude: /none/g }];
 
-  const storeSectionsMapping = async (boxes) => {
+  const storeSectionsMapping = async () => {
     const url = new URL(window.location.href);
     const configKey = `sectionsMapping_${sanitize(url.hostname)}`;
 
     const sm = {};
     sm[configKey] = {};
 
-    boxes.children.forEach((box) => {
+    ALL_BOXES.children.forEach((box) => {
       if (box.prediction && box.prediction.fingerPrint) {
-        sm[configKey][box.prediction.sectionType] = box.prediction.fingerPrint;
+        if (!sm[configKey][box.prediction.sectionType]) {
+          sm[configKey][box.prediction.sectionType] = [];
+        }
+        sm[configKey][box.prediction.sectionType].push(box.prediction.fingerPrint);
       }
     });
 
@@ -38,7 +85,7 @@ function sanitize(str) {
 
   // deep clone a document
   // and port over predfined styles (i.e. write inline style attribute to not rely on CSS)
-  const deepCloneWithStyles = (document, styles = DEFAULT_SUPPORTED_STYLES) => {
+  const deepCloneWithStyles = (window, document, styles = DEFAULT_SUPPORTED_STYLES) => {
     const clone = document.cloneNode(true);
 
     const applyStyles = (nodeSrc, nodeDest) => {
@@ -60,6 +107,34 @@ function sanitize(str) {
       }
     };
     applyStyles(document.body, clone.body);
+
+    // mark hidden divs + add bounding client rect data to all "visible" divs
+    document.querySelectorAll('div').forEach((div) => {
+      if (div && /none/i.test(window.getComputedStyle(div).display.trim())) {
+        div.setAttribute('data-hlx-imp-hidden-div', '');
+      } else {
+        const domRect = div.getBoundingClientRect().toJSON();
+        Object.keys(domRect).forEach((p) => {
+          domRect[p] = Math.round(domRect[p]);
+        });
+        if (domRect.width > 0 && domRect.height > 0) {
+          div.setAttribute('data-hlx-imp-rect', JSON.stringify(domRect));
+        }
+        const bgImage = window.getComputedStyle(div).getPropertyValue('background-image');
+        if (bgImage && bgImage !== 'none') {
+          div.setAttribute('data-hlx-background-image', bgImage);
+        }
+        const bgColor = window.getComputedStyle(div).getPropertyValue('background-color');
+        if (bgColor && bgColor !== 'rgb(0, 0, 0)' && bgColor !== 'rgba(0, 0, 0, 0)') {
+          div.setAttribute('data-hlx-imp-bgcolor', bgColor);
+        }
+        const color = window.getComputedStyle(div).getPropertyValue('color');
+        if (color && color !== 'rgb(0, 0, 0)') {
+          div.setAttribute('data-hlx-imp-color', color);
+        }
+      }
+    });
+
     return clone;
   };
 
@@ -68,7 +143,7 @@ function sanitize(str) {
    * @param {Object} params Contains the new HTML of the main element
    */
   const getDOM = async () => {
-    const documentClone = deepCloneWithStyles(document);
+    const documentClone = deepCloneWithStyles(window, document);
     const html = documentClone.documentElement.outerHTML;
     return { html };
   };
@@ -85,40 +160,42 @@ function sanitize(str) {
   };
 
   const blocksMappingTestHandler = async () => {
-    const boxes = await BlocksMapping.analysePage(window);
+    document.addEventListener('sm:Event', async (event) => {
+      switch (event.detail.type) {
+        case 'analysePage': {
+          ALL_BOXES = await BlocksMapping.analysePage(window);
+          console.log(ALL_BOXES);
+          storeSectionsMapping();
+          break;
+        }
+        case 'ignoreElement': {
+          const el = await getDOMElementFromUserInteraction();
+          console.log('ignoreElement', el);
+          ALL_BOXES.addChild(new Box(0, 0, 0, 0, el, true));
+          storeSectionsMapping();
+          break;
+        }
+        case 'clearElementsCache': {
+          const url = new URL(window.location.href);
+          const configKey = `sectionsMapping_${sanitize(url.hostname)}`;
 
-    storeSectionsMapping(boxes);
-  };
+          console.log(configKey);
+          console.log(await getConfig('sync', configKey));
 
-  const blocksMappingMapElementHandler = () => {
-    const overlay = document.createElement('div');
-    overlay.style.position = 'fixed';
-    overlay.style.border = '2px solid red';
-    overlay.style.pointerEvents = 'none';
-    overlay.style.zIndex = '100000';
-    overlay.style.top = '0px';
-    overlay.style.left = '0px';
-    overlay.style.width = '0px';
-    overlay.style.height = '0px';
-    document.body.appendChild(overlay);
-
-    const mouseMoveHandler = (e) => {
-      const { target } = e;
-      const {
-        top, left, width, height,
-      } = target.getBoundingClientRect();
-      // draw a rectangle around the element
-      overlay.style.top = `${top}px`;
-      overlay.style.left = `${left}px`;
-      overlay.style.width = `${width}px`;
-      overlay.style.height = `${height}px`;
-    };
-
-    document.addEventListener('mousemove', mouseMoveHandler);
-
-    document.addEventListener('click', () => {
-      document.removeEventListener('mousemove', mouseMoveHandler);
-      overlay.remove();
+          const sm = {};
+          sm[configKey] = {};
+          await setConfig('sync', sm);
+          break;
+        }
+        case 'logElementsCache': {
+          const url = new URL(window.location.href);
+          const configKey = `sectionsMapping_${sanitize(url.hostname)}`;
+          console.log(await getConfig('sync', configKey));
+          break;
+        }
+        default:
+          break;
+      }
     });
   };
 
@@ -131,8 +208,6 @@ function sanitize(str) {
         await setHTML(params);
       } else if (fct === 'blocksMapping:analysePage') {
         await blocksMappingTestHandler(params);
-      } else if (fct === 'blocksMapping:mapElement') {
-        await blocksMappingMapElementHandler(params);
       } else {
         result = { error: 'Unknown function' };
       }
