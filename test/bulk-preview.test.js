@@ -68,8 +68,9 @@ describe('Test bulk preview plugin', () => {
       fixture: TESTS[0].fixture,
       url: setup.getUrl('edit', 'admin'),
       pre: (p) => p.evaluate(() => {
-        // user deselects file
+        // user deselects all
         document.getElementById('file-pdf').click();
+        document.getElementById('file-word').click();
       }),
       loadModule: true,
     }).run();
@@ -100,12 +101,13 @@ describe('Test bulk preview plugin', () => {
       fixture: TESTS[0].fixture,
       url: setup.getUrl('edit', 'admin'),
       pre: (p) => p.evaluate(() => {
-        // user deselects file
+        // user deselects all
         document.getElementById('file-pdf').click();
+        document.getElementById('file-word').click();
       }),
       post: (p) => p.evaluate(() => {
-        // user deselects another file
-        document.getElementById('file-word').click();
+        // user selects a file
+        document.getElementById('file-excel').click();
       }),
       loadModule: true,
     }).run();
@@ -129,8 +131,9 @@ describe('Test bulk preview plugin', () => {
       url: setup.getUrl('edit', 'admin'),
       plugin: 'bulk-preview',
       pre: (p) => p.evaluate(() => {
-        // user deselects file
+        // user deselects all
         document.getElementById('file-pdf').click();
+        document.getElementById('file-word').click();
       }),
       loadModule: true,
     }).run();
@@ -338,10 +341,6 @@ describe('Test bulk preview plugin', () => {
       url: setup.getUrl('edit', 'admin'),
       plugin: 'bulk-preview',
       pluginSleep: 5000,
-      pre: (p) => p.evaluate(() => {
-        // select another file
-        document.getElementById('file-word').click();
-      }),
       loadModule: true,
       acceptDialogs: true,
     }).run();

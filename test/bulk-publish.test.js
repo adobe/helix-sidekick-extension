@@ -67,8 +67,9 @@ describe('Test bulk publish plugin', () => {
       fixture: TESTS[0].fixture,
       url: setup.getUrl('edit', 'admin'),
       pre: (p) => p.evaluate(() => {
-        // user deselects file
+        // user deselects all
         document.getElementById('file-pdf').click();
+        document.getElementById('file-word').click();
       }),
       loadModule: true,
     }).run();
@@ -101,12 +102,13 @@ describe('Test bulk publish plugin', () => {
       url: setup.getUrl('edit', 'admin'),
       loadModule: true,
       pre: (p) => p.evaluate(() => {
-        // user deselects file
+        // user deselects all
         document.getElementById('file-pdf').click();
+        document.getElementById('file-word').click();
       }),
       post: (p) => p.evaluate(() => {
         // user selects another file
-        document.getElementById('file-word').click();
+        document.getElementById('file-excel').click();
       }),
     }).run();
     assert.ok(
@@ -130,8 +132,9 @@ describe('Test bulk publish plugin', () => {
       url: setup.getUrl('edit', 'admin'),
       plugin: 'bulk-publish',
       pre: (p) => p.evaluate(() => {
-        // user deselects file
+        // user deselects all
         document.getElementById('file-pdf').click();
+        document.getElementById('file-word').click();
       }),
       loadModule: true,
     }).run();
@@ -191,8 +194,7 @@ describe('Test bulk publish plugin', () => {
         plugin: 'bulk-publish',
         pluginSleep: 5000,
         pre: (p) => p.evaluate(() => {
-          // user selects more files
-          document.getElementById('file-word').click();
+          // user selects one more file
           document.getElementById('file-excel').click();
         }),
         checkPage: (p) => p.evaluate(() => {
@@ -224,6 +226,35 @@ describe('Test bulk publish plugin', () => {
       assert.strictEqual(openedWindows.length, 3, `3 URLs not opened in ${env}: \n${openedWindows.join('\n')}`);
     }).timeout(IT_DEFAULT_TIMEOUT);
   });
+
+  it('Bulk publish plugin previews single selection without creating a job', async () => {
+    const { setup, fixture } = TESTS[0];
+    const { sidekickConfig, configJson } = setup;
+    nock.sidekick(setup);
+    nock.admin(setup, {
+      route: 'status',
+      persist: true,
+    });
+    nock.admin(setup, {
+      route: 'live',
+      method: 'post',
+    });
+    const { requestsMade } = await new SidekickTest({
+      browser,
+      page,
+      fixture,
+      sidekickConfig,
+      configJson,
+      url: setup.getUrl('edit', 'admin'),
+      plugin: 'bulk-publish',
+      loadModule: true,
+      acceptDialogs: true,
+    }).run();
+    assert.ok(
+      requestsMade.find((req) => req.method === 'POST' && new URL(req.url).pathname.startsWith('/live/')),
+      'Did not bulk publish single selection without creating a job',
+    );
+  }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Bulk publish plugin handles error response', async () => {
     const { setup } = TESTS[0];
@@ -274,10 +305,6 @@ describe('Test bulk publish plugin', () => {
       url: setup.getUrl('edit', 'admin'),
       plugin: 'bulk-publish',
       pluginSleep: 5000,
-      pre: (p) => p.evaluate(() => {
-        // select another file
-        document.getElementById('file-word').click();
-      }),
       loadModule: true,
       acceptDialogs: true,
     }).run();
