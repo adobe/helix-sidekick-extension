@@ -216,6 +216,35 @@ describe('Test bulk preview plugin', () => {
     }).timeout(IT_DEFAULT_TIMEOUT);
   });
 
+  it('Bulk preview plugin previews single selection without creating a job', async () => {
+    const { setup, fixture } = TESTS[0];
+    const { sidekickConfig, configJson } = setup;
+    nock.sidekick(setup);
+    nock.admin(setup, {
+      route: 'status',
+      persist: true,
+    });
+    nock.admin(setup, {
+      route: 'preview',
+      method: 'post',
+    });
+    const { requestsMade } = await new SidekickTest({
+      browser,
+      page,
+      fixture,
+      sidekickConfig,
+      configJson,
+      url: setup.getUrl('edit', 'admin'),
+      plugin: 'bulk-preview',
+      loadModule: true,
+      acceptDialogs: true,
+    }).run();
+    assert.ok(
+      requestsMade.find((req) => req.method === 'POST' && new URL(req.url).pathname.startsWith('/preview/')),
+      'Did not bulk preview single selection without creating a job',
+    );
+  }).timeout(IT_DEFAULT_TIMEOUT);
+
   it('Bulk preview plugin handles API error', async () => {
     const { setup } = TESTS[0];
     nock.sidekick();
