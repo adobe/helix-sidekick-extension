@@ -1827,7 +1827,6 @@ import sampleRUM from './rum.js';
       if (paths.length === 0) {
         return;
       }
-      console.log(`bulk ${operation} ${paths.length} items`);
       try {
         if (paths.length === 1) {
           // single operation
