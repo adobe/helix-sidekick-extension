@@ -68,8 +68,9 @@ describe('Test bulk preview plugin', () => {
       fixture: TESTS[0].fixture,
       url: setup.getUrl('edit', 'admin'),
       pre: (p) => p.evaluate(() => {
-        // user deselects file
+        // user deselects all
         document.getElementById('file-pdf').click();
+        document.getElementById('file-word').click();
       }),
       loadModule: true,
     }).run();
@@ -100,12 +101,13 @@ describe('Test bulk preview plugin', () => {
       fixture: TESTS[0].fixture,
       url: setup.getUrl('edit', 'admin'),
       pre: (p) => p.evaluate(() => {
-        // user deselects file
+        // user deselects all
         document.getElementById('file-pdf').click();
+        document.getElementById('file-word').click();
       }),
       post: (p) => p.evaluate(() => {
-        // user deselects another file
-        document.getElementById('file-word').click();
+        // user selects a file
+        document.getElementById('file-excel').click();
       }),
       loadModule: true,
     }).run();
@@ -129,8 +131,9 @@ describe('Test bulk preview plugin', () => {
       url: setup.getUrl('edit', 'admin'),
       plugin: 'bulk-preview',
       pre: (p) => p.evaluate(() => {
-        // user deselects file
+        // user deselects all
         document.getElementById('file-pdf').click();
+        document.getElementById('file-word').click();
       }),
       loadModule: true,
     }).run();
@@ -216,6 +219,43 @@ describe('Test bulk preview plugin', () => {
     }).timeout(IT_DEFAULT_TIMEOUT);
   });
 
+  it('Bulk preview plugin previews single selection without creating a job', async () => {
+    const { setup, fixture } = TESTS[0];
+    const { sidekickConfig, configJson } = setup;
+    nock.sidekick(setup);
+    nock.admin(setup, {
+      route: 'status',
+      persist: true,
+    });
+    nock.admin(setup, {
+      route: 'preview',
+      method: 'post',
+    });
+    const { notification, requestsMade } = await new SidekickTest({
+      browser,
+      page,
+      fixture,
+      sidekickConfig,
+      configJson,
+      url: setup.getUrl('edit', 'admin'),
+      plugin: 'bulk-preview',
+      pluginSleep: 500,
+      // only select first file
+      pre: (p) => p.evaluate(() => document.querySelectorAll('div.file')
+        .forEach((file, i) => file.setAttribute('aria-selected', `${i === 0}`))),
+      loadModule: true,
+      acceptDialogs: true,
+    }).run();
+    assert.ok(
+      notification?.message.startsWith('Preview of this file successfully generated'),
+      'Did not bulk publish single selection',
+    );
+    assert.ok(
+      requestsMade.find((req) => req.method === 'POST' && !new URL(req.url).pathname.endsWith('/*')),
+      'Did not bulk preview single selection without creating a job',
+    );
+  }).timeout(IT_DEFAULT_TIMEOUT);
+
   it('Bulk preview plugin handles API error', async () => {
     const { setup } = TESTS[0];
     nock.sidekick();
@@ -266,6 +306,40 @@ describe('Test bulk preview plugin', () => {
     );
   }).timeout(IT_DEFAULT_TIMEOUT);
 
+  it('Bulk preview plugin handles API error with single selection', async () => {
+    const { setup } = TESTS[0];
+    nock.sidekick();
+    nock.admin(setup, {
+      route: 'status',
+      type: 'admin',
+      persist: true,
+    });
+    nock.admin(setup, {
+      route: 'preview',
+      type: 'html',
+      method: 'post',
+      status: [500],
+    });
+    const test = await new SidekickTest({
+      browser,
+      page,
+      fixture: SHAREPOINT_FIXTURE,
+      url: setup.getUrl('edit', 'admin'),
+      plugin: 'bulk-preview',
+      pluginSleep: 500,
+      // only select first file
+      pre: (p) => p.evaluate(() => document.querySelectorAll('div.file')
+        .forEach((file, i) => file.setAttribute('aria-selected', `${i === 0}`))),
+      loadModule: true,
+      acceptDialogs: true,
+    });
+    const { notification } = await test.run();
+    assert.ok(
+      notification?.className?.includes('level-0'),
+      'Did not handle 500 error with single selection',
+    );
+  }).timeout(IT_DEFAULT_TIMEOUT);
+
   it('Bulk preview plugin handles content error', async () => {
     const { setup } = TESTS[0];
     nock.sidekick();
@@ -309,10 +383,6 @@ describe('Test bulk preview plugin', () => {
       url: setup.getUrl('edit', 'admin'),
       plugin: 'bulk-preview',
       pluginSleep: 5000,
-      pre: (p) => p.evaluate(() => {
-        // select another file
-        document.getElementById('file-word').click();
-      }),
       loadModule: true,
       acceptDialogs: true,
     }).run();

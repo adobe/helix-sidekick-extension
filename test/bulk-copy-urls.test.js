@@ -88,7 +88,7 @@ describe('Test bulk copy URLs plugin', () => {
       loadModule: true,
       acceptDialogs: true,
     }).run();
-    assert.deepStrictEqual(buttonTexts, ['Copy URL', 'Copy URLs'], 'Did not adapt button text');
+    assert.deepStrictEqual(buttonTexts, ['Copy URLs', 'Copy URL'], 'Did not adapt button text');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Bulk copy URLs plugin hidden on empty selection', async () => {
@@ -105,8 +105,9 @@ describe('Test bulk copy URLs plugin', () => {
       fixture: TESTS[0].fixture,
       url: setup.getUrl('edit', 'admin'),
       pre: (p) => p.evaluate(() => {
-        // user deselects file
+        // user deselects all
         document.getElementById('file-pdf').click();
+        document.getElementById('file-word').click();
       }),
       loadModule: true,
     }).run();
@@ -131,8 +132,9 @@ describe('Test bulk copy URLs plugin', () => {
       url: setup.getUrl('edit', 'admin'),
       plugin: 'bulk-copy-preview-urls',
       pre: (p) => p.evaluate(() => {
-        // user deselects file
+        // user deselects all
         document.getElementById('file-pdf').click();
+        document.getElementById('file-word').click();
       }),
       loadModule: true,
     }).run();
@@ -248,6 +250,9 @@ describe('Test bulk copy URLs plugin', () => {
         url: setup.getUrl('edit', 'admin'),
         plugin: 'bulk-copy-preview-urls',
         pluginSleep: 500,
+        // only select first file
+        pre: (p) => p.evaluate(() => document.querySelectorAll('div.file')
+          .forEach((file, i) => file.setAttribute('aria-selected', `${i === 0}`))),
         post: (p) => p.evaluate(() => {
           window.hlx.clipboardText = 'dummy';
           window.navigator.clipboard.writeText = (text) => {
@@ -280,11 +285,9 @@ describe('Test bulk copy URLs plugin', () => {
         url: setup.getUrl('edit', 'admin'),
         plugin: 'bulk-copy-preview-urls',
         pluginSleep: 500,
-        pre: (p) => p.evaluate(() => {
-          // user selects more files
-          document.getElementById('file-word').click();
-          document.getElementById('file-excel').click();
-        }),
+        // select all supported files
+        pre: (p) => p.evaluate(() => document.querySelectorAll('div.file')
+          .forEach((file) => file.setAttribute('aria-selected', 'true'))),
         post: (p) => p.evaluate(() => {
           window.hlx.clipboardText = 'dummy';
           window.navigator.clipboard.writeText = (text) => {
@@ -298,8 +301,8 @@ describe('Test bulk copy URLs plugin', () => {
         clipboardText.split('\n'),
         [
           `https://${ref}--${repo}--${owner}.hlx.page/documents/file.pdf`,
-          `https://${ref}--${repo}--${owner}.hlx.page/documents/document${env === 'gdrive' ? '.docx' : ''}`,
-          `https://${ref}--${repo}--${owner}.hlx.page/documents/spreadsheet${env === 'gdrive' ? '.xlsx' : '.json'}`,
+          `https://${ref}--${repo}--${owner}.hlx.page/documents/document`,
+          `https://${ref}--${repo}--${owner}.hlx.page/documents/spreadsheet.json`,
         ],
         `URLs not copied to clipboard in ${env}`,
       );
@@ -322,6 +325,9 @@ describe('Test bulk copy URLs plugin', () => {
         url: setup.getUrl('edit', 'admin'),
         plugin: 'bulk-copy-live-urls',
         pluginSleep: 500,
+        // only select first file
+        pre: (p) => p.evaluate(() => document.querySelectorAll('div.file')
+          .forEach((file, i) => file.setAttribute('aria-selected', `${i === 0}`))),
         post: (p) => p.evaluate(() => {
           window.hlx.clipboardText = 'dummy';
           window.navigator.clipboard.writeText = (text) => {
@@ -355,6 +361,9 @@ describe('Test bulk copy URLs plugin', () => {
         url: setup.getUrl('edit', 'admin'),
         plugin: 'bulk-copy-prod-urls',
         pluginSleep: 500,
+        // only select first file
+        pre: (p) => p.evaluate(() => document.querySelectorAll('div.file')
+          .forEach((file, i) => file.setAttribute('aria-selected', `${i === 0}`))),
         post: (p) => p.evaluate(() => {
           window.hlx.clipboardText = 'dummy';
           window.navigator.clipboard.writeText = (text) => {

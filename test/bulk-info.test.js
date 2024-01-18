@@ -63,7 +63,7 @@ describe('Test bulk info plugin', () => {
         route: 'status',
         type: 'admin',
       });
-      const { checkPageResult: sizeCheck } = await new SidekickTest({
+      const { checkPageResult: size } = await new SidekickTest({
         browser,
         page,
         fixture: fixtureList,
@@ -75,10 +75,10 @@ describe('Test bulk info plugin', () => {
           const num = +(info.textContent
             .split(' ')
             .shift());
-          return Number.isNaN(num) ? false : num === 1;
+          return num;
         }),
       }).run();
-      assert.ok(sizeCheck, 'Wrong selection size displayed');
+      assert.strictEqual(size, 2, 'Wrong selection size displayed');
     }).timeout(IT_DEFAULT_TIMEOUT);
 
     it(`Bulk info plugin displays selection size in ${env} grid view`, async () => {
