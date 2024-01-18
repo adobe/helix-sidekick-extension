@@ -1,3 +1,11 @@
+## [6.40.2](https://github.com/adobe/helix-sidekick-extension/compare/v6.40.1...v6.40.2) (2024-01-18)
+
+
+### Bug Fixes
+
+* **safari:** config export displays json in browser ([1e08819](https://github.com/adobe/helix-sidekick-extension/commit/1e088199fbc01510c8ebcf76523a44ee49eb5c6a))
+* single file selection should not trigger bulk opration ([6b52be2](https://github.com/adobe/helix-sidekick-extension/commit/6b52be2808667e1bb3c36b7cdba09457ee46794f))
+
 ## [6.40.1](https://github.com/adobe/helix-sidekick-extension/compare/v6.40.0...v6.40.1) (2024-01-12)
 
 
