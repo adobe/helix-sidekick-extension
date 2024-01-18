@@ -239,11 +239,14 @@ describe('Test bulk preview plugin', () => {
       configJson,
       url: setup.getUrl('edit', 'admin'),
       plugin: 'bulk-preview',
+      // only select first file
+      pre: (p) => p.evaluate(() => document.querySelectorAll('div.file')
+        .forEach((file, i) => file.setAttribute('aria-selected', `${i === 0}`))),
       loadModule: true,
       acceptDialogs: true,
     }).run();
     assert.ok(
-      requestsMade.find((req) => req.method === 'POST' && new URL(req.url).pathname.startsWith('/preview/')),
+      requestsMade.find((req) => req.method === 'POST' && !new URL(req.url).pathname.endsWith('/*')),
       'Did not bulk preview single selection without creating a job',
     );
   }).timeout(IT_DEFAULT_TIMEOUT);
