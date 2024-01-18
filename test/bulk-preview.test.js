@@ -231,7 +231,7 @@ describe('Test bulk preview plugin', () => {
       route: 'preview',
       method: 'post',
     });
-    const { requestsMade } = await new SidekickTest({
+    const { notification, requestsMade } = await new SidekickTest({
       browser,
       page,
       fixture,
@@ -239,12 +239,17 @@ describe('Test bulk preview plugin', () => {
       configJson,
       url: setup.getUrl('edit', 'admin'),
       plugin: 'bulk-preview',
+      pluginSleep: 500,
       // only select first file
       pre: (p) => p.evaluate(() => document.querySelectorAll('div.file')
         .forEach((file, i) => file.setAttribute('aria-selected', `${i === 0}`))),
       loadModule: true,
       acceptDialogs: true,
     }).run();
+    assert.ok(
+      notification?.message.startsWith('Preview of this file successfully generated'),
+      'Did not bulk publish single selection',
+    );
     assert.ok(
       requestsMade.find((req) => req.method === 'POST' && !new URL(req.url).pathname.endsWith('/*')),
       'Did not bulk preview single selection without creating a job',
@@ -298,6 +303,40 @@ describe('Test bulk preview plugin', () => {
     assert.ok(
       api401.message?.includes('need to sign in'),
       'Did not handle 401 error',
+    );
+  }).timeout(IT_DEFAULT_TIMEOUT);
+
+  it('Bulk preview plugin handles API error with single selection', async () => {
+    const { setup } = TESTS[0];
+    nock.sidekick();
+    nock.admin(setup, {
+      route: 'status',
+      type: 'admin',
+      persist: true,
+    });
+    nock.admin(setup, {
+      route: 'preview',
+      type: 'html',
+      method: 'post',
+      status: [500],
+    });
+    const test = await new SidekickTest({
+      browser,
+      page,
+      fixture: SHAREPOINT_FIXTURE,
+      url: setup.getUrl('edit', 'admin'),
+      plugin: 'bulk-preview',
+      pluginSleep: 500,
+      // only select first file
+      pre: (p) => p.evaluate(() => document.querySelectorAll('div.file')
+        .forEach((file, i) => file.setAttribute('aria-selected', `${i === 0}`))),
+      loadModule: true,
+      acceptDialogs: true,
+    });
+    const { notification } = await test.run();
+    assert.ok(
+      notification?.className?.includes('level-0'),
+      'Did not handle 500 error with single selection',
     );
   }).timeout(IT_DEFAULT_TIMEOUT);
 

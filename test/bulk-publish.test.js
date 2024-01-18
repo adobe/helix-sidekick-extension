@@ -239,7 +239,7 @@ describe('Test bulk publish plugin', () => {
       route: 'live',
       method: 'post',
     });
-    const { requestsMade } = await new SidekickTest({
+    const { notification, requestsMade } = await new SidekickTest({
       browser,
       page,
       fixture,
@@ -247,12 +247,17 @@ describe('Test bulk publish plugin', () => {
       configJson,
       url: setup.getUrl('edit', 'admin'),
       plugin: 'bulk-publish',
+      pluginSleep: 500,
       // only select first file
       pre: (p) => p.evaluate(() => document.querySelectorAll('div.file')
         .forEach((file, i) => file.setAttribute('aria-selected', `${i === 0}`))),
       loadModule: true,
       acceptDialogs: true,
     }).run();
+    assert.ok(
+      notification?.message.startsWith('1 file successfully published'),
+      'Did not bulk publish single selection',
+    );
     assert.ok(
       requestsMade.find((req) => req.method === 'POST' && !new URL(req.url).pathname.startsWith('/*')),
       'Did not bulk publish single selection without creating a job',
