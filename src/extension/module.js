@@ -1837,12 +1837,7 @@ import sampleRUM from './rum.js';
               ...getAdminFetchOptions(),
               method,
             });
-            if (resp.status === 401) {
-              sk.showModal({
-                message: i18n(sk, `bulk_error_${operation}_login_required`),
-                level: 2,
-              });
-            } else if (!resp.ok) {
+            if (!resp.ok) {
               throw new Error(resp.headers['x-error']);
             } else {
               showBulkOperationSummary({
