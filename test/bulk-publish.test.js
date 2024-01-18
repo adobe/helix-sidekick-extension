@@ -247,11 +247,14 @@ describe('Test bulk publish plugin', () => {
       configJson,
       url: setup.getUrl('edit', 'admin'),
       plugin: 'bulk-publish',
+      // only select first file
+      pre: (p) => p.evaluate(() => document.querySelectorAll('div.file')
+        .forEach((file, i) => file.setAttribute('aria-selected', `${i === 0}`))),
       loadModule: true,
       acceptDialogs: true,
     }).run();
     assert.ok(
-      requestsMade.find((req) => req.method === 'POST' && new URL(req.url).pathname.startsWith('/live/')),
+      requestsMade.find((req) => req.method === 'POST' && !new URL(req.url).pathname.startsWith('/*')),
       'Did not bulk publish single selection without creating a job',
     );
   }).timeout(IT_DEFAULT_TIMEOUT);
