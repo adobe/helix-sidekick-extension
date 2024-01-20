@@ -3193,7 +3193,7 @@ import sampleRUM from './rum.js';
           const modal = {
             message: message.startsWith('error_') ? i18n(this, message) : [
               i18n(this, 'error_status_fatal'),
-              'https://status.hlx.live/',
+              'https://status.adobe.com/',
             ],
             sticky: true,
             level: 0,
