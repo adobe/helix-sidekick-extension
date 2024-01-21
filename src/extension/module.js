@@ -3192,7 +3192,7 @@ import sampleRUM from './rum.js';
         .catch(({ message }) => {
           this.status.error = message;
           const modal = {
-            message: message.startsWith('error_') ? i18n(this, message) : [
+            message: i18n(this, message) || [
               i18n(this, 'error_status_fatal'),
               'https://status.adobe.com/',
             ],
