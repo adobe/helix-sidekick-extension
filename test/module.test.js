@@ -125,6 +125,7 @@ describe('Test sidekick', () => {
           { status: 403, body: 'Forbidden' },
           { status: 500, body: 'Server error' },
           { status: 504, body: 'Gateway timeout' },
+          { status: undefined, body: 'Network error' },
         ];
         nock('https://admin.hlx.page')
           .get('/status/adobe/blog/main/en/topics/bla?editUrl=auto')
@@ -134,7 +135,9 @@ describe('Test sidekick', () => {
           .get('/status/adobe/blog/main/en/topics/bla?editUrl=auto')
           .reply(500)
           .get('/status/adobe/blog/main/en/topics/bla?editUrl=auto')
-          .reply(504);
+          .reply(504)
+          .get('/status/adobe/blog/main/en/topics/bla?editUrl=auto')
+          .reply(503);
         nock.sidekick(new Setup('blog'), { persist: true }); // will be called multiple times
         const test = new SidekickTest({
           browser,
@@ -148,7 +151,7 @@ describe('Test sidekick', () => {
           }),
         });
         while (errors.length) {
-          const { status } = errors.shift();
+          const { status = 'https://status.adobe.com' } = errors.shift();
           // eslint-disable-next-line no-await-in-loop
           const { notification, checkPageResult } = await test.run();
           const sidekick = checkPageResult;
