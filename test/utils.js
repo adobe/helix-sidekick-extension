@@ -733,7 +733,7 @@ export function Nock() {
       n.persist();
     }
     return n
-      .get(/.*/)
+      .get(/\/sidekick\/.*/)
       .optionally()
       .reply(() => (setup
         ? [200, configJson || setup.configJson]
