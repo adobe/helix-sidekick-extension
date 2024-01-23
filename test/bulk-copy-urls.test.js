@@ -233,6 +233,59 @@ describe('Test bulk copy URLs plugin', () => {
     );
   });
 
+  it('Bulk copy preview URLs plugin handles file name with comma in sharepoint views', async () => {
+    const { setup } = TESTS[0];
+    nock.sidekick(setup, {
+      persist: true,
+    });
+    nock.admin(setup, {
+      route: 'status',
+      type: 'admin',
+      persist: true,
+    });
+    const views = [
+      {
+        view: 'list',
+        fixture: 'admin-sharepoint.html',
+      },
+      {
+        view: 'grid',
+        fixture: 'admin-sharepoint-grid.html',
+      },
+    ];
+    while (views.length > 0) {
+      const { view, fixture } = views.shift();
+      // eslint-disable-next-line no-await-in-loop
+      const { checkPageResult: clipboardTextList } = await new SidekickTest({
+        browser,
+        page,
+        fixture,
+        sidekickConfig: setup.sidekickConfig,
+        plugin: 'bulk-copy-preview-urls',
+        // pluginSleep: 1000,
+        pre: (p) => p.evaluate(() => {
+          // stub navigator.clipboard.writeText()
+          window.hlx = {};
+          window.hlx.clipboardText = 'dummy';
+          window.navigator.clipboard.writeText = (text) => {
+            window.hlx.clipboardText = text;
+          };
+          // deselect all
+          document.getElementById('file-pdf').click();
+          document.getElementById('file-word').click();
+          // select only file with comma
+          document.getElementById('file-comma').click();
+        }),
+        checkPage: (p) => p.evaluate(() => window.hlx.clipboardText),
+        loadModule: true,
+      }).run(setup.getUrl('edit', 'admin'));
+      assert.ok(
+        clipboardTextList.endsWith('/document-new'),
+        `Preview URL does not contain expected file name in ${view} view: ${clipboardTextList}`,
+      );
+    }
+  });
+
   TESTS.forEach(({ env, fixture, setup }) => {
     it(`Bulk copy preview URLs plugin copies preview URLs for existing selection to clipboard in ${env}`, async () => {
       const { owner, repo, ref } = setup.sidekickConfig;
