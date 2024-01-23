@@ -89,6 +89,7 @@ describe('Test sidekick', () => {
         const setup = new Setup('blog');
         const { sidekickConfig } = setup;
         nock.sidekick(setup, { persist: true });
+        nock.admin(setup);
         const { checkPageResult } = await new SidekickTest({
           browser,
           page,
@@ -773,8 +774,8 @@ describe('Test sidekick', () => {
       it('Hides notifications on overlay click', async () => {
         // hides sticky modal on overlay click
         const setup = new Setup('blog');
-        nock.admin(setup);
         nock.sidekick(setup);
+        nock.admin(setup);
         const { checkPageResult } = await new SidekickTest({
           browser,
           page,
