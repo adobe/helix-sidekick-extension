@@ -228,12 +228,12 @@ describe('Test bulk copy URLs plugin', () => {
       loadModule: true,
     }).run();
     assert.ok(
-      clipboardText.endsWith('.json'),
+      clipboardText.endsWith('spreadsheet.json'),
       `Preview URL does not have json extension: ${clipboardText}`,
     );
   });
 
-  it('Bulk copy preview URLs plugin handles file name with comma in sharepoint views', async () => {
+  it('Bulk copy preview URLs plugin handles file name with comma or dot in sharepoint views', async () => {
     const { setup } = TESTS[0];
     nock.sidekick(setup, {
       persist: true,
@@ -256,7 +256,7 @@ describe('Test bulk copy URLs plugin', () => {
     while (views.length > 0) {
       const { view, fixture } = views.shift();
       // eslint-disable-next-line no-await-in-loop
-      const { checkPageResult: clipboardTextList } = await new SidekickTest({
+      const { checkPageResult: clipboardText } = await new SidekickTest({
         browser,
         page,
         fixture,
@@ -264,24 +264,30 @@ describe('Test bulk copy URLs plugin', () => {
         plugin: 'bulk-copy-preview-urls',
         // pluginSleep: 1000,
         pre: (p) => p.evaluate(() => {
-          // stub navigator.clipboard.writeText()
-          window.hlx = {};
+          // deselect all
+          document.getElementById('file-pdf').click();
+          document.getElementById('file-word').click();
+          // select only files with comma and dot
+          document.getElementById('file-comma').click();
+          document.getElementById('file-dot').click();
+        }),
+        post: (p) => p.evaluate(() => {
           window.hlx.clipboardText = 'dummy';
           window.navigator.clipboard.writeText = (text) => {
             window.hlx.clipboardText = text;
           };
-          // deselect all
-          document.getElementById('file-pdf').click();
-          document.getElementById('file-word').click();
-          // select only file with comma
-          document.getElementById('file-comma').click();
         }),
         checkPage: (p) => p.evaluate(() => window.hlx.clipboardText),
         loadModule: true,
       }).run(setup.getUrl('edit', 'admin'));
+      const [fileComma, fileDot] = clipboardText.split('\n');
       assert.ok(
-        clipboardTextList.endsWith('/document-new'),
-        `Preview URL does not contain expected file name in ${view} view: ${clipboardTextList}`,
+        fileComma.endsWith('/document-new'),
+        `Unexpected preview URL for file with comma in  ${view} view: ${fileComma}`,
+      );
+      assert.ok(
+        fileDot.endsWith('/document-other'),
+        `Unexpected preview URL for file with dot in ${view} view: ${fileDot}`,
       );
     }
   });
