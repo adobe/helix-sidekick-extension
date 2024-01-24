@@ -228,9 +228,68 @@ describe('Test bulk copy URLs plugin', () => {
       loadModule: true,
     }).run();
     assert.ok(
-      clipboardText.endsWith('.json'),
+      clipboardText.endsWith('spreadsheet.json'),
       `Preview URL does not have json extension: ${clipboardText}`,
     );
+  });
+
+  it('Bulk copy preview URLs plugin handles file name with comma or dot in sharepoint views', async () => {
+    const { setup } = TESTS[0];
+    nock.sidekick(setup, {
+      persist: true,
+    });
+    nock.admin(setup, {
+      route: 'status',
+      type: 'admin',
+      persist: true,
+    });
+    const views = [
+      {
+        view: 'list',
+        fixture: 'admin-sharepoint.html',
+      },
+      {
+        view: 'grid',
+        fixture: 'admin-sharepoint-grid.html',
+      },
+    ];
+    while (views.length > 0) {
+      const { view, fixture } = views.shift();
+      // eslint-disable-next-line no-await-in-loop
+      const { checkPageResult: clipboardText } = await new SidekickTest({
+        browser,
+        page,
+        fixture,
+        sidekickConfig: setup.sidekickConfig,
+        plugin: 'bulk-copy-preview-urls',
+        // pluginSleep: 1000,
+        pre: (p) => p.evaluate(() => {
+          // deselect all
+          document.getElementById('file-pdf').click();
+          document.getElementById('file-word').click();
+          // select only files with comma and dot
+          document.getElementById('file-comma').click();
+          document.getElementById('file-dot').click();
+        }),
+        post: (p) => p.evaluate(() => {
+          window.hlx.clipboardText = 'dummy';
+          window.navigator.clipboard.writeText = (text) => {
+            window.hlx.clipboardText = text;
+          };
+        }),
+        checkPage: (p) => p.evaluate(() => window.hlx.clipboardText),
+        loadModule: true,
+      }).run(setup.getUrl('edit', 'admin'));
+      const [fileComma, fileDot] = clipboardText.split('\n');
+      assert.ok(
+        fileComma.endsWith('/document-new'),
+        `Unexpected preview URL for file with comma in  ${view} view: ${fileComma}`,
+      );
+      assert.ok(
+        fileDot.endsWith('/document-other'),
+        `Unexpected preview URL for file with dot in ${view} view: ${fileDot}`,
+      );
+    }
   });
 
   TESTS.forEach(({ env, fixture, setup }) => {

@@ -1590,15 +1590,21 @@ import sampleRUM from './rum.js';
       if (['/', '*', '\\', '!', '?'].find((pattern) => path.includes(pattern))) {
         return `!ILLEGAL!_${path}`;
       }
-      const nameParts = path.split('.');
-      let [file, ext] = nameParts;
-      if (isSharePointFolder(sk, sk.location) && ext === 'docx') {
+      let file = path;
+      let ext = '';
+      const lastDot = path.lastIndexOf('.');
+      if (lastDot >= 0) {
+        // cut off extension
+        file = path.substring(0, lastDot);
+        ext = path.substring(path.lastIndexOf('.'));
+      }
+      if (isSharePointFolder(sk, sk.location) && type === 'docx') {
         // omit docx extension on sharepoint
         ext = '';
       }
       if (type === 'xlsx' || type.includes('vnd.google-apps.spreadsheet')) {
         // use json extension for spreadsheets
-        ext = 'json';
+        ext = '.json';
       }
       if (file === 'index') {
         // folder root
@@ -1610,7 +1616,7 @@ import sampleRUM from './rum.js';
         .replace(/[\u0300-\u036f]/g, '')
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/^-|-$/g, '');
-      return `${folder}${folder.endsWith('/') ? '' : '/'}${file}${ext ? `.${ext}` : ''}`;
+      return `${folder}${folder.endsWith('/') ? '' : '/'}${file}${ext}`;
     };
 
     const validateWebPaths = (paths) => {
@@ -1646,12 +1652,13 @@ import sampleRUM from './rum.js';
             && !row.querySelector('svg')?.parentElement.className.toLowerCase().includes('folder'))
           // extract file name and type
           .map((row) => {
-            const [path, type] = (row.getAttribute('aria-label') || row.querySelector('span')?.textContent)
-              ?.split(',')
-              .map((detail) => detail.trim()) || [];
+            const info = row.getAttribute('aria-label') || row.querySelector('span')?.textContent;
+            // info format: bla.docx, docx File, Private, Modified 8/28/2023, edited by Jane, 1 KB
+            const type = info.match(/, ([a-z0-9]+) File,/)?.[1];
+            const path = type && info.split(`, ${type} File,`)[0];
             return {
               path,
-              type: type?.split(' ')[0],
+              type,
             };
           })
           // validate selection
@@ -3191,7 +3198,7 @@ import sampleRUM from './rum.js';
         .catch(({ message }) => {
           this.status.error = message;
           const modal = {
-            message: message.startsWith('error_') ? i18n(this, message) : [
+            message: i18n(this, message) || [
               i18n(this, 'error_status_fatal'),
               'https://status.adobe.com/',
             ],
