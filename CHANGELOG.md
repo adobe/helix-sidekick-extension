@@ -1,3 +1,10 @@
+## [6.40.3](https://github.com/adobe/helix-sidekick-extension/compare/v6.40.2...v6.40.3) (2024-01-24)
+
+
+### Bug Fixes
+
+* sharepoint filenames with comma and dot ([#660](https://github.com/adobe/helix-sidekick-extension/issues/660)) ([5d7130b](https://github.com/adobe/helix-sidekick-extension/commit/5d7130bdcc46870f52956616ead7b7664f7fb5ad))
+
 ## [6.40.2](https://github.com/adobe/helix-sidekick-extension/compare/v6.40.1...v6.40.2) (2024-01-18)
 
 
