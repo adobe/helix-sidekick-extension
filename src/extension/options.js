@@ -209,6 +209,12 @@ function editProject(i) {
       }
     };
     const save = async () => {
+      const giturl = document.querySelector('#edit-giturl').value;
+      if (!isValidGitHubURL(giturl)) {
+        // eslint-disable-next-line no-alert
+        window.alert(i18n('config_invalid_giturl'));
+        return;
+      }
       const input = {
         giturl: document.querySelector('#edit-giturl').value,
         mountpoints: [
