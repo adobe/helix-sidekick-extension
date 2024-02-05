@@ -36,6 +36,11 @@ function isValidGitHubURL(giturl) {
     && Object.keys(getGitHubSettings(giturl)).length === 3;
 }
 
+function isValidProdHost(prodHost) {
+  const prodHostPattern = /^$|^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}\/?/;
+  return prodHostPattern.test(prodHost);
+}
+
 function sanitize(str) {
   return str.replace(/[$<>"'`=]/g, '-');
 }
@@ -209,6 +214,12 @@ function editProject(i) {
       }
     };
     const save = async () => {
+      const prodHost = document.querySelector('#edit-host').value;
+      if (!isValidProdHost(prodHost)) {
+        // eslint-disable-next-line no-alert
+        window.alert(i18n('config_invalid_host'));
+        return;
+      }
       const input = {
         giturl: document.querySelector('#edit-giturl').value,
         mountpoints: [
