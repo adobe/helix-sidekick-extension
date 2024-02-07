@@ -214,8 +214,11 @@ function editProject(i) {
       }
     };
     const save = async () => {
-      const prodHost = document.querySelector('#edit-host').value;
-      if (!isValidProdHost(prodHost)) {
+      const host = document.querySelector('#edit-host').value;
+      const previewHost = document.querySelector('#edit-previewHost').value;
+      const liveHost = document.querySelector('#edit-liveHost').value;
+      // eslint-disable-next-line max-len
+      if (!isValidProdHost(host) || !isValidProdHost(previewHost) || !isValidProdHost(liveHost)) {
         // eslint-disable-next-line no-alert
         window.alert(i18n('config_invalid_host'));
         return;
