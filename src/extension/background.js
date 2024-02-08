@@ -105,6 +105,7 @@ async function getConfigFromTabUrl(tabUrl) {
  * @param {chrome.tabs.Tab} tab The tab
  * @returns {Promise} The proxy URL
  */
+
 async function getProxyUrl({ id, url: tabUrl }) {
   return new Promise((resolve) => {
     // inject proxy url retriever
@@ -164,6 +165,7 @@ async function guessIfFranklinSite({ id }) {
  * @param {Object} tab The tab
  * @param {Object[]} configs The existing configurations
  */
+
 async function checkContextMenu({ url: tabUrl, id, active }, configs = []) {
   if (!active) return; // ignore inactive tabs to avoid collisions
   if (chrome.contextMenus) {
@@ -576,6 +578,22 @@ const internalActions = {
     chrome.contextMenus.onClicked.addListener(async ({ menuItemId }, tab) => {
       if (!tab.url) return;
       internalActions[menuItemId](tab);
+      await chrome.scripting.executeScript({
+        target: { tabId: tab.id },
+        func: async () => {
+          try {
+            const sampleRUM = await import(chrome.runtime.getURL('rum.js'));
+
+            // Ensure window.hlx and window.hlx.sidekick exists
+            window.hlx = window.hlx || {};
+            window.hlx.sidekick = window.hlx.sidekick || { location: window.location };
+
+            sampleRUM('sidekick:menuitemid', { source: window.location.href });
+          } catch (e) {
+            log.error('Error injecting rum', e);
+          }
+        },
+      });
     });
   }
 
