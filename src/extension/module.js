@@ -2691,6 +2691,75 @@ import sampleRUM from './rum.js';
   }
 
   /**
+   * Triggers the site's login flow if the underlying page shows a 401 error
+   * on a URL with a supported file extension.
+   * @private
+   * @param {Sidekick} sk The sidekick
+   */
+  function loginOn401Page(sk) {
+    const is401Page = (sidekick) => !document.querySelector('body > main > div')
+      && document.body.textContent.trim() === '401 Unauthorized'
+      && isSupportedFileExtension(sidekick.location.pathname);
+    const {
+      start,
+      active,
+    } = JSON.parse(window.sessionStorage.getItem('hlx-login-context') || '{}');
+
+    if (is401Page(sk) && !active && (!start || start < (Date.now() - 60000))) {
+      console.log('starting login flow...');
+      // start login flow
+      const now = Date.now();
+      const deadline = now + 60000; // observe login window for 1 minute
+      const loginWindow = window.open('/rofe-test/login');
+      let intervalId;
+
+      const finish = (abort) => {
+        // clear interval and reset login context
+        window.clearInterval(intervalId);
+        if (abort) {
+          window.sessionStorage.removeItem('hlx-login-context');
+        } else {
+          window.sessionStorage.setItem(
+            'hlx-login-context',
+            JSON.stringify({ start: now, active: false }),
+          );
+        }
+      };
+
+      intervalId = window.setInterval(() => {
+        console.log('wait for ', Math.round((deadline - Date.now()) / 1000, 1));
+        if (Date.now() > deadline) {
+          console.log('time is up, cleaning up');
+          finish(true);
+          sk.showModal({
+            message: i18n(sk, 'error_login_timeout'),
+            sticky: true,
+            level: 1,
+          });
+        }
+        if (loginWindow.closed) {
+          // assume login complete, refresh
+          console.log('assuming login complete, cleaning up and refreshing');
+          finish();
+          window.location.replace(window.location.href);
+        }
+      }, 500);
+
+      window.sessionStorage.setItem(
+        'hlx-login-context',
+        JSON.stringify({ start: now, active: true }),
+      );
+    } else if (is401Page(sk) && start) {
+      // still not logged in, assume login aborted
+      sk.showModal({
+        message: i18n(sk, 'error_login_aborted'),
+        sticky: true,
+        level: 1,
+      });
+    }
+  }
+
+  /**
    * Checks existing plugins based on the status of the current resource.
    * @private
    * @param {Sidekick} sk The sidekick
@@ -3090,6 +3159,7 @@ import sampleRUM from './rum.js';
           source: this.location.href,
           target: `${platform}:${browser}:${mode}`,
         });
+        loginOn401Page(this);
         // announce to the document that the sidekick is ready
         document.dispatchEvent(new CustomEvent('sidekick-ready'));
         document.dispatchEvent(new CustomEvent('helix-sidekick-ready')); // legacy
