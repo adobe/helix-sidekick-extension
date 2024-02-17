@@ -63,7 +63,7 @@
     "mime": "4.0.1",
     "mocha": "10.3.0",
     "mocha-multi-reporters": "1.5.1",
-    "nock": "13.5.1",
+    "nock": "13.5.3",
     "puppeteer": "21.1.1",
     "puppeteer-core": "21.1.1",
     "puppeteer-to-istanbul": "1.4.0",
