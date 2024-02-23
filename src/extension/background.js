@@ -588,7 +588,8 @@ const internalActions = {
             window.hlx = window.hlx || {};
             window.hlx.sidekick = window.hlx.sidekick || { location: window.location };
 
-            sampleRUM('sidekick:menuitemid', { source: window.location.href });
+            const checkpoint = `sidekick:context-menu:${menuItemId}`;
+            sampleRUM(checkpoint, { source: window.location.href });
           } catch (e) {
             log.error('Error injecting rum', e);
           }
