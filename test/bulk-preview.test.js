@@ -395,6 +395,7 @@ describe('Test bulk preview plugin', () => {
   it('Bulk preview plugin refetches status after navigation', async () => {
     const { setup } = TESTS[0];
     nock.sidekick(setup);
+    nock.admin(setup, { persist: true });
     nock.bulkJob(setup, {
       resources: [
         { path: '/documents/file.pdf', status: 200 },

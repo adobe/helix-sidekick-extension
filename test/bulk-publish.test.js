@@ -325,6 +325,7 @@ describe('Test bulk publish plugin', () => {
   it('Bulk publish plugin refetches status after navigation', async () => {
     const { setup } = TESTS[0];
     nock.sidekick(setup);
+    nock.admin(setup, { persist: true });
     nock.bulkJob(setup, {
       route: 'live',
       topic: 'publish',
