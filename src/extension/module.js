@@ -2710,7 +2710,7 @@ import sampleRUM from './rum.js';
       // start login flow
       const now = Date.now();
       const deadline = now + 60000; // observe login window for 1 minute
-      const loginWindow = window.open('/rofe-test/login');
+      const loginWindow = window.open('/.login');
       let intervalId;
 
       const finish = (abort) => {
