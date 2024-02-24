@@ -1039,13 +1039,15 @@ describe('Test sidekick', () => {
           checkPage: async (p) => p.evaluate(() => window.hlx.sidekick.isAdmin()),
         });
         const urls = [
-          'https://adobe.sharepoint.com/sites/test/Shared%20Documents/Forms/AllItems.aspx?id=%2Fsites%2Ftest%2FShared%20Documents%2Ffoo',
-          'https://adobe.sharepoint.com/sites/test/Shared%20Documents/Forms/AllItems.aspx?RootFolder=%2Fsites%2Ftest%2FShared%20Documents%2Ffoo',
-          'https://adobe.sharepoint.com/sites/test/Shared%20Documents/Forms/AllItems.aspx',
+          { url: 'https://adobe.sharepoint.com/sites/test/Shared%20Documents/Forms/AllItems.aspx', res: true },
+          { url: 'https://adobe.sharepoint.com/sites/test/Shared%20Documents/Forms/AllItems.aspx?id=%2Fsites%2Ftest%2FShared%20Documents%2Ffoo', res: true },
+          { url: 'https://adobe.sharepoint.com/sites/test/Shared%20Documents/Forms/AllItems.aspx?RootFolder=%2Fsites%2Ftest%2FShared%20Documents%2Ffoo', res: true },
+          { url: 'https://adobe.sharepoint.com/sites/test/Shared%20Documents/Forms/AllItems.aspx?id=%2Fsites%2Ftest%2FShared%20Documents%2F.helix', res: true },
+          { url: 'https://adobe.sharepoint.com/sites/test/Shared%20Documents/Forms/AllItems.aspx?id=%2Fsites%2Ftest%2FShared%20Documents%2Ffoo%2Ftest.pdf', res: false },
         ];
-        for (const url of urls) {
+        for (const { url, res } of urls) {
           // eslint-disable-next-line no-await-in-loop
-          assert.ok((await test.run(url)).checkPageResult, 'Did not detect admin URL');
+          assert.equal((await test.run(url)).checkPageResult, res, 'Did not detect admin URL');
         }
       }).timeout(IT_DEFAULT_TIMEOUT);
 
