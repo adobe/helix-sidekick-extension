@@ -1066,6 +1066,21 @@ describe('Test sidekick', () => {
         );
       }).timeout(IT_DEFAULT_TIMEOUT);
 
+      it('Detects 401 and triggers login flow', async () => {
+        const setup = new Setup('blog');
+        nock.sidekick(setup);
+        nock.admin(setup);
+        const { popupOpened } = await new SidekickTest({
+          browser,
+          page,
+          loadModule,
+          fixture: '401.html',
+          waitPopup: 2000,
+          checkPage: async (p) => p.evaluate(() => window.hlx.sidekick.isProd()),
+        }).run('https://main--blog--adobe.hlx.page/en/assets/test.pdf');
+        assert.ok(popupOpened?.endsWith('/.login'), 'Login flow not started');
+      }).timeout(IT_DEFAULT_TIMEOUT);
+
       it('Does not push down page content by default', async () => {
         const setup = new Setup('blog');
         nock.sidekick(setup);

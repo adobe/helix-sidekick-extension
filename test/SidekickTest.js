@@ -268,6 +268,9 @@ export class SidekickTest extends EventEmitter {
           return -1;
         }
       }
+      if (url.endsWith('/.login')) {
+        return { status: 302 };
+      }
       if (url.endsWith('/favicon.ico')) {
         return { status: 404 };
       }
