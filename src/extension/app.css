@@ -12,27 +12,26 @@
 
 :host,
 :root {
-  --hlx-sk-bg: #fff;
-  --hlx-sk-logo-url: url(data:image/svg+xml;base64,PHN2ZyBpZD0iQWRvYmVFeHBlcmllbmNlQ2xvdWQiIGRhdGEtbmFtZT0iTGF5ZXIgMSIgdmlld0JveD0iLTUgLTUgMjUwIDI0NCIgd2lkdGg9IjI1MCIgaGVpZ2h0PSIyNDQiCiAgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCBoZWlnaHQ9IjIzNCIgcng9IjQyLjUiIHdpZHRoPSIyNDAiIGZpbGw9IiNmYTBmMDAiLz4KICA8cGF0aCBkPSJNMTg2LjYxNyAxNzUuOTVoLTI4LjUwNmE2LjI0MyA2LjI0MyAwIDAgMS01Ljg0Ny0zLjc2OWwtMzAuOTQ3LTcyLjM1OWExLjM2NCAxLjM2NCAwIDAgMC0yLjYxMS0uMDM0TDk5LjQyIDE0NS43MzFhMS42MzUgMS42MzUgMCAwIDAgMS41MDYgMi4yNjloMjEuMmEzLjI3IDMuMjcgMCAwIDEgMy4wMSAxLjk5NGw5LjI4MSAyMC42NTVhMy44MTIgMy44MTIgMCAwIDEtMy41MDcgNS4zMDFINTMuNzM0YTMuNTE4IDMuNTE4IDAgMCAxLTMuMjEzLTQuOTA0bDQ5LjA5LTExNi45MDJBNi42MzkgNi42MzkgMCAwIDEgMTA1Ljg0MyA1MGgyOC4zMTRhNi42MjggNi42MjggMCAwIDEgNi4yMzIgNC4xNDRsNDkuNDMgMTE2LjkwMmEzLjUxNyAzLjUxNyAwIDAgMS0zLjIwMiA0LjkwNHoiIGRhdGEtbmFtZT0iMjU2IiBmaWxsPSIjZmZmIi8+Cjwvc3ZnPg==);
-  --hlx-sk-logo-size: 24px;
-  --hlx-sk-logo-position: 10px 12px;
-  --hlx-sk-color: #505050;
+  --hlx-sk-bg: transparent;
+  --hlx-sk-color: #000;
   --hlx-sk-accent: #1473e6;
   --hlx-sk-accent-hover: #0054b6;
   --hlx-sk-border: none;
   --hlx-sk-border-radius: 10px;
   --hlx-sk-font-family: arial, helvetica, sans-serif;
-  --hlx-sk-font-size: 14px;
+  --hlx-sk-font-size: 12px;
   --hlx-sk-line-height: 1;
-  --hlx-sk-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.1), 0 0 0 0 rgba(0, 0, 0, 0.3);
-  --hlx-sk-button-color: #707070;
+  --hlx-sk-shadow: 0 -4px 8px 0 rgba(0, 0, 0, 0.1), 0 0 0 0 rgba(0, 0, 0, 0.3);
+  --hlx-sk-button-color: #000;
+  --hlx-sk-button-transition-duration: 220ms;
+  --hlx-sk-button-transition-type: ease-in-out;
   --hlx-sk-button-bg: transparent;
   --hlx-sk-button-border: solid 1px var(--hlx-sk-button-color);
   --hlx-sk-button-font-size: var(--hlx-sk-font-size);
   --hlx-sk-button-line-height: var(--hlx-sk-line-height);
   --hlx-sk-button-font-weight: 500;
-  --hlx-sk-button-padding: 5px 8px;
-  --hlx-sk-button-hover-bg: rgba(44, 44, 44, .04);
+  --hlx-sk-button-padding: 5px;
+  --hlx-sk-button-hover-bg: #e5e5e5;
   --hlx-sk-button-hover-border: var(--hlx-sk-button-color);
   --hlx-sk-button-hover-color: var(--hlx-sk-button-color);
   --hlx-sk-button-focus-bg: rgba(44, 44, 44, .2);
@@ -64,7 +63,8 @@
   --hlx-sk-special-view-button-color: rgba(0,0,0, 0.5);
   --hlx-sk-special-view-table-border: rgba(0,0,0, 0.5);
   --hlx-sk-palette-title-bg: rgba(0 0 0 / 10%);
-  --hlx-sk-user-bg: #c0c0c0;
+  --hlx-sk-user-bg: #fff;
+  --hlx-sk-user-hover-bg: var(--hlx-sk-button-hover-bg);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -102,16 +102,17 @@
   background-size: var(--hlx-sk-logo-size);
   background-repeat: no-repeat;
   color: var(--hlx-sk-color);
-  top: 0;
+  bottom: 0;
   left: 0;
   width: 100vw;
-  min-height: 49px;
+  min-height: 30px;
   box-sizing: border-box;
-  padding: 10px 10px 10px 42px;
+  padding: 3px 10px 3px 10px;
   font-family: var(--hlx-sk-font-family);
   font-size: var(--hlx-sk-font-size);
   line-height: var(--hlx-sk-line-height);
   box-shadow: var(--hlx-sk-shadow);
+  pointer-events: none;
 }
 
 .hlx-sk::before {
@@ -130,7 +131,7 @@
 
 .hlx-sk button,
 .hlx-sk-overlay button {
-  background-color: transparent;
+  background-color: #fff;
   border: var(--hlx-sk-button-border);
   border-radius: var(--hlx-sk-button-border-radius);
   color: var(--hlx-sk-button-color);
@@ -148,6 +149,9 @@
   min-height: 28px;
   max-height: 28px;
   margin: 0 8px 0 0;
+  pointer-events: all;
+  transition: color var(--hlx-sk-button-transition-duration) var(--hlx-sk-button-transition-type),
+    background-color var(--hlx-sk-button-transition-duration) var(--hlx-sk-button-transition-type);
 }
 
 .hlx-sk button:hover,
@@ -328,6 +332,8 @@
   top: 0;
   height: 28px;
   width: 28px;
+  transition: color var(--hlx-sk-button-transition-duration) var(--hlx-sk-button-transition-type),
+    background-color var(--hlx-sk-button-transition-duration) var(--hlx-sk-button-transition-type);
 }
 
 .hlx-sk .feature-container .user .dropdown-toggle .user-icon::before {
@@ -335,7 +341,7 @@
   display: block;
   height: 3em;
   width: 3em;
-  background: currentColor;
+  background: #000;
   position: relative;
   left: 8px;
   top: 4px;
@@ -345,14 +351,19 @@
 .hlx-sk .feature-container .user .dropdown-toggle .user-icon::after {
   content: " ";
   display: block;
-  height: 2.45em;
+  height: 2em;
   width: 5em;
-  background: currentColor;
+  background: #000;
   position: relative;
   left: 4px;
-  top: 6px;
+  top: 4px;
   border-radius: 2em 2em 0 0;
 }
+
+.hlx-sk .feature-container .user .dropdown-toggle .user-icon:hover {
+  background-color: var(--hlx-sk-user-hover-bg);
+}
+
 
 .hlx-sk .feature-container .user .dropdown-toggle .user-icon-hidden {
   height: 0;
@@ -521,7 +532,7 @@
   display: none;
   position: absolute;
   min-width: 120px;
-  top: 30px;
+  bottom: 30px;
   background-color: var(--hlx-sk-dropdown-container-bg);
   border-radius: var(--hlx-sk-button-border-radius);
   box-shadow: var(--hlx-sk-shadow);
@@ -546,17 +557,20 @@
 .hlx-sk .dropdown .dropdown-toggle::after,
 .hlx-sk-overlay .dropdown .dropdown-toggle::after {
   border-style: solid;
-  border-width: 1px 1px 0 0;
+  border-width: 1.5px 1.5px 0 0;
   content: '';
   display: inline-block;
-  height: 7px;
   left: 1px;
   position: relative;
-  top: 2px;
-  transform: rotate(135deg);
+  top: 4px;
+  transform: rotate(-45deg);
   vertical-align: top;
-  width: 7px;
-  margin-left: 4px;
+  margin: 0 5px;
+  padding: 3px;
+}
+
+.hlx-sk .dropdown .dropdown-toggle::after[title="View"] {
+  top: 6px;
 }
 
 .hlx-sk .dropwdown .dropdown-toggle:focus {
@@ -572,8 +586,8 @@
 
 .hlx-sk .dropdown.dropdown-expanded .dropdown-toggle::after,
 .hlx-sk-overlay .dropdown.dropdown-expanded .dropdown-toggle::after {
-  top: 6px;
-  transform: rotate(-45deg);
+  top: 2px;
+  transform: rotate(135deg);
 }
 
 .hlx-sk .dropdown.dropdown-expanded .dropdown-container,
