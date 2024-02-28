@@ -36,9 +36,9 @@ function isValidGitHubURL(giturl) {
     && Object.keys(getGitHubSettings(giturl)).length === 3;
 }
 
-function isValidProdHost(prodHost) {
-  const prodHostPattern = /^$|^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}\/?/;
-  return prodHostPattern.test(prodHost);
+function isValidHost(host) {
+  const hostPattern = /^$|^([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}$/;
+  return hostPattern.test(host);
 }
 
 function sanitize(str) {
@@ -218,7 +218,7 @@ function editProject(i) {
       const previewHost = document.querySelector('#edit-previewHost').value;
       const liveHost = document.querySelector('#edit-liveHost').value;
       // eslint-disable-next-line max-len
-      if (!isValidProdHost(host) || !isValidProdHost(previewHost) || !isValidProdHost(liveHost)) {
+      if (!isValidHost(host) || !isValidHost(previewHost) || !isValidHost(liveHost)) {
         // eslint-disable-next-line no-alert
         window.alert(i18n('config_invalid_host'));
         return;
