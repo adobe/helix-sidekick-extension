@@ -582,7 +582,8 @@ const internalActions = {
         target: { tabId: tab.id },
         func: async () => {
           try {
-            const sampleRUM = await import(chrome.runtime.getURL('rum.js'));
+            const mod = await import(chrome.runtime.getURL('rum.js'));
+            const { default: sampleRUM } = mod;
 
             // Ensure window.hlx and window.hlx.sidekick exists
             window.hlx = window.hlx || {};
