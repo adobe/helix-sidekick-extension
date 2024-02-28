@@ -1,11 +1,11 @@
-/* Class = "NSMenuItem"; title = "AEM Sidekick"; ObjectID = "1Xt-HY-uBw"; */
-"1Xt-HY-uBw.title" = "AEM Sidekick";
+/* Class = "NSMenuItem"; title = "HW Sidekick"; ObjectID = "1Xt-HY-uBw"; */
+"1Xt-HY-uBw.title" = "HW Sidekick";
 
-/* Class = "NSMenuItem"; title = "Quit AEM Sidekick"; ObjectID = "4sb-4s-VLi"; */
-"4sb-4s-VLi.title" = "AEM Sidekick 종료";
+/* Class = "NSMenuItem"; title = "Quit HW Sidekick"; ObjectID = "4sb-4s-VLi"; */
+"4sb-4s-VLi.title" = "HW Sidekick 종료";
 
-/* Class = "NSMenuItem"; title = "About AEM Sidekick"; ObjectID = "5kV-Vb-QxS"; */
-"5kV-Vb-QxS.title" = "AEM Sidekick 정보";
+/* Class = "NSMenuItem"; title = "About HW Sidekick"; ObjectID = "5kV-Vb-QxS"; */
+"5kV-Vb-QxS.title" = "HW Sidekick 정보";
 
 /* Class = "NSMenu"; title = "Main Menu"; ObjectID = "AYu-sK-qS6"; */
 "AYu-sK-qS6.title" = "메인 메뉴";
@@ -13,20 +13,20 @@
 /* Class = "NSMenu"; title = "Help"; ObjectID = "F2S-fz-NVQ"; */
 "F2S-fz-NVQ.title" = "도움말";
 
-/* Class = "NSMenuItem"; title = "AEM Sidekick Help"; ObjectID = "FKE-Sm-Kum"; */
-"FKE-Sm-Kum.title" = "AEM Sidekick 도움말";
+/* Class = "NSMenuItem"; title = "HW Sidekick Help"; ObjectID = "FKE-Sm-Kum"; */
+"FKE-Sm-Kum.title" = "HW Sidekick 도움말";
 
-/* Class = "NSWindow"; title = "AEM Sidekick"; ObjectID = "IQv-IB-iLA"; */
-"IQv-IB-iLA.title" = "AEM Sidekick";
+/* Class = "NSWindow"; title = "HW Sidekick"; ObjectID = "IQv-IB-iLA"; */
+"IQv-IB-iLA.title" = "HW Sidekick";
 
 /* Class = "NSMenuItem"; title = "Show All"; ObjectID = "Kd2-mp-pUS"; */
 "Kd2-mp-pUS.title" = "모두 표시";
 
-/* Class = "NSMenuItem"; title = "Hide AEM Sidekick"; ObjectID = "Olw-nP-bQN"; */
-"Olw-nP-bQN.title" = "AEM Sidekick 숨기기";
+/* Class = "NSMenuItem"; title = "Hide HW Sidekick"; ObjectID = "Olw-nP-bQN"; */
+"Olw-nP-bQN.title" = "HW Sidekick 숨기기";
 
-/* Class = "NSMenu"; title = "AEM Sidekick"; ObjectID = "uQy-DD-JDr"; */
-"uQy-DD-JDr.title" = "AEM Sidekick";
+/* Class = "NSMenu"; title = "HW Sidekick"; ObjectID = "uQy-DD-JDr"; */
+"uQy-DD-JDr.title" = "HW Sidekick";
 
 /* Class = "NSMenuItem"; title = "Hide Others"; ObjectID = "Vdr-fp-XzO"; */
 "Vdr-fp-XzO.title" = "다른 항목 숨기기";

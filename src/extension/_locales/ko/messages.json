@@ -337,7 +337,7 @@
     "message": "페이지가 정상적으로 삭제되었습니다."
   },
   "description": {
-    "message": "AEM Sidekick을 사용하면 AEM 사이트 작성자가 간편하게 콘텐츠를 미리 보고 게시할 수 있습니다."
+    "message": "HW Sidekick을 사용하면 AEM 사이트 작성자가 간편하게 콘텐츠를 미리 보고 게시할 수 있습니다."
   },
   "description_shortcut": {
     "message": "Sidekick 전환"
@@ -551,7 +551,7 @@
     "message": "보기"
   },
   "title": {
-    "message": "AEM Sidekick"
+    "message": "HW Sidekick"
   },
   "today_at": {
     "message": "오늘($1)"

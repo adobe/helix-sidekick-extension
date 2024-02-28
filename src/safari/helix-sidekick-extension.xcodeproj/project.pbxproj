@@ -25,8 +25,8 @@
 		C6FFCF922968641900F1393C /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = C6FFCF902968641900F1393C /* Main.storyboard */; };
 		C6FFCF9B2968641900F1393C /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6FFCF9A2968641900F1393C /* AppDelegate.swift */; };
 		C6FFCF9E2968641900F1393C /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = C6FFCF9C2968641900F1393C /* Main.storyboard */; };
-		C6FFCFA62968641900F1393C /* AEM Sidekick Extension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = C6FFCFA52968641900F1393C /* AEM Sidekick Extension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		C6FFCFB02968641900F1393C /* AEM Sidekick Extension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = C6FFCFAF2968641900F1393C /* AEM Sidekick Extension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		C6FFCFA62968641900F1393C /* HW Sidekick Extension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = C6FFCFA52968641900F1393C /* HW Sidekick Extension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		C6FFCFB02968641900F1393C /* HW Sidekick Extension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = C6FFCFAF2968641900F1393C /* HW Sidekick Extension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		C6FFCFB62968641900F1393C /* Main.html in Resources */ = {isa = PBXBuildFile; fileRef = C6FFCF792968641700F1393C /* Main.html */; };
 		C6FFCFB72968641900F1393C /* Main.html in Resources */ = {isa = PBXBuildFile; fileRef = C6FFCF792968641700F1393C /* Main.html */; };
 		C6FFCFB82968641900F1393C /* Icon.png in Resources */ = {isa = PBXBuildFile; fileRef = C6FFCF7B2968641700F1393C /* Icon.png */; };
@@ -81,14 +81,14 @@
 			containerPortal = C6FFCF732968641700F1393C /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = C6FFCFA42968641900F1393C;
-			remoteInfo = "AEM Sidekick Extension (iOS)";
+			remoteInfo = "HW Sidekick Extension (iOS)";
 		};
 		C6FFCFB12968641900F1393C /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = C6FFCF732968641700F1393C /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = C6FFCFAE2968641900F1393C;
-			remoteInfo = "AEM Sidekick Extension (macOS)";
+			remoteInfo = "HW Sidekick Extension (macOS)";
 		};
 /* End PBXContainerItemProxy section */
 
@@ -99,7 +99,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 13;
 			files = (
-				C6FFCFA62968641900F1393C /* AEM Sidekick Extension.appex in Embed Foundation Extensions */,
+				C6FFCFA62968641900F1393C /* HW Sidekick Extension.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -110,7 +110,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 13;
 			files = (
-				C6FFCFB02968641900F1393C /* AEM Sidekick Extension.appex in Embed Foundation Extensions */,
+				C6FFCFB02968641900F1393C /* HW Sidekick Extension.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -183,22 +183,22 @@
 		C6FFCF7E2968641700F1393C /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
 		C6FFCF7F2968641900F1393C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		C6FFCF812968641900F1393C /* SafariWebExtensionHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SafariWebExtensionHandler.swift; sourceTree = "<group>"; };
-		C6FFCF862968641900F1393C /* AEM Sidekick.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "AEM Sidekick.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		C6FFCF862968641900F1393C /* HW Sidekick.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "HW Sidekick.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		C6FFCF892968641900F1393C /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		C6FFCF8B2968641900F1393C /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		C6FFCF8E2968641900F1393C /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		C6FFCF912968641900F1393C /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		C6FFCF932968641900F1393C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		C6FFCF982968641900F1393C /* AEM Sidekick.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "AEM Sidekick.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		C6FFCF982968641900F1393C /* HW Sidekick.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "HW Sidekick.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		C6FFCF9A2968641900F1393C /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		C6FFCF9D2968641900F1393C /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		C6FFCF9F2968641900F1393C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		C6FFCFA02968641900F1393C /* AEM Sidekick.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "AEM Sidekick.entitlements"; sourceTree = "<group>"; };
-		C6FFCFA52968641900F1393C /* AEM Sidekick Extension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "AEM Sidekick Extension.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
+		C6FFCFA02968641900F1393C /* HW Sidekick.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "HW Sidekick.entitlements"; sourceTree = "<group>"; };
+		C6FFCFA52968641900F1393C /* HW Sidekick Extension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "HW Sidekick Extension.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
 		C6FFCFAA2968641900F1393C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		C6FFCFAF2968641900F1393C /* AEM Sidekick Extension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "AEM Sidekick Extension.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
+		C6FFCFAF2968641900F1393C /* HW Sidekick Extension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "HW Sidekick Extension.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
 		C6FFCFB42968641900F1393C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		C6FFCFB52968641900F1393C /* AEM Sidekick.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "AEM Sidekick.entitlements"; sourceTree = "<group>"; };
+		C6FFCFB52968641900F1393C /* HW Sidekick.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "HW Sidekick.entitlements"; sourceTree = "<group>"; };
 		C6FFCFD52968641900F1393C /* background.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = background.js; sourceTree = "<group>"; };
 		C6FFCFD72968641900F1393C /* configpicker.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = configpicker.js; sourceTree = "<group>"; };
 		C6FFCFD82968641900F1393C /* options.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = options.js; sourceTree = "<group>"; };
@@ -304,10 +304,10 @@
 		C6FFCF872968641900F1393C /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				C6FFCF862968641900F1393C /* AEM Sidekick.app */,
-				C6FFCF982968641900F1393C /* AEM Sidekick.app */,
-				C6FFCFA52968641900F1393C /* AEM Sidekick Extension.appex */,
-				C6FFCFAF2968641900F1393C /* AEM Sidekick Extension.appex */,
+				C6FFCF862968641900F1393C /* HW Sidekick.app */,
+				C6FFCF982968641900F1393C /* HW Sidekick.app */,
+				C6FFCFA52968641900F1393C /* HW Sidekick Extension.appex */,
+				C6FFCFAF2968641900F1393C /* HW Sidekick Extension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -332,7 +332,7 @@
 				C6FFCF9C2968641900F1393C /* Main.storyboard */,
 				C6FFCF9F2968641900F1393C /* Info.plist */,
 				C63807212A7BF63100276EBD /* InfoPlist.strings */,
-				C6FFCFA02968641900F1393C /* AEM Sidekick.entitlements */,
+				C6FFCFA02968641900F1393C /* HW Sidekick.entitlements */,
 			);
 			path = "macOS (App)";
 			sourceTree = "<group>";
@@ -351,7 +351,7 @@
 			children = (
 				C6FFCFB42968641900F1393C /* Info.plist */,
 				C63807242A7BF63100276EBD /* InfoPlist.strings */,
-				C6FFCFB52968641900F1393C /* AEM Sidekick.entitlements */,
+				C6FFCFB52968641900F1393C /* HW Sidekick.entitlements */,
 			);
 			path = "macOS (Extension)";
 			sourceTree = "<group>";
@@ -386,9 +386,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		C6FFCF852968641900F1393C /* AEM Sidekick (iOS) */ = {
+		C6FFCF852968641900F1393C /* HW Sidekick (iOS) */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = C6FFCFCA2968641900F1393C /* Build configuration list for PBXNativeTarget "AEM Sidekick (iOS)" */;
+			buildConfigurationList = C6FFCFCA2968641900F1393C /* Build configuration list for PBXNativeTarget "HW Sidekick (iOS)" */;
 			buildPhases = (
 				C6FFCF822968641900F1393C /* Sources */,
 				C6FFCF832968641900F1393C /* Frameworks */,
@@ -400,14 +400,14 @@
 			dependencies = (
 				C6FFCFA82968641900F1393C /* PBXTargetDependency */,
 			);
-			name = "AEM Sidekick (iOS)";
-			productName = "AEM Sidekick (iOS)";
-			productReference = C6FFCF862968641900F1393C /* AEM Sidekick.app */;
+			name = "HW Sidekick (iOS)";
+			productName = "HW Sidekick (iOS)";
+			productReference = C6FFCF862968641900F1393C /* HW Sidekick.app */;
 			productType = "com.apple.product-type.application";
 		};
-		C6FFCF972968641900F1393C /* AEM Sidekick (macOS) */ = {
+		C6FFCF972968641900F1393C /* HW Sidekick (macOS) */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = C6FFCFD12968641900F1393C /* Build configuration list for PBXNativeTarget "AEM Sidekick (macOS)" */;
+			buildConfigurationList = C6FFCFD12968641900F1393C /* Build configuration list for PBXNativeTarget "HW Sidekick (macOS)" */;
 			buildPhases = (
 				C6FFCF942968641900F1393C /* Sources */,
 				C6FFCF952968641900F1393C /* Frameworks */,
@@ -419,14 +419,14 @@
 			dependencies = (
 				C6FFCFB22968641900F1393C /* PBXTargetDependency */,
 			);
-			name = "AEM Sidekick (macOS)";
-			productName = "AEM Sidekick (macOS)";
-			productReference = C6FFCF982968641900F1393C /* AEM Sidekick.app */;
+			name = "HW Sidekick (macOS)";
+			productName = "HW Sidekick (macOS)";
+			productReference = C6FFCF982968641900F1393C /* HW Sidekick.app */;
 			productType = "com.apple.product-type.application";
 		};
-		C6FFCFA42968641900F1393C /* AEM Sidekick Extension (iOS) */ = {
+		C6FFCFA42968641900F1393C /* HW Sidekick Extension (iOS) */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = C6FFCFC62968641900F1393C /* Build configuration list for PBXNativeTarget "AEM Sidekick Extension (iOS)" */;
+			buildConfigurationList = C6FFCFC62968641900F1393C /* Build configuration list for PBXNativeTarget "HW Sidekick Extension (iOS)" */;
 			buildPhases = (
 				C6FFCFA12968641900F1393C /* Sources */,
 				C6FFCFA22968641900F1393C /* Frameworks */,
@@ -436,14 +436,14 @@
 			);
 			dependencies = (
 			);
-			name = "AEM Sidekick Extension (iOS)";
-			productName = "AEM Sidekick Extension (iOS)";
-			productReference = C6FFCFA52968641900F1393C /* AEM Sidekick Extension.appex */;
+			name = "HW Sidekick Extension (iOS)";
+			productName = "HW Sidekick Extension (iOS)";
+			productReference = C6FFCFA52968641900F1393C /* HW Sidekick Extension.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
-		C6FFCFAE2968641900F1393C /* AEM Sidekick Extension (macOS) */ = {
+		C6FFCFAE2968641900F1393C /* HW Sidekick Extension (macOS) */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = C6FFCFCD2968641900F1393C /* Build configuration list for PBXNativeTarget "AEM Sidekick Extension (macOS)" */;
+			buildConfigurationList = C6FFCFCD2968641900F1393C /* Build configuration list for PBXNativeTarget "HW Sidekick Extension (macOS)" */;
 			buildPhases = (
 				C6FFCFAB2968641900F1393C /* Sources */,
 				C6FFCFAC2968641900F1393C /* Frameworks */,
@@ -453,9 +453,9 @@
 			);
 			dependencies = (
 			);
-			name = "AEM Sidekick Extension (macOS)";
-			productName = "AEM Sidekick Extension (macOS)";
-			productReference = C6FFCFAF2968641900F1393C /* AEM Sidekick Extension.appex */;
+			name = "HW Sidekick Extension (macOS)";
+			productName = "HW Sidekick Extension (macOS)";
+			productReference = C6FFCFAF2968641900F1393C /* HW Sidekick Extension.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
@@ -504,10 +504,10 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				C6FFCF852968641900F1393C /* AEM Sidekick (iOS) */,
-				C6FFCF972968641900F1393C /* AEM Sidekick (macOS) */,
-				C6FFCFA42968641900F1393C /* AEM Sidekick Extension (iOS) */,
-				C6FFCFAE2968641900F1393C /* AEM Sidekick Extension (macOS) */,
+				C6FFCF852968641900F1393C /* HW Sidekick (iOS) */,
+				C6FFCF972968641900F1393C /* HW Sidekick (macOS) */,
+				C6FFCFA42968641900F1393C /* HW Sidekick Extension (iOS) */,
+				C6FFCFAE2968641900F1393C /* HW Sidekick Extension (macOS) */,
 			);
 		};
 /* End PBXProject section */
@@ -641,12 +641,12 @@
 /* Begin PBXTargetDependency section */
 		C6FFCFA82968641900F1393C /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = C6FFCFA42968641900F1393C /* AEM Sidekick Extension (iOS) */;
+			target = C6FFCFA42968641900F1393C /* HW Sidekick Extension (iOS) */;
 			targetProxy = C6FFCFA72968641900F1393C /* PBXContainerItemProxy */;
 		};
 		C6FFCFB22968641900F1393C /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = C6FFCFAE2968641900F1393C /* AEM Sidekick Extension (macOS) */;
+			target = C6FFCFAE2968641900F1393C /* HW Sidekick Extension (macOS) */;
 			targetProxy = C6FFCFB12968641900F1393C /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
@@ -892,7 +892,7 @@
 				DEVELOPMENT_TEAM = JQ525L2MZD;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "iOS (Extension)/Info.plist";
-				INFOPLIST_KEY_CFBundleDisplayName = "AEM Sidekick Extension";
+				INFOPLIST_KEY_CFBundleDisplayName = "HW Sidekick Extension";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "© 2022-2023 Adobe. All rights reserved.";
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -906,7 +906,7 @@
 					SafariServices,
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.adobe.helix.Sidekick.Extension;
-				PRODUCT_NAME = "AEM Sidekick Extension";
+				PRODUCT_NAME = "HW Sidekick Extension";
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -923,7 +923,7 @@
 				DEVELOPMENT_TEAM = JQ525L2MZD;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "iOS (Extension)/Info.plist";
-				INFOPLIST_KEY_CFBundleDisplayName = "AEM Sidekick Extension";
+				INFOPLIST_KEY_CFBundleDisplayName = "HW Sidekick Extension";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "© 2022-2023 Adobe. All rights reserved.";
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -937,7 +937,7 @@
 					SafariServices,
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.adobe.helix.Sidekick.Extension;
-				PRODUCT_NAME = "AEM Sidekick Extension";
+				PRODUCT_NAME = "HW Sidekick Extension";
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -978,7 +978,7 @@
 					WebKit,
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.adobe.helix.Sidekick;
-				PRODUCT_NAME = "AEM Sidekick";
+				PRODUCT_NAME = "HW Sidekick";
 				SDKROOT = iphoneos;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -1017,7 +1017,7 @@
 					WebKit,
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.adobe.helix.Sidekick;
-				PRODUCT_NAME = "AEM Sidekick";
+				PRODUCT_NAME = "HW Sidekick";
 				SDKROOT = iphoneos;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -1029,7 +1029,7 @@
 		C6FFCFCE2968641900F1393C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_ENTITLEMENTS = "macOS (Extension)/AEM Sidekick.entitlements";
+				CODE_SIGN_ENTITLEMENTS = "macOS (Extension)/HW Sidekick.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 6.40.3;
 				DEAD_CODE_STRIPPING = YES;
@@ -1037,7 +1037,7 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "macOS (Extension)/Info.plist";
-				INFOPLIST_KEY_CFBundleDisplayName = "AEM Sidekick Extension";
+				INFOPLIST_KEY_CFBundleDisplayName = "HW Sidekick Extension";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "© 2022-2023 Adobe. All rights reserved.";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1051,7 +1051,7 @@
 					SafariServices,
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.adobe.helix.Sidekick.Extension;
-				PRODUCT_NAME = "AEM Sidekick Extension";
+				PRODUCT_NAME = "HW Sidekick Extension";
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -1062,7 +1062,7 @@
 		C6FFCFCF2968641900F1393C /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_ENTITLEMENTS = "macOS (Extension)/AEM Sidekick.entitlements";
+				CODE_SIGN_ENTITLEMENTS = "macOS (Extension)/HW Sidekick.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 6.40.3;
 				DEAD_CODE_STRIPPING = YES;
@@ -1070,7 +1070,7 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "macOS (Extension)/Info.plist";
-				INFOPLIST_KEY_CFBundleDisplayName = "AEM Sidekick Extension";
+				INFOPLIST_KEY_CFBundleDisplayName = "HW Sidekick Extension";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "© 2022-2023 Adobe. All rights reserved.";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1084,7 +1084,7 @@
 					SafariServices,
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.adobe.helix.Sidekick.Extension;
-				PRODUCT_NAME = "AEM Sidekick Extension";
+				PRODUCT_NAME = "HW Sidekick Extension";
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -1098,7 +1098,7 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = "macOS (App)/AEM Sidekick.entitlements";
+				CODE_SIGN_ENTITLEMENTS = "macOS (App)/HW Sidekick.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 6.40.3;
 				DEAD_CODE_STRIPPING = YES;
@@ -1106,7 +1106,7 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "macOS (App)/Info.plist";
-				INFOPLIST_KEY_CFBundleDisplayName = "AEM Sidekick";
+				INFOPLIST_KEY_CFBundleDisplayName = "HW Sidekick";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				INFOPLIST_KEY_NSMainStoryboardFile = Main;
 				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
@@ -1123,7 +1123,7 @@
 					WebKit,
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.adobe.helix.Sidekick;
-				PRODUCT_NAME = "AEM Sidekick";
+				PRODUCT_NAME = "HW Sidekick";
 				SDKROOT = macosx;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -1136,7 +1136,7 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = "macOS (App)/AEM Sidekick.entitlements";
+				CODE_SIGN_ENTITLEMENTS = "macOS (App)/HW Sidekick.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 6.40.3;
 				DEAD_CODE_STRIPPING = YES;
@@ -1144,7 +1144,7 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "macOS (App)/Info.plist";
-				INFOPLIST_KEY_CFBundleDisplayName = "AEM Sidekick";
+				INFOPLIST_KEY_CFBundleDisplayName = "HW Sidekick";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				INFOPLIST_KEY_NSMainStoryboardFile = Main;
 				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
@@ -1161,7 +1161,7 @@
 					WebKit,
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.adobe.helix.Sidekick;
-				PRODUCT_NAME = "AEM Sidekick";
+				PRODUCT_NAME = "HW Sidekick";
 				SDKROOT = macosx;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -1180,7 +1180,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		C6FFCFC62968641900F1393C /* Build configuration list for PBXNativeTarget "AEM Sidekick Extension (iOS)" */ = {
+		C6FFCFC62968641900F1393C /* Build configuration list for PBXNativeTarget "HW Sidekick Extension (iOS)" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				C6FFCFC72968641900F1393C /* Debug */,
@@ -1189,7 +1189,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		C6FFCFCA2968641900F1393C /* Build configuration list for PBXNativeTarget "AEM Sidekick (iOS)" */ = {
+		C6FFCFCA2968641900F1393C /* Build configuration list for PBXNativeTarget "HW Sidekick (iOS)" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				C6FFCFCB2968641900F1393C /* Debug */,
@@ -1198,7 +1198,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		C6FFCFCD2968641900F1393C /* Build configuration list for PBXNativeTarget "AEM Sidekick Extension (macOS)" */ = {
+		C6FFCFCD2968641900F1393C /* Build configuration list for PBXNativeTarget "HW Sidekick Extension (macOS)" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				C6FFCFCE2968641900F1393C /* Debug */,
@@ -1207,7 +1207,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		C6FFCFD12968641900F1393C /* Build configuration list for PBXNativeTarget "AEM Sidekick (macOS)" */ = {
+		C6FFCFD12968641900F1393C /* Build configuration list for PBXNativeTarget "HW Sidekick (macOS)" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				C6FFCFD22968641900F1393C /* Debug */,

@@ -337,7 +337,7 @@
     "message": "Página excluída com sucesso."
   },
   "description": {
-    "message": "O AEM Sidekick permite que os autores de sites do AEM visualizem e publiquem conteúdo com facilidade."
+    "message": "O HW Sidekick permite que os autores de sites do AEM visualizem e publiquem conteúdo com facilidade."
   },
   "description_shortcut": {
     "message": "Ativar Sidekick"
@@ -551,7 +551,7 @@
     "message": "Exibir"
   },
   "title": {
-    "message": "AEM Sidekick"
+    "message": "HW Sidekick"
   },
   "today_at": {
     "message": "Hoje às $1"

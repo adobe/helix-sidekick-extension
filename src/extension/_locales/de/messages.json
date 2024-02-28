@@ -337,7 +337,7 @@
     "message": "Seite erfolgreich gelöscht."
   },
   "description": {
-    "message": "AEM Sidekick ermöglicht Autorinnen und Autoren von AEM-Sites die Vorschau und Veröffentlichung von Inhalten."
+    "message": "HW Sidekick ermöglicht Autorinnen und Autoren von AEM-Sites die Vorschau und Veröffentlichung von Inhalten."
   },
   "description_shortcut": {
     "message": "Sidekick aktivieren/deaktivieren"
@@ -551,7 +551,7 @@
     "message": "Anzeigen"
   },
   "title": {
-    "message": "AEM Sidekick"
+    "message": "HW Sidekick"
   },
   "today_at": {
     "message": "Heute um $1"

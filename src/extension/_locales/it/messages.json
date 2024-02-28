@@ -337,7 +337,7 @@
     "message": "Pagina eliminata correttamente."
   },
   "description": {
-    "message": "AEM Sidekick consente agli autori di siti AEM di visualizzare in anteprima e pubblicare facilmente i contenuti."
+    "message": "HW Sidekick consente agli autori di siti AEM di visualizzare in anteprima e pubblicare facilmente i contenuti."
   },
   "description_shortcut": {
     "message": "Attiva/Disattiva Sidekick"
@@ -551,7 +551,7 @@
     "message": "Visualizza"
   },
   "title": {
-    "message": "AEM Sidekick"
+    "message": "HW Sidekick"
   },
   "today_at": {
     "message": "Oggi alle $1"

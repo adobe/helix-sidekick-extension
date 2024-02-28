@@ -1,8 +1,8 @@
 /* Bundle display name */
-"CFBundleDisplayName" = "AEM Sidekick 확장 기능";
+"CFBundleDisplayName" = "HW Sidekick 확장 기능";
 
 /* Bundle name */
-"CFBundleName" = "AEM Sidekick 확장 기능";
+"CFBundleName" = "HW Sidekick 확장 기능";
 
 /* Copyright (human-readable) */
 "NSHumanReadableCopyright" = "© 2022-2023 Adobe.All rights reserved.";

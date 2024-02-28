@@ -337,7 +337,7 @@
     "message": "ページが正常に削除されました。"
   },
   "description": {
-    "message": "AEM Sidekick を使用すると、AEM サイトの作成者はコンテンツを簡単にプレビューおよび公開できます。"
+    "message": "HW Sidekick を使用すると、AEM サイトの作成者はコンテンツを簡単にプレビューおよび公開できます。"
   },
   "description_shortcut": {
     "message": "Sidekick を切り替え"
@@ -551,7 +551,7 @@
     "message": "表示"
   },
   "title": {
-    "message": "AEM Sidekick"
+    "message": "HW Sidekick"
   },
   "today_at": {
     "message": "今日の $1"

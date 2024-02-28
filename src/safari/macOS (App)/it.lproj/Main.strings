@@ -1,11 +1,11 @@
-/* Class = "NSMenuItem"; title = "AEM Sidekick"; ObjectID = "1Xt-HY-uBw"; */
-"1Xt-HY-uBw.title" = "AEM Sidekick";
+/* Class = "NSMenuItem"; title = "HW Sidekick"; ObjectID = "1Xt-HY-uBw"; */
+"1Xt-HY-uBw.title" = "HW Sidekick";
 
-/* Class = "NSMenuItem"; title = "Quit AEM Sidekick"; ObjectID = "4sb-4s-VLi"; */
-"4sb-4s-VLi.title" = "Esci da AEM Sidekick";
+/* Class = "NSMenuItem"; title = "Quit HW Sidekick"; ObjectID = "4sb-4s-VLi"; */
+"4sb-4s-VLi.title" = "Esci da HW Sidekick";
 
-/* Class = "NSMenuItem"; title = "About AEM Sidekick"; ObjectID = "5kV-Vb-QxS"; */
-"5kV-Vb-QxS.title" = "Informazioni su AEM Sidekick";
+/* Class = "NSMenuItem"; title = "About HW Sidekick"; ObjectID = "5kV-Vb-QxS"; */
+"5kV-Vb-QxS.title" = "Informazioni su HW Sidekick";
 
 /* Class = "NSMenu"; title = "Main Menu"; ObjectID = "AYu-sK-qS6"; */
 "AYu-sK-qS6.title" = "Menu principale";
@@ -13,20 +13,20 @@
 /* Class = "NSMenu"; title = "Help"; ObjectID = "F2S-fz-NVQ"; */
 "F2S-fz-NVQ.title" = "Aiuto";
 
-/* Class = "NSMenuItem"; title = "AEM Sidekick Help"; ObjectID = "FKE-Sm-Kum"; */
-"FKE-Sm-Kum.title" = "Aiuto di AEM Sidekick";
+/* Class = "NSMenuItem"; title = "HW Sidekick Help"; ObjectID = "FKE-Sm-Kum"; */
+"FKE-Sm-Kum.title" = "Aiuto di HW Sidekick";
 
-/* Class = "NSWindow"; title = "AEM Sidekick"; ObjectID = "IQv-IB-iLA"; */
-"IQv-IB-iLA.title" = "AEM Sidekick";
+/* Class = "NSWindow"; title = "HW Sidekick"; ObjectID = "IQv-IB-iLA"; */
+"IQv-IB-iLA.title" = "HW Sidekick";
 
 /* Class = "NSMenuItem"; title = "Show All"; ObjectID = "Kd2-mp-pUS"; */
 "Kd2-mp-pUS.title" = "Mostra tutto";
 
-/* Class = "NSMenuItem"; title = "Hide AEM Sidekick"; ObjectID = "Olw-nP-bQN"; */
-"Olw-nP-bQN.title" = "Nascondi AEM Sidekick";
+/* Class = "NSMenuItem"; title = "Hide HW Sidekick"; ObjectID = "Olw-nP-bQN"; */
+"Olw-nP-bQN.title" = "Nascondi HW Sidekick";
 
-/* Class = "NSMenu"; title = "AEM Sidekick"; ObjectID = "uQy-DD-JDr"; */
-"uQy-DD-JDr.title" = "AEM Sidekick";
+/* Class = "NSMenu"; title = "HW Sidekick"; ObjectID = "uQy-DD-JDr"; */
+"uQy-DD-JDr.title" = "HW Sidekick";
 
 /* Class = "NSMenuItem"; title = "Hide Others"; ObjectID = "Vdr-fp-XzO"; */
 "Vdr-fp-XzO.title" = "Nascondi altri";

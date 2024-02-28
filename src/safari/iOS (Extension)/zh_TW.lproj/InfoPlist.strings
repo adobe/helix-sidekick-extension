@@ -1,8 +1,8 @@
 /* Bundle display name */
-"CFBundleDisplayName" = "AEM Sidekick 扩展";
+"CFBundleDisplayName" = "HW Sidekick 扩展";
 
 /* Bundle name */
-"CFBundleName" = "AEM Sidekick 扩展";
+"CFBundleName" = "HW Sidekick 扩展";
 
 /* Copyright (human-readable) */
 "NSHumanReadableCopyright" = "© 2022-2023 Adobe.All rights reserved.";

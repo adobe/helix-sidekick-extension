@@ -1,8 +1,8 @@
 /* Bundle display name */
-"CFBundleDisplayName" = "Extensión de AEM Sidekick";
+"CFBundleDisplayName" = "Extensión de HW Sidekick";
 
 /* Bundle name */
-"CFBundleName" = "Extensión de AEM Sidekick";
+"CFBundleName" = "Extensión de HW Sidekick";
 
 /* Copyright (human-readable) */
 "NSHumanReadableCopyright" = "© 2022-2023 Adobe. All rights reserved.";

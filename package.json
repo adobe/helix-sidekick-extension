@@ -1,7 +1,7 @@
 {
   "name": "@adobe/helix-sidekick-extension",
   "version": "6.40.3",
-  "description": "AEM Sidekick Extension",
+  "description": "HW Sidekick Extension",
   "type": "module",
   "scripts": {
     "lint": "eslint .",

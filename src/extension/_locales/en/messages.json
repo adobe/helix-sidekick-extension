@@ -337,7 +337,7 @@
     "message": "Page successfully deleted."
   },
   "description": {
-    "message": "AEM Sidekick allows authors of AEM sites to easily preview and publish content."
+    "message": "HW Sidekick allows authors of AEM sites to easily preview and publish content."
   },
   "description_shortcut": {
     "message": "Toggle Sidekick"
@@ -554,7 +554,7 @@
     "message": "View"
   },
   "title": {
-    "message": "AEM Sidekick"
+    "message": "HW Sidekick"
   },
   "today_at": {
     "message": "Today at $1"

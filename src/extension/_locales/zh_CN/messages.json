@@ -337,7 +337,7 @@
     "message": "已成功删除页面。"
   },
   "description": {
-    "message": "AEM Sidekick 可使 AEM 网站的作者轻松预览和发布内容。"
+    "message": "HW Sidekick 可使 AEM 网站的作者轻松预览和发布内容。"
   },
   "description_shortcut": {
     "message": "切换 Sidekick"
@@ -551,7 +551,7 @@
     "message": "查看"
   },
   "title": {
-    "message": "AEM Sidekick"
+    "message": "HW Sidekick"
   },
   "today_at": {
     "message": "今天 $1"
