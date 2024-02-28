@@ -164,7 +164,6 @@ async function guessIfFranklinSite({ id }) {
  * @param {Object} tab The tab
  * @param {Object[]} configs The existing configurations
  */
-
 async function checkContextMenu({ url: tabUrl, id, active }, configs = []) {
   if (!active) return; // ignore inactive tabs to avoid collisions
   if (chrome.contextMenus) {
