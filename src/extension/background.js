@@ -580,7 +580,7 @@ const internalActions = {
       internalActions[menuItemId](tab);
       await chrome.scripting.executeScript({
         target: { tabId: tab.id },
-        func: async () => {
+        func: async (menuItemIdVal) => {
           try {
             const mod = await import(chrome.runtime.getURL('rum.js'));
             const { default: sampleRUM } = mod;
@@ -589,12 +589,14 @@ const internalActions = {
             window.hlx = window.hlx || {};
             window.hlx.sidekick = window.hlx.sidekick || { location: window.location };
 
-            const checkpoint = `sidekick:context-menu:${menuItemId}`;
+            const checkpoint = `sidekick:context-menu:${menuItemIdVal}`;
             sampleRUM(checkpoint, { source: window.location.href });
           } catch (e) {
-            log.error('Error injecting rum', e);
+            // eslint-disable-next-line no-console
+            console.log('Error injecting rum', e);
           }
         },
+        args: [menuItemId],
       });
     });
   }
