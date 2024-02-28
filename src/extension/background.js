@@ -105,7 +105,6 @@ async function getConfigFromTabUrl(tabUrl) {
  * @param {chrome.tabs.Tab} tab The tab
  * @returns {Promise} The proxy URL
  */
-
 async function getProxyUrl({ id, url: tabUrl }) {
   return new Promise((resolve) => {
     // inject proxy url retriever
