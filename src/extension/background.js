@@ -576,6 +576,26 @@ const internalActions = {
     chrome.contextMenus.onClicked.addListener(async ({ menuItemId }, tab) => {
       if (!tab.url) return;
       internalActions[menuItemId](tab);
+      await chrome.scripting.executeScript({
+        target: { tabId: tab.id },
+        func: async (menuItemIdVal) => {
+          try {
+            const mod = await import(chrome.runtime.getURL('rum.js'));
+            const { default: sampleRUM } = mod;
+
+            // Ensure window.hlx and window.hlx.sidekick exists
+            window.hlx = window.hlx || {};
+            window.hlx.sidekick = window.hlx.sidekick || { location: window.location };
+
+            const checkpoint = `sidekick:context-menu:${menuItemIdVal}`;
+            sampleRUM(checkpoint, { source: window.location.href });
+          } catch (e) {
+            // eslint-disable-next-line no-console
+            console.log('Unable to collect RUM data', e);
+          }
+        },
+        args: [menuItemId],
+      });
     });
   }
 
