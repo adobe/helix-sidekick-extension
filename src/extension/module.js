@@ -457,7 +457,7 @@ import sampleRUM from './rum.js';
       const sp = new URLSearchParams(url.search);
       const docPath = sp.get('id') || sp.get('RootFolder');
       const dotIndex = docPath?.split('/').pop().indexOf('.');
-      return [-1, 0].includes(dotIndex); // dot only allowed as first char
+      return !docPath || [-1, 0].includes(dotIndex); // if doc path, dot can only be first char
     }
     return false;
   }

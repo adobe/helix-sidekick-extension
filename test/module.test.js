@@ -1028,6 +1028,29 @@ describe('Test sidekick', () => {
         assert.ok((await test.run()).checkPageResult, 'Did not detect production URL');
       }).timeout(IT_DEFAULT_TIMEOUT);
 
+      it('Detects admin environment correctly', async () => {
+        const setup = new Setup('blog');
+        nock.sidekick(setup, { persist: true });
+        nock.admin(setup, { persist: true });
+        const test = new SidekickTest({
+          browser,
+          page,
+          loadModule,
+          checkPage: async (p) => p.evaluate(() => window.hlx.sidekick.isAdmin()),
+        });
+        const urls = [
+          { url: 'https://adobe.sharepoint.com/sites/test/Shared%20Documents/Forms/AllItems.aspx', res: true },
+          { url: 'https://adobe.sharepoint.com/sites/test/Shared%20Documents/Forms/AllItems.aspx?id=%2Fsites%2Ftest%2FShared%20Documents%2Ffoo', res: true },
+          { url: 'https://adobe.sharepoint.com/sites/test/Shared%20Documents/Forms/AllItems.aspx?RootFolder=%2Fsites%2Ftest%2FShared%20Documents%2Ffoo', res: true },
+          { url: 'https://adobe.sharepoint.com/sites/test/Shared%20Documents/Forms/AllItems.aspx?id=%2Fsites%2Ftest%2FShared%20Documents%2F.helix', res: true },
+          { url: 'https://adobe.sharepoint.com/sites/test/Shared%20Documents/Forms/AllItems.aspx?id=%2Fsites%2Ftest%2FShared%20Documents%2Ffoo%2Ftest.pdf', res: false },
+        ];
+        for (const { url, res } of urls) {
+          // eslint-disable-next-line no-await-in-loop
+          assert.equal((await test.run(url)).checkPageResult, res, 'Did not detect admin URL');
+        }
+      }).timeout(IT_DEFAULT_TIMEOUT);
+
       it('Switches to live instead of production without host', async () => {
         const setup = new Setup('blog');
         nock.sidekick(setup, {
