@@ -591,7 +591,7 @@ const internalActions = {
             sampleRUM(checkpoint, { source: window.location.href });
           } catch (e) {
             // eslint-disable-next-line no-console
-            console.log('Error injecting rum', e);
+            console.log('Unable to collect RUM data', e);
           }
         },
         args: [menuItemId],
