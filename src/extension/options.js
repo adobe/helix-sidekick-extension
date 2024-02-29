@@ -36,6 +36,11 @@ function isValidGitHubURL(giturl) {
     && Object.keys(getGitHubSettings(giturl)).length === 3;
 }
 
+function isValidHost(host) {
+  const hostPattern = /^$|^([a-zA-Z0-9-._]*\.)*([a-zA-Z0-9-_]+\.)+[a-zA-Z]+$/;
+  return hostPattern.test(host);
+}
+
 function sanitize(str) {
   return str.replace(/[$<>"'`=]/g, '-');
 }
@@ -50,7 +55,7 @@ function drawLink(url) {
   } catch (e) {
     return ''; // not a valid url
   }
-  if (!/^[a-z]+/.test(url.host)) {
+  if (!isValidHost(url.host)) {
     return '';
   }
   const href = url.toString();
@@ -209,15 +214,30 @@ function editProject(i) {
       }
     };
     const save = async () => {
+      const giturl = document.querySelector('#edit-giturl').value;
+      if (!isValidGitHubURL(giturl)) {
+        // eslint-disable-next-line no-alert
+        window.alert(i18n('config_invalid_giturl'));
+        return;
+      }
+      const host = document.querySelector('#edit-host').value;
+      const previewHost = document.querySelector('#edit-previewHost').value;
+      const liveHost = document.querySelector('#edit-liveHost').value;
+      // eslint-disable-next-line max-len
+      if (!isValidHost(host) || !isValidHost(previewHost) || !isValidHost(liveHost)) {
+        // eslint-disable-next-line no-alert
+        window.alert(i18n('config_invalid_host'));
+        return;
+      }
       const input = {
         giturl: document.querySelector('#edit-giturl').value,
         mountpoints: [
           document.querySelector('#edit-mountpoints').value,
         ],
         project: document.querySelector('#edit-project').value,
-        previewHost: document.querySelector('#edit-previewHost').value,
-        liveHost: document.querySelector('#edit-liveHost').value,
-        host: document.querySelector('#edit-host').value,
+        previewHost,
+        liveHost,
+        host,
         devMode: document.querySelector('#edit-devMode').checked,
         devOrigin: document.querySelector('#edit-devOrigin').value,
       };
