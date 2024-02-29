@@ -37,7 +37,7 @@ function isValidGitHubURL(giturl) {
 }
 
 function isValidHost(host) {
-  const hostPattern = /^$|^([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}$/;
+  const hostPattern = /^$|^([a-zA-Z0-9-._]*\.)*([a-zA-Z0-9-_]+\.)+[a-zA-Z]+$/;
   return hostPattern.test(host);
 }
 
@@ -55,7 +55,7 @@ function drawLink(url) {
   } catch (e) {
     return ''; // not a valid url
   }
-  if (!/^[a-z]+/.test(url.host)) {
+  if (!isValidHost(url.host)) {
     return '';
   }
   const href = url.toString();
