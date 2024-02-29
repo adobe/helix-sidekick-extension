@@ -1,3 +1,17 @@
+# [6.41.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.40.3...v6.41.0) (2024-02-29)
+
+
+### Bug Fixes
+
+* assume folder if sharepoint url without query param ([#677](https://github.com/adobe/helix-sidekick-extension/issues/677)) ([dcc37b8](https://github.com/adobe/helix-sidekick-extension/commit/dcc37b8bbe4e498cec700cb3d499ea465672acdb))
+* extra project creation for invalid gitURL ([#662](https://github.com/adobe/helix-sidekick-extension/issues/662)) ([8094ada](https://github.com/adobe/helix-sidekick-extension/commit/8094ada8499a1346cbd52ad6411a7b08b4aab008))
+* validate production hostname ([#668](https://github.com/adobe/helix-sidekick-extension/issues/668)) ([b96d0aa](https://github.com/adobe/helix-sidekick-extension/commit/b96d0aaf6131e8955e868039204b2795d2af833b))
+
+
+### Features
+
+* RUM data collection for context menu items ([#674](https://github.com/adobe/helix-sidekick-extension/issues/674)) ([c5f14b1](https://github.com/adobe/helix-sidekick-extension/commit/c5f14b14355f09cb121bca300ae3cedfe3241675))
+
 ## [6.40.3](https://github.com/adobe/helix-sidekick-extension/compare/v6.40.2...v6.40.3) (2024-01-24)
 
 
