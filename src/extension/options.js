@@ -55,7 +55,7 @@ function drawLink(url) {
   } catch (e) {
     return ''; // not a valid url
   }
-  if (!/^[a-z]+/.test(url.host)) {
+  if (!isValidHost(url.host)) {
     return '';
   }
   const href = url.toString();
