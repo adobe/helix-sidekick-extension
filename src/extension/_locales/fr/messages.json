@@ -170,6 +170,9 @@
   "config_invalid_giturl": {
     "message": "URL de référentiel non valide"
   },
+  "config_invalid_host": {
+    "message": "Nom d’hôte non valide"
+  },
   "config_invalid_import": {
     "message": "Choisissez un fichier valide à importer."
   },
