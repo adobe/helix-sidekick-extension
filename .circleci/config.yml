@@ -22,7 +22,7 @@ commands:
             - node-packages-{{ checksum "package-lock.json" }}
       - run:
           name: Installing Dependencies
-          command: npm ci
+          command: npm i
           no_output_timeout: 20m
       - save_cache:
           name: Save node modules cache
