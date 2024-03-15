@@ -1,3 +1,10 @@
+## [6.41.1](https://github.com/adobe/helix-sidekick-extension/compare/v6.41.0...v6.41.1) (2024-03-15)
+
+
+### Bug Fixes
+
+* url cache entry expiry always in the past ([1abffba](https://github.com/adobe/helix-sidekick-extension/commit/1abffbabe2d8b0d3cd68ad1a244560c146daf333))
+
 # [6.41.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.40.3...v6.41.0) (2024-02-29)
 
 
