@@ -14,7 +14,9 @@ commands:
       - checkout
       - run:
           name: Installing Dependencies
-          command: npm i
+          command: |
+            rm ./package-lock.json
+            npm i
           no_output_timeout: 20m
       - run:
           name: prepare test git user
