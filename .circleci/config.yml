@@ -12,12 +12,19 @@ commands:
   setup:
     steps:
       - checkout
+      - restore_cache:
+          name: Restore node modules cache
+          keys:
+            - node-packages-{{ checksum "package-lock.json" }}
       - run:
           name: Installing Dependencies
-          command: |
-            rm ./package-lock.json
-            npm i
+          command: npm ci
           no_output_timeout: 20m
+      - save_cache:
+          name: Save node modules cache
+          key: node-packages-{{ checksum "package-lock.json" }}
+          paths:
+            - node_modules
       - run:
           name: prepare test git user
           command: git config --global user.email "circleci@example.com" && git config --global user.name "CircleCi Build"
