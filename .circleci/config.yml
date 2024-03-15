@@ -14,7 +14,7 @@ commands:
       - checkout
       - run:
           name: Installing Dependencies
-          command: npm ci
+          command: npm i
           no_output_timeout: 20m
       - run:
           name: prepare test git user
