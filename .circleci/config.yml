@@ -16,19 +16,19 @@ commands:
           name: Restore NPM packages cache
           keys:
             - npm-cache
-      - restore_cache:
-          name: Restore node modules cache
-          keys:
-            - node-packages-{{ checksum "package-lock.json" }}
+#      - restore_cache:
+#          name: Restore node modules cache
+#          keys:
+#            - node-packages-{{ checksum "package-lock.json" }}
       - run:
           name: Installing Dependencies
           command: npm i
           no_output_timeout: 20m
-      - save_cache:
-          name: Save node modules cache
-          key: node-packages-{{ checksum "package-lock.json" }}
-          paths:
-            - node_modules
+#      - save_cache:
+#          name: Save node modules cache
+#          key: node-packages-{{ checksum "package-lock.json" }}
+#          paths:
+#            - node_modules
       - save_cache:
           name: Save NPM packages cache
           key: npm-cache
