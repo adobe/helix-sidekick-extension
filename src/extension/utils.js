@@ -331,7 +331,7 @@ export async function populateUrlCache(tabUrl, config = {}) {
           // in this case, we don't want to cache a potentially incomplete discovery response.
           // otherwise cache for 2h.
           const ttl = info ? DISCOVERY_CACHE_TTL : 0;
-          const entry = createCacheEntry(tabUrl, results, Date.now() + ttl);
+          const entry = createCacheEntry(tabUrl, results, ttl ? Date.now() + ttl : 0);
           const existingIndex = urlCache.findIndex((e) => e.url === entry.url);
           if (existingIndex >= 0) {
             // update expired cache entry
