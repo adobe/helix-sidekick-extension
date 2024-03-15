@@ -14,7 +14,10 @@ commands:
       - checkout
       - run:
           name: Installing Dependencies
-          command: npm ci
+          command: |
+            rm ./package-lock.json
+            npm i
+          no_output_timeout: 20m
       - run:
           name: prepare test git user
           command: git config --global user.email "circleci@example.com" && git config --global user.name "CircleCi Build"
