@@ -16,11 +16,6 @@ commands:
           name: Installing Dependencies
           command: npm ci
           no_output_timeout: 20m
-      - save_cache:
-          name: Save NPM packages cache
-          key: npm-cache
-          paths:
-            - ~/.npm
       - run:
           name: prepare test git user
           command: git config --global user.email "circleci@example.com" && git config --global user.name "CircleCi Build"
