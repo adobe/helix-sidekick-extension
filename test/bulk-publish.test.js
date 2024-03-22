@@ -227,7 +227,7 @@ describe('Test bulk publish plugin', () => {
       assert.strictEqual(openedWindows.length, 3, `3 URLs not opened in ${env}: \n${openedWindows.join('\n')}`);
     }).timeout(IT_DEFAULT_TIMEOUT);
 
-    it.only(`Bulk publish plugin tells users to preview first in ${env} (single selection)`, async () => {
+    it(`Bulk publish plugin tells users to preview first in ${env} (single selection)`, async () => {
       nock.sidekick(setup);
       nock.admin(setup, {
         route: 'status',
