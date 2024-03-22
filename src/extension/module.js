@@ -1836,6 +1836,7 @@ import sampleRUM from './rum.js';
       }
       try {
         if (paths.length === 1) {
+          let level = 0;
           // single operation
           const [path] = paths;
           const url = getAdminUrl(config, route, path);
@@ -1845,7 +1846,12 @@ import sampleRUM from './rum.js';
               method,
             });
             if (!resp.ok) {
-              throw new Error(resp.headers['x-error']);
+              if (resp.status === 404 && operation === 'publish') {
+                level = 1;
+                throw new Error(getBulkText([1], 'result', operation, 'error_no_source'));
+              } else {
+                throw new Error(resp.headers['x-error']);
+              }
             } else {
               showBulkOperationSummary({
                 operation,
@@ -1854,13 +1860,17 @@ import sampleRUM from './rum.js';
               });
             }
           } catch (e) {
-            console.error(`bulk ${operation} failed: ${e.message}`);
+            if (level > 0) {
+              console.warn(`bulk ${operation} failed: ${e.message}`);
+            } else {
+              console.error(`bulk ${operation} failed: ${e.message}`);
+            }
             sk.showModal({
               message: [
                 getBulkText([1], 'result', operation, 'failure'),
                 e.message || i18n(sk, 'bulk_error'),
               ],
-              level: 0,
+              level,
               sticky: true,
             });
           }

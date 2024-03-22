@@ -20,6 +20,7 @@ import { SidekickTest } from './SidekickTest.js';
 
 const SHAREPOINT_FIXTURE = 'admin-sharepoint.html';
 const GDRIVE_FIXTURE = 'admin-gdrive.html';
+
 const TESTS = [{
   env: 'sharepoint',
   setup: new Setup('blog'),
@@ -224,6 +225,44 @@ describe('Test bulk publish plugin', () => {
       );
       assert.strictEqual(clipboardText.split('\n').length, 3, `3 URLs not copied to clipboard in ${env}: \n${clipboardText}`);
       assert.strictEqual(openedWindows.length, 3, `3 URLs not opened in ${env}: \n${openedWindows.join('\n')}`);
+    }).timeout(IT_DEFAULT_TIMEOUT);
+
+    it(`Bulk publish plugin tells users to preview first in ${env} (single selection)`, async () => {
+      nock.sidekick(setup);
+      nock.admin(setup, {
+        route: 'status',
+        type: 'admin',
+        persist: true,
+      });
+      nock.admin(setup, {
+        route: 'live',
+        method: 'post',
+        status: [404],
+      });
+      const { notification } = await new SidekickTest({
+        browser,
+        page,
+        fixture,
+        sidekickConfig: setup.sidekickConfig,
+        configJson: setup.configJson,
+        url: setup.getUrl('edit', 'admin'),
+        plugin: 'bulk-publish',
+        pluginSleep: 5000,
+        loadModule: true,
+        acceptDialogs: true,
+        pre: (p) => p.evaluate(() => {
+          // user deselects one, keep one
+          document.getElementById('file-pdf').click();
+        }),
+      }).run();
+      assert.ok(
+        notification?.message.endsWith('File must be previewed first'),
+        'Inform user to preview first',
+      );
+      assert.ok(
+        notification.className.includes('level-1'),
+        'Dialog should only be a warning',
+      );
     }).timeout(IT_DEFAULT_TIMEOUT);
   });
 
