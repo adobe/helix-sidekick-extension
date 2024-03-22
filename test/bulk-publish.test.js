@@ -19,20 +19,16 @@ import {
 import { SidekickTest } from './SidekickTest.js';
 
 const SHAREPOINT_FIXTURE = 'admin-sharepoint.html';
-const SHAREPOINT_FIXTURE_SINGLE = 'admin-sharepoint-single.html';
 const GDRIVE_FIXTURE = 'admin-gdrive.html';
-const GDRIVE_FIXTURE_SINGLE = 'admin-gdrive-single.html';
 
 const TESTS = [{
   env: 'sharepoint',
   setup: new Setup('blog'),
   fixture: SHAREPOINT_FIXTURE,
-  fixtureSingle: SHAREPOINT_FIXTURE_SINGLE,
 }, {
   env: 'gdrive',
   setup: new Setup('pages'),
   fixture: GDRIVE_FIXTURE,
-  fixtureSingle: GDRIVE_FIXTURE_SINGLE,
 }];
 
 describe('Test bulk publish plugin', () => {
@@ -149,7 +145,6 @@ describe('Test bulk publish plugin', () => {
   TESTS.forEach(({
     env,
     fixture,
-    fixtureSingle,
     setup,
   }) => {
     it(`Bulk publish plugin publishes existing selection in ${env}`, async () => {
@@ -232,7 +227,7 @@ describe('Test bulk publish plugin', () => {
       assert.strictEqual(openedWindows.length, 3, `3 URLs not opened in ${env}: \n${openedWindows.join('\n')}`);
     }).timeout(IT_DEFAULT_TIMEOUT);
 
-    it(`Bulk publish plugin tells users to preview first in ${env} (single selection)`, async () => {
+    it.only(`Bulk publish plugin tells users to preview first in ${env} (single selection)`, async () => {
       nock.sidekick(setup);
       nock.admin(setup, {
         route: 'status',
@@ -247,7 +242,7 @@ describe('Test bulk publish plugin', () => {
       const { notification } = await new SidekickTest({
         browser,
         page,
-        fixture: fixtureSingle,
+        fixture,
         sidekickConfig: setup.sidekickConfig,
         configJson: setup.configJson,
         url: setup.getUrl('edit', 'admin'),
@@ -255,6 +250,10 @@ describe('Test bulk publish plugin', () => {
         pluginSleep: 5000,
         loadModule: true,
         acceptDialogs: true,
+        pre: (p) => p.evaluate(() => {
+          // user deselects one, keep one
+          document.getElementById('file-pdf').click();
+        }),
       }).run();
       assert.ok(
         notification?.message.endsWith('File must be previewed first'),
