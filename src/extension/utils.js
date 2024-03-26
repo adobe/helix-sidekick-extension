@@ -220,7 +220,7 @@ async function fetchSharePointEditInfo(tab) {
     });
     // listen for edit info from tab
     const listener = ({ spEditInfo }, { tab: msgTab }) => {
-      // check if message contains proxy url and is sent from right tab
+      // check if message contains edit info and is sent from right tab
       if (typeof spEditInfo !== 'undefined' && tab && tab.id === msgTab.id) {
         chrome.runtime.onMessage.removeListener(listener);
         resolve(spEditInfo);
