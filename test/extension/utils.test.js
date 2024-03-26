@@ -242,6 +242,19 @@ describe('Test extension utils', () => {
     await utils.populateUrlCache({ id: 0, url: 'https://random.foo.bar/' }, { owner: 'bar', repo: 'random' });
     expect(fetchSpy.callCount).to.equal(6);
     expect(storageSpy.callCount).to.equal(6);
+    // 1s timeout: 1 fetchSpy call, 1 storageSpy call
+    const executeScriptStub = sandbox.stub(window.chrome.scripting, 'executeScript');
+    executeScriptStub.callsFake(() => new Promise((resolve) => {
+      setTimeout(resolve, 2000);
+    }));
+    await utils.populateUrlCache({ id: 0, url: 'https://foo.sharepoint.com/:w:/r/sites/foo/_layouts/15/Doc.aspx?sourcedoc=%7BBFD9A19C-4A68-4DBF-8641-DA2F1283C895%7D&file=foo.docx&action=default&mobileredirect=true' });
+    expect(fetchSpy.callCount).to.equal(7);
+    expect(storageSpy.callCount).to.equal(7);
+    // script injection error: 1 fetchSpy call, 1 storageSpy call
+    executeScriptStub.rejects();
+    await utils.populateUrlCache({ id: 0, url: 'https://foo.sharepoint.com/:w:/r/sites/foo/_layouts/15/Doc.aspx?sourcedoc=%7BBFD9A19C-4A68-4DBF-8641-DA2F1283C895%7D&file=index.xlsx&action=default&mobileredirect=true' });
+    expect(fetchSpy.callCount).to.equal(8);
+    expect(storageSpy.callCount).to.equal(8);
   });
 
   it('queryUrlCache', async () => {

@@ -95,7 +95,7 @@ export default {
     remove: async () => {},
   },
   scripting: {
-    executeScript: ({ func, args = [] }) => {
+    executeScript: async ({ func, args = [] }) => {
       if (typeof func === 'function') {
         func(...args);
       }

@@ -217,7 +217,11 @@ async function fetchSharePointEditInfo(tab) {
         chrome.runtime.sendMessage({ spEditInfo });
       },
       args: [tab.url],
+    }).catch((e) => {
+      log.warn('fetchSharePointEditInfo: failed to inject script', e);
+      resolve(null);
     });
+
     // listen for edit info from tab
     const listener = ({ spEditInfo }, { tab: msgTab }) => {
       // check if message contains edit info and is sent from right tab
@@ -227,6 +231,13 @@ async function fetchSharePointEditInfo(tab) {
       }
     };
     chrome.runtime.onMessage.addListener(listener);
+
+    // resolve with null after 1s
+    setTimeout(() => {
+      log.debug('fetchSharePointEditInfo: timed out');
+      chrome.runtime.onMessage.removeListener(listener);
+      resolve(null);
+    }, 1000);
   });
 }
 
