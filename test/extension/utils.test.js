@@ -201,35 +201,45 @@ describe('Test extension utils', () => {
   it('populateUrlCache', async () => {
     const fetchSpy = sandbox.spy(window, 'fetch');
     const storageSpy = sandbox.spy(window.chrome.storage.session, 'set');
+    let onMessageListener;
+    sandbox.stub(window.chrome.runtime.onMessage, 'addListener').callsFake((listener) => {
+      expect(listener).to.be.a('function');
+      onMessageListener = listener;
+    });
+    sandbox.stub(window.chrome.runtime, 'sendMessage').callsFake((message) => {
+      expect(onMessageListener).to.be.a('function');
+      expect(message).to.be.an('object');
+      onMessageListener(message, { tab: { id: 0 } });
+    });
     // static url without config: 0 calls
-    await utils.populateUrlCache('https://www.hlx.live/');
+    await utils.populateUrlCache({ id: 0, url: 'https://www.hlx.live/' });
     expect(fetchSpy.callCount).to.equal(0);
     expect(storageSpy.callCount).to.equal(0);
     // sharepoint: 3 fetchSpy calls, 1 storageSpy call
-    await utils.populateUrlCache('https://foo.sharepoint.com/:w:/r/sites/foo/_layouts/15/Doc.aspx?sourcedoc=%7BBFD9A19C-4A68-4DBF-8641-DA2F1283C895%7D&file=index.docx&action=default&mobileredirect=true');
+    await utils.populateUrlCache({ id: 0, url: 'https://foo.sharepoint.com/:w:/r/sites/foo/_layouts/15/Doc.aspx?sourcedoc=%7BBFD9A19C-4A68-4DBF-8641-DA2F1283C895%7D&file=index.docx&action=default&mobileredirect=true' });
     // gdrive: 1 fetchSpy call, 1 storageSpy call
-    await utils.populateUrlCache('https://docs.google.com/document/d/1234567890/edit');
+    await utils.populateUrlCache({ id: 0, url: 'https://docs.google.com/document/d/1234567890/edit' });
     expect(fetchSpy.callCount).to.equal(4);
     expect(storageSpy.callCount).to.equal(2);
     // cache: add new entry: 1 fetchSpy call, 1 storageSpy call
-    await utils.populateUrlCache('https://docs.google.com/document/d/0987654321/edit');
+    await utils.populateUrlCache({ id: 0, url: 'https://docs.google.com/document/d/0987654321/edit' });
     expect(fetchSpy.callCount).to.equal(5);
     expect(storageSpy.callCount).to.equal(3);
     // cache: reuse existing match: 0 calls
-    await utils.populateUrlCache('https://docs.google.com/document/d/0987654321/edit');
+    await utils.populateUrlCache({ id: 0, url: 'https://docs.google.com/document/d/0987654321/edit' });
     expect(fetchSpy.callCount).to.equal(5);
     expect(storageSpy.callCount).to.equal(3);
     // cache: refresh expired match: 1 fetchSpy call, 1 storageSpy call
     sandbox.stub(Date, 'now').returns(Date.now() + 7205000); // fast-forward 2 days and 5 seconds
-    await utils.populateUrlCache('https://docs.google.com/document/d/0987654321/edit');
+    await utils.populateUrlCache({ id: 0, url: 'https://docs.google.com/document/d/0987654321/edit' });
     expect(fetchSpy.callCount).to.equal(6);
     expect(storageSpy.callCount).to.equal(4);
     // static url with config: 0 fetchSpy calls, 1 storageSpy call
-    await utils.populateUrlCache('https://random.foo.bar/', { owner: 'foo', repo: 'random' });
+    await utils.populateUrlCache({ id: 0, url: 'https://random.foo.bar/' }, { owner: 'foo', repo: 'random' });
     expect(fetchSpy.callCount).to.equal(6);
     expect(storageSpy.callCount).to.equal(5);
     // update static url with config: 0 fetchSpy calls, 1 storageSpy call
-    await utils.populateUrlCache('https://random.foo.bar/', { owner: 'bar', repo: 'random' });
+    await utils.populateUrlCache({ id: 0, url: 'https://random.foo.bar/' }, { owner: 'bar', repo: 'random' });
     expect(fetchSpy.callCount).to.equal(6);
     expect(storageSpy.callCount).to.equal(6);
   });
@@ -272,7 +282,7 @@ describe('Test extension utils', () => {
     // match transient url
     expect((await utils.getProjectMatches(CONFIGS, 'https://main--bar0--foo.hlx.live/')).length).to.equal(1);
     // match transient url from cache
-    await utils.populateUrlCache('https://transient.foo.bar/', { owner: 'bar', repo: 'random' });
+    await utils.populateUrlCache({ id: 0, url: 'https://transient.foo.bar/' }, { owner: 'bar', repo: 'random' });
     expect((await utils.getProjectMatches(CONFIGS, 'https://transient.foo.bar/')).length).to.equal(1);
     // ignore disabled config
     expect((await utils.getProjectMatches(CONFIGS, 'https://main--bar2--foo.hlx.live/')).length).to.equal(0);
