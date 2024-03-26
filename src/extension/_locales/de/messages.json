@@ -170,6 +170,9 @@
   "config_invalid_giturl": {
     "message": "Ungültige Repository-URL"
   },
+  "config_invalid_host": {
+    "message": "Ungültiger Host-Name"
+  },
   "config_invalid_import": {
     "message": "Gültige Datei zum Importieren auswählen"
   },
