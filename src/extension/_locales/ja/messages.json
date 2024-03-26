@@ -170,6 +170,9 @@
   "config_invalid_giturl": {
     "message": "無効なリポジトリ URL"
   },
+  "config_invalid_host": {
+    "message": "無効なホスト名"
+  },
   "config_invalid_import": {
     "message": "読み込む有効なファイルを選択"
   },
