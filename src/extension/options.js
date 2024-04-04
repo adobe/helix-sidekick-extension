@@ -36,8 +36,8 @@ function isValidGitHubURL(giturl) {
     && Object.keys(getGitHubSettings(giturl)).length === 3;
 }
 
-function isInvalidMountpoint(mountpoints) {
-  return mountpoints.some((mountpoint) => mountpoint.trim() === '');
+function isValidMountpoint(mountpoints) {
+  return !mountpoints.some((mountpoint) => mountpoint.trim() === '');
 }
 
 function isValidHost(host) {
@@ -222,7 +222,7 @@ function editProject(i) {
       const mountpoints = [
         document.querySelector('#edit-mountpoints').value,
       ];
-      if (isInvalidMountpoint(mountpoints)) {
+      if (!isValidMountpoint(mountpoints)) {
         // eslint-disable-next-line no-alert
         window.alert(i18n('config_invalid_mountpoints'));
         return;
