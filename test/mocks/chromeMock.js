@@ -52,6 +52,10 @@ export default {
     getURL: (path) => `chrome-extension://${ID}${path}`,
     lastError: null,
     sendMessage: () => {},
+    onMessage: {
+      addListener: () => { },
+      removeListener: () => { },
+    },
     onMessageExternal: {
       // simulate external message from admin API with authToken
       addListener: (func) => func({ owner: 'test', repo: 'auth-project', authToken: 'foo' }),
@@ -89,5 +93,12 @@ export default {
   tabs: {
     create: async ({ url }) => ({ url, id: 7 }),
     remove: async () => {},
+  },
+  scripting: {
+    executeScript: async ({ func, args = [] }) => {
+      if (typeof func === 'function') {
+        func(...args);
+      }
+    },
   },
 };
