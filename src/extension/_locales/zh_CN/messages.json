@@ -176,6 +176,9 @@
   "config_invalid_import": {
     "message": "选择要导入的有效文件"
   },
+  "config_invalid_mountpoints": {
+    "message": "内容 URL 无效"
+  },
   "config_invalid_shareurl": {
     "message": "共享 URL 无效"
   },
