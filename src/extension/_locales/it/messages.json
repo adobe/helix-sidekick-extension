@@ -176,6 +176,9 @@
   "config_invalid_import": {
     "message": "Scegli un file valido da importare"
   },
+  "config_invalid_mountpoints": {
+    "message": "URL di contenuto non valido"
+  },
   "config_invalid_shareurl": {
     "message": "URL di condivisione non valido"
   },

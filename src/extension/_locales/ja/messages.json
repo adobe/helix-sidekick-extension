@@ -176,6 +176,9 @@
   "config_invalid_import": {
     "message": "読み込む有効なファイルを選択"
   },
+  "config_invalid_mountpoints": {
+    "message": "無効なコンテンツ URL"
+  },
   "config_invalid_shareurl": {
     "message": "無効な共有 URL"
   },
