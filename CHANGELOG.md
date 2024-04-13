@@ -1,3 +1,10 @@
+# [6.42.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.41.1...v6.42.0) (2024-04-13)
+
+
+### Features
+
+* move sharepoint edit info call from service worker to tab ([#702](https://github.com/adobe/helix-sidekick-extension/issues/702)) ([b158aff](https://github.com/adobe/helix-sidekick-extension/commit/b158aff90b416835d80c9d0d55f799830da9a6d4)), closes [#699](https://github.com/adobe/helix-sidekick-extension/issues/699) [#708](https://github.com/adobe/helix-sidekick-extension/issues/708)
+
 ## [6.41.1](https://github.com/adobe/helix-sidekick-extension/compare/v6.41.0...v6.41.1) (2024-03-15)
 
 
