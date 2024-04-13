@@ -161,7 +161,7 @@ async function guessIfFranklinSite({ id }) {
 
 /**
  * Enables or disables context menu items for a tab.
- * @param {Object} tab The tab
+ * @param {chrome.tabs.Tab} tab The tab
  * @param {Object[]} configs The existing configurations
  */
 async function checkContextMenu({ url: tabUrl, id, active }, configs = []) {
@@ -284,7 +284,7 @@ function checkTab(id) {
         log.debug('local dev url detected, retrieve proxy url');
         checkUrl = await getProxyUrl(tab);
       }
-      await populateUrlCache(checkUrl, projects);
+      await populateUrlCache(tab, projects);
       if (tab.active) {
         await checkContextMenu(tab, projects);
       }
@@ -477,7 +477,7 @@ const externalActions = {
             // only load sidekick if not already being loaded for this specific url
             const matches = await queryUrlCache(url);
             if (matches.length === 0) {
-              await populateUrlCache(url, { owner, repo });
+              await populateUrlCache(tab, { owner, repo });
               await checkTab(tab.id);
             }
             resolve(true);

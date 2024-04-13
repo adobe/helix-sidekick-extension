@@ -36,6 +36,10 @@ function isValidGitHubURL(giturl) {
     && Object.keys(getGitHubSettings(giturl)).length === 3;
 }
 
+function isValidMountpoint(mountpoints) {
+  return !mountpoints.some((mountpoint) => mountpoint.trim() === '');
+}
+
 function isValidHost(host) {
   const hostPattern = /^$|^([a-zA-Z0-9-._]*\.)*([a-zA-Z0-9-_]+\.)+[a-zA-Z]+$/;
   return hostPattern.test(host);
@@ -215,6 +219,14 @@ function editProject(i) {
     };
     const save = async () => {
       const giturl = document.querySelector('#edit-giturl').value;
+      const mountpoints = [
+        document.querySelector('#edit-mountpoints').value,
+      ];
+      if (!isValidMountpoint(mountpoints)) {
+        // eslint-disable-next-line no-alert
+        window.alert(i18n('config_invalid_mountpoints'));
+        return;
+      }
       if (!isValidGitHubURL(giturl)) {
         // eslint-disable-next-line no-alert
         window.alert(i18n('config_invalid_giturl'));
@@ -231,9 +243,7 @@ function editProject(i) {
       }
       const input = {
         giturl: document.querySelector('#edit-giturl').value,
-        mountpoints: [
-          document.querySelector('#edit-mountpoints').value,
-        ],
+        mountpoints,
         project: document.querySelector('#edit-project').value,
         previewHost,
         liveHost,
