@@ -811,7 +811,7 @@ export async function updateAdminAuthHeaderRules() {
     const projectConfigs = (await Promise.all(projects
       .map((handle) => getConfig('session', handle))))
       .filter((cfg) => !!cfg);
-    projectConfigs.forEach(({ owner, repo, authToken }) => {
+    projectConfigs.forEach(({ owner, authToken }) => {
       if (authToken) {
         addRules.push({
           id,
@@ -825,14 +825,14 @@ export async function updateAdminAuthHeaderRules() {
             }],
           },
           condition: {
-            regexFilter: `^https://admin.hlx.page/[a-z]+/${owner}/${repo}/.*`,
+            regexFilter: `^https://admin.hlx.page/[a-z]+/${owner}/.*`,
             requestDomains: ['admin.hlx.page'],
             requestMethods: ['get', 'post', 'delete'],
             resourceTypes: ['xmlhttprequest'],
           },
         });
         id += 1;
-        log.debug('added admin auth header rule for ', owner, repo);
+        log.debug('added admin auth header rule for ', owner);
       }
     });
     if (addRules.length > 0) {
@@ -846,8 +846,8 @@ export async function updateAdminAuthHeaderRules() {
   }
 }
 
-export async function storeAuthToken(owner, repo, token, exp) {
-  const handle = `${owner}/${repo}`;
+export async function storeAuthToken(owner, token, exp) {
+  const handle = owner;
   const projects = await getConfig('session', 'hlxSidekickProjects') || [];
   const projectIndex = projects.indexOf(handle);
   if (token) {
@@ -855,7 +855,6 @@ export async function storeAuthToken(owner, repo, token, exp) {
     await setConfig('session', {
       [handle]: {
         owner,
-        repo,
         authToken: token,
         authTokenExpiry: exp ? exp * 1000 : 0, // store expiry in milliseconds
       },
@@ -870,7 +869,7 @@ export async function storeAuthToken(owner, repo, token, exp) {
     }
   }
   await setConfig('session', { hlxSidekickProjects: projects });
-  log.debug(`updated auth token for ${owner}--${repo}`);
+  log.debug(`updated auth token for ${owner}`);
   // auth token changed, set/update admin auth header
   updateAdminAuthHeaderRules();
 }

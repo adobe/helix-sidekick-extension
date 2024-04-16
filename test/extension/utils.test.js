@@ -430,21 +430,20 @@ describe('Test extension utils', () => {
     const spy = sandbox.spy(window.chrome.storage.session, 'set');
     const token = '1234';
     const exp = (Date.now() / 1000) + 120;
-    await utils.storeAuthToken('foo', 'bar', token, exp);
+    await utils.storeAuthToken('foo', token, exp);
     expect(spy.calledWith({
       'foo/bar': {
         owner: 'foo',
-        repo: 'bar',
         authToken: token,
         authTokenExpiry: exp * 1000,
       },
     })).to.be.true;
-    expect(spy.calledWith({ hlxSidekickProjects: ['foo/bar'] })).to.be.true;
+    expect(spy.calledWith({ hlxSidekickProjects: ['foo'] })).to.be.true;
   });
 
   it('storeAuthToken (delete)', async () => {
     const spy = sandbox.spy(window.chrome.storage.session, 'remove');
-    await utils.storeAuthToken('foo', 'bar', '');
-    expect(spy.calledWith('foo/bar')).to.be.true;
+    await utils.storeAuthToken('foo', '');
+    expect(spy.calledWith('foo')).to.be.true;
   });
 });
