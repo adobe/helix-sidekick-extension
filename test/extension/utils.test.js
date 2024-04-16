@@ -432,7 +432,7 @@ describe('Test extension utils', () => {
     const exp = (Date.now() / 1000) + 120;
     await utils.storeAuthToken('foo', token, exp);
     expect(spy.calledWith({
-      'foo/bar': {
+      foo: {
         owner: 'foo',
         authToken: token,
         authTokenExpiry: exp * 1000,
