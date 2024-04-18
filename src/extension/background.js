@@ -438,7 +438,7 @@ const externalActions = {
       if (!url || new URL(url).origin !== 'https://admin.hlx.page') {
         resp = 'unauthorized sender url';
       } else if (authToken !== undefined && owner && repo) {
-        await storeAuthToken(owner, repo, authToken, exp);
+        await storeAuthToken(owner, authToken, exp);
         resp = 'close';
       }
     } catch (e) {
@@ -638,8 +638,8 @@ const internalActions = {
   chrome.runtime.onMessage.addListener(async ({ deleteAuthToken }, { tab }) => {
     // check if message contains project config and is sent from tab
     if (tab && tab.id && typeof deleteAuthToken === 'object') {
-      const { owner, repo } = deleteAuthToken;
-      await storeAuthToken(owner, repo, '');
+      const { owner } = deleteAuthToken;
+      await storeAuthToken(owner, '');
     }
   });
 
