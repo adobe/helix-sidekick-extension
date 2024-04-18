@@ -1,3 +1,10 @@
+# [6.43.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.42.0...v6.43.0) (2024-04-18)
+
+
+### Features
+
+* 20240418 release ([#713](https://github.com/adobe/helix-sidekick-extension/issues/713)) ([d04d3d6](https://github.com/adobe/helix-sidekick-extension/commit/d04d3d6efc0f7ea7120ba92e1da9a4405a1c6bda)), closes [#711](https://github.com/adobe/helix-sidekick-extension/issues/711) [#712](https://github.com/adobe/helix-sidekick-extension/issues/712)
+
 # [6.42.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.41.1...v6.42.0) (2024-04-13)
 
 
