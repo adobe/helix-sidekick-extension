@@ -84,7 +84,7 @@ A release candidate will be mirrored in https://github.com/adobe/helix-website w
 1. Verify that your _Extensions_ page displays a box like this:<br />
 ![Extension box](docs/imgs/install_extension_box.jpg)<br />
 1. Configurations are not automatically migrated to the Unpacked extension. Either follow the steps under [Adding projects to the extension](#adding-projects-to-the-extension) or Export/Import the other plugin's configuration.
-1. If you do not see the Sidekick JavaScript files in the browser debug window. Check that they are not being ignored. Ensure "Content scripts injected by extensions" is unchecked: <br />
+1. If you do not see the Sidekick JavaScript files in the browser debug window, check that they are not being ignored. Ensure "Content scripts injected by extensions" is unchecked: <br />
 ![Framework ignore list](docs/imgs/framework_ingore_list.jpg)
 
 #### Testing a local project config
