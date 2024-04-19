@@ -2125,7 +2125,11 @@ import sampleRUM from './rum.js';
    * @param {Sidekick} sk The sidekick
    */
   function addCustomPlugins(sk) {
-    const { location, config: { lang, plugins, innerHost } = {} } = sk;
+    const {
+      location, config: {
+        lang, plugins, innerHost, devMode, devUrl,
+      } = {},
+    } = sk;
     if (plugins && Array.isArray(plugins)) {
       plugins.forEach((cfg, i) => {
         if (typeof (cfg.button && cfg.button.action) === 'function'
@@ -2185,7 +2189,7 @@ import sampleRUM from './rum.js';
               text: (titleI18n && titleI18n[lang]) || title || '',
               action: () => {
                 if (url) {
-                  const target = url.startsWith('/') ? new URL(url, `https://${innerHost}/`) : new URL(url);
+                  const target = devMode ? new URL(url, devUrl) : new URL(url, `https://${innerHost}/`);
                   if (passConfig) {
                     target.searchParams.append('ref', sk.config.ref);
                     target.searchParams.append('repo', sk.config.repo);
