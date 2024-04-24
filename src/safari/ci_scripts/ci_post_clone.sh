@@ -4,4 +4,4 @@
 #  helix-sidekick-extension
 #
 
-brew install node
+# brew install node
