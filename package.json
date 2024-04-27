@@ -60,7 +60,7 @@
     "husky": "9.0.11",
     "jsdoc-to-markdown": "8.0.1",
     "lint-staged": "15.2.2",
-    "mime": "4.0.2",
+    "mime": "4.0.3",
     "mocha": "10.4.0",
     "mocha-multi-reporters": "1.5.1",
     "nock": "13.5.4",
