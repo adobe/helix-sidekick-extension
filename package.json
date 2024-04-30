@@ -1,6 +1,6 @@
 {
   "name": "@adobe/helix-sidekick-extension",
-  "version": "6.41.1",
+  "version": "6.43.0",
   "description": "AEM Sidekick Extension",
   "type": "module",
   "scripts": {
@@ -42,7 +42,7 @@
   },
   "devDependencies": {
     "@adobe/eslint-config-helix": "2.0.6",
-    "@adobe/fetch": "4.1.1",
+    "@adobe/fetch": "4.1.2",
     "@babel/eslint-parser": "7.24.1",
     "@esm-bundle/chai": "4.3.4-fix.0",
     "@semantic-release/changelog": "6.0.3",
@@ -60,7 +60,7 @@
     "husky": "9.0.11",
     "jsdoc-to-markdown": "8.0.1",
     "lint-staged": "15.2.2",
-    "mime": "4.0.1",
+    "mime": "4.0.3",
     "mocha": "10.4.0",
     "mocha-multi-reporters": "1.5.1",
     "nock": "13.5.4",
@@ -70,7 +70,7 @@
     "request": "2.88.2",
     "semantic-release": "22.0.12",
     "semantic-release-discord-bot": "^1.1.0",
-    "semantic-release-react-native": "1.9.1",
+    "semantic-release-react-native": "1.10.0",
     "shelljs": "0.8.5",
     "sinon": "17.0.1"
   },

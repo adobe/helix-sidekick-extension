@@ -149,79 +149,107 @@ export async function clearConfig(type) {
 }
 
 /**
- * Encodes the url to be used in the `/shares/` msgraph API call
- * @param {string} sharingUrl The sharing URL
- * @returns {string} The encoded sharing URL
- */
-function encodeSharingUrl(sharingUrl) {
-  const base64 = btoa(sharingUrl)
-    .replace(/=/, '')
-    .replace(/\//, '_')
-    .replace(/\+/, '-');
-  return `u!${base64}`;
-}
-
-/**
  * Fetches the edit info from Microsoft SharePoint.
  * @todo also use fstab information to figure out the resource path etc.
- * @param {string} tabUrl The tab ID
+ * @param {chrome.tabs.Tab} tab The tab
  * @returns {Promise<Object>} The edit info
  */
-async function fetchSharePointEditInfo(tabUrl) {
-  const spUrl = new URL(tabUrl);
-  // sometimes sharepoint redirects to an url with a search param `RootFolder` instead of `id`
-  // and then the sharelink can't be resolved. so we convert it to `id`
-  const rootFolder = spUrl.searchParams.get('RootFolder');
-  if (rootFolder) {
-    spUrl.searchParams.set('id', rootFolder);
-    spUrl.searchParams.delete('RootFolder');
-  }
-  const shareLink = encodeSharingUrl(spUrl.href);
-  spUrl.pathname = `/_api/v2.0/shares/${shareLink}/driveItem`;
-  spUrl.search = '';
-  let resp = await fetch(spUrl);
-  if (!resp.ok) {
-    log.warn('unable to resolve edit url: ', resp.status, await resp.text());
-    return null;
-  }
-  const data = await resp.json();
+async function fetchSharePointEditInfo(tab) {
+  return new Promise((resolve) => {
+    // inject edit info retriever
+    chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      func: async (tabUrl) => {
+        const encodeSharingUrl = (sharingUrl) => {
+          const base64 = btoa(sharingUrl)
+            .replace(/=/, '')
+            .replace(/\//, '_')
+            .replace(/\+/, '-');
+          return `u!${base64}`;
+        };
 
-  // get root item
-  spUrl.pathname = `/_api/v2.0/drives/${data.parentReference.driveId}`;
-  resp = await fetch(spUrl);
-  if (!resp.ok) {
-    log.warn('unable to load root url: ', resp.status, await resp.text());
-    return null;
-  }
-  const rootData = await resp.json();
+        const fetchEditInfo = async (urlFromTab) => {
+          // convert `RootFolder` to `id` if present
+          const spUrl = new URL(urlFromTab);
+          const rootFolder = spUrl.searchParams.get('RootFolder');
+          if (rootFolder) {
+            spUrl.searchParams.set('id', rootFolder);
+            spUrl.searchParams.delete('RootFolder');
+          }
+          const shareLink = encodeSharingUrl(spUrl.href);
+          spUrl.pathname = `/_api/v2.0/shares/${shareLink}/driveItem`;
+          spUrl.search = '';
+          let resp = await fetch(spUrl, { credentials: 'include' });
+          if (!resp.ok) {
+            log.warn('unable to resolve edit url: ', resp.status, await resp.text());
+            return null;
+          }
+          const data = await resp.json();
 
-  const info = {
-    status: 200,
-    name: data.name,
-    sourceLocation: `onedrive:/drives/${data.parentReference.driveId}/items/${data.id}`,
-    lastModified: data.lastModifiedDateTime,
-  };
-  if (data.folder) {
-    info.url = data.webUrl;
-    info.contentType = 'application/folder';
-    info.childCount = data.folder.childCount;
-  } else {
-    const folder = data.parentReference.path.split(':').pop();
-    info.url = `${rootData.webUrl}${folder}/${data.name}`;
-    info.contentType = data.file.mimeType;
-  }
-  return info;
+          // get root item
+          spUrl.pathname = `/_api/v2.0/drives/${data.parentReference.driveId}`;
+          resp = await fetch(spUrl, { credentials: 'include' });
+          if (!resp.ok) {
+            log.warn('unable to load root url: ', resp.status, await resp.text());
+            return null;
+          }
+          const rootData = await resp.json();
+
+          const info = {
+            status: 200,
+            name: data.name,
+            sourceLocation: `onedrive:/drives/${data.parentReference.driveId}/items/${data.id}`,
+            lastModified: data.lastModifiedDateTime,
+          };
+          if (data.folder) {
+            info.url = data.webUrl;
+            info.contentType = 'application/folder';
+            info.childCount = data.folder.childCount;
+          } else {
+            const folder = data.parentReference.path.split(':').pop();
+            info.url = `${rootData.webUrl}${folder}/${data.name}`;
+            info.contentType = data.file.mimeType;
+          }
+          return info;
+        };
+        const spEditInfo = await fetchEditInfo(tabUrl);
+
+        chrome.runtime.sendMessage({ spEditInfo });
+      },
+      args: [tab.url],
+    }).catch((e) => {
+      log.warn('fetchSharePointEditInfo: failed to inject script', e);
+      resolve(null);
+    });
+
+    // listen for edit info from tab
+    const listener = ({ spEditInfo }, { tab: msgTab }) => {
+      // check if message contains edit info and is sent from right tab
+      if (typeof spEditInfo !== 'undefined' && tab && tab.id === msgTab.id) {
+        chrome.runtime.onMessage.removeListener(listener);
+        resolve(spEditInfo);
+      }
+    };
+    chrome.runtime.onMessage.addListener(listener);
+
+    // resolve with null after 1s
+    setTimeout(() => {
+      log.debug('fetchSharePointEditInfo: timed out');
+      chrome.runtime.onMessage.removeListener(listener);
+      resolve(null);
+    }, 1000);
+  });
 }
 
 /**
  * Fetches the edit info from Google Drive.
  * @todo implement
- * @param {string} tabUrl The tab ID
+ * @param {chrome.tabs.Tab} tab The tab
  * @returns {Promise<Object>} The edit info
  */
-async function fetchGoogleDriveEditInfo(tabUrl) {
+async function fetchGoogleDriveEditInfo(tab) {
   return {
-    url: tabUrl,
+    url: tab.url,
   };
 }
 
@@ -270,13 +298,14 @@ export async function queryUrlCache(tabUrl) {
  * Populates or refreshes the URL cache for the duration of the browser session.
  * Microsoft SharePoint or Google Drive URLs will be looked up in the Franklin Admin Service
  * and expire after 2 hours.
- * @param {string} tabUrl The tab URL
+ * @param {chrome.tabs.Tab} tab The tab
  * @param {Object|Object[]} config={} The project config(s) (optional)
  * @param {string} config.owner The owner
  * @param {string} config.repo The repository
  * @returns {Promise<void>}
  */
-export async function populateUrlCache(tabUrl, config = {}) {
+export async function populateUrlCache(tab, config = {}) {
+  const { url: tabUrl } = tab;
   const { owner, repo } = typeof config === 'object' && !Array.isArray(config) ? config : {};
   const createCacheEntry = (cacheUrl, results = [], expiry = false) => {
     const entry = { url: cacheUrl, results };
@@ -314,8 +343,8 @@ export async function populateUrlCache(tabUrl, config = {}) {
     }
     if ((await queryUrlCache(tabUrl)).length === 0) {
       const info = isSPHost
-        ? await fetchSharePointEditInfo(tabUrl)
-        : await fetchGoogleDriveEditInfo(tabUrl);
+        ? await fetchSharePointEditInfo(tab)
+        : await fetchGoogleDriveEditInfo(tab);
       log.debug('resource edit info', info);
 
       let results = [];
@@ -782,7 +811,7 @@ export async function updateAdminAuthHeaderRules() {
     const projectConfigs = (await Promise.all(projects
       .map((handle) => getConfig('session', handle))))
       .filter((cfg) => !!cfg);
-    projectConfigs.forEach(({ owner, repo, authToken }) => {
+    projectConfigs.forEach(({ owner, authToken }) => {
       if (authToken) {
         addRules.push({
           id,
@@ -796,14 +825,14 @@ export async function updateAdminAuthHeaderRules() {
             }],
           },
           condition: {
-            regexFilter: `^https://admin.hlx.page/[a-z]+/${owner}/${repo}/.*`,
+            regexFilter: `^https://admin.hlx.page/[a-z]+/${owner}/.*`,
             requestDomains: ['admin.hlx.page'],
             requestMethods: ['get', 'post', 'delete'],
             resourceTypes: ['xmlhttprequest'],
           },
         });
         id += 1;
-        log.debug('added admin auth header rule for ', owner, repo);
+        log.debug('added admin auth header rule for ', owner);
       }
     });
     if (addRules.length > 0) {
@@ -817,8 +846,8 @@ export async function updateAdminAuthHeaderRules() {
   }
 }
 
-export async function storeAuthToken(owner, repo, token, exp) {
-  const handle = `${owner}/${repo}`;
+export async function storeAuthToken(owner, token, exp) {
+  const handle = owner;
   const projects = await getConfig('session', 'hlxSidekickProjects') || [];
   const projectIndex = projects.indexOf(handle);
   if (token) {
@@ -826,7 +855,6 @@ export async function storeAuthToken(owner, repo, token, exp) {
     await setConfig('session', {
       [handle]: {
         owner,
-        repo,
         authToken: token,
         authTokenExpiry: exp ? exp * 1000 : 0, // store expiry in milliseconds
       },
@@ -841,7 +869,7 @@ export async function storeAuthToken(owner, repo, token, exp) {
     }
   }
   await setConfig('session', { hlxSidekickProjects: projects });
-  log.debug(`updated auth token for ${owner}--${repo}`);
+  log.debug(`updated auth token for ${owner}`);
   // auth token changed, set/update admin auth header
   updateAdminAuthHeaderRules();
 }
