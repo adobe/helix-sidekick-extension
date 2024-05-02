@@ -1672,14 +1672,14 @@ import sampleRUM from './rum.js';
           .map((row) => {
             const typeHint = (row.querySelector(':scope div[role="gridcell"] > div:nth-child(2) > div > div[data-tooltip]') // list layout
               || row.querySelector(':scope div[role="gridcell"]'))?.getAttribute('aria-label'); // grid layout
-            console.log('typeHint', typeHint);
             let type = 'unknown';
             if (typeHint) {
               if (typeHint.includes('Google Docs')) {
                 type = 'document';
               } else if (typeHint.includes('Google Sheets')) {
                 type = 'spreadsheet';
-              } else if (typeHint.includes('Image') || typeHint.includes('Video')) {
+              } else if (['Image', 'Video', 'PDF']
+                .find((hint) => typeHint.includes(hint))) {
                 type = 'media';
               }
             }
