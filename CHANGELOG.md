@@ -1,3 +1,10 @@
+## [6.43.1](https://github.com/adobe/helix-sidekick-extension/compare/v6.43.0...v6.43.1) (2024-05-02)
+
+
+### Bug Fixes
+
+* **bulk:** gdrive selection broken due to recent dom change ([#725](https://github.com/adobe/helix-sidekick-extension/issues/725)) ([ea4d54b](https://github.com/adobe/helix-sidekick-extension/commit/ea4d54b48f131181d60b1407768f4a142cc806de)), closes [#717](https://github.com/adobe/helix-sidekick-extension/issues/717) [#718](https://github.com/adobe/helix-sidekick-extension/issues/718)
+
 # [6.43.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.42.0...v6.43.0) (2024-04-18)
 
 
