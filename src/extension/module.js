@@ -1602,7 +1602,7 @@ import sampleRUM from './rum.js';
         // omit docx extension on sharepoint
         ext = '';
       }
-      if (type === 'xlsx' || type.includes('vnd.google-apps.spreadsheet')) {
+      if (type === 'xlsx' || type === 'spreadsheet') {
         // use json extension for spreadsheets
         ext = '.json';
       }
@@ -1666,12 +1666,28 @@ import sampleRUM from './rum.js';
       } else {
         // gdrive
         return [...document.querySelectorAll('#drive_main_page [role="row"][aria-selected="true"]')]
-          .filter((row) => row.querySelector(':scope img'))
-          .map((row) => ({
-            type: new URL(row.querySelector('div > img').getAttribute('src'), sk.location.href).pathname.split('/').slice(-2).join('/'),
-            path: row.querySelector(':scope > div > div:nth-of-type(2)').textContent.trim() // list layout
-              || row.querySelector(':scope > div > div > div:nth-of-type(4)').textContent.trim(), // grid layout
-          }));
+          // exlude folders
+          .filter((row) => !row.querySelector(':scope div[data-tooltip*="Google Drive Folder"]'))
+          // extract file name and type
+          .map((row) => {
+            const typeHint = row.querySelector(':scope div[data-tooltip]')?.dataset.tooltip;
+            let type = 'unknown';
+            if (typeHint) {
+              if (typeHint.includes('Google Docs:')) {
+                type = 'document';
+              } else if (typeHint.includes('Google Sheets:')) {
+                type = 'spreadsheet';
+              } else if (typeHint.includes('Image:') || typeHint.includes('Video')) {
+                type = 'media';
+              }
+            }
+            const path = row.querySelector(':scope > div > div:nth-of-type(2)').textContent.trim() // list layout
+              || row.querySelector(':scope > div > div > div:nth-of-type(4)').textContent.trim(); // grid layout
+            return {
+              type,
+              path,
+            };
+          });
       }
     };
 
@@ -1680,6 +1696,7 @@ import sampleRUM from './rum.js';
         return;
       }
       const sel = getBulkSelection(sk);
+      console.log('selection', JSON.stringify(sel, '', 2));
       bulkSelection = sel;
       // update info
       const label = sk.root.querySelector('#hlx-sk-bulk-info');
