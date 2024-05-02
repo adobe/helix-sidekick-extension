@@ -1667,17 +1667,19 @@ import sampleRUM from './rum.js';
         // gdrive
         return [...document.querySelectorAll('#drive_main_page [role="row"][aria-selected="true"]')]
           // exlude folders
-          .filter((row) => !row.querySelector(':scope div[data-tooltip*="Google Drive Folder"]'))
+          .filter((row) => !row.querySelector(':scope div[data-tooltip*="Google Drive"]'))
           // extract file name and type
           .map((row) => {
-            const typeHint = row.querySelector(':scope div[data-tooltip]')?.dataset.tooltip;
+            const typeHint = (row.querySelector(':scope div[role="gridcell"] > div:nth-child(2) > div > div[data-tooltip]') // list layout
+              || row.querySelector(':scope div[role="gridcell"]'))?.getAttribute('aria-label'); // grid layout
+            console.log('typeHint', typeHint);
             let type = 'unknown';
             if (typeHint) {
-              if (typeHint.includes('Google Docs:')) {
+              if (typeHint.includes('Google Docs')) {
                 type = 'document';
-              } else if (typeHint.includes('Google Sheets:')) {
+              } else if (typeHint.includes('Google Sheets')) {
                 type = 'spreadsheet';
-              } else if (typeHint.includes('Image:') || typeHint.includes('Video')) {
+              } else if (typeHint.includes('Image') || typeHint.includes('Video')) {
                 type = 'media';
               }
             }
