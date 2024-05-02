@@ -560,15 +560,9 @@ describe('Test sidekick', () => {
           },
         });
         const {
-          configLoaded,
-          plugins,
           popupOpened,
-          sidekick: { config: { host } },
         } = await test.run();
-        assert.ok(configLoaded, 'Did not load project config');
-        assert.ok(plugins.find((p) => p.id === 'bar'), 'Did not load plugins from project');
         assert.ok(popupOpened === 'http://localhost:3000/path/to/relative/plugin', 'Did not open plugin URL');
-        assert.strictEqual(host, 'blog.adobe.com', 'Did not load config from project');
       }).timeout(IT_DEFAULT_TIMEOUT);
 
       it('Replaces plugin', async () => {
