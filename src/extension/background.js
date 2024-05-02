@@ -330,7 +330,7 @@ function toggle(id) {
 function getHelpLanguage() {
   const uLang = chrome.i18n.getUILanguage();
   const lang = LANGS.find((l) => uLang.replace('-', '_') === l
-    || l.startsWith(uLang.split('_')[0])) || LANGS[0];
+    || l.startsWith(uLang.split(/[-_]/)[0])) || LANGS[0];
   return lang.replace('_', '-').toLowerCase();
 }
 
