@@ -532,6 +532,45 @@ describe('Test sidekick', () => {
         assert.ok(configLoaded.startsWith('http://localhost:3000/'), 'Did not load project config from development environment');
       }).timeout(IT_DEFAULT_TIMEOUT);
 
+      it('Loads relative path from devUrl when in devMode', async () => {
+        const setup = new Setup('blog');
+        nock.sidekick(setup);
+        nock.admin(setup);
+        nock('http://localhost:3000')
+          .get(/.*/)
+          .optionally()
+          .reply(200, 'some content...');
+
+        const test = new SidekickTest({
+          browser,
+          page,
+          loadModule,
+          plugin: 'bar',
+          pluginSleep: 1000,
+          sidekickConfig: {
+            owner: 'adobe',
+            repo: 'blog',
+            ref: 'main',
+            devMode: true,
+            plugins: [{
+              id: 'bar',
+              title: 'Bar',
+              url: '/path/to/relative/plugin',
+            }],
+          },
+        });
+        const {
+          configLoaded,
+          plugins,
+          popupOpened,
+          sidekick: { config: { host } },
+        } = await test.run();
+        assert.ok(configLoaded, 'Did not load project config');
+        assert.ok(plugins.find((p) => p.id === 'bar'), 'Did not load plugins from project');
+        assert.ok(popupOpened === 'http://localhost:3000/path/to/relative/plugin', 'Did not open plugin URL');
+        assert.strictEqual(host, 'blog.adobe.com', 'Did not load config from project');
+      }).timeout(IT_DEFAULT_TIMEOUT);
+
       it('Replaces plugin', async () => {
         const setup = new Setup('blog');
         nock.sidekick(setup);
