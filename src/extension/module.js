@@ -1666,15 +1666,15 @@ import sampleRUM from './rum.js';
       } else {
         // gdrive
         return [...document.querySelectorAll('#drive_main_page [role="row"][aria-selected="true"]')]
-          // exlude folders
-          .filter((row) => !row.querySelector(':scope div[data-tooltip*="Google Drive"]'))
           // extract file name and type
           .map((row) => {
             const typeHint = (row.querySelector(':scope div[role="gridcell"] > div:nth-child(2) > div > div[data-tooltip]') // list layout
               || row.querySelector(':scope div[role="gridcell"]'))?.getAttribute('aria-label'); // grid layout
             let type = 'unknown';
             if (typeHint) {
-              if (typeHint.includes('Google Docs')) {
+              if (typeHint.includes('Google Drive')) {
+                type = 'folder';
+              } else if (typeHint.includes('Google Docs')) {
                 type = 'document';
               } else if (typeHint.includes('Google Sheets')) {
                 type = 'spreadsheet';
@@ -1683,13 +1683,16 @@ import sampleRUM from './rum.js';
                 type = 'media';
               }
             }
-            const path = row.querySelector(':scope > div > div:nth-of-type(2)').textContent.trim() // list layout
-              || row.querySelector(':scope > div > div > div:nth-of-type(4)').textContent.trim(); // grid layout
+            const path = row.querySelector(':scope > div > div:nth-of-type(2)')?.textContent.trim() // list layout
+              || (row.querySelector(':scope > div > div > div:nth-of-type(4)') // grid layout (file)
+              || row.querySelector(':scope div[role="gridcell"] > div > div:nth-child(4) > div'))?.textContent.trim(); // grid layout (folder)
             return {
               type,
               path,
             };
-          });
+          })
+          // exclude folders and emtpy paths
+          .filter(({ type, path }) => type !== 'folder' && path);
       }
     };
 
