@@ -1701,7 +1701,6 @@ import sampleRUM from './rum.js';
         return;
       }
       const sel = getBulkSelection(sk);
-      console.log('selection', JSON.stringify(sel, '', 2));
       bulkSelection = sel;
       // update info
       const label = sk.root.querySelector('#hlx-sk-bulk-info');
