@@ -52,7 +52,7 @@ describe.skip('Test sidekick extension', () => {
     extPage.on('request', async (req) => {
       const url = req.url();
       console.log('[pup] request:', url);
-      if (url === 'https://admin.hlx.page/sidekick/example/test/main/env.json') {
+      if (url === 'https://admin.hlx.page/sidekick/example/test/main/config.json') {
         req.respond({
           status: 200,
           contentType: 'application/json',
@@ -61,7 +61,7 @@ describe.skip('Test sidekick extension', () => {
             prod: {
               host: 'www.example.com',
             },
-            contentSourceUrl: 'https://example.sharepoint.com/documents/website',
+            mountpoints: 'https://example.sharepoint.com/documents/website',
           }),
         });
       } else {
