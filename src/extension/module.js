@@ -3211,8 +3211,17 @@ import sampleRUM from './rum.js';
                   ? 'error_status_404_document'
                   : 'error_status_404_content';
                 break;
+              case 429:
+                errorKey = 'error_status_429_admin';
+                break;
               default:
-                errorKey = `error_status_${resp.status}`;
+                if (resp.status === 503
+                  && resp.headers.get('x-error')?.includes('429')
+                  && resp.headers.get('x-error')?.includes('onedrive')) {
+                  errorKey = 'error_status_429_onedrive';
+                } else {
+                  errorKey = `error_status_${resp.status}`;
+                }
             }
             throw new Error(errorKey);
           }
@@ -3238,7 +3247,7 @@ import sampleRUM from './rum.js';
               'https://status.adobe.com/',
             ],
             sticky: true,
-            level: 0,
+            level: message.includes('_status_4') ? 1 : 0,
             callback: () => {
               // this error is fatal, hide and delete sidekick
               if (window.hlx.sidekick) {
