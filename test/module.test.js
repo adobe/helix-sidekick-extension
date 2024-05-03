@@ -120,7 +120,7 @@ describe('Test sidekick', () => {
         );
       }).timeout(IT_DEFAULT_TIMEOUT);
 
-      it.only('Handles errors fetching status from admin API', async () => {
+      it('Handles errors fetching status from admin API', async () => {
         const errors = [
           { status: 404, expectedMessage: 'Not found', expectedClass: 'level-1' },
           { status: 403, expectedMessage: 'Forbidden', expectedClass: 'level-1' },
