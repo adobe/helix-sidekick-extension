@@ -58,10 +58,8 @@ describe.skip('Test sidekick extension', () => {
           contentType: 'application/json',
           body: JSON.stringify({
             project: 'Test Project',
-            prod: {
-              host: 'www.example.com',
-            },
-            mountpoints: 'https://example.sharepoint.com/documents/website',
+            host: 'www.example.com',
+            mountpoints: ['https://example.sharepoint.com/documents/website'],
           }),
         });
       } else {

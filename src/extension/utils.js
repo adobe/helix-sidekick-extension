@@ -548,26 +548,26 @@ export async function getProjectEnv({
   }
   if (res && res.ok) {
     const {
-      preview,
-      live,
-      prod,
+      previewHost,
+      liveHost,
+      prodHost,
       project,
       mountpoints,
     } = await res.json();
-    if (preview && preview.host) {
-      env.previewHost = preview.host;
+    if (previewHost) {
+      env.previewHost = previewHost;
     }
-    if (live && live.host) {
-      env.liveHost = live.host;
+    if (liveHost) {
+      env.liveHost = liveHost;
     }
-    if (prod && prod.host) {
-      env.host = prod.host;
+    if (prodHost) {
+      env.host = prodHost;
     }
     if (project) {
       env.project = project;
     }
     if (mountpoints) {
-      env.mountpoints = mountpoints;
+      env.mountpoints = Array.isArray(mountpoints) ? mountpoints : [mountpoints];
     }
   } else if (res.status === 401) {
     env.unauthorized = true;
