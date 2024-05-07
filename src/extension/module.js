@@ -753,6 +753,24 @@ import sampleRUM from './rum.js';
   }
 
   /**
+   * Returns an error message from the server response.
+   * @param {Response} resp The response
+   * @returns {string} The error message or an empty string
+   */
+  function getServerError(resp) {
+    return (resp && (resp.error || resp.headers?.get('x-error'))) || '';
+  }
+
+  /**
+   * Checks if the request has been rate-limited.
+   * @param {Response} resp The response
+   * @returns {boolean} <code>true</code> if rate-limited, else <code>false</code>
+   */
+  function isRateLimited(resp) {
+    return resp.status === 429 || (resp.status === 503 && getServerError(resp).includes('429'));
+  }
+
+  /**
    * Checks if the location has changed.
    * @private
    * @param {Sidekick} sk The sidekick
@@ -1112,7 +1130,15 @@ import sampleRUM from './rum.js';
     const { status } = sk;
     const resp = await sk.update();
     if (!resp.ok) {
-      if (!ranBefore) {
+      if (isRateLimited(resp)) {
+        sk.showModal({
+          message: i18n(sk, getServerError(resp).includes('onedrive')
+            ? 'error_status_429_onedrive'
+            : 'error_status_429_admin'),
+          sticky: true,
+          level: 1,
+        });
+      } else if (!ranBefore) {
         // assume document has been renamed, re-fetch status and try again
         sk.addEventListener('statusfetched', async () => {
           updatePreview(sk, true);
@@ -1398,6 +1424,16 @@ import sampleRUM from './rum.js';
           try {
             const resp = await sk.update();
             if (!resp.ok && resp.status >= 400) {
+              if (isRateLimited(resp)) {
+                sk.showModal({
+                  message: i18n(sk, getServerError(resp).includes('onedrive')
+                    ? 'error_status_429_onedrive'
+                    : 'admin'),
+                  sticky: true,
+                  level: 1,
+                });
+                return;
+              }
               console.error(resp);
               throw new Error(resp);
             }
@@ -1455,6 +1491,16 @@ import sampleRUM from './rum.js';
             try {
               const resp = await sk.delete();
               if (!resp.ok && resp.status >= 400) {
+                if (isRateLimited(resp)) {
+                  sk.showModal({
+                    message: i18n(sk, getServerError(resp).includes('onedrive')
+                      ? 'error_status_429_onedrive'
+                      : 'error_status_429_admin'),
+                    sticky: true,
+                    level: 1,
+                  });
+                  return;
+                }
                 console.error(resp);
                 throw new Error(resp);
               }
@@ -1552,6 +1598,16 @@ import sampleRUM from './rum.js';
             try {
               const resp = await sk.unpublish();
               if (!resp.ok && resp.status >= 400) {
+                if (isRateLimited(resp)) {
+                  sk.showModal({
+                    message: i18n(sk, getServerError(resp).includes('onedrive')
+                      ? 'error_status_429_onedrive'
+                      : 'error_status_429_admin'),
+                    sticky: true,
+                    level: 1,
+                  });
+                  return;
+                }
                 console.error(resp);
                 throw new Error(resp);
               }
@@ -1814,6 +1870,10 @@ import sampleRUM from './rum.js';
         lines.push(...failed.map((item) => {
           if (item.status === 404) {
             item.error = getBulkText([1], 'result', operation, 'error_no_source');
+          } else if (item.status === 400) {
+            item.error = getBulkText([1], 'result', operation, 'error_too_large');
+          } else if (item.status === 415) {
+            item.error = getBulkText([1], 'result', operation, 'error_not_supported');
           } else {
             if (item.error?.endsWith('docx with google not supported.')) {
               item.error = getBulkText([1], 'result', operation, 'error_no_docx');
@@ -1871,7 +1931,13 @@ import sampleRUM from './rum.js';
                 level = 1;
                 throw new Error(getBulkText([1], 'result', operation, 'error_no_source'));
               } else {
-                throw new Error(resp.headers['x-error']);
+                if (isRateLimited(resp)) {
+                  level = 1;
+                  throw new Error(i18n(sk, getServerError(resp).includes('onedrive')
+                    ? 'error_status_429_onedrive'
+                    : 'error_status_429_admin'));
+                }
+                throw new Error(getServerError(resp));
               }
             } else {
               showBulkOperationSummary({
@@ -1917,7 +1983,12 @@ import sampleRUM from './rum.js';
           });
           return;
         } else if (!bulkResp.ok) {
-          throw new Error(bulkResp.headers['x-error']);
+          if (isRateLimited(bulkResp)) {
+            throw new Error(i18n(sk, getServerError(bulkResp).includes('onedrive')
+              ? 'error_status_429_onedrive'
+              : 'error_status_429_admin'));
+          }
+          throw new Error(getServerError(bulkResp));
         }
 
         // start showing progress
@@ -3211,17 +3282,14 @@ import sampleRUM from './rum.js';
                   ? 'error_status_404_document'
                   : 'error_status_404_content';
                 break;
-              case 429:
-                errorKey = 'error_status_429_admin';
-                break;
               default:
-                if (resp.status === 503
-                  && resp.headers.get('x-error')?.includes('429')
-                  && resp.headers.get('x-error')?.includes('onedrive')) {
-                  errorKey = 'error_status_429_onedrive';
-                } else {
-                  errorKey = `error_status_${resp.status}`;
+                if (isRateLimited(resp)) {
+                  errorKey = getServerError(resp).includes('onedrive')
+                    ? 'error_status_429_onedrive'
+                    : 'error_status_429_admin';
+                  break;
                 }
+                errorKey = `error_status_${resp.status}`;
             }
             throw new Error(errorKey);
           }
