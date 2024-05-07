@@ -550,7 +550,7 @@ export async function getProjectEnv({
     const {
       previewHost,
       liveHost,
-      prodHost,
+      host,
       project,
       mountpoints,
     } = await res.json();
@@ -560,8 +560,8 @@ export async function getProjectEnv({
     if (liveHost) {
       env.liveHost = liveHost;
     }
-    if (prodHost) {
-      env.host = prodHost;
+    if (host) {
+      env.host = host;
     }
     if (project) {
       env.project = project;
