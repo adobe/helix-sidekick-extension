@@ -567,7 +567,7 @@ export async function getProjectEnv({
       env.project = project;
     }
     if (mountpoints) {
-      env.mountpoints = Array.isArray(mountpoints) ? mountpoints : [mountpoints];
+      env.mountpoints = mountpoints;
     }
   } else if (res.status === 401) {
     env.unauthorized = true;
