@@ -1428,7 +1428,7 @@ import sampleRUM from './rum.js';
                 sk.showModal({
                   message: i18n(sk, getServerError(resp).includes('onedrive')
                     ? 'error_status_429_onedrive'
-                    : 'admin'),
+                    : 'error_status_429_admin'),
                   sticky: true,
                   level: 1,
                 });
@@ -1552,6 +1552,17 @@ import sampleRUM from './rum.js';
             console.log(`redirecting to ${prodURL}`);
             sk.switchEnv('prod', newTab(evt));
           } else {
+            const rateLimitedResults = results.filter((res) => isRateLimited(res));
+            if (rateLimitedResults.length > 0) {
+              sk.showModal({
+                message: i18n(sk, getServerError(rateLimitedResults[0]).includes('onedrive')
+                  ? 'error_status_429_onedrive'
+                  : 'error_status_429_admin'),
+                sticky: true,
+                level: 1,
+              });
+              return;
+            }
             console.error(results);
             sk.showModal({
               message: i18n(sk, 'publish_failure'),
@@ -4094,7 +4105,7 @@ import sampleRUM from './rum.js';
           },
         );
         // also unpublish if published
-        if (status.live && status.live.lastModified) {
+        if (resp.ok && status.live && status.live.lastModified) {
           await this.unpublish(path);
         }
         fireEvent(this, 'deleted', path);
@@ -4104,6 +4115,7 @@ import sampleRUM from './rum.js';
       return {
         ok: (resp && resp.ok) || false,
         status: (resp && resp.status) || 0,
+        error: (resp && resp.headers.get('x-error')) || '',
         path,
       };
     }
@@ -4135,16 +4147,18 @@ import sampleRUM from './rum.js';
             ...getAdminFetchOptions(),
           },
         );
-        // bust client cache for live and production
-        if (config.outerHost) {
-          // reuse purgeURL to ensure page relative paths (e.g. when publishing dependencies)
-          await fetch(`https://${config.outerHost}${purgeURL.pathname}`, { cache: 'reload', mode: 'no-cors' });
+        if (resp.ok) {
+          // bust client cache for live and production
+          if (config.outerHost) {
+            // reuse purgeURL to ensure page relative paths (e.g. when publishing dependencies)
+            await fetch(`https://${config.outerHost}${purgeURL.pathname}`, { cache: 'reload', mode: 'no-cors' });
+          }
+          if (config.host) {
+            // reuse purgeURL to ensure page relative paths (e.g. when publishing dependencies)
+            await fetch(`https://${config.host}${purgeURL.pathname}`, { cache: 'reload', mode: 'no-cors' });
+          }
+          fireEvent(this, 'published', path);
         }
-        if (config.host) {
-          // reuse purgeURL to ensure page relative paths (e.g. when publishing dependencies)
-          await fetch(`https://${config.host}${purgeURL.pathname}`, { cache: 'reload', mode: 'no-cors' });
-        }
-        fireEvent(this, 'published', path);
       } catch (e) {
         console.error('failed to publish', path, e);
       }
