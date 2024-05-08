@@ -133,4 +133,42 @@ describe('Test unpublish plugin', () => {
       'Unpublish plugin not found',
     );
   }).timeout(IT_DEFAULT_TIMEOUT);
+
+  it('Unpublish plugin shows modal when rate-limited by admin', async () => {
+    const setup = new Setup('blog');
+    setup.apiResponse().live.permissions.push('delete'); // add delete permission
+    nock.sidekick(setup);
+    nock.admin(setup);
+    nock('https://admin.hlx.page')
+      .delete('/live/adobe/blog/main/en/topics/bla')
+      .reply(429);
+    const { notification } = await new SidekickTest({
+      browser,
+      page,
+      setup,
+      plugin: 'unpublish',
+      acceptDialogs: true,
+    }).run();
+    assert.ok(notification.message.includes('429'), 'Reload plugin does not show modal on 429');
+    assert.ok(notification.message.includes('publishing service'), 'Reload plugin does not mention admin');
+  }).timeout(IT_DEFAULT_TIMEOUT);
+
+  it('Unpublish plugin shows modal when rate-limited by onedrive', async () => {
+    const setup = new Setup('blog');
+    setup.apiResponse().live.permissions.push('delete'); // add delete permission
+    nock.sidekick(setup);
+    nock.admin(setup);
+    nock('https://admin.hlx.page')
+      .delete('/live/adobe/blog/main/en/topics/bla')
+      .reply(503, '', { 'x-error': 'unable to handle onedrive (429)' });
+    const { notification } = await new SidekickTest({
+      browser,
+      page,
+      setup,
+      plugin: 'unpublish',
+      acceptDialogs: true,
+    }).run();
+    assert.ok(notification.message.includes('429'), 'Reload plugin does not show modal on 429');
+    assert.ok(notification.message.includes('Microsoft SharePoint'), 'Reload plugin does not mention onedrive');
+  }).timeout(IT_DEFAULT_TIMEOUT);
 });
