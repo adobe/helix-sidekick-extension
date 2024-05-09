@@ -1143,7 +1143,7 @@ import sampleRUM from './rum.js';
       return;
     }
     sk.hideModal();
-    sk.switchEnv('preview');
+    sk.switchEnv('preview', false, true);
   }
 
   /**
@@ -1504,7 +1504,14 @@ import sampleRUM from './rum.js';
             const redirectHost = config.host || config.outerHost;
             const prodURL = `https://${redirectHost}${path}`;
             console.log(`redirecting to ${prodURL}`);
-            sk.switchEnv('prod', newTab(evt));
+
+            let bustCache = true;
+            if (redirectHost === location.host) {
+              await fetch(prodURL, { cache: 'reload', mode: 'no-cors' });
+              bustCache = false;
+            }
+
+            sk.switchEnv('prod', newTab(evt), bustCache);
           } else {
             console.error(results);
             sk.showModal({
@@ -3909,7 +3916,7 @@ import sampleRUM from './rum.js';
      * @fires Sidekick#envswitched
      * @returns {Sidekick} The sidekick
      */
-    async switchEnv(targetEnv, open) {
+    async switchEnv(targetEnv, open, cacheBust = false) {
       this.showWait();
       const hostType = ENVS[targetEnv];
       if (!hostType) {
@@ -3941,6 +3948,14 @@ import sampleRUM from './rum.js';
         customViewUrl.searchParams.set('path', status.webPath);
         envUrl = customViewUrl;
       }
+
+      const liveDomains = ['aem.live', 'hlx.live'];
+      if (cacheBust
+        && !(targetEnv === 'prod' && !liveDomains.some((domain) => envUrl.includes(domain)) && this.config.transient)) {
+        const separator = envUrl.includes('?') ? '&' : '?';
+        envUrl = `${envUrl}${separator}nocache=${new Date().getTime()}`;
+      }
+
       // switch or open env
       if (open || this.isEditor()) {
         window.open(envUrl, open
@@ -4058,15 +4073,6 @@ import sampleRUM from './rum.js';
             ...getAdminFetchOptions(),
           },
         );
-        // bust client cache for live and production
-        if (config.outerHost) {
-          // reuse purgeURL to ensure page relative paths (e.g. when publishing dependencies)
-          await fetch(`https://${config.outerHost}${purgeURL.pathname}`, { cache: 'reload', mode: 'no-cors' });
-        }
-        if (config.host) {
-          // reuse purgeURL to ensure page relative paths (e.g. when publishing dependencies)
-          await fetch(`https://${config.host}${purgeURL.pathname}`, { cache: 'reload', mode: 'no-cors' });
-        }
         fireEvent(this, 'published', path);
       } catch (e) {
         console.error('failed to publish', path, e);
@@ -4162,7 +4168,7 @@ import sampleRUM from './rum.js';
       window.hlx.sidekick.show();
     } else {
       // toggle sidekick
-      window.hlx.sidekick.toggle();
+      // window.hlx.sidekick.toggle();
     }
     return window.hlx.sidekick;
   }
