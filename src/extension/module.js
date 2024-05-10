@@ -1907,13 +1907,14 @@ import sampleRUM from './rum.js';
               error = getBulkText([1], 'result', operation, 'error_too_large');
             }
           } else if (status === 415) {
-            error = getBulkText([1], 'result', operation, 'error_not_supported');
-          } else {
-            if (error?.endsWith('docx with google not supported.')) {
+            if (sk.location.host.endsWith('google.com')
+              && error?.includes('docx with google not supported')) {
               error = getBulkText([1], 'result', operation, 'error_no_docx');
-            }
-            if (error?.endsWith('xlsx with google not supported.')) {
+            } else if (sk.location.host.endsWith('google.com')
+              && error?.includes('xlsx with google not supported')) {
               error = getBulkText([1], 'result', operation, 'error_no_xlsx');
+            } else {
+              error = getBulkText([1], 'result', operation, 'error_not_supported');
             }
           }
           return `${path.split('/').pop()}${error ? `: ${error}` : ''}`;
