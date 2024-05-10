@@ -295,6 +295,17 @@ import sampleRUM from './rum.js';
   };
 
   /**
+   * Enumeration of rate limiting sources.
+   * @private
+   * @type {Object<string>}}
+   */
+  const RATE_LIMITER = {
+    NONE: '',
+    ADMIN: 'admin',
+    ONEDRIVE: 'onedrive',
+  };
+
+  /**
    * Detects the platform.
    * @private
    * @param {string} userAgent The user agent
@@ -762,12 +773,21 @@ import sampleRUM from './rum.js';
   }
 
   /**
-   * Checks if the request has been rate-limited.
+   * Checks if the request has been rate-limited and returns the source.
    * @param {Response} resp The response
-   * @returns {boolean} <code>true</code> if rate-limited, else <code>false</code>
+   * @returns {string} The rate limiter (see {@link RATE_LIMITER})
    */
-  function isRateLimited(resp) {
-    return resp.status === 429 || (resp.status === 503 && getServerError(resp).includes('429'));
+  function getRateLimiter(resp) {
+    if (resp.status === 429) {
+      return RATE_LIMITER.ADMIN;
+    }
+    const error = getServerError(resp);
+    if (resp.status === 503 && error.includes('(429)')) {
+      if (error.includes('onedrive')) {
+        return RATE_LIMITER.ONEDRIVE;
+      }
+    }
+    return RATE_LIMITER.NONE;
   }
 
   /**
@@ -1130,11 +1150,10 @@ import sampleRUM from './rum.js';
     const { status } = sk;
     const resp = await sk.update();
     if (!resp.ok) {
-      if (isRateLimited(resp)) {
+      const rateLimiter = getRateLimiter(resp);
+      if (rateLimiter) {
         sk.showModal({
-          message: i18n(sk, getServerError(resp).includes('onedrive')
-            ? 'error_status_429_onedrive'
-            : 'error_status_429_admin'),
+          message: i18n(sk, `error_status_429_${rateLimiter}`),
           sticky: true,
           level: 1,
         });
@@ -1424,11 +1443,10 @@ import sampleRUM from './rum.js';
           try {
             const resp = await sk.update();
             if (!resp.ok && resp.status >= 400) {
-              if (isRateLimited(resp)) {
+              const rateLimiter = getRateLimiter(resp);
+              if (rateLimiter) {
                 sk.showModal({
-                  message: i18n(sk, getServerError(resp).includes('onedrive')
-                    ? 'error_status_429_onedrive'
-                    : 'error_status_429_admin'),
+                  message: i18n(sk, `error_status_429_${rateLimiter}`),
                   sticky: true,
                   level: 1,
                 });
@@ -1491,11 +1509,10 @@ import sampleRUM from './rum.js';
             try {
               const resp = await sk.delete();
               if (!resp.ok && resp.status >= 400) {
-                if (isRateLimited(resp)) {
+                const rateLimiter = getRateLimiter(resp);
+                if (rateLimiter) {
                   sk.showModal({
-                    message: i18n(sk, getServerError(resp).includes('onedrive')
-                      ? 'error_status_429_onedrive'
-                      : 'error_status_429_admin'),
+                    message: i18n(sk, `error_status_429_${rateLimiter}`),
                     sticky: true,
                     level: 1,
                   });
@@ -1552,7 +1569,9 @@ import sampleRUM from './rum.js';
             console.log(`redirecting to ${prodURL}`);
             sk.switchEnv('prod', newTab(evt));
           } else {
-            const rateLimitedResults = results.filter((res) => isRateLimited(res));
+            const rateLimitedResults = results
+              .filter((res) => getRateLimiter(res))
+              .filter((limiter) => !!limiter);
             if (rateLimitedResults.length > 0) {
               sk.showModal({
                 message: i18n(sk, getServerError(rateLimitedResults[0]).includes('onedrive')
@@ -1609,11 +1628,10 @@ import sampleRUM from './rum.js';
             try {
               const resp = await sk.unpublish();
               if (!resp.ok && resp.status >= 400) {
-                if (isRateLimited(resp)) {
+                const rateLimiter = getRateLimiter(resp);
+                if (rateLimiter) {
                   sk.showModal({
-                    message: i18n(sk, getServerError(resp).includes('onedrive')
-                      ? 'error_status_429_onedrive'
-                      : 'error_status_429_admin'),
+                    message: i18n(sk, `error_status_429_${rateLimiter}`),
                     sticky: true,
                     level: 1,
                   });
@@ -1942,11 +1960,9 @@ import sampleRUM from './rum.js';
                 level = 1;
                 throw new Error(getBulkText([1], 'result', operation, 'error_no_source'));
               } else {
-                if (isRateLimited(resp)) {
-                  level = 1;
-                  throw new Error(i18n(sk, getServerError(resp).includes('onedrive')
-                    ? 'error_status_429_onedrive'
-                    : 'error_status_429_admin'));
+                const rateLimiter = getRateLimiter(resp);
+                if (rateLimiter) {
+                  throw new Error(i18n(sk, `error_status_429_${rateLimiter}`));
                 }
                 throw new Error(getServerError(resp));
               }
@@ -1994,10 +2010,9 @@ import sampleRUM from './rum.js';
           });
           return;
         } else if (!bulkResp.ok) {
-          if (isRateLimited(bulkResp)) {
-            throw new Error(i18n(sk, getServerError(bulkResp).includes('onedrive')
-              ? 'error_status_429_onedrive'
-              : 'error_status_429_admin'));
+          const rateLimiter = getRateLimiter(bulkResp);
+          if (rateLimiter) {
+            throw new Error(i18n(sk, `error_status_429_${rateLimiter}`));
           }
           throw new Error(getServerError(bulkResp));
         }
@@ -3294,10 +3309,8 @@ import sampleRUM from './rum.js';
                   : 'error_status_404_content';
                 break;
               default:
-                if (isRateLimited(resp)) {
-                  errorKey = getServerError(resp).includes('onedrive')
-                    ? 'error_status_429_onedrive'
-                    : 'error_status_429_admin';
+                if (getRateLimiter(resp)) {
+                  errorKey = `error_status_429_${getRateLimiter(resp)}`;
                   break;
                 }
                 errorKey = `error_status_${resp.status}`;
