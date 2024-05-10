@@ -1153,7 +1153,7 @@ import sampleRUM from './rum.js';
       const rateLimiter = getRateLimiter(resp);
       if (rateLimiter) {
         sk.showModal({
-          message: i18n(sk, `error_status_429_${rateLimiter}`),
+          message: i18n(sk, `error_rate_limited_${rateLimiter}`),
           sticky: true,
           level: 1,
         });
@@ -1446,7 +1446,7 @@ import sampleRUM from './rum.js';
               const rateLimiter = getRateLimiter(resp);
               if (rateLimiter) {
                 sk.showModal({
-                  message: i18n(sk, `error_status_429_${rateLimiter}`),
+                  message: i18n(sk, `error_rate_limited_${rateLimiter}`),
                   sticky: true,
                   level: 1,
                 });
@@ -1512,7 +1512,7 @@ import sampleRUM from './rum.js';
                 const rateLimiter = getRateLimiter(resp);
                 if (rateLimiter) {
                   sk.showModal({
-                    message: i18n(sk, `error_status_429_${rateLimiter}`),
+                    message: i18n(sk, `error_rate_limited_${rateLimiter}`),
                     sticky: true,
                     level: 1,
                   });
@@ -1574,7 +1574,7 @@ import sampleRUM from './rum.js';
               .filter((limiter) => !!limiter);
             if (rateLimitedResults.length > 0) {
               sk.showModal({
-                message: i18n(sk, `error_status_429_${rateLimitedResults[0]}`),
+                message: i18n(sk, `error_rate_limited_${rateLimitedResults[0]}`),
                 sticky: true,
                 level: 1,
               });
@@ -1629,7 +1629,7 @@ import sampleRUM from './rum.js';
                 const rateLimiter = getRateLimiter(resp);
                 if (rateLimiter) {
                   sk.showModal({
-                    message: i18n(sk, `error_status_429_${rateLimiter}`),
+                    message: i18n(sk, `error_rate_limited_${rateLimiter}`),
                     sticky: true,
                     level: 1,
                   });
@@ -1967,7 +1967,7 @@ import sampleRUM from './rum.js';
               } else {
                 const rateLimiter = getRateLimiter(resp);
                 if (rateLimiter) {
-                  throw new Error(i18n(sk, `error_status_429_${rateLimiter}`));
+                  throw new Error(i18n(sk, `error_rate_limited_${rateLimiter}`));
                 }
                 throw new Error(getServerError(resp));
               }
@@ -2017,7 +2017,7 @@ import sampleRUM from './rum.js';
         } else if (!bulkResp.ok) {
           const rateLimiter = getRateLimiter(bulkResp);
           if (rateLimiter) {
-            throw new Error(i18n(sk, `error_status_429_${rateLimiter}`));
+            throw new Error(i18n(sk, `error_rate_limited_${rateLimiter}`));
           }
           throw new Error(getServerError(bulkResp));
         }
@@ -3315,7 +3315,7 @@ import sampleRUM from './rum.js';
                 break;
               default:
                 if (getRateLimiter(resp)) {
-                  errorKey = `error_status_429_${getRateLimiter(resp)}`;
+                  errorKey = `error_rate_limited_${getRateLimiter(resp)}`;
                   break;
                 }
                 errorKey = `error_status_${resp.status}`;
