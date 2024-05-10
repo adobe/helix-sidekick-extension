@@ -206,8 +206,8 @@ describe('Test delete plugin', () => {
       plugin: 'delete',
       acceptDialogs: true,
     }).run();
-    assert.ok(notification.message.includes('429'), 'Reload plugin does not show modal on 429');
-    assert.ok(notification.message.includes('publishing service'), 'Reload plugin does not mention admin');
+    assert.ok(notification.message.includes('429'), 'Delete plugin does not show modal on 429');
+    assert.ok(notification.message.includes('publishing service'), 'Delete plugin does not mention admin');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Delete plugin shows modal when rate-limited by onedrive', async () => {
@@ -225,7 +225,7 @@ describe('Test delete plugin', () => {
       plugin: 'delete',
       acceptDialogs: true,
     }).run();
-    assert.ok(notification.message.includes('429'), 'Reload plugin does not show modal on 429');
-    assert.ok(notification.message.includes('Microsoft SharePoint'), 'Reload plugin does not mention onedrive');
+    assert.ok(notification.message.includes('429'), 'Delete plugin does not show modal on 429');
+    assert.ok(notification.message.includes('Microsoft SharePoint'), 'Delete plugin does not mention onedrive');
   }).timeout(IT_DEFAULT_TIMEOUT);
 });

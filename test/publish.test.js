@@ -204,8 +204,8 @@ describe('Test publish plugin', () => {
       setup,
       plugin: 'publish',
     }).run();
-    assert.ok(notification.message.includes('429'), 'Reload plugin does not show modal on 429');
-    assert.ok(notification.message.includes('publishing service'), 'Reload plugin does not mention admin');
+    assert.ok(notification.message.includes('429'), 'Publish plugin does not show modal on 429');
+    assert.ok(notification.message.includes('publishing service'), 'Publish plugin does not mention admin');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Publish plugin shows modal when rate-limited by onedrive', async () => {
@@ -221,7 +221,7 @@ describe('Test publish plugin', () => {
       setup,
       plugin: 'publish',
     }).run();
-    assert.ok(notification.message.includes('429'), 'Reload plugin does not show modal on 429');
-    assert.ok(notification.message.includes('Microsoft SharePoint'), 'Reload plugin does not mention onedrive');
+    assert.ok(notification.message.includes('429'), 'Publish plugin does not show modal on 429');
+    assert.ok(notification.message.includes('Microsoft SharePoint'), 'Publish plugin does not mention onedrive');
   }).timeout(IT_DEFAULT_TIMEOUT);
 });

@@ -346,6 +346,13 @@ describe('Test bulk preview plugin', () => {
     nock.bulkJob(setup, {
       resources: [
         { path: '/documents/file.pdf', status: 404 },
+        { path: '/documents/file.xyz', status: 415 },
+        { path: '/icons/icon-1.svg', status: 400, error: 'script or event handler detected' },
+        { path: '/icons/icon-2.svg', status: 400, error: 'expected XML content with an SVG root item' },
+        { path: '/icons/icon-3.svg', status: 400, error: 'something else' },
+        { path: '/assets/animation-1.mp4', status: 400, error: 'MP4 is longer than 2 minutes' },
+        { path: '/assets/animation-2.mp4', status: 400, error: 'MP4 has a higher bitrate than 300 KB/s' },
+        { path: '/assets/animation-3.mp4', status: 400, error: 'something else' },
       ],
       failed: 1,
     });

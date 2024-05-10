@@ -450,17 +450,13 @@ describe('Test bulk copy URLs plugin', () => {
         browser,
         page,
         plugin: 'bulk-copy-prod-urls',
-        pluginSleep: 1000,
+        pluginSleep: 2000,
         acceptDialogs: true,
         fixture,
         url: setup.getUrl('edit', 'admin'),
         post: (p) => p.evaluate((url) => {
           document.getElementById('sidekick_test_location').value = `${url}&navigated=true`;
         }, setup.getUrl('edit', 'admin')),
-        checkPage: (p) => p.evaluate(() => new Promise((resolve) => {
-          // wait a bit
-          setTimeout(resolve, 1000);
-        })),
         loadModule: true,
       }).run();
       const statusReqs = requestsMade
