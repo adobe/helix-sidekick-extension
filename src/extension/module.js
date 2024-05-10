@@ -1574,9 +1574,7 @@ import sampleRUM from './rum.js';
               .filter((limiter) => !!limiter);
             if (rateLimitedResults.length > 0) {
               sk.showModal({
-                message: i18n(sk, getServerError(rateLimitedResults[0]).includes('onedrive')
-                  ? 'error_status_429_onedrive'
-                  : 'error_status_429_admin'),
+                message: i18n(sk, `error_status_429_${rateLimitedResults[0]}`),
                 sticky: true,
                 level: 1,
               });
