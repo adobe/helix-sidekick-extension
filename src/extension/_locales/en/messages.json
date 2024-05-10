@@ -369,12 +369,6 @@
   "edit_date": {
     "message": "Edited: "
   },
-  "error_rate_limited_admin": {
-    "message": "429 Too many requests: Your project is being throttled by $1. Please wait and try again later."
-  },
-  "error_rate_limited_onedrive": {
-    "message": "429 Too many requests: Your project is being throttled by Microsoft SharePoint. Please wait and try again later."
-  },
   "error_config_failure": {
     "message": "Failed to activate configuration: "
   },
@@ -407,6 +401,12 @@
   },
   "error_status_404_document": {
     "message": "404 Not found: Check your Sidekick configuration and make sure access to this document is granted."
+  },
+  "error_status_429_admin": {
+    "message": "429 Too many requests: Your project is being throttled by our publishing service. Please wait and try again later."
+  },
+  "error_status_429_onedrive": {
+    "message": "429 Too many requests: Your project is being throttled by Microsoft SharePoint. Please wait and try again later."
   },
   "error_status_500": {
     "message": "500 Internal server error: Failed to fetch the page status. Please try again later."
