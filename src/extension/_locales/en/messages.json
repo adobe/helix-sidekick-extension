@@ -67,10 +67,13 @@
     "message": "Microsoft Excel document, convert to Google Sheets first"
   },
   "bulk_result_preview_single_error_not_supported": {
-    "message": "File type not supported."
+    "message": "File type not supported. Refer to the documentation for supported file types."
   },
   "bulk_result_preview_single_error_too_large": {
-    "message": "File too large."
+    "message": "File too large. Refer to the documentation for file size limits."
+  },
+  "bulk_result_preview_single_error_svg_invalid": {
+    "message": "SVG invalid. Make sure it is valid XML and contains no scripts."
   },
   "bulk_result_preview_single_failure": {
     "message": "Failed to generate preview of this file:"

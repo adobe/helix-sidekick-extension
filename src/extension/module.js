@@ -1570,7 +1570,7 @@ import sampleRUM from './rum.js';
             sk.switchEnv('prod', newTab(evt));
           } else {
             const rateLimitedResults = results
-              .filter((res) => getRateLimiter(res))
+              .map((res) => getRateLimiter(res))
               .filter((limiter) => !!limiter);
             if (rateLimitedResults.length > 0) {
               sk.showModal({
@@ -1894,22 +1894,29 @@ import sampleRUM from './rum.js';
         const failureText = getBulkText([failed.length], 'result', operation, 'failure');
         lines.push(failureText);
         // localize error messages
-        lines.push(...failed.map((item) => {
-          if (item.status === 404) {
-            item.error = getBulkText([1], 'result', operation, 'error_no_source');
-          } else if (item.status === 400) {
-            item.error = getBulkText([1], 'result', operation, 'error_too_large');
-          } else if (item.status === 415) {
-            item.error = getBulkText([1], 'result', operation, 'error_not_supported');
-          } else {
-            if (item.error?.endsWith('docx with google not supported.')) {
-              item.error = getBulkText([1], 'result', operation, 'error_no_docx');
+        lines.push(...failed.map(({ path, status, error }) => {
+          if (status === 404) {
+            error = getBulkText([1], 'result', operation, 'error_no_source');
+          } else if (status === 400) {
+            if (path.endsWith('.svg')
+              && (error?.includes('script or event handler') || error?.includes('XML'))) {
+              error = getBulkText([1], 'result', operation, 'error_svg_invalid');
             }
-            if (item.error?.endsWith('xlsx with google not supported.')) {
-              item.error = getBulkText([1], 'result', operation, 'error_no_xlsx');
+            if (path.endsWith('.mp4')
+              && (error?.includes('is longer') || error?.includes('has a higher bitrate'))) {
+              error = getBulkText([1], 'result', operation, 'error_too_large');
+            }
+          } else if (status === 415) {
+            error = getBulkText([1], 'result', operation, 'error_not_supported');
+          } else {
+            if (error?.endsWith('docx with google not supported.')) {
+              error = getBulkText([1], 'result', operation, 'error_no_docx');
+            }
+            if (error?.endsWith('xlsx with google not supported.')) {
+              error = getBulkText([1], 'result', operation, 'error_no_xlsx');
             }
           }
-          return `${item.path.split('/').pop()}${item.error ? `: ${item.error}` : ''}`;
+          return `${path.split('/').pop()}${error ? `: ${error}` : ''}`;
         }));
       }
       lines.push(createTag({
