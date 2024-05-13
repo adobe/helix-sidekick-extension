@@ -150,7 +150,6 @@ export class SidekickTest extends EventEmitter {
       ? new Set(Array.isArray(o.waitNavigation) ? o.waitNavigation : [o.waitNavigation])
       : new Set();
     this.waitNavigationTime = 2000;
-    this.loadModule = o.loadModule || false;
 
     // options derived from setup - or overrides
     this.url = o.url || this.setup.getUrl(this.env, this.type);
@@ -301,13 +300,6 @@ export class SidekickTest extends EventEmitter {
             return toResp(setup.configJson, new URL(url).pathname);
           }
         }
-      } else if (url.startsWith('file://') && url.indexOf('/bookmarklet/') > 0 && !url.endsWith('/app.js')) {
-        // rewrite all `/bookmarklet/` requests (except app.js)
-        if (DEBUG_LOGS) {
-          // eslint-disable-next-line no-console
-          console.log('[pup] rewriting', url);
-        }
-        req.url = req.url.replace('/bookmarklet/', '/extension/');
       }
       return null;
     };
@@ -339,7 +331,6 @@ export class SidekickTest extends EventEmitter {
           async (
             testLocation,
             skCfg,
-            isBookmarklet,
             checkEvents = [],
             forceRUM = false,
           ) => {
@@ -357,32 +348,19 @@ export class SidekickTest extends EventEmitter {
               input.value = testLocation;
             }
             // inject sidekick
-            if (isBookmarklet) {
-              const s = document.createElement('script');
-              s.id = 'hlx-sk-app';
-              s.src = '../../src/bookmarklet/app.js';
-              skCfg.scriptRoot = 'https://www.hlx.live/tools/sidekick';
-              s.dataset.config = JSON.stringify(skCfg);
-              if (document.head.querySelector('script#hlx-sk-app')) {
-                document.head.querySelector('script#hlx-sk-app').replaceWith(s);
-              } else {
-                document.head.append(s);
-              }
+            const moduleScript = document.createElement('script');
+            moduleScript.id = 'hlx-sk-module';
+            moduleScript.src = '../../src/extension/module.js';
+            moduleScript.type = 'module';
+            moduleScript.addEventListener('load', async () => {
+              skCfg.scriptUrl = 'https://www.hlx.live/tools/sidekick/module.js';
+              window.hlx.sidekickConfig = skCfg;
+              window.hlx.initSidekick(skCfg);
+            });
+            if (document.head.querySelector('script#hlx-sk-module')) {
+              document.head.querySelector('script#hlx-sk-module').replaceWith(moduleScript);
             } else {
-              const moduleScript = document.createElement('script');
-              moduleScript.id = 'hlx-sk-module';
-              moduleScript.src = '../../src/extension/module.js';
-              moduleScript.type = 'module';
-              moduleScript.addEventListener('load', async () => {
-                skCfg.scriptUrl = 'https://www.hlx.live/tools/sidekick/module.js';
-                window.hlx.sidekickConfig = skCfg;
-                window.hlx.initSidekick(skCfg);
-              });
-              if (document.head.querySelector('script#hlx-sk-module')) {
-                document.head.querySelector('script#hlx-sk-module').replaceWith(moduleScript);
-              } else {
-                document.head.append(moduleScript);
-              }
+              document.head.append(moduleScript);
             }
 
             // wait for sidekick to initialize
@@ -431,7 +409,6 @@ export class SidekickTest extends EventEmitter {
           },
           pageUrl || this.url,
           this.sidekickConfig,
-          !this.loadModule,
           this.checkEvents,
           !!this.checkRUM,
         ))
