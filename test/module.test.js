@@ -122,11 +122,13 @@ describe('Test sidekick', () => {
 
       it('Handles errors fetching status from admin API', async () => {
         const errors = [
-          { status: 404, body: 'Not found' },
-          { status: 403, body: 'Forbidden' },
-          { status: 500, body: 'Server error' },
-          { status: 504, body: 'Gateway timeout' },
-          { status: undefined, body: 'Network error' },
+          { status: 404, expectedMessage: 'Not found', expectedClass: 'level-1' },
+          { status: 403, expectedMessage: 'Forbidden', expectedClass: 'level-1' },
+          { status: 429, expectedMessage: 'Too many requests', expectedClass: 'level-1' },
+          { status: 500, expectedMessage: 'Internal server error', expectedClass: 'level-0' },
+          { status: 501, expectedMessage: 'https://status.adobe.com', expectedClass: 'level-0' },
+          { status: 503, expectedMessage: 'Too many requests', expectedClass: 'level-1' },
+          { status: 504, expectedMessage: 'Gateway timeout', expectedClass: 'level-0' },
         ];
         nock('https://admin.hlx.page')
           .get('/status/adobe/blog/main/en/topics/bla?editUrl=auto')
@@ -134,11 +136,21 @@ describe('Test sidekick', () => {
           .get('/status/adobe/blog/main/en/topics/bla?editUrl=auto')
           .reply(403)
           .get('/status/adobe/blog/main/en/topics/bla?editUrl=auto')
+          .reply(429)
+          .get('/status/adobe/blog/main/en/topics/bla?editUrl=auto')
           .reply(500)
           .get('/status/adobe/blog/main/en/topics/bla?editUrl=auto')
-          .reply(504)
+          .reply(501)
           .get('/status/adobe/blog/main/en/topics/bla?editUrl=auto')
-          .reply(503);
+          .reply(
+            503,
+            'Service unavailable',
+            {
+              'x-error': '[admin] Unable to handle onedrive: (429) - The request has been throttled',
+            },
+          )
+          .get('/status/adobe/blog/main/en/topics/bla?editUrl=auto')
+          .reply(504);
         nock.sidekick(new Setup('blog'), { persist: true }); // will be called multiple times
         const test = new SidekickTest({
           browser,
@@ -151,14 +163,18 @@ describe('Test sidekick', () => {
             return window.hlx.sidekick;
           }),
         });
-        while (errors.length) {
-          const { status = 'https://status.adobe.com' } = errors.shift();
+        while (errors.length > 0) {
+          const { expectedMessage, expectedClass } = errors.shift();
           // eslint-disable-next-line no-await-in-loop
           const { notification, checkPageResult } = await test.run();
           const sidekick = checkPageResult;
           assert.ok(
-            notification.message.includes(status),
-            `Expected ${status} in message, but got ${notification.message}`,
+            notification.message.includes(expectedMessage),
+            `Expected ${expectedMessage} in message, but got ${notification.message}`,
+          );
+          assert.ok(
+            notification.className.includes(expectedClass),
+            `Expected ${expectedClass} styling, but got ${notification.className}`,
           );
           assert.strictEqual(sidekick, undefined, 'Did not delete sidekick');
         }

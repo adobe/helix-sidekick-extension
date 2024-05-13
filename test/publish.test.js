@@ -190,4 +190,38 @@ describe('Test publish plugin', () => {
       'Publish plugin without update class',
     );
   }).timeout(IT_DEFAULT_TIMEOUT);
+
+  it('Publish plugin shows modal when rate-limited by admin', async () => {
+    const setup = new Setup('blog');
+    nock.sidekick(setup);
+    nock.admin(setup);
+    nock('https://admin.hlx.page')
+      .post('/live/adobe/blog/main/en/topics/bla')
+      .reply(429);
+    const { notification } = await new SidekickTest({
+      browser,
+      page,
+      setup,
+      plugin: 'publish',
+    }).run();
+    assert.ok(notification.message.includes('429'), 'Publish plugin does not show modal on 429');
+    assert.ok(notification.message.includes('publishing service'), 'Publish plugin does not mention admin');
+  }).timeout(IT_DEFAULT_TIMEOUT);
+
+  it('Publish plugin shows modal when rate-limited by onedrive', async () => {
+    const setup = new Setup('blog');
+    nock.sidekick(setup);
+    nock.admin(setup);
+    nock('https://admin.hlx.page')
+      .post('/live/adobe/blog/main/en/topics/bla')
+      .reply(503, '', { 'x-error': 'unable to handle onedrive (429)' });
+    const { notification } = await new SidekickTest({
+      browser,
+      page,
+      setup,
+      plugin: 'publish',
+    }).run();
+    assert.ok(notification.message.includes('429'), 'Publish plugin does not show modal on 429');
+    assert.ok(notification.message.includes('Microsoft SharePoint'), 'Publish plugin does not mention onedrive');
+  }).timeout(IT_DEFAULT_TIMEOUT);
 });
