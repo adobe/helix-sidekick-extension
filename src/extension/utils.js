@@ -542,32 +542,32 @@ export async function getProjectEnv({
       credentials: 'include',
       headers: authToken ? { 'x-auth-token': authToken } : {},
     };
-    res = await fetch(`https://admin.hlx.page/sidekick/${owner}/${repo}/${ref}/env.json`, options);
+    res = await fetch(`https://admin.hlx.page/sidekick/${owner}/${repo}/${ref}/config.json`, options);
   } catch (e) {
     log.warn(`unable to retrieve project config: ${e}`);
   }
   if (res && res.ok) {
     const {
-      preview,
-      live,
-      prod,
+      previewHost,
+      liveHost,
+      host,
       project,
-      contentSourceUrl,
+      mountpoints,
     } = await res.json();
-    if (preview && preview.host) {
-      env.previewHost = preview.host;
+    if (previewHost) {
+      env.previewHost = previewHost;
     }
-    if (live && live.host) {
-      env.liveHost = live.host;
+    if (liveHost) {
+      env.liveHost = liveHost;
     }
-    if (prod && prod.host) {
-      env.host = prod.host;
+    if (host) {
+      env.host = host;
     }
     if (project) {
       env.project = project;
     }
-    if (contentSourceUrl) {
-      env.mountpoints = [contentSourceUrl];
+    if (mountpoints) {
+      env.mountpoints = mountpoints;
     }
   } else if (res.status === 401) {
     env.unauthorized = true;

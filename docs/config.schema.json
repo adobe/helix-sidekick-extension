@@ -158,6 +158,13 @@
       "format": "idn-hostname",
       "description": "The host name of the production website"
     },
+    "mountpoints": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "The mountpoints for the project"
+    },
     "container": {
       "type": "string",
       "description": "The ID of the dropdown container to add this plugin to"
