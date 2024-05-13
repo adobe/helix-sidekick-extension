@@ -3953,7 +3953,7 @@ import sampleRUM from './rum.js';
       if (cacheBust
         && !(targetEnv === 'prod' && !liveDomains.some((domain) => envUrl.includes(domain)) && this.config.transient)) {
         const separator = envUrl.includes('?') ? '&' : '?';
-        envUrl = `${envUrl}${separator}nocache=${new Date().getTime()}`;
+        envUrl = `${envUrl}${separator}nocache=${Date.now()}`;
       }
 
       // switch or open env
@@ -3992,9 +3992,10 @@ import sampleRUM from './rum.js';
           },
         );
         if (resp.ok) {
-          if (this.isEditor() || this.isInner() || this.isDev()) {
+          if (this.isInner() || this.isDev()) {
+            const host = this.isDev() ? config.devUrl.host : `https://${config.innerHost}`;
             // bust client cache
-            await fetch(`https://${config.innerHost}${path}`, { cache: 'reload', mode: 'no-cors' });
+            await fetch(`${host}${path}`, { cache: 'reload', mode: 'no-cors' });
           }
           respPath = (await resp.json()).webPath;
           fireEvent(this, 'updated', respPath); // @deprecated for content, use for code only

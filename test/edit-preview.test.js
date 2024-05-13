@@ -49,17 +49,13 @@ describe('Test editor preview plugin', () => {
     nock('https://admin.hlx.page')
       .post('/preview/adobe/blog/main/en/topics/bla')
       .reply(201);
-    nock('https://main--blog--adobe.hlx.page')
-      .persist()
-      .get(/.*/)
-      .reply(200, 'blog adobe...');
     const { requestsMade } = await new SidekickTest({
       browser,
       page,
       url: 'https://adobe.sharepoint.com/:w:/r/sites/TheBlog/_layouts/15/Doc.aspx?sourcedoc=%7BE8EC80CB-24C3-4B95-B082-C51FD8BC8760%7D&file=bla.docx&action=default&mobileredirect=true',
       plugin: 'edit-preview',
       waitPopup: 2000,
-      waitNavigation: 'https://main--blog--adobe.hlx.page/en/topics/bla',
+      waitNavigation: 'https://main--blog--adobe.hlx.page/en/topics/bla?nocache=',
       loadModule: true,
     }).run();
     const updateReq = requestsMade
@@ -71,7 +67,7 @@ describe('Test editor preview plugin', () => {
     );
     const afterUpdate = requestsMade.slice(requestsMade.indexOf(updateReq) + 1);
     assert.ok(
-      afterUpdate[0] && afterUpdate[0].url.startsWith('https://main--blog--adobe.hlx.page/'),
+      afterUpdate[0] && afterUpdate[0].url.startsWith('https://main--blog--adobe.hlx.page/en/topics/bla?nocache='),
       'Client cache not busted',
     );
   }).timeout(IT_DEFAULT_TIMEOUT);
@@ -117,16 +113,12 @@ describe('Test editor preview plugin', () => {
       .reply(200)
       .get('/status/adobe/blog/main?editUrl=https%3A%2F%2Fadobe.sharepoint.com%2F%3Aw%3A%2Fr%2Fsites%2FTheBlog%2F_layouts%2F15%2FDoc.aspx%3Fsourcedoc%3D%257BE8EC80CB-24C3-4B95-B082-C51FD8BC8760%257D%26file%3Dbla.docx%26action%3Ddefault%26mobileredirect%3Dtrue')
       .reply(200, setup.apiResponse());
-    nock('https://main--blog--adobe.hlx.page')
-      .persist()
-      .get(/.*/)
-      .reply(200, 'blog adobe...');
     const { requestsMade } = await new SidekickTest({
       browser,
       page,
       url: 'https://adobe.sharepoint.com/:w:/r/sites/TheBlog/_layouts/15/Doc.aspx?sourcedoc=%7BE8EC80CB-24C3-4B95-B082-C51FD8BC8760%7D&file=bla.docx&action=default&mobileredirect=true',
       plugin: 'edit-preview',
-      waitNavigation: 'https://main--blog--adobe.hlx.page/en/topics/bla',
+      waitNavigation: 'https://main--blog--adobe.hlx.page/en/topics/bla?nocache=',
       loadModule: true,
     }).run();
     const statusReqs = requestsMade
@@ -143,9 +135,6 @@ describe('Test editor preview plugin', () => {
     nock('https://admin.hlx.page')
       .post('/preview/adobe/blog/main/.helix/config.json')
       .reply(200);
-    nock('https://main--blog--adobe.hlx.page')
-      .get('/.helix/config.json')
-      .reply(200, '{}');
 
     const { popupOpened, notification } = await new SidekickTest({
       browser,

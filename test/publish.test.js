@@ -12,6 +12,7 @@
 /* eslint-env mocha */
 
 import assert from 'assert';
+import { expect } from '@esm-bundle/chai';
 import {
   IT_DEFAULT_TIMEOUT, Nock, Setup, TestBrowser,
 } from './utils.js';
@@ -49,24 +50,18 @@ describe('Test publish plugin', () => {
     nock('https://admin.hlx.page')
       .post('/live/adobe/blog/main/en/topics/bla')
       .reply(200);
-    nock('https://main--blog--adobe.hlx.live')
-      .get('/en/topics/bla')
-      .reply(200, 'bla');
-    nock('https://blog.adobe.com')
-      .get('/en/topics/bla')
-      .reply(200, 'bla');
     const { requestsMade, navigated } = await new SidekickTest({
       browser,
       page,
       plugin: 'publish',
-      waitNavigation: 'https://blog.adobe.com/en/topics/bla',
+      waitNavigation: 'https://blog.adobe.com/en/topics/bla?nocache=',
     }).run();
     const publishReq = requestsMade.find((r) => r.method === 'POST');
     assert.ok(
       publishReq && publishReq.url.startsWith('https://admin.hlx.page/live/'),
       'Live API not called',
     );
-    assert.strictEqual(navigated, 'https://blog.adobe.com/en/topics/bla', 'Redirect not sent');
+    expect(navigated.startsWith('https://blog.adobe.com/en/topics/bla?nocache=')).to.equal(true);
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Publish plugin also publishes dependencies', async () => {
@@ -80,20 +75,6 @@ describe('Test publish plugin', () => {
       .reply(200)
       .post('/live/adobe/blog/main/en/topics/bar')
       .reply(200);
-    nock('https://main--blog--adobe.hlx.live')
-      .get('/en/topics/bla')
-      .reply(200, 'bla')
-      .get('/en/topics/foo')
-      .reply(200, 'bla')
-      .get('/en/topics/bar')
-      .reply(200, 'bla');
-    nock('https://blog.adobe.com')
-      .get('/en/topics/bla')
-      .reply(200, 'bla')
-      .get('/en/topics/foo')
-      .reply(200, 'bla')
-      .get('/en/topics/bar')
-      .reply(200, 'bla');
     const { requestsMade } = await new SidekickTest({
       browser,
       page,
@@ -111,37 +92,6 @@ describe('Test publish plugin', () => {
     assert.ok(
       publishPaths[1].endsWith('/en/topics/foo') && publishPaths[2].endsWith('/en/topics/bar'),
       'Dependencies not published in expected order',
-    );
-  }).timeout(IT_DEFAULT_TIMEOUT);
-
-  it('Publish plugin busts client cache', async () => {
-    const setup = new Setup('blog');
-    nock.sidekick(setup);
-    nock.admin(setup);
-    nock('https://admin.hlx.page')
-      .post('/live/adobe/blog/main/en/topics/bla')
-      .reply(200);
-    nock('https://main--blog--adobe.hlx.live')
-      .get('/en/topics/bla')
-      .reply(200, 'bla');
-    nock('https://blog.adobe.com')
-      .get('/en/topics/bla')
-      .reply(200, 'bla');
-
-    const { requestsMade } = await new SidekickTest({
-      browser,
-      page,
-      plugin: 'publish',
-      waitNavigation: 'https://blog.adobe.com/en/topics/bla',
-    }).run();
-    const afterPublish = requestsMade.slice(requestsMade.findIndex((r) => r.method === 'POST') + 1);
-    assert.ok(
-      afterPublish[0] && afterPublish[0].url.startsWith('https://main--blog--adobe.hlx.live/'),
-      'Client cache for live not busted',
-    );
-    assert.ok(
-      afterPublish[1] && afterPublish[1].url.startsWith('https://blog.adobe.com/'),
-      'Client cache for production not busted',
     );
   }).timeout(IT_DEFAULT_TIMEOUT);
 
