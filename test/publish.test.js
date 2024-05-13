@@ -85,7 +85,7 @@ describe('Test publish plugin', () => {
           'bar',
         ];
       }),
-      waitNavigation: 'https://blog.adobe.com/en/topics/bla',
+      waitNavigation: 'https://blog.adobe.com/en/topics/bla?nocache=',
     }).run();
     const publishPaths = requestsMade.filter((r) => r.method === 'POST').map((r) => new URL(r.url).pathname);
     assert.strictEqual(publishPaths.length, 3, 'Unexpected number of publish requests');
