@@ -1002,14 +1002,14 @@ import sampleRUM from './rum.js';
   }
 
   /**
-   * Returns the share URL for the sidekick bookmarklet.
+   * Returns the share URL for the sidekick.
    * @private
    * @param {Object} config The sidekick configuration
    * @param {string} from The URL of the referrer page
    * @returns {string} The share URL
    */
   function getShareUrl(config, from) {
-    const shareUrl = new URL('https://www.hlx.live/tools/sidekick/');
+    const shareUrl = new URL('https://www.aem.live/tools/sidekick/');
     shareUrl.search = new URLSearchParams([
       ['project', config.project || ''],
       ['from', from || ''],
@@ -3221,7 +3221,7 @@ import sampleRUM from './rum.js';
         // platform and browser data
         const platform = detectPlatform(navigator.userAgent);
         const browser = detectBrowser(navigator.userAgent);
-        const mode = this.config.scriptUrl.startsWith('https://') ? 'bookmarklet' : 'extension';
+        const mode = 'extension';
         sampleRUM('sidekick:loaded', {
           source: this.location.href,
           target: `${platform}:${browser}:${mode}`,
