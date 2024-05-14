@@ -873,3 +873,23 @@ export async function storeAuthToken(owner, token, exp) {
   // auth token changed, set/update admin auth header
   updateAdminAuthHeaderRules();
 }
+
+/**
+ * Removes the cache buster from the URL.
+ */
+export function removeCacheParam() {
+  const location = new URL(window.location);
+  const params = location.searchParams;
+
+  // Check if 'nocache' parameter exists
+  if (params.has('nocache')) {
+    // Remove 'nocache' parameter
+    params.delete('nocache');
+
+    // Update the URL without changing the browser history
+    window.history.replaceState(null, '', location);
+
+    // Now we are on same origin we are safe to reload the cache
+    fetch(location, { cache: 'reload' });
+  }
+}

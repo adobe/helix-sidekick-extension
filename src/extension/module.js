@@ -1188,7 +1188,7 @@ import sampleRUM from './rum.js';
       return;
     }
     sk.hideModal();
-    sk.switchEnv('preview');
+    sk.switchEnv('preview', false, true);
   }
 
   /**
@@ -1567,7 +1567,14 @@ import sampleRUM from './rum.js';
             const redirectHost = config.host || config.outerHost;
             const prodURL = `https://${redirectHost}${path}`;
             console.log(`redirecting to ${prodURL}`);
-            sk.switchEnv('prod', newTab(evt));
+
+            let bustCache = true;
+            if (redirectHost === location.host) {
+              await fetch(prodURL, { cache: 'reload' });
+              bustCache = false;
+            }
+
+            sk.switchEnv('prod', newTab(evt), bustCache);
           } else {
             const rateLimitedResults = results
               .map((res) => getRateLimiter(res))
@@ -4014,7 +4021,7 @@ import sampleRUM from './rum.js';
      * @fires Sidekick#envswitched
      * @returns {Sidekick} The sidekick
      */
-    async switchEnv(targetEnv, open) {
+    async switchEnv(targetEnv, open, cacheBust = false) {
       this.showWait();
       const hostType = ENVS[targetEnv];
       if (!hostType) {
@@ -4046,6 +4053,14 @@ import sampleRUM from './rum.js';
         customViewUrl.searchParams.set('path', status.webPath);
         envUrl = customViewUrl;
       }
+
+      const liveDomains = ['aem.live', 'hlx.live'];
+      if (cacheBust
+        && !(targetEnv === 'prod' && !liveDomains.some((domain) => envUrl.includes(domain)) && this.config.transient)) {
+        const separator = envUrl.includes('?') ? '&' : '?';
+        envUrl = `${envUrl}${separator}nocache=${Date.now()}`;
+      }
+
       // switch or open env
       if (open || this.isEditor()) {
         window.open(envUrl, open
@@ -4082,9 +4097,10 @@ import sampleRUM from './rum.js';
           },
         );
         if (resp.ok) {
-          if (this.isEditor() || this.isInner() || this.isDev()) {
+          if (this.isInner() || this.isDev()) {
+            const host = this.isDev() ? config.devUrl.host : `https://${config.innerHost}`;
             // bust client cache
-            await fetch(`https://${config.innerHost}${path}`, { cache: 'reload', mode: 'no-cors' });
+            await fetch(`${host}${path}`, { cache: 'reload' });
           }
           respPath = (await resp.json()).webPath;
           fireEvent(this, 'updated', respPath); // @deprecated for content, use for code only
@@ -4164,18 +4180,7 @@ import sampleRUM from './rum.js';
             ...getAdminFetchOptions(),
           },
         );
-        if (resp.ok) {
-          // bust client cache for live and production
-          if (config.outerHost) {
-            // reuse purgeURL to ensure page relative paths (e.g. when publishing dependencies)
-            await fetch(`https://${config.outerHost}${purgeURL.pathname}`, { cache: 'reload', mode: 'no-cors' });
-          }
-          if (config.host) {
-            // reuse purgeURL to ensure page relative paths (e.g. when publishing dependencies)
-            await fetch(`https://${config.host}${purgeURL.pathname}`, { cache: 'reload', mode: 'no-cors' });
-          }
-          fireEvent(this, 'published', path);
-        }
+        fireEvent(this, 'published', path);
       } catch (e) {
         console.error('failed to publish', path, e);
       }
@@ -4254,24 +4259,19 @@ import sampleRUM from './rum.js';
    * @returns {Sidekick} The sidekick
    */
   function initSidekick(cfg = {}) {
-    if (!window.hlx.sidekick) {
-      // merge base config with extended config
-      window.hlx.sidekickConfig = Object.assign(window.hlx.sidekickConfig || {}, cfg);
-      // init and show sidekick
-      try {
-        window.customElements.define('helix-sidekick', Sidekick);
-      } catch (e) {
-        // ignore
-      }
-      // make sure there is only one sidekick
-      document.querySelectorAll('helix-sidekick').forEach((sk) => sk.replaceWith(''));
-      window.hlx.sidekick = document.createElement('helix-sidekick');
-      document.body.prepend(window.hlx.sidekick);
-      window.hlx.sidekick.show();
-    } else {
-      // toggle sidekick
-      window.hlx.sidekick.toggle();
+    // merge base config with extended config
+    window.hlx.sidekickConfig = Object.assign(window.hlx.sidekickConfig || {}, cfg);
+    // init and show sidekick
+    try {
+      window.customElements.define('helix-sidekick', Sidekick);
+    } catch (e) {
+      // ignore
     }
+    // make sure there is only one sidekick
+    document.querySelectorAll('helix-sidekick').forEach((sk) => sk.replaceWith(''));
+    window.hlx.sidekick = document.createElement('helix-sidekick');
+    document.body.prepend(window.hlx.sidekick);
+    window.hlx.sidekick.show();
     return window.hlx.sidekick;
   }
 

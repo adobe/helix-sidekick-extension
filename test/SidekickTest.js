@@ -266,6 +266,14 @@ export class SidekickTest extends EventEmitter {
           requestsMade.push(reqObj);
           return -1;
         }
+
+        const startsWith = Array.from(this.waitNavigation)
+          .some((item) => url.startsWith(item));
+
+        if (startsWith) {
+          requestsMade.push(reqObj);
+          return -1;
+        }
       }
       if (url.endsWith('/favicon.ico')) {
         return { status: 404 };
