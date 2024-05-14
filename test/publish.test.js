@@ -12,7 +12,6 @@
 /* eslint-env mocha */
 
 import assert from 'assert';
-import { expect } from '@esm-bundle/chai';
 import {
   IT_DEFAULT_TIMEOUT, Nock, Setup, TestBrowser,
 } from './utils.js';
