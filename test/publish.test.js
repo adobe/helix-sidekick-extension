@@ -61,7 +61,7 @@ describe('Test publish plugin', () => {
       publishReq && publishReq.url.startsWith('https://admin.hlx.page/live/'),
       'Live API not called',
     );
-    expect(navigated.startsWith('https://blog.adobe.com/en/topics/bla?nocache=')).to.equal(true);
+    assert.ok(navigated.startsWith('https://blog.adobe.com/en/topics/bla?nocache='), 'Redirect not sent');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Publish plugin also publishes dependencies', async () => {
