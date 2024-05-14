@@ -49,24 +49,18 @@ describe('Test publish plugin', () => {
     nock('https://admin.hlx.page')
       .post('/live/adobe/blog/main/en/topics/bla')
       .reply(200);
-    nock('https://main--blog--adobe.hlx.live')
-      .get('/en/topics/bla')
-      .reply(200, 'bla');
-    nock('https://blog.adobe.com')
-      .get('/en/topics/bla')
-      .reply(200, 'bla');
     const { requestsMade, navigated } = await new SidekickTest({
       browser,
       page,
       plugin: 'publish',
-      waitNavigation: 'https://blog.adobe.com/en/topics/bla',
+      waitNavigation: 'https://blog.adobe.com/en/topics/bla?nocache=',
     }).run();
     const publishReq = requestsMade.find((r) => r.method === 'POST');
     assert.ok(
       publishReq && publishReq.url.startsWith('https://admin.hlx.page/live/'),
       'Live API not called',
     );
-    assert.strictEqual(navigated, 'https://blog.adobe.com/en/topics/bla', 'Redirect not sent');
+    assert.ok(navigated.startsWith('https://blog.adobe.com/en/topics/bla?nocache='), 'Redirect not sent');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Publish plugin also publishes dependencies', async () => {
@@ -80,20 +74,6 @@ describe('Test publish plugin', () => {
       .reply(200)
       .post('/live/adobe/blog/main/en/topics/bar')
       .reply(200);
-    nock('https://main--blog--adobe.hlx.live')
-      .get('/en/topics/bla')
-      .reply(200, 'bla')
-      .get('/en/topics/foo')
-      .reply(200, 'bla')
-      .get('/en/topics/bar')
-      .reply(200, 'bla');
-    nock('https://blog.adobe.com')
-      .get('/en/topics/bla')
-      .reply(200, 'bla')
-      .get('/en/topics/foo')
-      .reply(200, 'bla')
-      .get('/en/topics/bar')
-      .reply(200, 'bla');
     const { requestsMade } = await new SidekickTest({
       browser,
       page,
@@ -104,44 +84,13 @@ describe('Test publish plugin', () => {
           'bar',
         ];
       }),
-      waitNavigation: 'https://blog.adobe.com/en/topics/bla',
+      waitNavigation: 'https://blog.adobe.com/en/topics/bla?nocache=',
     }).run();
     const publishPaths = requestsMade.filter((r) => r.method === 'POST').map((r) => new URL(r.url).pathname);
     assert.strictEqual(publishPaths.length, 3, 'Unexpected number of publish requests');
     assert.ok(
       publishPaths[1].endsWith('/en/topics/foo') && publishPaths[2].endsWith('/en/topics/bar'),
       'Dependencies not published in expected order',
-    );
-  }).timeout(IT_DEFAULT_TIMEOUT);
-
-  it('Publish plugin busts client cache', async () => {
-    const setup = new Setup('blog');
-    nock.sidekick(setup);
-    nock.admin(setup);
-    nock('https://admin.hlx.page')
-      .post('/live/adobe/blog/main/en/topics/bla')
-      .reply(200);
-    nock('https://main--blog--adobe.hlx.live')
-      .get('/en/topics/bla')
-      .reply(200, 'bla');
-    nock('https://blog.adobe.com')
-      .get('/en/topics/bla')
-      .reply(200, 'bla');
-
-    const { requestsMade } = await new SidekickTest({
-      browser,
-      page,
-      plugin: 'publish',
-      waitNavigation: 'https://blog.adobe.com/en/topics/bla',
-    }).run();
-    const afterPublish = requestsMade.slice(requestsMade.findIndex((r) => r.method === 'POST') + 1);
-    assert.ok(
-      afterPublish[0] && afterPublish[0].url.startsWith('https://main--blog--adobe.hlx.live/'),
-      'Client cache for live not busted',
-    );
-    assert.ok(
-      afterPublish[1] && afterPublish[1].url.startsWith('https://blog.adobe.com/'),
-      'Client cache for production not busted',
     );
   }).timeout(IT_DEFAULT_TIMEOUT);
 
@@ -189,5 +138,39 @@ describe('Test publish plugin', () => {
       plugins.find((p) => p.id === 'publish')?.classes.includes('update'),
       'Publish plugin without update class',
     );
+  }).timeout(IT_DEFAULT_TIMEOUT);
+
+  it('Publish plugin shows modal when rate-limited by admin', async () => {
+    const setup = new Setup('blog');
+    nock.sidekick(setup);
+    nock.admin(setup);
+    nock('https://admin.hlx.page')
+      .post('/live/adobe/blog/main/en/topics/bla')
+      .reply(429);
+    const { notification } = await new SidekickTest({
+      browser,
+      page,
+      setup,
+      plugin: 'publish',
+    }).run();
+    assert.ok(notification.message.includes('429'), 'Publish plugin does not show modal on 429');
+    assert.ok(notification.message.includes('publishing service'), 'Publish plugin does not mention admin');
+  }).timeout(IT_DEFAULT_TIMEOUT);
+
+  it('Publish plugin shows modal when rate-limited by onedrive', async () => {
+    const setup = new Setup('blog');
+    nock.sidekick(setup);
+    nock.admin(setup);
+    nock('https://admin.hlx.page')
+      .post('/live/adobe/blog/main/en/topics/bla')
+      .reply(503, '', { 'x-error': 'unable to handle onedrive (429)' });
+    const { notification } = await new SidekickTest({
+      browser,
+      page,
+      setup,
+      plugin: 'publish',
+    }).run();
+    assert.ok(notification.message.includes('429'), 'Publish plugin does not show modal on 429');
+    assert.ok(notification.message.includes('Microsoft SharePoint'), 'Publish plugin does not mention onedrive');
   }).timeout(IT_DEFAULT_TIMEOUT);
 });

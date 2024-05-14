@@ -17,7 +17,10 @@
   const {
     log,
     getState,
+    removeCacheParam,
   } = await import('./utils.js');
+
+  removeCacheParam();
 
   let inject = () => {};
   if (!window.hlx.projectMatches) {
