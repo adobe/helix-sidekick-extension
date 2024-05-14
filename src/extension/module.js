@@ -297,7 +297,7 @@ import sampleRUM from './rum.js';
   /**
    * Enumeration of rate limiting sources.
    * @private
-   * @type {Object<string>}}
+   * @type {Object<string, string>}
    */
   const RATE_LIMITER = {
     NONE: '',
