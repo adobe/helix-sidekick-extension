@@ -890,6 +890,6 @@ export function removeCacheParam() {
     window.history.replaceState(null, '', location);
 
     // Now we are on same origin we are safe to reload the cache
-    fetch(location, { cache: 'reload', mode: 'no-cors' });
+    fetch(location, { cache: 'reload' });
   }
 }
