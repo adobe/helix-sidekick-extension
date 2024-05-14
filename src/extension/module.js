@@ -295,6 +295,17 @@ import sampleRUM from './rum.js';
   };
 
   /**
+   * Enumeration of rate limiting sources.
+   * @private
+   * @type {Object<string, string>}
+   */
+  const RATE_LIMITER = {
+    NONE: '',
+    ADMIN: 'admin',
+    ONEDRIVE: 'onedrive',
+  };
+
+  /**
    * Detects the platform.
    * @private
    * @param {string} userAgent The user agent
@@ -753,6 +764,33 @@ import sampleRUM from './rum.js';
   }
 
   /**
+   * Returns an error message from the server response.
+   * @param {Response} resp The response
+   * @returns {string} The error message or an empty string
+   */
+  function getServerError(resp) {
+    return (resp && (resp.error || resp.headers?.get('x-error'))) || '';
+  }
+
+  /**
+   * Checks if the request has been rate-limited and returns the source.
+   * @param {Response} resp The response
+   * @returns {string} The rate limiter (see {@link RATE_LIMITER})
+   */
+  function getRateLimiter(resp) {
+    if (resp.status === 429) {
+      return RATE_LIMITER.ADMIN;
+    }
+    const error = getServerError(resp);
+    if (resp.status === 503 && error.includes('(429)')) {
+      if (error.includes('onedrive')) {
+        return RATE_LIMITER.ONEDRIVE;
+      }
+    }
+    return RATE_LIMITER.NONE;
+  }
+
+  /**
    * Checks if the location has changed.
    * @private
    * @param {Sidekick} sk The sidekick
@@ -964,14 +1002,14 @@ import sampleRUM from './rum.js';
   }
 
   /**
-   * Returns the share URL for the sidekick bookmarklet.
+   * Returns the share URL for the sidekick.
    * @private
    * @param {Object} config The sidekick configuration
    * @param {string} from The URL of the referrer page
    * @returns {string} The share URL
    */
   function getShareUrl(config, from) {
-    const shareUrl = new URL('https://www.hlx.live/tools/sidekick/');
+    const shareUrl = new URL('https://www.aem.live/tools/sidekick/');
     shareUrl.search = new URLSearchParams([
       ['project', config.project || ''],
       ['from', from || ''],
@@ -1112,7 +1150,14 @@ import sampleRUM from './rum.js';
     const { status } = sk;
     const resp = await sk.update();
     if (!resp.ok) {
-      if (!ranBefore) {
+      const rateLimiter = getRateLimiter(resp);
+      if (rateLimiter) {
+        sk.showModal({
+          message: i18n(sk, `error_status_429_${rateLimiter}`),
+          sticky: true,
+          level: 1,
+        });
+      } else if (!ranBefore) {
         // assume document has been renamed, re-fetch status and try again
         sk.addEventListener('statusfetched', async () => {
           updatePreview(sk, true);
@@ -1398,6 +1443,15 @@ import sampleRUM from './rum.js';
           try {
             const resp = await sk.update();
             if (!resp.ok && resp.status >= 400) {
+              const rateLimiter = getRateLimiter(resp);
+              if (rateLimiter) {
+                sk.showModal({
+                  message: i18n(sk, `error_status_429_${rateLimiter}`),
+                  sticky: true,
+                  level: 1,
+                });
+                return;
+              }
               console.error(resp);
               throw new Error(resp);
             }
@@ -1455,6 +1509,15 @@ import sampleRUM from './rum.js';
             try {
               const resp = await sk.delete();
               if (!resp.ok && resp.status >= 400) {
+                const rateLimiter = getRateLimiter(resp);
+                if (rateLimiter) {
+                  sk.showModal({
+                    message: i18n(sk, `error_status_429_${rateLimiter}`),
+                    sticky: true,
+                    level: 1,
+                  });
+                  return;
+                }
                 console.error(resp);
                 throw new Error(resp);
               }
@@ -1513,6 +1576,17 @@ import sampleRUM from './rum.js';
 
             sk.switchEnv('prod', newTab(evt), bustCache);
           } else {
+            const rateLimitedResults = results
+              .map((res) => getRateLimiter(res))
+              .filter((limiter) => !!limiter);
+            if (rateLimitedResults.length > 0) {
+              sk.showModal({
+                message: i18n(sk, `error_status_429_${rateLimitedResults[0]}`),
+                sticky: true,
+                level: 1,
+              });
+              return;
+            }
             console.error(results);
             sk.showModal({
               message: i18n(sk, 'publish_failure'),
@@ -1559,6 +1633,15 @@ import sampleRUM from './rum.js';
             try {
               const resp = await sk.unpublish();
               if (!resp.ok && resp.status >= 400) {
+                const rateLimiter = getRateLimiter(resp);
+                if (rateLimiter) {
+                  sk.showModal({
+                    message: i18n(sk, `error_status_429_${rateLimiter}`),
+                    sticky: true,
+                    level: 1,
+                  });
+                  return;
+                }
                 console.error(resp);
                 throw new Error(resp);
               }
@@ -1818,18 +1901,28 @@ import sampleRUM from './rum.js';
         const failureText = getBulkText([failed.length], 'result', operation, 'failure');
         lines.push(failureText);
         // localize error messages
-        lines.push(...failed.map((item) => {
-          if (item.status === 404) {
-            item.error = getBulkText([1], 'result', operation, 'error_no_source');
-          } else {
-            if (item.error?.endsWith('docx with google not supported.')) {
-              item.error = getBulkText([1], 'result', operation, 'error_no_docx');
+        lines.push(...failed.map(({ path, status, error }) => {
+          if (status === 404) {
+            error = getBulkText([1], 'result', operation, 'error_no_source');
+          } else if (status === 400) {
+            if (path.endsWith('.svg')
+              && (error?.includes('script or event handler') || error?.includes('XML'))) {
+              error = getBulkText([1], 'result', operation, 'error_svg_invalid');
             }
-            if (item.error?.endsWith('xlsx with google not supported.')) {
-              item.error = getBulkText([1], 'result', operation, 'error_no_xlsx');
+            if (path.endsWith('.mp4')
+              && (error?.includes('is longer') || error?.includes('has a higher bitrate'))) {
+              error = getBulkText([1], 'result', operation, 'error_too_large');
+            }
+          } else if (status === 415) {
+            if (error?.includes('docx with google not supported')) {
+              error = getBulkText([1], 'result', operation, 'error_no_docx');
+            } else if (error?.includes('xlsx with google not supported')) {
+              error = getBulkText([1], 'result', operation, 'error_no_xlsx');
+            } else {
+              error = getBulkText([1], 'result', operation, 'error_not_supported');
             }
           }
-          return `${item.path.split('/').pop()}${item.error ? `: ${item.error}` : ''}`;
+          return `${path.split('/').pop()}${error ? `: ${error}` : ''}`;
         }));
       }
       lines.push(createTag({
@@ -1878,7 +1971,11 @@ import sampleRUM from './rum.js';
                 level = 1;
                 throw new Error(getBulkText([1], 'result', operation, 'error_no_source'));
               } else {
-                throw new Error(resp.headers['x-error']);
+                const rateLimiter = getRateLimiter(resp);
+                if (rateLimiter) {
+                  throw new Error(i18n(sk, `error_status_429_${rateLimiter}`));
+                }
+                throw new Error(getServerError(resp));
               }
             } else {
               showBulkOperationSummary({
@@ -1924,7 +2021,11 @@ import sampleRUM from './rum.js';
           });
           return;
         } else if (!bulkResp.ok) {
-          throw new Error(bulkResp.headers['x-error']);
+          const rateLimiter = getRateLimiter(bulkResp);
+          if (rateLimiter) {
+            throw new Error(i18n(sk, `error_status_429_${rateLimiter}`));
+          }
+          throw new Error(getServerError(bulkResp));
         }
 
         // start showing progress
@@ -3127,7 +3228,7 @@ import sampleRUM from './rum.js';
         // platform and browser data
         const platform = detectPlatform(navigator.userAgent);
         const browser = detectBrowser(navigator.userAgent);
-        const mode = this.config.scriptUrl.startsWith('https://') ? 'bookmarklet' : 'extension';
+        const mode = 'extension';
         sampleRUM('sidekick:loaded', {
           source: this.location.href,
           target: `${platform}:${browser}:${mode}`,
@@ -3219,6 +3320,10 @@ import sampleRUM from './rum.js';
                   : 'error_status_404_content';
                 break;
               default:
+                if (getRateLimiter(resp)) {
+                  errorKey = `error_status_429_${getRateLimiter(resp)}`;
+                  break;
+                }
                 errorKey = `error_status_${resp.status}`;
             }
             throw new Error(errorKey);
@@ -3245,7 +3350,7 @@ import sampleRUM from './rum.js';
               'https://status.adobe.com/',
             ],
             sticky: true,
-            level: 0,
+            level: message.includes('_status_4') ? 1 : 0,
             callback: () => {
               // this error is fatal, hide and delete sidekick
               if (window.hlx.sidekick) {
@@ -4033,7 +4138,7 @@ import sampleRUM from './rum.js';
           },
         );
         // also unpublish if published
-        if (status.live && status.live.lastModified) {
+        if (resp.ok && status.live && status.live.lastModified) {
           await this.unpublish(path);
         }
         fireEvent(this, 'deleted', path);
@@ -4043,6 +4148,7 @@ import sampleRUM from './rum.js';
       return {
         ok: (resp && resp.ok) || false,
         status: (resp && resp.status) || 0,
+        error: (resp && resp.headers.get('x-error')) || '',
         path,
       };
     }

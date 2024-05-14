@@ -346,8 +346,15 @@ describe('Test bulk preview plugin', () => {
     nock.bulkJob(setup, {
       resources: [
         { path: '/documents/file.pdf', status: 404 },
+        { path: '/documents/file.xyz', status: 415 },
+        { path: '/icons/icon-1.svg', status: 400, error: 'script or event handler detected' },
+        { path: '/icons/icon-2.svg', status: 400, error: 'expected XML content with an SVG root item' },
+        { path: '/assets/animation-1.mp4', status: 400, error: 'MP4 is longer than 2 minutes' },
+        { path: '/assets/animation-2.mp4', status: 400, error: 'MP4 has a higher bitrate than 300 KB/s' },
+        { path: '/content/index.docx', status: 415, error: 'type not supported: docx' },
+        { path: '/content/foo.xlsx', status: 415, error: 'type not supported: xlsx' },
       ],
-      failed: 1,
+      failed: 8,
     });
     const { notification: contentError } = await new SidekickTest({
       browser,
@@ -446,6 +453,41 @@ describe('Test bulk preview plugin', () => {
     assert.ok(
       notification.message?.includes('illegal characters'),
       'Did not reject illegal file name',
+    );
+  }).timeout(IT_DEFAULT_TIMEOUT);
+
+  it('Bulk preview plugin handles docx and xlsx errors in gdrive', async () => {
+    const { setup } = TESTS[1];
+    nock.sidekick(setup);
+    nock.bulkJob(setup, {
+      resources: [
+        { path: '/content/foo.docx', status: 415, error: '/content/foo.docx with google not supported.' },
+        { path: '/content/foo.xlsx', status: 415, error: '/content/foo.xlsx with google not supported.' },
+      ],
+      failed: 2,
+    });
+    const { notification: contentError } = await new SidekickTest({
+      browser,
+      page,
+      setup,
+      fixture: TESTS[1].fixture,
+      url: setup.getUrl('edit', 'admin'),
+      plugin: 'bulk-preview',
+      pluginSleep: 5000,
+      loadModule: true,
+      acceptDialogs: true,
+      pre: (p) => p.evaluate(() => {
+        // user deselects all
+        document.querySelectorAll('.file')
+          .forEach((file) => file.setAttribute('aria-selected', 'false'));
+        // user selects only word and excel files
+        document.getElementById('file-word').click();
+        document.getElementById('file-excel').click();
+      }),
+    }).run();
+    assert.ok(
+      contentError.className.includes('level-0'),
+      'Did not handle docx and xlsx errors',
     );
   }).timeout(IT_DEFAULT_TIMEOUT);
 });

@@ -12,11 +12,6 @@
 
 ## Installation
 
-Note: The Sidekick extension and bookmarklet share the same Sidekick module.
-
-#### Installing the bookmarklet
-Navigate to https://www.hlx.live/tools/sidekick/ and follow the instructions there.
-
 #### Installing the Chrome extension
 1. Go to the [Chrome Web Store](https://chrome.google.com/webstore/detail/helix-sidekick-extension-beta/ccfggkjabjahcjoljmgmklhpaccedipo)
 1. Click _Add to Chrome_
@@ -60,18 +55,7 @@ $ npm test
 $ npm run lint
 ```
 
-### Testing a bookmarklet release candidate (RC)
-
-A release candidate will be mirrored in https://github.com/adobe/helix-website with a `sidekick-rc-` prefix to enable enable pre-release testing:
-
-1. Merge changes into `main`
-2. Note the `sidekick-rc-<id>` branch in https://github.com/adobe/helix-website/branches
-3. Go to `https://sidekick-rc-<id>--helix-website--adobe.hlx.live/tools/sidekick/` to install a development version of the bookmarklet for your project
-
 ### Local testing
-#### Testing a local bookmarklet
-1. Run `npm start` on your local checkout of this repository
-2. Go to `http://localhost:3001/ and follow the instructions.
 
 #### Testing a local Chrome extension
 1. Run `npm run build:chrome`
@@ -101,15 +85,6 @@ If you want to test a config file before deploying it to your project:
 1. Navigate to a project URL and activate the sidekick extension
 
 ## Deployment
-
-### Deploying the Bookmarklet
-The Sidekick bookmarklet gets staged automatically each time a pull request is merged into `main`.
-1. Go to [`helix-website` pull requests](https://github.com/adobe/helix-website/pulls)
-1. Click the _Sidekick Release Candidate_ PR
-1. Add a comment listing the `helix-sidekick` PR(s) included in this release
-1. Get a team member to review the Sidekick RC. The PR is based on a `sidekick-rc-*` branch (`*` being a random ID) so the RC can be tested at:
-   `https://sidekick-rc-*--helix-website--adobe.hlx.page/tools/sidekick/`
-1. Once approved, merge the RC PR to deploy the changes into production
 
 ### Deploying Chrome Extension
 
