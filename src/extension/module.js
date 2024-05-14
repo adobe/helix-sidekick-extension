@@ -1507,7 +1507,7 @@ import sampleRUM from './rum.js';
 
             let bustCache = true;
             if (redirectHost === location.host) {
-              await fetch(prodURL, { cache: 'reload', mode: 'no-cors' });
+              await fetch(prodURL, { cache: 'reload' });
               bustCache = false;
             }
 
@@ -3995,7 +3995,7 @@ import sampleRUM from './rum.js';
           if (this.isInner() || this.isDev()) {
             const host = this.isDev() ? config.devUrl.host : `https://${config.innerHost}`;
             // bust client cache
-            await fetch(`${host}${path}`, { cache: 'reload', mode: 'no-cors' });
+            await fetch(`${host}${path}`, { cache: 'reload' });
           }
           respPath = (await resp.json()).webPath;
           fireEvent(this, 'updated', respPath); // @deprecated for content, use for code only
@@ -4153,24 +4153,19 @@ import sampleRUM from './rum.js';
    * @returns {Sidekick} The sidekick
    */
   function initSidekick(cfg = {}) {
-    if (!window.hlx.sidekick) {
-      // merge base config with extended config
-      window.hlx.sidekickConfig = Object.assign(window.hlx.sidekickConfig || {}, cfg);
-      // init and show sidekick
-      try {
-        window.customElements.define('helix-sidekick', Sidekick);
-      } catch (e) {
-        // ignore
-      }
-      // make sure there is only one sidekick
-      document.querySelectorAll('helix-sidekick').forEach((sk) => sk.replaceWith(''));
-      window.hlx.sidekick = document.createElement('helix-sidekick');
-      document.body.prepend(window.hlx.sidekick);
-      window.hlx.sidekick.show();
-    } else {
-      // toggle sidekick
-      // window.hlx.sidekick.toggle();
+    // merge base config with extended config
+    window.hlx.sidekickConfig = Object.assign(window.hlx.sidekickConfig || {}, cfg);
+    // init and show sidekick
+    try {
+      window.customElements.define('helix-sidekick', Sidekick);
+    } catch (e) {
+      // ignore
     }
+    // make sure there is only one sidekick
+    document.querySelectorAll('helix-sidekick').forEach((sk) => sk.replaceWith(''));
+    window.hlx.sidekick = document.createElement('helix-sidekick');
+    document.body.prepend(window.hlx.sidekick);
+    window.hlx.sidekick.show();
     return window.hlx.sidekick;
   }
 
