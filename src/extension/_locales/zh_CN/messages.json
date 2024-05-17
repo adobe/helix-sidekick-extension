@@ -66,6 +66,15 @@
   "bulk_result_preview_single_error_no_xlsx": {
     "message": "Microsoft Excel 文件，先转换成 Google Sheets"
   },
+  "bulk_result_preview_single_error_not_supported": {
+    "message": "不支持的文件类型。请参阅文档以了解支持的文件类型。"
+  },
+  "bulk_result_preview_single_error_svg_invalid": {
+    "message": "SVG 无效。请确保它是有效的 XML 并且不包含脚本。"
+  },
+  "bulk_result_preview_single_error_too_large": {
+    "message": "文件太大。请参阅文档以了解文件大小限制。"
+  },
   "bulk_result_preview_single_failure": {
     "message": "无法生成此文件的预览："
   },
@@ -392,6 +401,12 @@
   },
   "error_status_404_document": {
     "message": "404 未找到：检查您的 Sidekick 配置并确保已授予对该文档的访问权限。"
+  },
+  "error_status_429_admin": {
+    "message": "429 请求过多：您的项目正受到我们的发布服务限制。请稍候并重试。"
+  },
+  "error_status_429_onedrive": {
+    "message": "429 请求过多：您的项目正受到 Microsoft SharePoint 的限制。请稍候再试。"
   },
   "error_status_500": {
     "message": "500 内部服务器错误：获取页面状态失败。请稍后再试。"
