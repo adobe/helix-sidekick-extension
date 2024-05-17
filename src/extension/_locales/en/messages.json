@@ -206,6 +206,9 @@
   "config_manual_liveHost_placeholder": {
     "message": "Custom Live Hostname (optional)"
   },
+  "config_manual_authorizationToken_placeholder": {
+    "message": "Authorization Token (optional)"
+  },
   "config_manual_mountpoints_placeholder": {
     "message": "Content URL: https://..."
   },
