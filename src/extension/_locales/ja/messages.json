@@ -66,6 +66,15 @@
   "bulk_result_preview_single_error_no_xlsx": {
     "message": "Microsoft Excel ドキュメント、最初に Google スプレッドシートに変換"
   },
+  "bulk_result_preview_single_error_not_supported": {
+    "message": "ファイルタイプがサポートされていません。サポートされているファイルタイプについては、ドキュメントを参照してください。"
+  },
+  "bulk_result_preview_single_error_svg_invalid": {
+    "message": "SVG が無効です。XML が有効であり、スクリプトが含まれていないことを確認してください。"
+  },
+  "bulk_result_preview_single_error_too_large": {
+    "message": "ファイルが大きすぎます。ファイルサイズの制限については、ドキュメントを参照してください。"
+  },
   "bulk_result_preview_single_failure": {
     "message": "このファイルのプレビューの生成に失敗しました :"
   },
@@ -392,6 +401,12 @@
   },
   "error_status_404_document": {
     "message": "404 見つかりません : Sidekick の設定を確認し、このドキュメントへのアクセス権が付与されていることを確認してください。"
+  },
+  "error_status_429_admin": {
+    "message": "429 リクエストが多すぎます：プロジェクトはパブリッシュサービスによって制限されています。しばらく待ってから、再試行してください。"
+  },
+  "error_status_429_onedrive": {
+    "message": "429 リクエストが多すぎます：プロジェクトは Microsoft SharePoint によって調整されています。しばらく待ってから、再試行してください。"
   },
   "error_status_500": {
     "message": "500 内部サーバーエラー : ページのステータスを取得できませんでした。後でもう一度試してください。"

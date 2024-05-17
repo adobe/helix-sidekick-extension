@@ -66,6 +66,15 @@
   "bulk_result_preview_single_error_no_xlsx": {
     "message": "Document Microsoft Excel, convertissez-le d'abord au format Google Sheets."
   },
+  "bulk_result_preview_single_error_not_supported": {
+    "message": "Type de fichier non pris en charge. Reportez-vous à la documentation pour connaître les types de fichiers pris en charge."
+  },
+  "bulk_result_preview_single_error_svg_invalid": {
+    "message": "SVG non valide. Assurez-vous qu’il s’agit d’un XML valide ne contenant aucun script."
+  },
+  "bulk_result_preview_single_error_too_large": {
+    "message": "Fichier trop volumineux. Reportez-vous à la documentation pour connaître les limites de taille de fichier."
+  },
   "bulk_result_preview_single_failure": {
     "message": "Échec de la génération de la prévisualisation de ce fichier :"
   },
@@ -392,6 +401,12 @@
   },
   "error_status_404_document": {
     "message": "404 Introuvable : vérifiez votre configuration de Sidekick et assurez-vous que l'accès au document est autorisé."
+  },
+  "error_status_429_admin": {
+    "message": "429 Trop de requêtes : votre projet est ralenti par notre service de publication. Patientez et réessayez plus tard."
+  },
+  "error_status_429_onedrive": {
+    "message": "429 Trop de requêtes : votre projet est bloqué par Microsoft SharePoint. Patientez et réessayez plus tard."
   },
   "error_status_500": {
     "message": "500 Erreur interne du serveur : échec de la récupération du statut de la page. Réessayez plus tard."

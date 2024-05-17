@@ -66,6 +66,15 @@
   "bulk_result_preview_single_error_no_xlsx": {
     "message": "Documento Microsoft Excel, converti prima in Fogli Google"
   },
+  "bulk_result_preview_single_error_not_supported": {
+    "message": "Tipo di file non supportato. Consulta la documentazione per i tipi di file supportati."
+  },
+  "bulk_result_preview_single_error_svg_invalid": {
+    "message": "SVG non valido. Verifica che sia un XML valido e che non contenga script."
+  },
+  "bulk_result_preview_single_error_too_large": {
+    "message": "File troppo grande. Consulta la documentazione per i limiti delle dimensioni dei file."
+  },
   "bulk_result_preview_single_failure": {
     "message": "Impossibile generare l’anteprima di questo file:"
   },
@@ -392,6 +401,12 @@
   },
   "error_status_404_document": {
     "message": "404 - Non trovato: controlla la configurazione di Sidekick e assicurati che l’accesso a questo documento sia consentito."
+  },
+  "error_status_429_admin": {
+    "message": "429 Troppe richieste: il progetto è soggetto a limitazioni da parte del servizio di pubblicazione. Attendi e riprova più tardi."
+  },
+  "error_status_429_onedrive": {
+    "message": "429 Troppe richieste: il progetto è soggetto a limitazioni da parte di Microsoft SharePoint. Attendi e riprova più tardi."
   },
   "error_status_500": {
     "message": "500 - Errore interno del server: impossibile recuperare lo stato della pagina. Riprova più tardi."

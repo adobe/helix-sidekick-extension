@@ -66,6 +66,15 @@
   "bulk_result_preview_single_error_no_xlsx": {
     "message": "Microsoft Excel-Dokument, muss zunächst in eine Google-Tabelle konvertiert werden"
   },
+  "bulk_result_preview_single_error_not_supported": {
+    "message": "Dateityp nicht unterstützt. Informationen zu unterstützten Dateitypen finden Sie in der Dokumentation."
+  },
+  "bulk_result_preview_single_error_svg_invalid": {
+    "message": "SVG ungültig. Vergewissern Sie sich, dass es sich um gültige XML handelt und keine Skripte enthalten sind."
+  },
+  "bulk_result_preview_single_error_too_large": {
+    "message": "Datei zu groß. Informationen zu Dateigrößenbeschränkungen finden Sie in der Dokumentation."
+  },
   "bulk_result_preview_single_failure": {
     "message": "Für diese Datei konnte keine Vorschau generiert werden:"
   },
@@ -392,6 +401,12 @@
   },
   "error_status_404_document": {
     "message": "404 Nicht gefunden: Überprüfen Sie die Sidekick-Konfiguration und stellen Sie sicher, dass der Zugriff auf dieses Dokument gewährt wurde."
+  },
+  "error_status_429_admin": {
+    "message": "429 Zu viele Anfragen: Ihr Projekt wird von unserem Publishing-Service gedrosselt. Bitte warten Sie und versuchen Sie es später erneut."
+  },
+  "error_status_429_onedrive": {
+    "message": "429 Zu viele Anfragen: Ihr Projekt wird von Microsoft SharePoint gedrosselt. Bitte warten Sie und versuchen Sie es später erneut."
   },
   "error_status_500": {
     "message": "500 Interner Server-Fehler: Der Seitenstatus konnte nicht abgerufen werden. Bitte versuchen Sie es später erneut."

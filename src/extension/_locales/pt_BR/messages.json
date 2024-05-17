@@ -66,6 +66,15 @@
   "bulk_result_preview_single_error_no_xlsx": {
     "message": "Documento do Microsoft Excel, primeiro converta-o para Planilhas Google"
   },
+  "bulk_result_preview_single_error_not_supported": {
+    "message": "Tipo de arquivo incompatível. Consulte na documentação os tipos de arquivo compatíveis."
+  },
+  "bulk_result_preview_single_error_svg_invalid": {
+    "message": "SVG inválido. Certifique-se de que seja um XML válido e não contenha scripts."
+  },
+  "bulk_result_preview_single_error_too_large": {
+    "message": "Arquivo grande demais. Consulte na documentação os limites de tamanho de arquivo."
+  },
   "bulk_result_preview_single_failure": {
     "message": "Falha ao gerar a pré-visualização deste arquivo:"
   },
@@ -392,6 +401,12 @@
   },
   "error_status_404_document": {
     "message": "404 Não encontrado: verifique a configuração do Sidekick e certifique-se de que o acesso a este documento esteja concedido."
+  },
+  "error_status_429_admin": {
+    "message": "429 Solicitações demais: o seu projeto está sendo suprimido pelo serviço de publicação. Aguarde e tente novamente mais tarde."
+  },
+  "error_status_429_onedrive": {
+    "message": "429 Solicitações demais: o seu projeto está sendo suprimido pelo Microsoft SharePoint. Aguarde e tente novamente mais tarde."
   },
   "error_status_500": {
     "message": "500 Erro interno do servidor: falha ao buscar o status da página. Tente novamente mais tarde."

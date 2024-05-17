@@ -66,6 +66,15 @@
   "bulk_result_preview_single_error_no_xlsx": {
     "message": "Documento de Microsoft Excel, conviértalo primero a Hojas de cálculo de Google"
   },
+  "bulk_result_preview_single_error_not_supported": {
+    "message": "El tipo de archivo no es compatible. Consulte la documentación para ver los tipos de archivo admitidos."
+  },
+  "bulk_result_preview_single_error_svg_invalid": {
+    "message": "El SVG no es válido. Asegúrese de que el XML sea válido y no contenga scripts."
+  },
+  "bulk_result_preview_single_error_too_large": {
+    "message": "El archivo es demasiado grande. Consulte la documentación para ver los límites de tamaño de los archivos."
+  },
   "bulk_result_preview_single_failure": {
     "message": "No se ha podido generar la vista previa de este archivo:"
   },
@@ -392,6 +401,12 @@
   },
   "error_status_404_document": {
     "message": "404 No encontrado: verifique la configuración de su Sidekick y asegúrese de que tenga acceso a este documento."
+  },
+  "error_status_429_admin": {
+    "message": "Error 429 demasiadas solicitudes: el servicio de publicación está limitando el proyecto. Espere e inténtelo de nuevo más tarde."
+  },
+  "error_status_429_onedrive": {
+    "message": "Error 429 demasiadas solicitudes: Microsoft SharePoint está limitando el proyecto. Espere e inténtelo de nuevo más tarde."
   },
   "error_status_500": {
     "message": "500 Error interno del servidor: No se pudo recuperar el estado de la página. Inténtelo de nuevo más tarde."

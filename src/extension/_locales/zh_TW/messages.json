@@ -66,6 +66,15 @@
   "bulk_result_preview_single_error_no_xlsx": {
     "message": "Microsoft Excel 文件，請先轉換為 Google 試算表"
   },
+  "bulk_result_preview_single_error_not_supported": {
+    "message": "檔案類型不受支援。請參閱文件以了解受支援的檔案類型。"
+  },
+  "bulk_result_preview_single_error_svg_invalid": {
+    "message": "SVG 無效。請確定它是有效的 XML 且不包含指令碼。"
+  },
+  "bulk_result_preview_single_error_too_large": {
+    "message": "檔案過大。請參閱文件以了解檔案大小限制。"
+  },
   "bulk_result_preview_single_failure": {
     "message": "產生此檔案的預覽失敗："
   },
@@ -392,6 +401,12 @@
   },
   "error_status_404_document": {
     "message": "404 找不到：請檢查您的 Sidekick 設定，並確保已授予對此文件的存取權。"
+  },
+  "error_status_429_admin": {
+    "message": "429 請求過多：您的專案正在受到我們的發佈服務的限制。請稍後再試。"
+  },
+  "error_status_429_onedrive": {
+    "message": "429 請求過多：您的專案正受到 Microsoft SharePoint 的限制。請稍後再試。"
   },
   "error_status_500": {
     "message": "500 內部伺服器錯誤：擷取頁面狀態失敗。請稍後再試。"
