@@ -1,3 +1,17 @@
+# [6.45.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.44.0...v6.45.0) (2024-05-17)
+
+
+### Bug Fixes
+
+* address comments ([46c5253](https://github.com/adobe/helix-sidekick-extension/commit/46c52535a276fc88f298afb8ce33c88d4d349b2d))
+* revert back to session rules ([d888af7](https://github.com/adobe/helix-sidekick-extension/commit/d888af7da3b7eb10821e05b5e1d917f7a80032a4))
+* switch to updateDynamicRules ([b370a11](https://github.com/adobe/helix-sidekick-extension/commit/b370a115851002839a4513d3d78219058cd2817e))
+
+
+### Features
+
+* support authorization header in project config ([df23a54](https://github.com/adobe/helix-sidekick-extension/commit/df23a54eec5d9ab0c3f68b6d313e22e1af4ca278))
+
 # [6.44.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.43.1...v6.44.0) (2024-05-14)
 
 
