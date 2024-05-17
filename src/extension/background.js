@@ -33,6 +33,7 @@ import {
   isValidShareURL,
   storeAuthToken,
   updateAdminAuthHeaderRules,
+  updateProjectAuthorizationHeaderRules,
 } from './utils.js';
 
 /**
@@ -652,6 +653,7 @@ const internalActions = {
 
   await updateHelpContent();
   await updateAdminAuthHeaderRules();
+  await updateProjectAuthorizationHeaderRules();
   log.info('sidekick extension initialized');
 })();
 

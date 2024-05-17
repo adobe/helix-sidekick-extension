@@ -202,7 +202,7 @@ function editProject(i) {
   getState(async ({ projects = [] }) => {
     const project = projects[i];
 
-    const protectedProjects = await getConfig('local', 'hlxProtectedProjects') || {};
+    const protectedProjects = await getConfig('local', 'hlxSidekickProjects') || {};
     const { owner, repo } = project;
     const handle = `${owner}/${repo}`;
 

@@ -403,7 +403,7 @@ describe('Test extension utils', () => {
     const rules = await chrome.declarativeNetRequest.getSessionRules();
     expect(rules).to.deep.equal([]);
 
-    const protectedProject = await utils.getConfig('local', 'hlxProtectedProjects');
+    const protectedProject = await utils.getConfig('local', 'hlxSidekickProjects');
     expect(protectedProject).to.deep.equal({});
   });
 
@@ -466,13 +466,13 @@ describe('Test extension utils', () => {
       repo: 'bar',
     }, '1234');
 
-    let protectedProject = await utils.getConfig('local', 'hlxProtectedProjects');
+    let protectedProject = await utils.getConfig('local', 'hlxSidekickProjects');
     expect(protectedProject).to.deep.equal({
       'foo/bar': '1234',
     });
 
     expect(spy.calledWith({
-      hlxProtectedProjects: {
+      hlxSidekickProjects: {
         'foo/bar': '1234',
       },
     })).to.be.true;
@@ -482,22 +482,22 @@ describe('Test extension utils', () => {
       repo: 'bar',
     }, undefined);
 
-    protectedProject = await utils.getConfig('local', 'hlxProtectedProjects');
+    protectedProject = await utils.getConfig('local', 'hlxSidekickProjects');
     expect(protectedProject).to.deep.equal({});
 
     expect(spy.calledWith({
-      hlxProtectedProjects: {},
+      hlxSidekickProjects: {},
     })).to.be.true;
   });
 
-  it('updateSiteAuthorizationHeaderRules adds and removes', async () => {
+  it('updateProjectAuthorizationHeaderRules adds and removes', async () => {
     const spy = sandbox.spy(chrome.declarativeNetRequest, 'updateSessionRules');
     await utils.setProjectAuthorizationToken({
       owner: 'foo',
       repo: 'bar',
     }, '1234');
 
-    await utils.updateSiteAuthorizationHeaderRules();
+    await utils.updateProjectAuthorizationHeaderRules();
     expect(spy.calledWith([
       {
         id: 100,

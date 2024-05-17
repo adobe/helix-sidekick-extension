@@ -671,7 +671,7 @@ export async function setProject(project, cb) {
 /**
  * Sets the authorization header for all requests to protected sites
  */
-export async function updateSiteAuthorizationHeaderRules() {
+export async function updateProjectAuthorizationHeaderRules() {
   try {
     // remove all rules first
     await chrome.declarativeNetRequest.updateSessionRules({
@@ -682,7 +682,7 @@ export async function updateSiteAuthorizationHeaderRules() {
 
     // start site authorization header rules from id 100
     let id = 100;
-    const projects = await getConfig('local', 'hlxProtectedProjects') || [];
+    const projects = await getConfig('local', 'hlxSidekickProjects') || [];
     const addRules = [];
 
     for (const [key, value] of Object.entries(projects)) {
@@ -712,10 +712,10 @@ export async function updateSiteAuthorizationHeaderRules() {
       await chrome.declarativeNetRequest.updateSessionRules({
         addRules,
       });
-      log.debug(`updateSiteAuthorizationHeaderRules: ${addRules.length} rule(s) set`);
+      log.debug(`updateProjectAuthorizationHeaderRules: ${addRules.length} rule(s) set`);
     }
   } catch (e) {
-    log.error(`updateSiteAuthorizationHeaderRules: ${e.message}`);
+    log.error(`updateProjectAuthorizationHeaderRules: ${e.message}`);
   }
 }
 
@@ -729,7 +729,7 @@ export async function setProjectAuthorizationToken(project, authorizationToken) 
   const { owner, repo } = project;
   const projectHandle = `${owner}/${repo}`;
 
-  const protectedProjects = await getConfig('local', 'hlxProtectedProjects') || {};
+  const protectedProjects = await getConfig('local', 'hlxSidekickProjects') || {};
 
   if (!authorizationToken) {
     delete protectedProjects[projectHandle];
@@ -740,9 +740,9 @@ export async function setProjectAuthorizationToken(project, authorizationToken) 
     protectedProjects[projectHandle] = authorizationToken;
   }
 
-  await setConfig('local', { hlxProtectedProjects: protectedProjects });
+  await setConfig('local', { hlxSidekickProjects: protectedProjects });
 
-  updateSiteAuthorizationHeaderRules();
+  updateProjectAuthorizationHeaderRules();
 }
 
 /**
