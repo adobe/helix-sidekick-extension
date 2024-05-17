@@ -400,7 +400,7 @@ describe('Test extension utils', () => {
       hlxSidekickProjects: ['test/project', 'test/auth-project'],
     })).to.be.true;
 
-    const rules = await chrome.declarativeNetRequest.getDynamicRules();
+    const rules = await chrome.declarativeNetRequest.getSessionRules();
     expect(rules).to.deep.equal([]);
 
     const protectedProject = await utils.getConfig('local', 'hlxSidekickProjects');
@@ -530,7 +530,7 @@ describe('Test extension utils', () => {
       repo: 'bar',
     }, undefined);
 
-    const rules = await chrome.declarativeNetRequest.getDynamicRules();
+    const rules = await chrome.declarativeNetRequest.getSessionRules();
     expect(rules).to.deep.equal([]);
   });
 });

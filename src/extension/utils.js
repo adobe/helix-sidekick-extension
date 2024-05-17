@@ -674,7 +674,7 @@ export async function setProject(project, cb) {
 export async function updateProjectAuthorizationHeaderRules() {
   try {
     // remove all rules first
-    await chrome.declarativeNetRequest.updateDynamicRules({
+    await chrome.declarativeNetRequest.updateSessionRules({
       removeRuleIds: (await chrome.declarativeNetRequest.getSessionRules())
         .filter((rule) => rule.id >= 100)
         .map((rule) => rule.id),
@@ -709,7 +709,7 @@ export async function updateProjectAuthorizationHeaderRules() {
     }
 
     if (addRules.length > 0) {
-      await chrome.declarativeNetRequest.updateDynamicRules({
+      await chrome.declarativeNetRequest.updateSessionRules({
         addRules,
       });
       log.debug(`updateProjectAuthorizationHeaderRules: ${addRules.length} rule(s) set`);
