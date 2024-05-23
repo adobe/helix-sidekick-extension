@@ -18,7 +18,7 @@ const CONFIG_JSON = {
   liveHost: 'live.example.com',
   project: 'Adobe Business Website',
   contentSourceUrl: 'https://adobe.sharepoint.com/:f:/s/Dummy/Alk9MSH25LpBuUWA_N6DOL8BuI6Vrdyrr87gne56dz3QeQ',
-  contenSourceType: 'onedrive',
+  contentSourceType: 'onedrive',
 };
 
 const DISCOVER_JSON = [
