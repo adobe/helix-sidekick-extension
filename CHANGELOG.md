@@ -1,3 +1,10 @@
+## [6.45.1](https://github.com/adobe/helix-sidekick-extension/compare/v6.45.0...v6.45.1) (2024-05-24)
+
+
+### Bug Fixes
+
+* **bulk:** broken gdrive type detection ([#744](https://github.com/adobe/helix-sidekick-extension/issues/744)) ([545d114](https://github.com/adobe/helix-sidekick-extension/commit/545d1141f0e2424b982ab4464432bd0bd052c1de))
+
 # [6.45.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.44.0...v6.45.0) (2024-05-17)
 
 
