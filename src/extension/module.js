@@ -1758,7 +1758,7 @@ import sampleRUM from './rum.js';
         return [...document.querySelectorAll('#drive_main_page [role="row"][aria-selected="true"]')]
           // extract file name and type
           .map((row) => {
-            const typeHint = (row.querySelector(':scope div[role="gridcell"] > div:nth-child(2) > div > div[data-tooltip]') // list layout
+            const typeHint = (row.querySelector(':scope div[role="gridcell"] > div:nth-child(2) > div:nth-child(1)') // list layout
               || row.querySelector(':scope div[role="gridcell"]'))?.getAttribute('aria-label'); // grid layout
             let type = 'unknown';
             if (typeHint) {
