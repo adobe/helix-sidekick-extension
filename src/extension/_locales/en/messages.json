@@ -429,6 +429,24 @@
   "extensions": {
     "message": "Extensions"
   },
+  "gdrive_type_folder": {
+    "message": "Google Drive Folder"
+  },
+  "gdrive_type_gdoc": {
+    "message": "Google Docs"
+  },
+  "gdrive_type_gsheet": {
+    "message": "Google Sheets"
+  },
+  "gdrive_type_image": {
+    "message": "Image"
+  },
+  "gdrive_type_video": {
+    "message": "Video"
+  },
+  "gdrive_type_pdf": {
+    "message": "PDF"
+  },
   "help": {
     "message": "Help"
   },

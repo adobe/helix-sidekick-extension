@@ -426,6 +426,24 @@
   "extensions": {
     "message": "Erweiterungen"
   },
+  "gdrive_type_folder": {
+    "message": "Google Drive-Ordner"
+  },
+  "gdrive_type_gdoc": {
+    "message": "Google Docs-Datei"
+  },
+  "gdrive_type_gsheet": {
+    "message": "Google Tabellen-Datei"
+  },
+  "gdrive_type_image": {
+    "message": "Bild-Datei"
+  },
+  "gdrive_type_video": {
+    "message": "Video-Datei"
+  },
+  "gdrive_type_pdf": {
+    "message": "PDF-Datei"
+  },
   "help": {
     "message": "Hilfe"
   },

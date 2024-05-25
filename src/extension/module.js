@@ -1762,17 +1762,21 @@ import sampleRUM from './rum.js';
               || row.querySelector(':scope div[role="gridcell"]'))?.getAttribute('aria-label'); // grid layout
             let type = 'unknown';
             if (typeHint) {
-              if (typeHint.includes('Google Drive')) {
+              if (typeHint.includes(i18n(sk, 'gdrive_type_folder'))) {
                 type = 'folder';
-              } else if (typeHint.includes('Google Docs')) {
+              } else if (typeHint.includes(i18n(sk, 'gdrive_type_gdoc'))) {
                 type = 'document';
-              } else if (typeHint.includes('Google Sheets')) {
+              } else if (typeHint.includes(i18n(sk, 'gdrive_type_gsheet'))) {
                 type = 'spreadsheet';
-              } else if (['Image', 'Video', 'PDF']
-                .find((hint) => typeHint.includes(hint))) {
+              } else if ([
+                i18n(sk, 'gdrive_type_image'),
+                i18n(sk, 'gdrive_type_video'),
+                i18n(sk, 'gdrive_type_pdf'),
+              ].find((hint) => typeHint.includes(hint))) {
                 type = 'media';
               }
             }
+            console.log('type', type, typeHint);
             const path = row.querySelector(':scope > div > div:nth-of-type(2)')?.textContent.trim() // list layout
               || (row.querySelector(':scope > div > div > div:nth-of-type(4)') // grid layout (file)
               || row.querySelector(':scope div[role="gridcell"] > div > div:nth-child(4) > div'))?.textContent.trim(); // grid layout (folder)
