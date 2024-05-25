@@ -1776,7 +1776,6 @@ import sampleRUM from './rum.js';
                 type = 'media';
               }
             }
-            console.log('type', type, typeHint);
             const path = row.querySelector(':scope > div > div:nth-of-type(2)')?.textContent.trim() // list layout
               || (row.querySelector(':scope > div > div > div:nth-of-type(4)') // grid layout (file)
               || row.querySelector(':scope div[role="gridcell"] > div > div:nth-child(4) > div'))?.textContent.trim(); // grid layout (folder)
