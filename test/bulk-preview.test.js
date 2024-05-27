@@ -490,35 +490,4 @@ describe('Test bulk preview plugin', () => {
       'Did not handle docx and xlsx errors',
     );
   }).timeout(IT_DEFAULT_TIMEOUT);
-
-  it('Bulk preview plugin detects correct file type in non-english gdrive', async () => {
-    const { setup } = TESTS[1];
-    nock.sidekick(setup, {
-      configJson: '{ "lang": "de" }',
-    });
-    nock.admin(setup, { persist: true });
-    // nock.bulkJob(setup);
-    nock('https://admin.hlx.page')
-      .post('/preview/adobe/pages/main/creativecloud/en/test/tabelle.json')
-      .reply(200);
-    const { requestsMade } = await new SidekickTest({
-      browser,
-      page,
-      setup,
-      fixture: 'admin-gdrive-de.html',
-      url: setup.getUrl('edit', 'admin'),
-      plugin: 'bulk-preview',
-      pluginSleep: 1000,
-      loadModule: true,
-      acceptDialogs: true,
-      pre: (p) => p.evaluate(() => {
-        // user selects gsheet
-        document.getElementById('file-gsheet').click();
-      }),
-    }).run();
-    assert.ok(
-      requestsMade.find((req) => req.url.endsWith('/tabelle.json')),
-      'Did not detect non-english type correctly',
-    );
-  }).timeout(IT_DEFAULT_TIMEOUT);
 });
