@@ -17,12 +17,9 @@ const CONFIG_JSON = {
   previewHost: 'preview.example.com',
   liveHost: 'live.example.com',
   project: 'Adobe Business Website',
-  mountpoints: ['https://adobe.sharepoint.com/:f:/s/Dummy/Alk9MSH25LpBuUWA_N6DOL8BuI6Vrdyrr87gne56dz3QeQ'],
+  contentSourceUrl: 'https://adobe.sharepoint.com/:f:/s/Dummy/Alk9MSH25LpBuUWA_N6DOL8BuI6Vrdyrr87gne56dz3QeQ',
+  contentSourceType: 'onedrive',
 };
-
-const FSTAB_YAML = `mountpoints:
-  /: https://drive.google.com/drive/u/0/folders/1MGzOt7ubUh3gu7zhZIPb7R7dyRzG371j
-`;
 
 const DISCOVER_JSON = [
   { owner: 'foo', repo: 'bar1' },
@@ -66,9 +63,7 @@ class ResponseMock {
 
 export default async function fetchMock(url, options = {}) {
   const path = new URL(url).pathname;
-  if (path.endsWith('/fstab.yaml')) {
-    return new ResponseMock(FSTAB_YAML);
-  } else if (path.endsWith('/config.json')) {
+  if (path.endsWith('/config.json')) {
     if (path.includes('/test/auth-project/')) {
       if (options.headers && options.headers['x-auth-token']) {
         return new ResponseMock(JSON.stringify(CONFIG_JSON));
