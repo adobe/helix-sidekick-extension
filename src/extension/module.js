@@ -1755,21 +1755,31 @@ import sampleRUM from './rum.js';
           .filter((sel) => sel.path && sel.type);
       } else {
         // gdrive
+        const folderId = '2-2z';
+        const sharedFolderId = '2v1z';
+        const gdocId = '777z';
+        const wordId = '888z';
+        const excelId = '444z';
+        const sheetId = '778z';
+        const imgId = '1-4z';
+        const pdfId = '666z';
+        const videoId = '3.2z';
         return [...document.querySelectorAll('#drive_main_page [role="row"][aria-selected="true"]')]
           // extract file name and type
           .map((row) => {
-            const typeHint = (row.querySelector(':scope div[role="gridcell"] > div:nth-child(2) > div:nth-child(1)') // list layout
-              || row.querySelector(':scope div[role="gridcell"]'))?.getAttribute('aria-label'); // grid layout
+            // use path in icon svg to determine type
+            const typeHint = (row.querySelector(':scope div[role="gridcell"] > div:nth-child(1) path:nth-child(1)') // list layout
+              || row.querySelector(':scope div[role="gridcell"] > div:nth-of-type(1) > div:nth-child(2) path:nth-child(1)')) // grid layout
+              .getAttribute('d').slice(-4);
             let type = 'unknown';
             if (typeHint) {
-              if (typeHint.includes('Google Drive')) {
+              if (typeHint === folderId || typeHint === sharedFolderId) {
                 type = 'folder';
-              } else if (typeHint.includes('Google Docs')) {
+              } else if (typeHint === gdocId || typeHint === wordId) {
                 type = 'document';
-              } else if (typeHint.includes('Google Sheets')) {
+              } else if (typeHint === sheetId || typeHint === excelId) {
                 type = 'spreadsheet';
-              } else if (['Image', 'Video', 'PDF']
-                .find((hint) => typeHint.includes(hint))) {
+              } else if ([imgId, videoId, pdfId].find((hint) => typeHint.includes(hint))) {
                 type = 'media';
               }
             }
