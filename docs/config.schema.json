@@ -132,6 +132,20 @@
   "description": "Sidekick configuration",
   "type": "object",
   "properties": {
+    "contentSourceType": {
+      "type": "string",
+      "description": "The type of the content source",
+      "examples": [
+        "onedrive",
+        "gdrive",
+        "markup"
+      ]
+    },
+    "contentSourceUrl": {
+      "type": "string",
+      "format": "uri",
+      "description": "The URL of the content source"
+    },
     "extends": {
       "type": "string",
       "description": "Extend another project's sidekick configuration",
@@ -158,13 +172,6 @@
       "format": "idn-hostname",
       "description": "The host name of the production website"
     },
-    "mountpoints": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      },
-      "description": "The mountpoints for the project"
-    },
     "container": {
       "type": "string",
       "description": "The ID of the dropdown container to add this plugin to"
@@ -182,7 +189,8 @@
       "items": { "$ref": "#/$defs/plugin" }
     },
     "redirect": {
-      "type": "url",
+      "type": "string",
+      "format": "uri",
       "description": "Loads the sidekick configuration from a different URL"
     },
     "specialViews": {

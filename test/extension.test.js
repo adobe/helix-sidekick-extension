@@ -59,7 +59,8 @@ describe.skip('Test sidekick extension', () => {
           body: JSON.stringify({
             project: 'Test Project',
             host: 'www.example.com',
-            mountpoints: ['https://example.sharepoint.com/documents/website'],
+            contentSourceUrl: 'https://example.sharepoint.com/documents/website',
+            contentSourceType: 'onedrive',
           }),
         });
       } else {
