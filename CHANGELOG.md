@@ -1,3 +1,10 @@
+## [6.45.2](https://github.com/adobe/helix-sidekick-extension/compare/v6.45.1...v6.45.2) (2024-05-28)
+
+
+### Bug Fixes
+
+* **bulk:** use svg to detect file type ([#746](https://github.com/adobe/helix-sidekick-extension/issues/746)) ([fdda80e](https://github.com/adobe/helix-sidekick-extension/commit/fdda80ec48f2087fbb5c02d47c3b3f1b6006b3ad))
+
 ## [6.45.1](https://github.com/adobe/helix-sidekick-extension/compare/v6.45.0...v6.45.1) (2024-05-24)
 
 
