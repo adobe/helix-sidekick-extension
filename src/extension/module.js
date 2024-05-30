@@ -1875,6 +1875,7 @@ import sampleRUM from './rum.js';
           lstnrs: {
             click: (evt) => {
               evt.stopPropagation();
+              sampleRUM('sidekick:bulk:result:urlsCopied');
               navigator.clipboard.writeText(ok.map((item) => `https://${host}${item.path}`)
                 .join('\n'));
               sk.hideModal();
@@ -1887,6 +1888,7 @@ import sampleRUM from './rum.js';
           lstnrs: {
             click: (evt) => {
               evt.stopPropagation();
+              sampleRUM('sidekick:bulk:result:urlsOpened');
               if (ok.length <= 20 || window.confirm(i18n(sk, 'open_urls_confirm').replace('$1', ok.length))) {
                 ok.forEach((item) => {
                   const url = `https://${host}${item.path}`;
@@ -1938,6 +1940,9 @@ import sampleRUM from './rum.js';
       lines.push(createTag({
         tag: 'button',
         text: i18n(sk, 'close'),
+        action: () => {
+          sampleRUM('sidekick:bulk:result:closed');
+        },
       }));
       let level = 2;
       if (failed.length > 0) {
@@ -2144,6 +2149,11 @@ import sampleRUM from './rum.js';
                   operation: 'preview',
                   host: sk.config.innerHost,
                 });
+                fireEvent(sk, 'previewed', {
+                  paths: validateWebPaths(bulkSelection
+                    .map((item) => toWebPath(status.webPath, item))),
+                });
+                sampleRUM('sidekick:bulk:previewed');
               }
             }, { once: true });
             sk.fetchStatus(true);
@@ -2173,6 +2183,11 @@ import sampleRUM from './rum.js';
                   route: 'live',
                   host: sk.config.host || sk.config.outerHost,
                 });
+                fireEvent(sk, 'published', {
+                  paths: validateWebPaths(bulkSelection
+                    .map((item) => toWebPath(status.webPath, item))),
+                });
+                sampleRUM('sidekick:bulk:published');
               }
             }, { once: true });
             sk.fetchStatus(true);
@@ -2224,6 +2239,7 @@ import sampleRUM from './rum.js';
               sk.showWait();
               sk.addEventListener('statusfetched', () => {
                 doBulkCopyUrls(hostProperty);
+                sampleRUM('sidekick:bulk:urlsCopied');
               }, { once: true });
               sk.fetchStatus(true);
             }
