@@ -4083,8 +4083,9 @@ import sampleRUM from './rum.js';
       const liveDomains = ['aem.live', 'hlx.live'];
       if (cacheBust
         && !(targetEnv === 'prod' && !liveDomains.some((domain) => envUrl.includes(domain)) && this.config.transient)) {
-        const separator = envUrl.includes('?') ? '&' : '?';
-        envUrl = `${envUrl}${separator}nocache=${Date.now()}`;
+        const url = new URL(envUrl);
+        url.searchParams.set('nocache', Date.now());
+        envUrl = url.toString();
       }
 
       // switch or open env

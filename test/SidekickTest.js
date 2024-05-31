@@ -248,6 +248,7 @@ export class SidekickTest extends EventEmitter {
         method: req.method,
         headers: req.headers,
         url,
+        urlFragment: req.urlFragment,
       };
       if (this.requestHandler) {
         const r = await this.requestHandler(reqObj);
