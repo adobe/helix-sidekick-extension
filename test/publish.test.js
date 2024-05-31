@@ -63,6 +63,27 @@ describe('Test publish plugin', () => {
     assert.ok(navigated.startsWith('https://blog.adobe.com/en/topics/bla?nocache='), 'Redirect not sent');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
+  it('Publish works with fragment and nocache', async () => {
+    const setup = new Setup('blog');
+    nock.sidekick(setup);
+    nock.admin(setup);
+    nock('https://admin.hlx.page')
+      .post('/live/adobe/blog/main/en/topics/bla')
+      .reply(200);
+    const { requestsMade } = await new SidekickTest({
+      browser,
+      page,
+      plugin: 'publish',
+      url: 'https://main--blog--adobe.hlx.page/en/topics/bla#fragment',
+      waitNavigation: 'https://blog.adobe.com/en/topics/bla?nocache=',
+    }).run();
+    const navigationRequest = requestsMade.find((r) => r.url.includes('https://blog.adobe.com/en/topics/bla?nocache='));
+    assert.equal(
+      navigationRequest.urlFragment,
+      '#fragment',
+    );
+  }).timeout(IT_DEFAULT_TIMEOUT);
+
   it('Publish plugin also publishes dependencies', async () => {
     const setup = new Setup('blog');
     nock.sidekick(setup);
