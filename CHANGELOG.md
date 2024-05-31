@@ -1,3 +1,12 @@
+## [6.45.3](https://github.com/adobe/helix-sidekick-extension/compare/v6.45.2...v6.45.3) (2024-05-31)
+
+
+### Bug Fixes
+
+* account for url's with fragments when adding nocache query param ([ba864c2](https://github.com/adobe/helix-sidekick-extension/commit/ba864c218804c5218cc962e6f7506c1c528caa59))
+* add test ([7487868](https://github.com/adobe/helix-sidekick-extension/commit/7487868a233d882d35328f6797b2a882332e4752))
+* use URL class ([03e1879](https://github.com/adobe/helix-sidekick-extension/commit/03e187947745252f959ecda64add7ea184203082))
+
 ## [6.45.2](https://github.com/adobe/helix-sidekick-extension/compare/v6.45.1...v6.45.2) (2024-05-28)
 
 
