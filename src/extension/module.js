@@ -1916,15 +1916,12 @@ import sampleRUM from './rum.js';
         lines.push(...failed.map(({ path, status, error }) => {
           if (status === 404) {
             error = getBulkText([1], 'result', operation, 'error_no_source');
-          } else if (status === 400) {
-            if (path.endsWith('.svg')
-              && (error?.includes('script or event handler') || error?.includes('XML'))) {
-              error = getBulkText([1], 'result', operation, 'error_svg_invalid');
-            }
-            if (path.endsWith('.mp4')
-              && (error?.includes('is longer') || error?.includes('has a higher bitrate'))) {
-              error = getBulkText([1], 'result', operation, 'error_too_large');
-            }
+          } else if (status === 400 && path.endsWith('.svg')
+            && (error?.includes('script or event handler') || error?.includes('XML'))) {
+            error = getBulkText([1], 'result', operation, 'error_svg_invalid');
+          } else if (status === 413 && path.endsWith('.mp4')
+            && (error?.includes('is longer') || error?.includes('has a higher bitrate'))) {
+            error = getBulkText([1], 'result', operation, 'error_too_large');
           } else if (status === 415) {
             if (error?.includes('docx with google not supported')) {
               error = getBulkText([1], 'result', operation, 'error_no_docx');
