@@ -1,3 +1,10 @@
+## [6.45.4](https://github.com/adobe/helix-sidekick-extension/compare/v6.45.3...v6.45.4) (2024-06-05)
+
+
+### Bug Fixes
+
+* mp4 too large status code changed ([#753](https://github.com/adobe/helix-sidekick-extension/issues/753)) ([1c2adcd](https://github.com/adobe/helix-sidekick-extension/commit/1c2adcd002cf5771ba6ce80dbc11e2331d76d9b1))
+
 ## [6.45.3](https://github.com/adobe/helix-sidekick-extension/compare/v6.45.2...v6.45.3) (2024-05-31)
 
 
