@@ -41,7 +41,7 @@
   },
   "devDependencies": {
     "@adobe/eslint-config-helix": "2.0.6",
-    "@adobe/fetch": "4.1.4",
+    "@adobe/fetch": "4.1.8",
     "@babel/eslint-parser": "7.24.6",
     "@esm-bundle/chai": "4.3.4-fix.0",
     "@semantic-release/changelog": "6.0.3",
