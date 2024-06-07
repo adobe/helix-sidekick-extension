@@ -1,3 +1,10 @@
+## [6.45.5](https://github.com/adobe/helix-sidekick-extension/compare/v6.45.4...v6.45.5) (2024-06-07)
+
+
+### Bug Fixes
+
+* **bulk:** js error after bulk operation ([#757](https://github.com/adobe/helix-sidekick-extension/issues/757)) ([0ea7dd4](https://github.com/adobe/helix-sidekick-extension/commit/0ea7dd431a569fde9f832cf94afb30d299a9bb64))
+
 ## [6.45.4](https://github.com/adobe/helix-sidekick-extension/compare/v6.45.3...v6.45.4) (2024-06-05)
 
 
