@@ -2140,7 +2140,7 @@ import sampleRUM from './rum.js';
           } else if (window.confirm(confirmText)) {
             sk.showWait();
             sk.addEventListener('statusfetched', ({ detail }) => {
-              const { data: { status } = {} } = detail;
+              const { data: status = {} } = detail;
               if (status !== 401) {
                 doBulkOperation({
                   operation: 'preview',
@@ -2173,7 +2173,7 @@ import sampleRUM from './rum.js';
           } else if (window.confirm(confirmText)) {
             sk.showWait();
             sk.addEventListener('statusfetched', ({ detail }) => {
-              const { data: { status } = {} } = detail;
+              const { data: status = {} } = detail;
               if (status !== 401) {
                 doBulkOperation({
                   operation: 'publish',
