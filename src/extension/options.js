@@ -179,9 +179,6 @@ function shareProject(i, evt) {
     shareUrl.search = new URLSearchParams([
       ['project', config.project || ''],
       ['giturl', `https://github.com/${config.owner}/${config.repo}${config.ref ? `/tree/${config.ref}` : ''}`],
-      ['previewHost', config.previewHost || ''],
-      ['liveHost', config.liveHost || ''],
-      ['host', config.host || ''],
     ]).toString();
     if (navigator.share) {
       navigator.share({

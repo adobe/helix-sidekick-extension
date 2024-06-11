@@ -502,9 +502,6 @@ export function getShareSettings(shareurl) {
         return {
           giturl,
           project: params.get('project'),
-          previewHost: params.get('previewHost'),
-          liveHost: params.get('liveHost'),
-          host: params.get('host'),
         };
       }
     }
