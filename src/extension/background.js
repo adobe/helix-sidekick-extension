@@ -518,6 +518,18 @@ const externalActions = {
     }
     return resp;
   },
+  // returns sidekick projects if caller is new sidekick
+  getProjects: async (_, { id }) => {
+    if (id === 'npaibnlmbiceekjnppaojgadcdkjkoho') {
+      // message coming from new extension
+      return new Promise((resolve) => {
+        getState(({ projects }) => {
+          resolve(projects);
+        });
+      });
+    }
+    return null;
+  },
 };
 
 /**
