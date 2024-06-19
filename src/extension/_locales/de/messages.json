@@ -191,6 +191,9 @@
   "config_invalid_shareurl": {
     "message": "Ungültige Freigabe-URL"
   },
+  "config_manual_authorizationToken_placeholder": {
+    "message": "Autorisierungs-Token (optional)"
+  },
   "config_manual_devMode": {
     "message": "Projektkonfiguration lokal testen"
   },

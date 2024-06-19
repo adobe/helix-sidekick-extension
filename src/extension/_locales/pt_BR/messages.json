@@ -191,6 +191,9 @@
   "config_invalid_shareurl": {
     "message": "URL de compartilhamento inválido"
   },
+  "config_manual_authorizationToken_placeholder": {
+    "message": "Token de autorização (opcional)"
+  },
   "config_manual_devMode": {
     "message": "Testar a configuração do projeto localmente"
   },
