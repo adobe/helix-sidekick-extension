@@ -69,6 +69,7 @@ async function getConfigFromTabUrl(tabUrl) {
     return {
       ...share,
       ...getGitHubSettings(share.giturl),
+      giturl: undefined,
     };
   } else if (tabUrl.startsWith(GH_URL)) {
     // github url
