@@ -191,6 +191,9 @@
   "config_invalid_shareurl": {
     "message": "共享 URL 无效"
   },
+  "config_manual_authorizationToken_placeholder": {
+    "message": "授权标记（可选）"
+  },
   "config_manual_devMode": {
     "message": "在本地测试项目配置"
   },
