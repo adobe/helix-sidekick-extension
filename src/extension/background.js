@@ -91,8 +91,10 @@ async function getConfigFromTabUrl(tabUrl) {
         };
       } else {
         // check if url is known in url cache
-        const { owner, repo } = (await queryUrlCache(tabUrl))
-          .find((r) => r.originalRepository) || {};
+        const urlCache = await queryUrlCache(tabUrl);
+        const { owner, repo } = urlCache.length === 1
+          ? urlCache[0]
+          : (urlCache.find((r) => r.originalRepository) || {});
         if (owner && repo) {
           return {
             owner,

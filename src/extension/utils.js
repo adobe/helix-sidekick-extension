@@ -465,7 +465,9 @@ export async function getProjectMatches(configs, tabUrl) {
     }
   }
   if (matches.length === 0) {
-    const { owner, repo } = urlCache.find((r) => r.originalRepository) || {};
+    const { owner, repo } = urlCache.length === 1
+      ? urlCache[0]
+      : (urlCache.find((r) => r.originalRepository) || {});
     if (owner && repo) {
       matches.push({
         owner,
