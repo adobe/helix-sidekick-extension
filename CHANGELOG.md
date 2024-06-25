@@ -1,3 +1,10 @@
+## [6.45.6](https://github.com/adobe/helix-sidekick-extension/compare/v6.45.5...v6.45.6) (2024-06-25)
+
+
+### Bug Fixes
+
+* use project name when adding project via url ([#760](https://github.com/adobe/helix-sidekick-extension/issues/760)) ([3c6127d](https://github.com/adobe/helix-sidekick-extension/commit/3c6127d65c48f1485e73d68c2dd6eaf3f3ec0579))
+
 ## [6.45.5](https://github.com/adobe/helix-sidekick-extension/compare/v6.45.4...v6.45.5) (2024-06-07)
 
 
