@@ -66,10 +66,17 @@ async function getConfigFromTabUrl(tabUrl) {
   const share = getShareSettings(tabUrl);
   if (share.giturl) {
     // share url
-    return getGitHubSettings(share.giturl);
+    return {
+      ...share,
+      ...getGitHubSettings(share.giturl),
+      giturl: undefined,
+    };
   } else if (tabUrl.startsWith(GH_URL)) {
     // github url
-    return getGitHubSettings(tabUrl);
+    return {
+      ...share,
+      ...getGitHubSettings(tabUrl),
+    };
   } else {
     try {
       // check if hlx.page, hlx.live, aem.page or aem.live url
