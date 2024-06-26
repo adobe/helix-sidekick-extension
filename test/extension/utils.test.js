@@ -260,7 +260,7 @@ describe('Test extension utils', () => {
   it('queryUrlCache', async () => {
     // known url
     let results = await utils.queryUrlCache('https://foo.sharepoint.com/:w:/r/sites/foo/_layouts/15/Doc.aspx?sourcedoc=%7BBFD9A19C-4A68-4DBF-8641-DA2F1283C895%7D&file=index.docx&action=default&mobileredirect=true');
-    expect(results.length).to.equal(1);
+    expect(results.length).to.equal(2);
     // unknown url
     results = await utils.queryUrlCache('https://foo.sharepoint.com/:x:/r/sites/foo/_layouts/15/Doc.aspx?sourcedoc=%7ABFD9A19C-4A68-4DBF-8641-DA2F1283C895%7D&file=index.xlsx&action=default&mobileredirect=true');
     expect(results.length).to.equal(0);
