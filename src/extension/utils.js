@@ -322,7 +322,7 @@ export async function populateUrlCache(tab, config = {}) {
       [{
         org: owner,
         site: repo,
-        originalRepository: true,
+        originalSite: true,
       }],
     );
     const existingIndex = urlCache.findIndex((e) => e.url === tabUrl);
