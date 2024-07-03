@@ -10,6 +10,7 @@
  * governing permissions and limitations under the License.
  */
 
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { readFile } from '@web/test-runner-commands';
 
 const CONFIG_JSON = {
@@ -22,7 +23,8 @@ const CONFIG_JSON = {
 };
 
 const DISCOVER_JSON = [
-  { owner: 'foo', repo: 'bar1' },
+  { org: 'foo', site: 'bar1', originalSite: true },
+  { org: 'foo', site: 'bar2', originalSite: false },
 ];
 
 const DRIVE_ITEM_JSON = {

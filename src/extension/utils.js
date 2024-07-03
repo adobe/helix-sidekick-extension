@@ -320,9 +320,9 @@ export async function populateUrlCache(tab, config = {}) {
     const entry = createCacheEntry(
       tabUrl,
       [{
-        owner,
-        repo,
-        originalRepository: true,
+        org: owner,
+        site: repo,
+        originalSite: true,
       }],
     );
     const existingIndex = urlCache.findIndex((e) => e.url === tabUrl);
@@ -442,7 +442,7 @@ export async function getProjectMatches(configs, tabUrl) {
   urlCache.forEach((e) => {
     // add non-duplicate matches from url cache
     const filteredByUrlCache = configs.filter(({ owner, repo }) => {
-      if (e.owner === owner && e.repo === repo) {
+      if (e.org === owner && e.site === repo) {
         // avoid duplicates
         if (!matches.find((m) => m.owner === owner && m.repo === repo)) {
           return true;
@@ -465,11 +465,13 @@ export async function getProjectMatches(configs, tabUrl) {
     }
   }
   if (matches.length === 0) {
-    const { owner, repo } = urlCache.find((r) => r.originalRepository) || {};
-    if (owner && repo) {
+    const { org, site } = urlCache.length === 1
+      ? urlCache[0] // use single match from url cache
+      : (urlCache.find((r) => r.originalSite) || {});
+    if (org && site) {
       matches.push({
-        owner,
-        repo,
+        owner: org,
+        repo: site,
         ref: 'main',
         transient: true,
       });
