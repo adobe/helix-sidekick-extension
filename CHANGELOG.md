@@ -1,3 +1,10 @@
+## [6.45.7](https://github.com/adobe/helix-sidekick-extension/compare/v6.45.6...v6.45.7) (2024-07-03)
+
+
+### Bug Fixes
+
+* ignore originalSite if single match ([#766](https://github.com/adobe/helix-sidekick-extension/issues/766)) ([bde5e55](https://github.com/adobe/helix-sidekick-extension/commit/bde5e55c6a63a89266d72e54a815a9e5206ec896))
+
 ## [6.45.6](https://github.com/adobe/helix-sidekick-extension/compare/v6.45.5...v6.45.6) (2024-06-25)
 
 
