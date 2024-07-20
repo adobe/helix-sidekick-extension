@@ -60,7 +60,7 @@
     "jsdoc-to-markdown": "8.0.2",
     "lint-staged": "15.2.7",
     "mime": "4.0.4",
-    "mocha": "10.6.0",
+    "mocha": "10.7.0",
     "mocha-multi-reporters": "1.5.1",
     "nock": "13.5.4",
     "puppeteer": "21.1.1",
