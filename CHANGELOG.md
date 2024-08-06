@@ -1,3 +1,10 @@
+# [6.46.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.45.7...v6.46.0) (2024-08-06)
+
+
+### Features
+
+* instrument options page ([#779](https://github.com/adobe/helix-sidekick-extension/issues/779)) ([fc7c9e4](https://github.com/adobe/helix-sidekick-extension/commit/fc7c9e48dc36f74368d2ca574ac3217260fe0421))
+
 ## [6.45.7](https://github.com/adobe/helix-sidekick-extension/compare/v6.45.6...v6.45.7) (2024-07-03)
 
 
