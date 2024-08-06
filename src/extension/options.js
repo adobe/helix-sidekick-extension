@@ -27,6 +27,7 @@ import {
   clearConfig,
   setProjectAuthorizationToken,
 } from './utils.js';
+import sampleRUM from './rum.js';
 
 function getInnerHost(owner, repo, ref) {
   return `${ref}--${repo}--${owner}.hlx.page`;
@@ -346,6 +347,21 @@ async function updateHelpTopic(helpContent, topicId, userStatus) {
     });
   }
 }
+
+// instrumentation
+sampleRUM('sidekick:options:opened');
+document.addEventListener('click', ({ target }) => {
+  if (['A', 'BUTTON'].includes(target.tagName)
+    || (target.tagName === 'INPUT' && target.type === 'checkbox')) {
+    const action = target.textContent
+      || target.title
+      || target.id
+      || target.tagName;
+    sampleRUM('sidekick:options:clicked', {
+      source: action.trim().toLowerCase(),
+    });
+  }
+}, { passive: true });
 
 window.addEventListener('DOMContentLoaded', () => {
   // i18n
