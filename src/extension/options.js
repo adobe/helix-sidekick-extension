@@ -351,9 +351,14 @@ async function updateHelpTopic(helpContent, topicId, userStatus) {
 // instrumentation
 sampleRUM('sidekick:options:opened');
 document.addEventListener('click', ({ target }) => {
-  if (['A', 'BUTTON'].includes(target.tagName)) {
+  if (['A', 'BUTTON'].includes(target.tagName)
+    || (target.tagName === 'INPUT' && target.type === 'checkbox')) {
+    const action = target.textContent
+      || target.title
+      || target.id
+      || target.tagName;
     sampleRUM('sidekick:options:clicked', {
-      source: target.textContent.trim().toLowerCase(),
+      source: action.trim().toLowerCase(),
     });
   }
 }, { passive: true });
