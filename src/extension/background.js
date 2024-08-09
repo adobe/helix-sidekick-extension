@@ -520,6 +520,7 @@ const externalActions = {
   },
   // returns sidekick projects if caller is new sidekick
   getProjects: async (_, { id }) => {
+    console.log('getProjects', _);
     if (id === 'npaibnlmbiceekjnppaojgadcdkjkoho') {
       // message coming from new extension
       return new Promise((resolve) => {
@@ -576,6 +577,7 @@ const internalActions = {
 (async () => {
   // external messaging API for projects to communicate with sidekick
   chrome.runtime.onMessageExternal.addListener(async (message, sender, sendResponse) => {
+    console.log('external message', message, sender);
     const { action } = message;
     let resp = null;
     if (externalActions[action]) {
@@ -673,3 +675,5 @@ const internalActions = {
 getState(({ display }) => {
   log.info(`sidekick now ${display ? 'shown' : 'hidden'}`);
 });
+
+console.log('old sidekick');
