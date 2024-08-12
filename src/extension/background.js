@@ -55,6 +55,15 @@ const LANGS = [
 ];
 
 /**
+ * The IDs of extensions allowed to communicate with the sidekick.
+ * These must be defined in the manifest file.
+ * @private
+ * @type {string[]}
+ * @see https://developer.chrome.com/docs/extensions/mv3/manifest/externally_connectable/
+ */
+const ALLOWED_EXTENSIONS_IDS = MANIFEST.externally_connectable?.ids || [];
+
+/**
  * Tries to retrieve a project config from a tab.
  * @param string} tabUrl The URL of the tab
  * @returns {object} The config object
@@ -518,14 +527,18 @@ const externalActions = {
     }
     return resp;
   },
-  // returns sidekick projects if caller is new sidekick
+  // reveals presence to new sidekick
+  ping: (_, { id }) => ALLOWED_EXTENSIONS_IDS.includes(id),
+  // sends sidekick projects to new sidekick
   getProjects: async (_, { id }) => {
-    console.log('getProjects', _);
-    if (id === 'npaibnlmbiceekjnppaojgadcdkjkoho') {
+    if (ALLOWED_EXTENSIONS_IDS.includes(id)) {
       // message coming from new extension
       return new Promise((resolve) => {
         getState(({ projects }) => {
-          resolve(projects);
+          resolve(projects.map((project) => {
+            delete project.authToken;
+            return project;
+          }));
         });
       });
     }
@@ -577,7 +590,6 @@ const internalActions = {
 (async () => {
   // external messaging API for projects to communicate with sidekick
   chrome.runtime.onMessageExternal.addListener(async (message, sender, sendResponse) => {
-    console.log('external message', message, sender);
     const { action } = message;
     let resp = null;
     if (externalActions[action]) {
@@ -675,5 +687,3 @@ const internalActions = {
 getState(({ display }) => {
   log.info(`sidekick now ${display ? 'shown' : 'hidden'}`);
 });
-
-console.log('old sidekick');
