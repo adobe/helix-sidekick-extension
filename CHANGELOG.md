@@ -1,3 +1,10 @@
+# [6.47.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.46.0...v6.47.0) (2024-08-14)
+
+
+### Features
+
+* project migration ([#781](https://github.com/adobe/helix-sidekick-extension/issues/781)) ([bfbdcab](https://github.com/adobe/helix-sidekick-extension/commit/bfbdcab8009b816df8f4d4b6e7fb1e5416a92045))
+
 # [6.46.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.45.7...v6.46.0) (2024-08-06)
 
 
