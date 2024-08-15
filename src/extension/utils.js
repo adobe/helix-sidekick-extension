@@ -897,7 +897,13 @@ export async function updateAdminAuthHeaderRules() {
     const projectConfigs = (await Promise.all(projects
       .map((handle) => getConfig('session', handle))))
       .filter((cfg) => !!cfg);
-    projectConfigs.forEach(({ owner, authToken }) => {
+    projectConfigs.forEach(({
+      owner,
+      previewHost,
+      liveHost,
+      host,
+      authToken,
+    }) => {
       if (authToken) {
         addRules.push({
           id,
@@ -915,6 +921,16 @@ export async function updateAdminAuthHeaderRules() {
             requestDomains: ['admin.hlx.page'],
             requestMethods: ['get', 'post', 'delete'],
             resourceTypes: ['xmlhttprequest'],
+            initiatorDomains: [
+              chrome.runtime.id,
+              previewHost,
+              liveHost,
+              host,
+              'hlx.page',
+              'hlx.live',
+              'aem.page',
+              'aem.live',
+            ].filter((d) => !!d),
           },
         });
         id += 1;
