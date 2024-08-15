@@ -459,6 +459,49 @@ describe('Test extension utils', () => {
     expect(spy.calledWith('foo')).to.be.true;
   });
 
+  it('updateAdminAuthHeaderRules adds and removes', async () => {
+    const spy = sandbox.spy(chrome.declarativeNetRequest, 'updateSessionRules');
+    const token = '1234';
+    const exp = (Date.now() / 1000) + 120;
+    await utils.storeAuthToken('foo', token, exp);
+
+    expect(spy.calledWith([
+      {
+        id: 100,
+        priority: 1,
+        action: {
+          type: 'modifyHeaders',
+          requestHeaders: [
+            {
+              operation: 'set',
+              header: 'x-auth-token',
+              value: '1234',
+            },
+          ],
+        },
+        condition: {
+          regexFilter: '^https://admin.hlx.page/[a-z]+/foo/.*',
+          requestDomains: ['admin.hlx.page'],
+          requestMethods: ['get', 'post', 'delete'],
+          resourceTypes: ['xmlhttprequest'],
+          initiatorDomains: [
+            'dummy',
+            'hlx.page',
+            'hlx.live',
+            'aem.page',
+            'aem.live',
+          ],
+        },
+      },
+    ]));
+
+    await utils.storeAuthToken({
+      owner: 'foo',
+      authToken: '',
+    });
+    expect(spy.callCount).to.equal(3);
+  });
+
   it('setProjectAuthorizationToken (add and remove)', async () => {
     const spy = sandbox.spy(window.chrome.storage.local, 'set');
     await utils.setProjectAuthorizationToken({
