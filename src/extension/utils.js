@@ -902,9 +902,28 @@ export async function updateAdminAuthHeaderRules() {
       previewHost,
       liveHost,
       host,
+      mountpoints,
       authToken,
     }) => {
       if (authToken) {
+        const initiatorDomains = [
+          chrome.runtime.id,
+          previewHost,
+          liveHost,
+          host,
+          'hlx.page',
+          'hlx.live',
+          'aem.page',
+          'aem.live',
+        ].filter((d) => !!d);
+        if (mountpoints) {
+          const mpHost = new URL(mountpoints[0]).hostname;
+          initiatorDomains.push(mpHost);
+          if (mpHost === 'drive.google.com') {
+            // also add google docs domain
+            initiatorDomains.push('docs.google.com');
+          }
+        }
         addRules.push({
           id,
           priority: 1,
@@ -921,16 +940,7 @@ export async function updateAdminAuthHeaderRules() {
             requestDomains: ['admin.hlx.page'],
             requestMethods: ['get', 'post', 'delete'],
             resourceTypes: ['xmlhttprequest'],
-            initiatorDomains: [
-              chrome.runtime.id,
-              previewHost,
-              liveHost,
-              host,
-              'hlx.page',
-              'hlx.live',
-              'aem.page',
-              'aem.live',
-            ].filter((d) => !!d),
+            initiatorDomains,
           },
         });
         id += 1;
