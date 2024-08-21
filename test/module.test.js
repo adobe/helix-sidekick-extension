@@ -201,6 +201,37 @@ describe('Test sidekick', () => {
     assert.ok(plugins.find((p) => p.id === 'foo'), 'Did not add plugin from config');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
+  it('Adds badge plugin to feature container', async () => {
+    const setup = new Setup('blog');
+    nock.sidekick(setup, {
+      configJson: `{
+        "plugins": [{
+          "id": "foo",
+          "title": "Foo",
+          "isBadge": true,
+          "badgeColor": "red"
+        }]
+      }`,
+    });
+    nock.admin(setup);
+    const { checkPageResult } = await new SidekickTest({
+      browser,
+      page,
+      loadModule,
+      checkPage: (p) => p.evaluate(() => {
+        const sk = window.hlx.sidekick;
+        const badge = sk.get('foo');
+        return (
+          badge.parentElement === sk.featureContainer
+          && badge.firstElementChild.nodeName === 'SPAN'
+          && badge.firstElementChild?.style.color === 'red'
+        );
+      }),
+    }).run();
+
+    assert.ok(checkPageResult, 'Did not add badge to feature container');
+  }).timeout(IT_DEFAULT_TIMEOUT);
+
   it('Detects innerHost and outerHost from config', async () => {
     const setup = new Setup('blog');
     nock.sidekick(setup);

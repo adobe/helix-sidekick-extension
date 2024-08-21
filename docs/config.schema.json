@@ -89,13 +89,26 @@
         "passReferrer": {
           "type": "boolean",
           "description": "Append the referrer URL as a query param on new URL button click"
+        },
+        "isBadge": {
+          "type": "boolean",
+          "description": "Opens the URL in a palette instead of a new tab"
+        },
+        "badgeColor" : {
+          "type": "string",
+          "description": "The color (CSS color code or  name) of the badge"
+        },
+        "badgeBackgroundColor": {
+          "type": "string",
+          "description": "The background color (CSS color code or  name) of the button"
         }
       },
       "required": [ "id" ],
       "anyOf": [
         { "required": [ "url" ] },
         { "required": [ "event" ] },
-        { "required": [ "isContainer" ] }
+        { "required": [ "isContainer" ] },
+        { "required": [ "isBadge" ] }
       ],
       "additionalProperties": false
     },

@@ -65,6 +65,8 @@
   --hlx-sk-special-view-table-border: rgba(0,0,0, 0.5);
   --hlx-sk-palette-title-bg: rgba(0 0 0 / 10%);
   --hlx-sk-user-bg: #c0c0c0;
+  --hlx-sk-badge-bg: #c0c0c0;
+  --hlx-sk-badge-color: var(--hlx-sk-color)
 }
 
 @media (prefers-color-scheme: dark) {
@@ -86,6 +88,7 @@
     --hlx-sk-special-view-table-border: rgba(127, 127, 127, 0.8);
     --hlx-sk-palette-title-bg: rgba(127 127 127 / 20%);
     --hlx-sk-user-bg: #909090;
+    --hlx-sk-badge-bg: #909090;
   }
 }
 
@@ -247,6 +250,14 @@
   display: inline-block;
   margin: 7px 8px 0 0;
   font-size: var(--hlx-sk-label-font-size);
+}
+
+.hlx-sk .plugin > span.hlx-sk-badge {
+  display: inline-block;
+  border-radius: var(--hlx-sk-button-border-radius);
+  margin: 1px 8px 0 0;
+  padding: var(--hlx-sk-button-padding);
+  line-height: 1.2;
 }
 
 .hlx-sk .feature-container {
