@@ -96,11 +96,11 @@
         },
         "badgeColor" : {
           "type": "string",
-          "description": "The color (CSS color code or  name) of the badge"
+          "description": "The color (CSS color code or name) of the badge"
         },
         "badgeBackgroundColor": {
           "type": "string",
-          "description": "The background color (CSS color code or  name) of the button"
+          "description": "The background color (CSS color code or name) of the button"
         }
       },
       "required": [ "id" ],
