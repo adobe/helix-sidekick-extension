@@ -3153,9 +3153,9 @@ import sampleRUM from './rum.js';
   function handleSiteError(sk) {
     if ((sk.location.host.endsWith('.aem.page') || sk.location.host.endsWith('.aem.live'))
       && !document.querySelector('body > main > div')
-      && document.body.children.length === 2) {
+      && document.querySelector('body > pre') === document.body.children[1]) {
       // 401
-      if (document.querySelector('body > pre')?.textContent.trim() === '401 Unauthorized') {
+      if (document.querySelector('body > pre').textContent.trim() === '401 Unauthorized') {
         const loggedIn = sk.isAuthenticated();
         showErrorView(
           sk,
@@ -3172,7 +3172,7 @@ import sampleRUM from './rum.js';
         return;
       }
       // 403
-      if (document.querySelector('body > pre')?.textContent.trim() === '403 Forbidden') {
+      if (document.querySelector('body > pre').textContent.trim() === '403 Forbidden') {
         showErrorView(
           sk,
           403,
