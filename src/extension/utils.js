@@ -523,6 +523,143 @@ export function isValidShareURL(shareurl) {
 }
 
 /**
+ * Sets the x-auth-token header for all fetch requests to admin.hlx.page if project config
+ * has an auth token. Also sets the authorization header for all main frame requests to
+ * the project's preview or live origin if a site token is configured.
+ */
+export async function updateAuthHeaderRules() {
+  try {
+    // remove all rules first.. admin rules ids are < 100
+    await chrome.declarativeNetRequest.updateSessionRules({
+      removeRuleIds: (await chrome.declarativeNetRequest.getSessionRules())
+        .map((rule) => rule.id),
+    });
+    // find projects with auth tokens and add rules for each
+    let id = 2;
+    const projects = await getConfig('session', 'hlxSidekickProjects') || [];
+    const addRules = [];
+    const projectConfigs = (await Promise.all(projects
+      .map((handle) => getConfig('session', handle))))
+      .filter((cfg) => !!cfg);
+    projectConfigs.forEach(({
+      owner, repo, authToken, siteToken,
+    }) => {
+      if (authToken) {
+        // add admin auth header rule
+        addRules.push({
+          id,
+          priority: 1,
+          action: {
+            type: 'modifyHeaders',
+            requestHeaders: [{
+              operation: 'set',
+              header: 'x-auth-token',
+              value: authToken,
+            }],
+          },
+          condition: {
+            regexFilter: `^https://admin.hlx.page/[a-z]+/${owner}/.*`,
+            requestDomains: ['admin.hlx.page'],
+            requestMethods: ['get', 'post', 'delete'],
+            resourceTypes: ['xmlhttprequest'],
+          },
+        });
+        id += 1;
+        log.debug(`updateAuthHeaderRules: added admin auth header rule for ${owner}`);
+      }
+      if (siteToken) {
+        // add site auth header rule
+        addRules.push({
+          id,
+          priority: 1,
+          action: {
+            type: 'modifyHeaders',
+            requestHeaders: [{
+              operation: 'set',
+              header: 'authorization',
+              value: `token ${siteToken}`,
+            }],
+          },
+          condition: {
+            regexFilter: `^https://[a-z0-9-]+--${repo}--${owner}.aem.(page|live)/.*`,
+            requestMethods: ['get', 'post'],
+            resourceTypes: ['main_frame'],
+          },
+        });
+        id += 1;
+        log.debug(`updateAuthHeaderRules: added site auth header rule for ${owner}/${repo}`);
+      }
+    });
+    if (addRules.length > 0) {
+      await chrome.declarativeNetRequest.updateSessionRules({
+        addRules,
+      });
+      log.debug(`updateAuthHeaderRules: ${addRules.length} auth header rule(s) set`);
+    }
+  } catch (e) {
+    log.error(`updateAuthHeaderRules: ${e.message}`);
+  }
+}
+
+export async function storeAuthToken({
+  owner,
+  repo,
+  authToken = '',
+  authTokenExpiry = 0,
+  siteToken = '',
+  siteTokenExpiry = 0,
+}) {
+  const projects = await getConfig('session', 'hlxSidekickProjects') || [];
+  const orgHandle = owner;
+  const orgIndex = projects.indexOf(owner);
+  const siteHandle = `${owner}/${repo}`;
+  const siteIndex = projects.indexOf(siteHandle);
+  if (authToken) {
+    // store auth token in session storage
+    await setConfig('session', {
+      [orgHandle]: {
+        owner,
+        authToken,
+        authTokenExpiry: authTokenExpiry * 1000, // store expiry in milliseconds
+      },
+    });
+    if (orgIndex < 0) {
+      projects.push(orgHandle);
+    }
+  } else {
+    // remove auth token from session storage
+    await removeConfig('session', orgHandle);
+    if (orgIndex >= 0) {
+      projects.splice(orgIndex, 1);
+    }
+  }
+  if (siteToken) {
+    // store site token in session storage
+    await setConfig('session', {
+      [siteHandle]: {
+        owner,
+        repo,
+        siteToken,
+        siteTokenExpiry: siteTokenExpiry * 1000, // store expiry in milliseconds
+      },
+    });
+    if (siteIndex < 0) {
+      projects.push(siteHandle);
+    }
+  } else {
+    // remove site token from session storage
+    await removeConfig('session', siteHandle);
+    if (siteIndex >= 0) {
+      projects.splice(siteIndex, 1);
+    }
+  }
+  await setConfig('session', { hlxSidekickProjects: projects });
+  log.debug(`updated auth token for ${owner}/${repo}`);
+  // auth token changed, set/update admin auth header
+  await updateAuthHeaderRules();
+}
+
+/**
  * Returns the environment configuration for a given project.
  * @param {Object} config The config
  * @param {string} config.owner The owner
@@ -596,7 +733,6 @@ export function assembleProject({
   devOrigin,
   disabled,
   authToken,
-  authorizationToken,
 }) {
   if (giturl && !owner && !repo) {
     const gh = getGitHubSettings(giturl);
@@ -623,7 +759,6 @@ export function assembleProject({
     ref,
     mountpoints,
     authToken,
-    authorizationToken,
   };
 }
 
@@ -668,83 +803,6 @@ export async function setProject(project, cb) {
   if (typeof cb === 'function') {
     cb(project);
   }
-}
-
-/**
- * Sets the authorization header for all requests to protected sites
- */
-export async function updateProjectAuthorizationHeaderRules() {
-  try {
-    // remove all rules first
-    await chrome.declarativeNetRequest.updateSessionRules({
-      removeRuleIds: (await chrome.declarativeNetRequest.getSessionRules())
-        .filter((rule) => rule.id >= 100)
-        .map((rule) => rule.id),
-    });
-
-    // start site authorization header rules from id 100
-    let id = 100;
-    const projects = await getConfig('local', 'hlxSidekickProjects') || [];
-    const addRules = [];
-
-    for (const [key, value] of Object.entries(projects)) {
-      const [owner, repo] = key.split('/');
-      addRules.push({
-        id,
-        priority: 1,
-        action: {
-          type: 'modifyHeaders',
-          requestHeaders: [{
-            operation: 'set',
-            header: 'authorization',
-            value: `token ${value}`,
-          }],
-        },
-        condition: {
-          regexFilter: `^https://[a-z0-9-]+--${repo}--${owner}.aem.(page|live)/.*`,
-          requestMethods: ['get', 'post'],
-          resourceTypes: ['main_frame'],
-        },
-      });
-      id += 1;
-      log.debug('added admin authorization header rule for ', `${owner}/${repo}`);
-    }
-
-    if (addRules.length > 0) {
-      await chrome.declarativeNetRequest.updateSessionRules({
-        addRules,
-      });
-      log.debug(`updateProjectAuthorizationHeaderRules: ${addRules.length} rule(s) set`);
-    }
-  } catch (e) {
-    log.error(`updateProjectAuthorizationHeaderRules: ${e.message}`);
-  }
-}
-
-/**
- * Sets or clears the authorization token for a project.
- * @param {Object} project The project settings
- * @param {string} [authorizationToken] if undefined project will be removed from the protected list
- * @returns {Promise<void>}
- */
-export async function setProjectAuthorizationToken(project, authorizationToken) {
-  const { owner, repo } = project;
-  const projectHandle = `${owner}/${repo}`;
-
-  const protectedProjects = await getConfig('local', 'hlxSidekickProjects') || {};
-
-  if (!authorizationToken) {
-    delete protectedProjects[projectHandle];
-  }
-
-  const currentToken = protectedProjects[projectHandle];
-  if (authorizationToken && currentToken !== authorizationToken) {
-    protectedProjects[projectHandle] = authorizationToken;
-  }
-
-  await setConfig('local', { hlxSidekickProjects: protectedProjects });
-
-  updateProjectAuthorizationHeaderRules();
 }
 
 /**
@@ -810,8 +868,12 @@ export async function deleteProject(handle, cb) {
         projects.splice(i, 1);
         await setConfig('sync', { hlxSidekickProjects: projects });
 
-        // remove project from protected projects
-        setProjectAuthorizationToken({ owner, repo });
+        // remove all auth tokens for this project
+        await storeAuthToken({
+          owner,
+          repo,
+          authToken: '',
+        });
 
         log.info('project deleted', handle);
         if (typeof cb === 'function') cb(true);
@@ -876,88 +938,6 @@ export function toggleDisplay(cb) {
   getState(({ display }) => {
     setDisplay(!display, cb);
   });
-}
-
-/**
- * Sets the x-auth-token header for all requests to admin.hlx.page if project config
- * has an auth token.
- */
-export async function updateAdminAuthHeaderRules() {
-  try {
-    // remove all rules first.. admin rules ids are < 100
-    await chrome.declarativeNetRequest.updateSessionRules({
-      removeRuleIds: (await chrome.declarativeNetRequest.getSessionRules())
-        .filter((rule) => rule.id < 100)
-        .map((rule) => rule.id),
-    });
-    // find projects with auth tokens and add rules for each
-    let id = 2;
-    const projects = await getConfig('session', 'hlxSidekickProjects') || [];
-    const addRules = [];
-    const projectConfigs = (await Promise.all(projects
-      .map((handle) => getConfig('session', handle))))
-      .filter((cfg) => !!cfg);
-    projectConfigs.forEach(({ owner, authToken }) => {
-      if (authToken) {
-        addRules.push({
-          id,
-          priority: 1,
-          action: {
-            type: 'modifyHeaders',
-            requestHeaders: [{
-              operation: 'set',
-              header: 'x-auth-token',
-              value: authToken,
-            }],
-          },
-          condition: {
-            regexFilter: `^https://admin.hlx.page/[a-z]+/${owner}/.*`,
-            requestDomains: ['admin.hlx.page'],
-            requestMethods: ['get', 'post', 'delete'],
-            resourceTypes: ['xmlhttprequest'],
-          },
-        });
-        id += 1;
-        log.debug('added admin auth header rule for ', owner);
-      }
-    });
-    if (addRules.length > 0) {
-      await chrome.declarativeNetRequest.updateSessionRules({
-        addRules,
-      });
-      log.debug(`setAdminAuthHeaderRule: ${addRules.length} rule(s) set`);
-    }
-  } catch (e) {
-    log.error(`updateAdminAuthHeaderRules: ${e.message}`);
-  }
-}
-
-export async function storeAuthToken(owner, token, exp) {
-  const handle = owner;
-  const projects = await getConfig('session', 'hlxSidekickProjects') || [];
-  const projectIndex = projects.indexOf(handle);
-  if (token) {
-    // store auth token in session storage
-    await setConfig('session', {
-      [handle]: {
-        owner,
-        authToken: token,
-        authTokenExpiry: exp ? exp * 1000 : 0, // store expiry in milliseconds
-      },
-    });
-    if (projectIndex < 0) {
-      projects.push(handle);
-    }
-  } else {
-    await removeConfig('session', handle);
-    if (projectIndex >= 0) {
-      projects.splice(projectIndex, 1);
-    }
-  }
-  await setConfig('session', { hlxSidekickProjects: projects });
-  log.debug(`updated auth token for ${owner}`);
-  // auth token changed, set/update admin auth header
-  updateAdminAuthHeaderRules();
 }
 
 /**

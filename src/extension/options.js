@@ -25,7 +25,6 @@ import {
   setConfig,
   getConfig,
   clearConfig,
-  setProjectAuthorizationToken,
 } from './utils.js';
 import sampleRUM from './rum.js';
 
@@ -200,13 +199,8 @@ function shareProject(i, evt) {
 }
 
 function editProject(i) {
-  getState(async ({ projects = [] }) => {
+  getState(({ projects = [] }) => {
     const project = projects[i];
-
-    const protectedProjects = await getConfig('local', 'hlxSidekickProjects') || {};
-    const { owner, repo } = project;
-    const handle = `${owner}/${repo}`;
-
     const editorFragment = document.getElementById('configEditorTemplate').content.cloneNode(true);
     const editor = editorFragment.querySelector('#configEditor');
     const close = () => {
@@ -247,12 +241,6 @@ function editProject(i) {
         // eslint-disable-next-line no-alert
         window.alert(i18n('config_invalid_host'));
         return;
-      }
-
-      // Store the authorization token in the extension local storage
-      const authorizationToken = document.querySelector('#edit-authorizationToken').value;
-      if (authorizationToken || protectedProjects[handle]) {
-        setProjectAuthorizationToken(project, authorizationToken);
       }
 
       const input = {
@@ -303,11 +291,6 @@ function editProject(i) {
         label.textContent = i18n(`config_manual_${key}`) || label.textContent;
       }
     });
-
-    const authorizationToken = protectedProjects[handle];
-    if (authorizationToken) {
-      document.querySelector('#edit-authorizationToken').value = authorizationToken;
-    }
 
     // focus first field
     const firstField = editor.querySelector('input, textarea');

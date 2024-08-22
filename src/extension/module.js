@@ -3108,6 +3108,87 @@ import sampleRUM from './rum.js';
   }
 
   /**
+   * Shows the error view.
+   * @private
+   * @param {Sidekick} sk The sidekick
+   * @param {number} code The error code
+   * @param {string} text The error text
+   * @param {string} actionText The action text
+   * @param {Function} action The action
+   */
+  function showErrorView(sk, code, text, actionText, action) {
+    const url = new URL('view/error/error.html', sk.config.scriptRoot);
+    url.searchParams.set('code', code);
+    url.searchParams.set('text', text);
+    url.searchParams.set('action', actionText);
+
+    const viewOverlay = getViewOverlay(sk, true);
+    viewOverlay.classList.add('hlx-sk-error-view');
+    viewOverlay.querySelector('.title').textContent = i18n(sk, 'error_view_description');
+
+    const container = document.body.appendChild(document.createElement('div'));
+    container.classList.add('container');
+
+    const heading = container.appendChild(document.createElement('h2'));
+    heading.classList.add(`code-${code}`);
+    heading.textContent = code;
+    heading.title = code;
+
+    const description = container.appendChild(document.createElement('p'));
+    description.textContent = text;
+
+    const button = container.appendChild(document.createElement('button'));
+    button.classList.add('accent');
+    button.textContent = actionText;
+    button.addEventListener('click', action);
+    viewOverlay.querySelector('.container').replaceWith(container);
+  }
+
+  /**
+   * Handles site errors from the underlying page.
+   * @private
+   * @param {Sidekick} sk The sidekick
+   */
+  function handleSiteError(sk) {
+    if ((sk.location.host.endsWith('.aem.page') || sk.location.host.endsWith('.aem.live'))
+      && !document.querySelector('body > main > div')
+      && document.body.children.length === 2) {
+      // 401
+      if (document.querySelector('body > pre')?.textContent.trim() === '401 Unauthorized') {
+        const loggedIn = sk.isAuthenticated();
+        showErrorView(
+          sk,
+          401,
+          i18n(sk, !loggedIn ? 'error_site_401' : 'error_site_401_relogin'),
+          i18n(sk, !loggedIn ? 'user_login' : 'user_relogin'),
+          () => {
+            login(sk);
+            sk.addEventListener('loggedin', () => {
+              window.location.reload();
+            }, { once: true });
+          },
+        );
+        return;
+      }
+      // 403
+      if (document.querySelector('body > pre')?.textContent.trim() === '403 Forbidden') {
+        showErrorView(
+          sk,
+          403,
+          i18n(sk, 'error_site_403'),
+          i18n(sk, 'user_switch'),
+          () => {
+            login(sk, true); // select account
+            sk.addEventListener('loggedin', () => {
+              window.location.reload();
+            }, { once: true });
+          },
+        );
+      }
+    }
+  }
+
+  /**
    * The sidekick provides helper tools for authors.
    * @augments HTMLElement
    */
@@ -3266,6 +3347,7 @@ import sampleRUM from './rum.js';
         checkPlugins(this);
         checkLastModified(this);
         enableInfoBtn(this);
+        handleSiteError(this);
       });
       this.addEventListener('shown', async () => {
         pushDownContent(this);

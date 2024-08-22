@@ -32,8 +32,7 @@ import {
   setDisplay,
   isValidShareURL,
   storeAuthToken,
-  updateAdminAuthHeaderRules,
-  updateProjectAuthorizationHeaderRules,
+  updateAuthHeaderRules,
 } from './utils.js';
 
 /**
@@ -450,14 +449,26 @@ function checkViewDocSource(id) {
 const externalActions = {
   // updates a project's auth token (admin only)
   updateAuthToken: async ({
-    authToken, exp, owner, repo,
+    authToken,
+    siteToken,
+    siteTokenExpiry,
+    owner,
+    repo,
+    exp,
   }, { url }) => {
     let resp = '';
     try {
       if (!url || new URL(url).origin !== 'https://admin.hlx.page') {
         resp = 'unauthorized sender url';
       } else if (authToken !== undefined && owner && repo) {
-        await storeAuthToken(owner, authToken, exp);
+        await storeAuthToken({
+          owner,
+          repo,
+          authToken,
+          authTokenExpiry: exp,
+          siteToken,
+          siteTokenExpiry,
+        });
         resp = 'close';
       }
     } catch (e) {
@@ -674,8 +685,8 @@ const internalActions = {
   chrome.runtime.onMessage.addListener(async ({ deleteAuthToken }, { tab }) => {
     // check if message contains project config and is sent from tab
     if (tab && tab.id && typeof deleteAuthToken === 'object') {
-      const { owner } = deleteAuthToken;
-      await storeAuthToken(owner, '');
+      const { owner, repo } = deleteAuthToken;
+      await storeAuthToken({ owner, repo, authToken: '' });
     }
   });
 
@@ -687,8 +698,7 @@ const internalActions = {
   // });
 
   await updateHelpContent();
-  await updateAdminAuthHeaderRules();
-  await updateProjectAuthorizationHeaderRules();
+  await updateAuthHeaderRules();
   log.info('sidekick extension initialized');
 })();
 
