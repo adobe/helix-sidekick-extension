@@ -3140,6 +3140,7 @@ import sampleRUM from './rum.js';
     const button = container.appendChild(document.createElement('button'));
     button.classList.add('accent');
     button.textContent = actionText;
+    button.title = actionText;
     button.addEventListener('click', action);
     viewOverlay.querySelector('.container').replaceWith(container);
   }
