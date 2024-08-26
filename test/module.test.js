@@ -1270,12 +1270,23 @@ describe('Test sidekick', () => {
     setup.apiResponse().profile = null; // not logged in
     nock.sidekick(setup);
     nock.admin(setup);
+    nock('https://admin.hlx.page')
+      .get('/login/adobe/blog/main?extensionId=cookie')
+      .optionally()
+      .reply(200, '<html>logged in</html>')
+      .get('/profile/adobe/blog/main')
+      .optionally()
+      .reply(200, '{}')
+      .persist();
     const { checkPageResult } = await new SidekickTest({
       browser,
       page,
       loadModule,
       fixture: '401.html',
       url: 'https://main--blog--adobe.aem.page/en/topics/bla',
+      waitNavigation: 'https://admin.hlx.page/login/adobe/blog/main?extensionId=cookie',
+      post: (p) => p.evaluate(() => window.hlx.sidekick.shadowRoot
+        .querySelector('.hlx-sk-error-view .container button').click()),
       checkPage: (p) => p.evaluate(() => window.hlx.sidekick
         .shadowRoot
         .querySelector('.hlx-sk-error-view p')?.textContent),
@@ -1312,12 +1323,23 @@ describe('Test sidekick', () => {
     const setup = new Setup('blog');
     nock.sidekick(setup);
     nock.admin(setup);
+    nock('https://admin.hlx.page')
+      .get('/login/adobe/blog/main?extensionId=cookie&selectAccount=true')
+      .optionally()
+      .reply(200, '<html>logged in</html>')
+      .get('/profile/adobe/blog/main')
+      .optionally()
+      .reply(200, '{}')
+      .persist();
     const { checkPageResult } = await new SidekickTest({
       browser,
       page,
       loadModule,
       fixture: '403.html',
+      waitNavigation: '/login/adobe/blog/main?extensionId=cookie&selectAccount=true',
       url: 'https://main--blog--adobe.aem.page/en/topics/bla',
+      post: (p) => p.evaluate(() => window.hlx.sidekick.shadowRoot
+        .querySelector('.hlx-sk-error-view .container button').click()),
       checkPage: (p) => p.evaluate(() => window.hlx.sidekick
         .shadowRoot
         .querySelector('.hlx-sk-error-view p')?.textContent),
