@@ -880,6 +880,10 @@
   text-align: center;
 }
 
+.hlx-sk-error-view .container button {
+  transform: scale(1.5);
+  margin: 20px;
+}
 
 .hlx-sk-palette {
   position: fixed;

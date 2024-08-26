@@ -1282,7 +1282,7 @@ describe('Test sidekick', () => {
     }).run();
     assert.equal(
       checkPageResult,
-      'Access restricted. Please sign in to continue.',
+      'Please sign in to continue.',
       'Did not show access restricted message',
     );
   }).timeout(IT_DEFAULT_TIMEOUT);

@@ -394,7 +394,7 @@
     "message": "This is a Microsoft Excel document. Please convert it to Google Sheets: File > Save as Google Sheets'"
   },
   "error_site_401": {
-    "message": "Access restricted. Please sign in to continue."
+    "message": "Please sign in to continue."
   },
   "error_site_401_relogin": {
     "message": "Access expired. Please sign in again to continue."
