@@ -416,7 +416,9 @@ describe('Test bulk preview plugin', () => {
       fixture: SHAREPOINT_FIXTURE,
       url: setup.getUrl('edit', 'admin'),
       post: (p) => p.evaluate((url) => {
-        document.getElementById('sidekick_test_location').value = `${url}&navigated=true`;
+        url = new URL(url);
+        url.searchParams.set('navigated', 'true');
+        document.getElementById('sidekick_test_location').value = url.toString();
       }, setup.getUrl('edit', 'admin')),
       checkPage: (p) => p.evaluate(() => new Promise((resolve) => {
         // wait a bit
@@ -424,11 +426,8 @@ describe('Test bulk preview plugin', () => {
       })),
       loadModule: true,
     }).run();
-    const statusReqs = requestsMade
-      .filter((r) => r.url.startsWith('https://admin.hlx.page/status/'))
-      .map((r) => r.url);
     assert.ok(
-      statusReqs.length === 2,
+      requestsMade.find((r) => r.url.endsWith('navigated%3Dtrue')),
       'Did not refetch status after navigation',
     );
   }).timeout(IT_DEFAULT_TIMEOUT);
