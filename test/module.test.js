@@ -209,7 +209,7 @@ describe('Test sidekick', () => {
           "id": "foo",
           "title": "Foo",
           "isBadge": true,
-          "badgeColor": "red"
+          "badgeTextColorLight": "red"
         }]
       }`,
     });
@@ -224,7 +224,7 @@ describe('Test sidekick', () => {
         return (
           badge.parentElement === sk.featureContainer
           && badge.firstElementChild.nodeName === 'SPAN'
-          && badge.firstElementChild?.style.color === 'red'
+          && sk.getAttribute('style') === '--hlx-sk-badge-color: red;'
         );
       }),
     }).run();
