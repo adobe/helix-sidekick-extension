@@ -2305,8 +2305,10 @@ import sampleRUM from './rum.js';
             containerId,
             isContainer,
             isBadge,
-            badgeColor,
-            badgeBackgroundColor,
+            badgeTextColorLight,
+            badgeBackgroundColorLight,
+            badgeTextColorDark,
+            badgeBackgroundColorDark,
           } = cfg;
           const condition = (s) => {
             let excluded = false;
@@ -2350,9 +2352,17 @@ import sampleRUM from './rum.js';
               text: title,
               attrs: {
                 class: 'hlx-sk-badge',
-                style: `color: ${badgeColor || 'var(--hlx-sk-badge-color)'}; background-color: ${badgeBackgroundColor || 'var(--hlx-sk-badge-bg)'};`,
               },
             }];
+            // set badge styles
+            const isDarkSchemePreferred = () => window?.matchMedia?.('(prefers-color-scheme:dark)')?.matches ?? false;
+            if (isDarkSchemePreferred()) {
+              if (badgeTextColorDark) sk.style.setProperty('--hlx-sk-badge-color', badgeTextColorDark);
+              if (badgeBackgroundColorDark) sk.style.setProperty('--hlx-sk-badge-bg', badgeBackgroundColorDark);
+            } else {
+              if (badgeTextColorLight) sk.style.setProperty('--hlx-sk-badge-color', badgeTextColorLight);
+              if (badgeBackgroundColorLight) sk.style.setProperty('--hlx-sk-badge-bg', badgeBackgroundColorLight);
+            }
           } else {
             plugin.button = {
               text: (titleI18n && titleI18n[lang]) || title || '',

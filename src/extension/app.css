@@ -65,8 +65,8 @@
   --hlx-sk-special-view-table-border: rgba(0,0,0, 0.5);
   --hlx-sk-palette-title-bg: rgba(0 0 0 / 10%);
   --hlx-sk-user-bg: #c0c0c0;
+  --hlx-sk-badge-color: var(--hlx-sk-color);
   --hlx-sk-badge-bg: #c0c0c0;
-  --hlx-sk-badge-color: var(--hlx-sk-color)
 }
 
 @media (prefers-color-scheme: dark) {
@@ -254,6 +254,8 @@
 
 .hlx-sk .plugin > span.hlx-sk-badge {
   display: inline-block;
+  color: var(--hlx-sk-badge-color);
+  background-color: var(--hlx-sk-badge-bg);
   border-radius: var(--hlx-sk-button-border-radius);
   margin: 1px 8px 0 0;
   padding: var(--hlx-sk-button-padding);
