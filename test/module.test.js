@@ -1284,15 +1284,15 @@ describe('Test sidekick', () => {
       loadModule,
       fixture: '401.html',
       url: 'https://main--blog--adobe.aem.page/en/topics/bla',
-      sleep: 1000,
       post: (p) => p.evaluate(() => {
         window.hlx.sidekick.shadowRoot
           .querySelector('.hlx-sk-error-view .container button').click();
-        window.hlx.sidekick.dispatchEvent(new CustomEvent('loggedin'));
       }),
-      checkPage: (p) => p.evaluate(() => window.hlx.sidekick
-        .shadowRoot
-        .querySelector('.hlx-sk-error-view p')?.textContent),
+      checkPage: (p) => p.evaluate(() => {
+        window.hlx.sidekick.dispatchEvent(new CustomEvent('loggedin'));
+        return window.hlx.sidekick.shadowRoot
+          .querySelector('.hlx-sk-error-view p')?.textContent;
+      }),
     }).run();
     assert.equal(
       checkPageResult,
@@ -1339,16 +1339,16 @@ describe('Test sidekick', () => {
       page,
       loadModule,
       fixture: '403.html',
-      sleep: 1000,
       url: 'https://main--blog--adobe.aem.page/en/topics/bla',
       post: (p) => p.evaluate(() => {
         window.hlx.sidekick.shadowRoot
           .querySelector('.hlx-sk-error-view .container button').click();
-        window.hlx.sidekick.dispatchEvent(new CustomEvent('loggedin'));
       }),
-      checkPage: (p) => p.evaluate(() => window.hlx.sidekick
-        .shadowRoot
-        .querySelector('.hlx-sk-error-view p')?.textContent),
+      checkPage: (p) => p.evaluate(() => {
+        window.hlx.sidekick.dispatchEvent(new CustomEvent('loggedin'));
+        return window.hlx.sidekick.shadowRoot
+          .querySelector('.hlx-sk-error-view p')?.textContent;
+      }),
     }).run();
     assert.equal(
       checkPageResult,
