@@ -703,7 +703,15 @@ export async function updateProjectAuthorizationHeaderRules() {
         condition: {
           regexFilter: `^https://[a-z0-9-]+--${repo}--${owner}.aem.(page|live)/.*`,
           requestMethods: ['get', 'post'],
-          resourceTypes: ['main_frame'],
+          resourceTypes: [
+            'main_frame',
+            'script',
+            'stylesheet',
+            'image',
+            'xmlhttprequest',
+            'media',
+            'font',
+          ],
         },
       });
       id += 1;
