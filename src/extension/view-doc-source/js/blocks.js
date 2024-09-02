@@ -106,9 +106,7 @@ export const blockTableToDiv = (main) => {
       const rowDiv = document.createElement('div');
       div.appendChild(rowDiv);
       row.querySelectorAll('td').forEach((cell) => {
-        const cellDiv = document.createElement('div');
-        rowDiv.appendChild(cellDiv);
-        cellDiv.innerHTML = cell.innerHTML;
+        rowDiv.appendChild(cell.firstElementChild);
       });
     });
     table.replaceWith(div);
