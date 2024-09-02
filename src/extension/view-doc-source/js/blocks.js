@@ -81,7 +81,7 @@ export const blockDivToTable = (main) => {
           if (cell.tagName === 'DIV') {
             const cellElement = document.createElement('td');
             rowElement.appendChild(cellElement);
-            cellElement.innerHTML = cell.innerHTML;
+            cellElement.append(cell);
             numCols += 1;
           }
           maxCols = Math.max(maxCols, numCols);
