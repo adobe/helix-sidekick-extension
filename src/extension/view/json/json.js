@@ -120,7 +120,7 @@ export default function draw(json, url) {
 
 (async () => {
   try {
-    const url = new URL(window.location.href).searchParams.get('url');
+    const url = new URL(new URL(window.location.href).searchParams.get('url')).toString();
     if (url) {
       const res = await fetch(url);
       if (res.ok) {
