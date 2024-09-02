@@ -3151,7 +3151,9 @@ import sampleRUM from './rum.js';
    * @param {Sidekick} sk The sidekick
    */
   function handleSiteError(sk) {
-    if ((sk.location.host.endsWith('.aem.page') || sk.location.host.endsWith('.aem.live'))
+    if ((sk.location.host.endsWith('.aem.page')
+      || sk.location.host.endsWith('.aem.live')
+      || sk.location.hostname === 'localhost')
       && !document.querySelector('body > main > div')
       && document.querySelector('body > pre') === document.body.children[1]) {
       // 401
