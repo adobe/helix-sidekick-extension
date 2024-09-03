@@ -81,7 +81,7 @@ export const blockDivToTable = (main) => {
           if (cell.tagName === 'DIV') {
             const cellElement = document.createElement('td');
             rowElement.appendChild(cellElement);
-            cellElement.innerHTML = cell.innerHTML;
+            cellElement.append(cell);
             numCols += 1;
           }
           maxCols = Math.max(maxCols, numCols);
@@ -106,9 +106,7 @@ export const blockTableToDiv = (main) => {
       const rowDiv = document.createElement('div');
       div.appendChild(rowDiv);
       row.querySelectorAll('td').forEach((cell) => {
-        const cellDiv = document.createElement('div');
-        rowDiv.appendChild(cellDiv);
-        cellDiv.innerHTML = cell.innerHTML;
+        rowDiv.appendChild(cell.firstElementChild);
       });
     });
     table.replaceWith(div);
@@ -152,7 +150,7 @@ export const addMetadataBlock = (main, head, url) => {
   const thead = document.createElement('thead');
   const tr = document.createElement('tr');
   const th = document.createElement('th');
-  th.innerHTML = 'Metadata';
+  th.textContent = 'Metadata';
   th.colSpan = 2;
   tr.appendChild(th);
   thead.appendChild(tr);
@@ -168,11 +166,11 @@ export const addMetadataBlock = (main, head, url) => {
     tbody.appendChild(row);
 
     const nameCell = document.createElement('td');
-    nameCell.innerHTML = 'Title';
+    nameCell.textContent = 'Title';
     row.appendChild(nameCell);
 
     const content = document.createElement('td');
-    content.innerHTML = title.innerHTML;
+    content.textContent = title.textContent;
     row.appendChild(content);
   }
 
@@ -182,7 +180,7 @@ export const addMetadataBlock = (main, head, url) => {
     tbody.appendChild(row);
 
     const nameCell = document.createElement('td');
-    nameCell.innerHTML = 'Image';
+    nameCell.textContent = 'Image';
     row.appendChild(nameCell);
 
     const content = document.createElement('td');
@@ -198,11 +196,11 @@ export const addMetadataBlock = (main, head, url) => {
     tbody.appendChild(row);
 
     const nameCell = document.createElement('td');
-    nameCell.innerHTML = 'Tags';
+    nameCell.textContent = 'Tags';
     row.appendChild(nameCell);
 
     const content = document.createElement('td');
-    content.innerHTML = Array.from(tags).map((tag) => tag.content).join(', ');
+    content.textContent = Array.from(tags).map((tag) => tag.content).join(', ');
     row.appendChild(content);
   }
   // END: special cases
@@ -220,7 +218,7 @@ export const addMetadataBlock = (main, head, url) => {
       tbody.appendChild(row);
 
       const nameCell = document.createElement('td');
-      nameCell.innerHTML = metaToDisplay(name);
+      nameCell.textContent = metaToDisplay(name);
       row.appendChild(nameCell);
 
       const content = document.createElement('td');
@@ -231,7 +229,7 @@ export const addMetadataBlock = (main, head, url) => {
         img.src = `${u.origin}${u.pathname}${value.substring(value.lastIndexOf('/'))}`;
         content.appendChild(img);
       } else {
-        content.innerHTML = value || '';
+        content.textContent = value || '';
       }
       row.appendChild(content);
     }
