@@ -4193,7 +4193,7 @@ import sampleRUM from './rum.js';
 
       const purgeURL = new URL(path, this.isEditor()
         ? `https://${config.innerHost}/`
-        : location.href);
+        : new URL(location.href).toString());
       console.log(`publishing ${purgeURL.pathname}`);
       let resp = {};
       try {

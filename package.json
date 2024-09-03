@@ -57,7 +57,7 @@
     "express": "4.19.2",
     "fs-extra": "11.2.0",
     "husky": "9.1.5",
-    "jsdoc-to-markdown": "8.0.3",
+    "jsdoc-to-markdown": "9.0.0",
     "lint-staged": "15.2.10",
     "mime": "4.0.4",
     "mocha": "10.7.3",
