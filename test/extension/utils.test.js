@@ -567,6 +567,61 @@ describe('Test extension utils', () => {
       authToken: '',
     });
 
-    expect(spy.callCount).to.equal(3);
+    protectedProject = await utils.getConfig('local', 'hlxSidekickProjects');
+    expect(protectedProject).to.deep.equal({});
+
+    expect(spy.calledWith({
+      hlxSidekickProjects: {},
+    })).to.be.true;
+  });
+
+  it('updateProjectAuthorizationHeaderRules adds and removes', async () => {
+    const spy = sandbox.spy(chrome.declarativeNetRequest, 'updateSessionRules');
+    await utils.setProjectAuthorizationToken({
+      owner: 'foo',
+      repo: 'bar',
+    }, '1234');
+
+    await utils.updateProjectAuthorizationHeaderRules();
+    expect(spy.calledWith([
+      {
+        id: 100,
+        priority: 1,
+        action: {
+          type: 'modifyHeaders',
+          requestHeaders: [
+            {
+              operation: 'set',
+              header: 'authorization',
+              value: 'token 1234',
+            },
+          ],
+        },
+        condition: {
+          regexFilter: '^https://[a-z0-9-]+--bar--foo.aem.(page|live)/.*',
+          requestMethods: [
+            'get',
+            'post',
+          ],
+          resourceTypes: [
+            'main_frame',
+            'script',
+            'stylesheet',
+            'image',
+            'xmlhttprequest',
+            'media',
+            'font',
+          ],
+        },
+      },
+    ]));
+
+    await utils.setProjectAuthorizationToken({
+      owner: 'foo',
+      repo: 'bar',
+    }, undefined);
+
+    const rules = await chrome.declarativeNetRequest.getSessionRules();
+    expect(rules).to.deep.equal([]);
   });
 });

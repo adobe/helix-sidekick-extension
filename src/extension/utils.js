@@ -804,6 +804,91 @@ export async function setProject(project, cb) {
 }
 
 /**
+ * Sets the authorization header for all requests to protected sites
+ */
+export async function updateProjectAuthorizationHeaderRules() {
+  try {
+    // remove all rules first
+    await chrome.declarativeNetRequest.updateSessionRules({
+      removeRuleIds: (await chrome.declarativeNetRequest.getSessionRules())
+        .filter((rule) => rule.id >= 100)
+        .map((rule) => rule.id),
+    });
+
+    // start site authorization header rules from id 100
+    let id = 100;
+    const projects = await getConfig('local', 'hlxSidekickProjects') || [];
+    const addRules = [];
+
+    for (const [key, value] of Object.entries(projects)) {
+      const [owner, repo] = key.split('/');
+      addRules.push({
+        id,
+        priority: 1,
+        action: {
+          type: 'modifyHeaders',
+          requestHeaders: [{
+            operation: 'set',
+            header: 'authorization',
+            value: `token ${value}`,
+          }],
+        },
+        condition: {
+          regexFilter: `^https://[a-z0-9-]+--${repo}--${owner}.aem.(page|live)/.*`,
+          requestMethods: ['get', 'post'],
+          resourceTypes: [
+            'main_frame',
+            'script',
+            'stylesheet',
+            'image',
+            'xmlhttprequest',
+            'media',
+            'font',
+          ],
+        },
+      });
+      id += 1;
+      log.debug('added admin authorization header rule for ', `${owner}/${repo}`);
+    }
+
+    if (addRules.length > 0) {
+      await chrome.declarativeNetRequest.updateSessionRules({
+        addRules,
+      });
+      log.debug(`updateProjectAuthorizationHeaderRules: ${addRules.length} rule(s) set`);
+    }
+  } catch (e) {
+    log.error(`updateProjectAuthorizationHeaderRules: ${e.message}`);
+  }
+}
+
+/**
+ * Sets or clears the authorization token for a project.
+ * @param {Object} project The project settings
+ * @param {string} [authorizationToken] if undefined project will be removed from the protected list
+ * @returns {Promise<void>}
+ */
+export async function setProjectAuthorizationToken(project, authorizationToken) {
+  const { owner, repo } = project;
+  const projectHandle = `${owner}/${repo}`;
+
+  const protectedProjects = await getConfig('local', 'hlxSidekickProjects') || {};
+
+  if (!authorizationToken) {
+    delete protectedProjects[projectHandle];
+  }
+
+  const currentToken = protectedProjects[projectHandle];
+  if (authorizationToken && currentToken !== authorizationToken) {
+    protectedProjects[projectHandle] = authorizationToken;
+  }
+
+  await setConfig('local', { hlxSidekickProjects: protectedProjects });
+
+  updateProjectAuthorizationHeaderRules();
+}
+
+/**
  * Adds a project configuration.
  * @param {Object} input The project settings
  * @param {Function} cb The function to call with a boolean when done
