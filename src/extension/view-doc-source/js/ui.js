@@ -73,15 +73,13 @@ const copyHTMLToClipboard = (html) => {
  * @param {String} url The url of the page
  */
 const htmlSourceToEdition = (main, head, url) => {
-  main.querySelectorAll('img').forEach((img) => {
-    if (!img.src) return;
+  main.querySelectorAll('img, source').forEach((el) => {
+    const attr = el.tagName === 'IMG' ? 'src' : 'srcset';
+    const src = el[attr];
+    if (!src) return;
     const content = new URL(url);
     const pathname = content.pathname.replace(/\/$/, '');
-    img.src = `${content.origin}${pathname}${img.src.substring(img.src.lastIndexOf('/'))}`;
-  });
-
-  main.querySelectorAll('picture source').forEach((source) => {
-    source.remove();
+    el[attr] = `${content.origin}${pathname}${src.substring(src.lastIndexOf('/'))}`;
   });
 
   blockDivToTable(main);

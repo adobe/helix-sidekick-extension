@@ -520,6 +520,12 @@ describe('Test extension utils', () => {
           ],
           resourceTypes: [
             'main_frame',
+            'script',
+            'stylesheet',
+            'image',
+            'xmlhttprequest',
+            'media',
+            'font',
           ],
         },
       },
