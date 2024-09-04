@@ -1,3 +1,10 @@
+## [6.47.2](https://github.com/adobe/helix-sidekick-extension/compare/v6.47.1...v6.47.2) (2024-09-04)
+
+
+### Bug Fixes
+
+* **rum:** instrument options page ([#796](https://github.com/adobe/helix-sidekick-extension/issues/796)) ([b5626cc](https://github.com/adobe/helix-sidekick-extension/commit/b5626ccbfbfb2997781c9e944393b2de8c4d2cba))
+
 ## [6.47.1](https://github.com/adobe/helix-sidekick-extension/compare/v6.47.0...v6.47.1) (2024-09-04)
 
 
