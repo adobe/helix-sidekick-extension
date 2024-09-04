@@ -1,3 +1,10 @@
+## [6.47.1](https://github.com/adobe/helix-sidekick-extension/compare/v6.47.0...v6.47.1) (2024-09-04)
+
+
+### Bug Fixes
+
+* **ci:** upgrade to node 20.8.1 ([c5a0a26](https://github.com/adobe/helix-sidekick-extension/commit/c5a0a26871dfe325f8cc465ce9d63ffad01b494a))
+
 # [6.47.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.46.0...v6.47.0) (2024-08-14)
 
 
