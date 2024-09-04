@@ -208,28 +208,49 @@ describe('Test sidekick', () => {
         "plugins": [{
           "id": "foo",
           "title": "Foo",
+          "isBadge": true
+        },
+        {
+          "id": "foo2",
+          "title": "Foo 2",
           "isBadge": true,
-          "badgeTextColorLight": "red"
+          "badgeTextColor": "red",
+          "badgeBackgroundColor": "#fff"
+        },
+        {
+          "id": "foo3",
+          "title": "Foo 3",
+          "isBadge": true,
+          "badgeTextColor": "#abc",
+          "badgeBackgroundColor": "#def",
+          "badgeTextColorDark": "#000",
+          "badgeBackgroundColorDark": "#fff"
         }]
       }`,
     });
     nock.admin(setup);
-    const { checkPageResult } = await new SidekickTest({
+    const { checkPageResult, plugins } = await new SidekickTest({
       browser,
       page,
       loadModule,
       checkPage: (p) => p.evaluate(() => {
         const sk = window.hlx.sidekick;
-        const badge = sk.get('foo');
-        return (
-          badge.parentElement === sk.featureContainer
-          && badge.firstElementChild.nodeName === 'SPAN'
-          && sk.getAttribute('style') === '--hlx-sk-badge-color: red;'
-        );
+        let result = true;
+        // test default badge
+        let badge = sk.get('foo').querySelector('span');
+        result = result && badge.closest('div.feature-container') && getComputedStyle(badge).color === 'rgb(80, 80, 80)' && getComputedStyle(badge).backgroundColor === 'rgb(192, 192, 192)';
+        // test badge with custom colors
+        badge = sk.get('foo2').querySelector('span');
+        result = result && badge.closest('div.feature-container') && getComputedStyle(badge).color === 'rgb(255, 0, 0)' && getComputedStyle(badge).backgroundColor === 'rgb(255, 255, 255)';
+        // test badge with custom colors and dark mode
+        badge = sk.get('foo3').querySelector('span');
+        result = result && badge.closest('div.feature-container') && getComputedStyle(badge).color === 'rgb(170, 187, 204)' && getComputedStyle(badge).backgroundColor === 'rgb(221, 238, 255)';
+        return result;
       }),
     }).run();
 
-    assert.ok(checkPageResult, 'Did not add badge to feature container');
+    assert.ok(plugins.filter((p) => p.id.startsWith('foo')).length === 3, 'Did not add plugin from config');
+    assert.ok(checkPageResult, 'Did not render badges correctly');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Detects innerHost and outerHost from config', async () => {

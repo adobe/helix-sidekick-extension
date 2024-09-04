@@ -2305,8 +2305,8 @@ import sampleRUM from './rum.js';
             containerId,
             isContainer,
             isBadge,
-            badgeTextColorLight,
-            badgeBackgroundColorLight,
+            badgeTextColor,
+            badgeBackgroundColor,
             badgeTextColorDark,
             badgeBackgroundColorDark,
           } = cfg;
@@ -2346,6 +2346,23 @@ import sampleRUM from './rum.js';
           };
 
           if (isBadge) {
+            const badgeStyles = `
+              ${(badgeTextColor || badgeBackgroundColor) ? `
+                .plugin.${id} span.hlx-sk-badge {
+                  --hlx-sk-badge-color: ${badgeTextColor};
+                  --hlx-sk-badge-bg: ${badgeBackgroundColor};
+                }
+              ` : ''}
+
+              ${(badgeTextColorDark || badgeBackgroundColorDark) ? `
+                /* dark mode */
+                @media (prefers-color-scheme: dark) {
+                  .plugin.${id} span.hlx-sk-badge {
+                    --hlx-sk-badge-color: ${badgeTextColorDark};
+                    --hlx-sk-badge-bg: ${badgeBackgroundColorDark};
+                  }
+                }
+              ` : ''}`;
             plugin.feature = true;
             plugin.elements = [{
               tag: 'span',
@@ -2353,16 +2370,10 @@ import sampleRUM from './rum.js';
               attrs: {
                 class: 'hlx-sk-badge',
               },
+            }, {
+              tag: 'style',
+              text: badgeStyles,
             }];
-            // set badge styles
-            const isDarkSchemePreferred = () => window?.matchMedia?.('(prefers-color-scheme:dark)')?.matches ?? false;
-            if (isDarkSchemePreferred()) {
-              if (badgeTextColorDark) sk.style.setProperty('--hlx-sk-badge-color', badgeTextColorDark);
-              if (badgeBackgroundColorDark) sk.style.setProperty('--hlx-sk-badge-bg', badgeBackgroundColorDark);
-            } else {
-              if (badgeTextColorLight) sk.style.setProperty('--hlx-sk-badge-color', badgeTextColorLight);
-              if (badgeBackgroundColorLight) sk.style.setProperty('--hlx-sk-badge-bg', badgeBackgroundColorLight);
-            }
           } else {
             plugin.button = {
               text: (titleI18n && titleI18n[lang]) || title || '',
