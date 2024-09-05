@@ -249,7 +249,7 @@ describe('Test sidekick', () => {
       }),
     }).run();
 
-    assert.ok(plugins.filter((p) => p.id.startsWith('foo')).length === 3, 'Did not add plugin from config');
+    assert.ok(plugins.filter((p) => p.id.startsWith('foo')).length === 3, 'Did not add 3 badges from config');
     assert.ok(checkPageResult, 'Did not render badges correctly');
   }).timeout(IT_DEFAULT_TIMEOUT);
 

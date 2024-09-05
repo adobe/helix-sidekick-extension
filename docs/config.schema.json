@@ -110,7 +110,7 @@
         },
         "badgeBackgroundColorDark": {
           "type": "string",
-          "description": "The background color (CSS color code or name) of the button for dark mode"
+          "description": "The background color (CSS color code or name) of the badge for dark mode"
         }
       },
       "required": [ "id" ],
