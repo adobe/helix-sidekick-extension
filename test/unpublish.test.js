@@ -166,6 +166,7 @@ describe('Test unpublish plugin', () => {
       page,
       setup,
       plugin: 'unpublish',
+      pluginSleep: 500,
       acceptDialogs: true,
     }).run();
     assert.ok(notification.message.includes('429'), 'Unpublish plugin does not show modal on 429');

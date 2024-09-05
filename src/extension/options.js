@@ -332,6 +332,11 @@ async function updateHelpTopic(helpContent, topicId, userStatus) {
 }
 
 // instrumentation
+window.hlx = {
+  sidekick: {
+    location: window.location,
+  },
+};
 sampleRUM('sidekick:options:opened');
 document.addEventListener('click', ({ target }) => {
   if (['A', 'BUTTON'].includes(target.tagName)
