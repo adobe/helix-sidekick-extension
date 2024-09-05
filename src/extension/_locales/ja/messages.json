@@ -176,9 +176,6 @@
   "config_invalid_export": {
     "message": "書き出す設定がまだありません"
   },
-  "config_invalid_giturl": {
-    "message": "無効なリポジトリ URL"
-  },
   "config_invalid_host": {
     "message": "無効なホスト名"
   },
@@ -199,9 +196,6 @@
   },
   "config_manual_devOrigin_placeholder": {
     "message": "ローカル開発 URL : http://localhost:3000"
-  },
-  "config_manual_giturl_placeholder": {
-    "message": "リポジトリ URL : https://github.com/..."
   },
   "config_manual_host_placeholder": {
     "message": "実稼動ホスト名 (オプション)"
