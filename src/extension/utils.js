@@ -771,10 +771,6 @@ export async function addProject(input, cb) {
       if (message.authToken && owner === message.owner && repo === message.repo) {
         await chrome.tabs.remove(loginTabId);
         config.authToken = message.authToken;
-        // ensure auth header rule is set before retrying
-        await new Promise((r) => {
-          setTimeout(r, 500);
-        });
         await addProject(config, cb);
       }
       // clean up
