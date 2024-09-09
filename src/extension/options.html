@@ -22,7 +22,8 @@ governing permissions and limitations under the License.
     <div id="configEditor" class="config">
       <div>
         <p><input type="text" id="edit-project"></p>
-        <p class="mandatory"><input type="url" id="edit-giturl"></p>
+        <p class="mandatory"><input type="url" id="edit-org"></p>
+        <p class="mandatory"><input type="url" id="edit-site"></p>
         <p class="mandatory"><input type="url" id="edit-mountpoints"></p>
         <p class="advanced-only"><input type="text" id="edit-previewHost"></p>
         <p class="advanced-only"><input type="text" id="edit-liveHost"></p>
@@ -65,15 +66,16 @@ governing permissions and limitations under the License.
           <div>
             <h3>__MSG_config_shareurl_title__</h3>
             <p class="help">__MSG_config_shareurl_description__</p>
-            <p class="mandatory"><input type="url" id="shareurl" placeholder="__MSG_config_shareurl_placeholder__"></p>
+            <p class="mandatory"><input type="url" id="add_shareurl" placeholder="__MSG_config_shareurl_placeholder__"></p>
             <p><button id="addShareConfigButton" title="__MSG_add__">__MSG_add__</button></p>
           </div>
         </div>
         <div>
           <div>
             <h3>__MSG_config_manual_title__</h3>
-            <p class="mandatory"><input type="url" id="giturl" placeholder="__MSG_config_manual_giturl_placeholder__"></p>
-            <p><input type="text" id="project" placeholder="__MSG_config_manual_project_placeholder__"></p>
+            <p class="mandatory"><input type="text" id="add_org" placeholder="__MSG_config_manual_org_placeholder__"></p>
+            <p class="mandatory"><input type="text" id="add_site" placeholder="__MSG_config_manual_site_placeholder__"></p>
+            <p><input type="text" id="add_project" placeholder="__MSG_config_manual_project_placeholder__"></p>
             <p><button id="addManualConfigButton" title="__MSG_add__">__MSG_add__</button></p>
           </div>
         </div>

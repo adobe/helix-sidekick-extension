@@ -80,12 +80,6 @@ async function getConfigFromTabUrl(tabUrl) {
       ...getGitHubSettings(share.giturl),
       giturl: undefined,
     };
-  } else if (tabUrl.startsWith(GH_URL)) {
-    // github url
-    return {
-      ...share,
-      ...getGitHubSettings(tabUrl),
-    };
   } else {
     try {
       // check if hlx.page, hlx.live, aem.page or aem.live url

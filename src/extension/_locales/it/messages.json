@@ -176,9 +176,6 @@
   "config_invalid_export": {
     "message": "Non hai ancora alcuna configurazione da esportare"
   },
-  "config_invalid_giturl": {
-    "message": "URL archivio non valido"
-  },
   "config_invalid_host": {
     "message": "Nome host non valido"
   },
@@ -199,9 +196,6 @@
   },
   "config_manual_devOrigin_placeholder": {
     "message": "URL di sviluppo locale: http://localhost:3000"
-  },
-  "config_manual_giturl_placeholder": {
-    "message": "URL archivio: https://github.com/..."
   },
   "config_manual_host_placeholder": {
     "message": "Nome host di produzione (facoltativo)"

@@ -176,17 +176,17 @@
   "config_invalid_export": {
     "message": "You don't have any configuration to export yet"
   },
-  "config_invalid_giturl": {
-    "message": "Invalid repository URL"
-  },
   "config_invalid_host": {
     "message": "Invalid hostname"
+  },
+  "config_invalid_import": {
+    "message": "Choose a valid file to import"
   },
   "config_invalid_mountpoints": {
     "message": "Invalid Content URL"
   },
-  "config_invalid_import": {
-    "message": "Choose a valid file to import"
+  "config_invalid_org_site": {
+    "message": "Invalid org or site name"
   },
   "config_invalid_shareurl": {
     "message": "Invalid sharing URL"
@@ -196,9 +196,6 @@
   },
   "config_manual_devOrigin_placeholder": {
     "message": "Local Development URL: http://localhost:3000"
-  },
-  "config_manual_giturl_placeholder": {
-    "message": "Repository URL: https://github.com/..."
   },
   "config_manual_host_placeholder": {
     "message": "Production Hostname (optional)"
@@ -212,11 +209,19 @@
   "config_manual_mountpoints_placeholder": {
     "message": "Content URL: https://..."
   },
+  "config_manual_org_placeholder": {
+    "message": "Organization Name",
+    "description": "Organization name as in the config service"
+  },
   "config_manual_previewHost_placeholder": {
     "message": "Custom Preview Hostname (optional)"
   },
   "config_manual_project_placeholder": {
     "message": "Project Name (optional)"
+  },
+  "config_manual_site_placeholder": {
+    "message": "Site Name",
+    "description": "Site name as in the config service"
   },
   "config_manual_title": {
     "message": "Add manually"

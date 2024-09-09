@@ -176,9 +176,6 @@
   "config_invalid_export": {
     "message": "Vous n'avez pas encore de configuration à exporter."
   },
-  "config_invalid_giturl": {
-    "message": "URL de référentiel non valide"
-  },
   "config_invalid_host": {
     "message": "Nom d’hôte non valide"
   },
@@ -199,9 +196,6 @@
   },
   "config_manual_devOrigin_placeholder": {
     "message": "URL de développement local : http://localhost:3000"
-  },
-  "config_manual_giturl_placeholder": {
-    "message": "URL du référentiel : https://github.com/..."
   },
   "config_manual_host_placeholder": {
     "message": "Nom d'hôte de production (facultatif)"

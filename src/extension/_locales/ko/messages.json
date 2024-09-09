@@ -176,9 +176,6 @@
   "config_invalid_export": {
     "message": "아직 내보낼 구성이 없습니다."
   },
-  "config_invalid_giturl": {
-    "message": "잘못된 저장소 URL"
-  },
   "config_invalid_host": {
     "message": "잘못된 호스트 이름"
   },
@@ -199,9 +196,6 @@
   },
   "config_manual_devOrigin_placeholder": {
     "message": "로컬 개발 URL: http://localhost:3000"
-  },
-  "config_manual_giturl_placeholder": {
-    "message": "저장소 URL: https://github.com/..."
   },
   "config_manual_host_placeholder": {
     "message": "프로덕션 호스트 이름(선택 사항)"

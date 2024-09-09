@@ -583,7 +583,6 @@ export async function getProjectEnv({
  * @returns {Object>} The assembled project configuration
  */
 export function assembleProject({
-  giturl,
   owner,
   repo,
   ref = 'main',
@@ -598,14 +597,6 @@ export function assembleProject({
   authToken,
   authorizationToken,
 }) {
-  if (giturl && !owner && !repo) {
-    const gh = getGitHubSettings(giturl);
-    owner = gh.owner;
-    repo = gh.repo;
-    ref = gh.ref;
-  } else {
-    giturl = `https://github.com/${owner}/${repo}/tree/${ref}`;
-  }
   const id = `${owner}/${repo}/${ref}`;
 
   return {
@@ -617,7 +608,6 @@ export function assembleProject({
     devMode,
     devOrigin,
     disabled,
-    giturl,
     owner,
     repo,
     ref,
@@ -773,6 +763,11 @@ export async function addProject(input, cb) {
     });
     // retry adding project after sign in
     const retryAddProjectListener = async (message = {}) => {
+      const { action } = message;
+      if (action !== 'updateAuthToken') {
+        // ignore other messages
+        return;
+      }
       if (message.authToken && owner === message.owner && repo === message.repo) {
         await chrome.tabs.remove(loginTabId);
         config.authToken = message.authToken;
