@@ -176,9 +176,6 @@
   "config_invalid_export": {
     "message": "Es gibt noch keine Konfiguration, die exportiert werden kann"
   },
-  "config_invalid_giturl": {
-    "message": "Ungültige Repository-URL"
-  },
   "config_invalid_host": {
     "message": "Ungültiger Host-Name"
   },
@@ -199,9 +196,6 @@
   },
   "config_manual_devOrigin_placeholder": {
     "message": "Lokale Entwicklungs-URL: http://localhost:3000"
-  },
-  "config_manual_giturl_placeholder": {
-    "message": "Repository-URL: https://github.com/…"
   },
   "config_manual_host_placeholder": {
     "message": "Produktions-Host-Name (optional)"

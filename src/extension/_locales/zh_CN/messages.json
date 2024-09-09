@@ -176,9 +176,6 @@
   "config_invalid_export": {
     "message": "您还没有任何可导出的配置"
   },
-  "config_invalid_giturl": {
-    "message": "无效的存储库 URL"
-  },
   "config_invalid_host": {
     "message": "无效主机名"
   },
@@ -199,9 +196,6 @@
   },
   "config_manual_devOrigin_placeholder": {
     "message": "本地开发 URL：http://localhost:3000"
-  },
-  "config_manual_giturl_placeholder": {
-    "message": "存储库 URL：https://github.com/..."
   },
   "config_manual_host_placeholder": {
     "message": "生产主机名称（可选）"

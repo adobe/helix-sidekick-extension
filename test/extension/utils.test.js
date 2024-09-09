@@ -313,26 +313,15 @@ describe('Test extension utils', () => {
     expect(mountpoints[0]).to.equal('https://adobe.sharepoint.com/:f:/s/Dummy/Alk9MSH25LpBuUWA_N6DOL8BuI6Vrdyrr87gne56dz3QeQ');
   });
 
-  it('assembleProject with giturl', async () => {
-    const {
-      owner, repo, ref,
-    } = utils.assembleProject({
-      giturl: 'https://github.com/adobe/business-website/tree/main',
-    });
-    expect(owner).to.equal('adobe');
-    expect(repo).to.equal('business-website');
-    expect(ref).to.equal('main');
-  });
-
   it('assembleProject with owner and repo', async () => {
     const {
-      giturl,
+      id,
     } = utils.assembleProject({
       owner: 'adobe',
       repo: 'business-website',
       ref: 'test',
     });
-    expect(giturl).to.equal('https://github.com/adobe/business-website/tree/test');
+    expect(id).to.equal('adobe/business-website/test');
   });
 
   it('addProject', async () => {
@@ -340,7 +329,8 @@ describe('Test extension utils', () => {
     // add project
     const added = await new Promise((resolve) => {
       utils.addProject({
-        giturl: 'https://github.com/test/project',
+        owner: 'test',
+        repo: 'project',
       }, resolve);
     });
     expect(added).to.be.true;
@@ -350,7 +340,8 @@ describe('Test extension utils', () => {
     // add project with auth enabled
     const addedWithAuth = await new Promise((resolve) => {
       utils.addProject({
-        giturl: 'https://github.com/test/auth-project',
+        owner: 'test',
+        repo: 'auth-project',
       }, resolve);
     });
     expect(addedWithAuth).to.be.true;
@@ -360,7 +351,8 @@ describe('Test extension utils', () => {
     // add existing
     const addedExisting = await new Promise((resolve) => {
       utils.addProject({
-        giturl: 'https://github.com/test/project',
+        owner: 'test',
+        repo: 'project',
       }, resolve);
     });
     expect(addedExisting).to.be.false;

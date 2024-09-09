@@ -14,7 +14,6 @@
 import {
   MANIFEST,
   getState,
-  getGitHubSettings,
   isValidShareURL,
   getShareSettings,
   i18n,
@@ -31,11 +30,6 @@ import sampleRUM from './rum.js';
 
 function getInnerHost(owner, repo, ref) {
   return `${ref}--${repo}--${owner}.hlx.page`;
-}
-
-function isValidGitHubURL(giturl) {
-  return giturl.startsWith('https://github.com/')
-    && Object.keys(getGitHubSettings(giturl)).length === 3;
 }
 
 function isValidMountpoint(mountpoints) {
@@ -225,7 +219,8 @@ function editProject(i) {
       }
     };
     const save = async () => {
-      const giturl = document.querySelector('#edit-giturl').value;
+      const org = document.querySelector('#edit-org').value;
+      const site = document.querySelector('#edit-site').value;
       const mountpoints = [
         document.querySelector('#edit-mountpoints').value,
       ];
@@ -234,9 +229,9 @@ function editProject(i) {
         window.alert(i18n('config_invalid_mountpoints'));
         return;
       }
-      if (!isValidGitHubURL(giturl)) {
+      if (!org && !site) {
         // eslint-disable-next-line no-alert
-        window.alert(i18n('config_invalid_giturl'));
+        window.alert(i18n('config_invalid_org_site'));
         return;
       }
       const host = document.querySelector('#edit-host').value;
@@ -256,7 +251,8 @@ function editProject(i) {
       }
 
       const input = {
-        giturl: document.querySelector('#edit-giturl').value,
+        owner: org,
+        repo: site,
         mountpoints,
         project: document.querySelector('#edit-project').value,
         previewHost,
@@ -288,7 +284,14 @@ function editProject(i) {
     document.getElementById(`config-${i}`).replaceWith(editorFragment);
     // pre-fill form
     document.querySelectorAll('#configEditor input').forEach((field) => {
-      const key = field.id.split('-')[1];
+      const fieldId = field.id.split('-')[1];
+      let key = fieldId;
+      if (fieldId === 'org') {
+        key = 'owner';
+      }
+      if (fieldId === 'site') {
+        key = 'repo';
+      }
       const value = project[key];
       if (typeof value === 'object') {
         field.value = value[0] || '';
@@ -297,7 +300,7 @@ function editProject(i) {
       } else {
         field.value = project[key] || '';
       }
-      field.setAttribute('placeholder', i18n(`config_manual_${key}_placeholder`));
+      field.setAttribute('placeholder', i18n(`config_manual_${fieldId}_placeholder`));
       const label = document.querySelector(`#configEditor label[for="${field.id}"]`);
       if (label) {
         label.textContent = i18n(`config_manual_${key}`) || label.textContent;
@@ -384,7 +387,7 @@ window.addEventListener('DOMContentLoaded', () => {
   });
 
   document.getElementById('addShareConfigButton').addEventListener('click', async () => {
-    const shareurl = document.getElementById('shareurl').value;
+    const shareurl = document.getElementById('add_shareurl').value;
     // check share url
     if (isValidShareURL(shareurl)) {
       await addProject(getShareSettings(shareurl), (added) => {
@@ -400,11 +403,13 @@ window.addEventListener('DOMContentLoaded', () => {
   });
 
   document.getElementById('addManualConfigButton').addEventListener('click', async () => {
-    const giturl = document.getElementById('giturl').value;
-    if (isValidGitHubURL(giturl)) {
+    const org = document.getElementById('add_org').value;
+    const site = document.getElementById('add_site').value;
+    if (org && site) {
       await addProject({
-        giturl,
-        project: document.getElementById('project').value,
+        owner: org,
+        repo: site,
+        project: document.getElementById('add_project').value,
       }, (added) => {
         if (added) {
           drawProjects();
@@ -413,7 +418,7 @@ window.addEventListener('DOMContentLoaded', () => {
       });
     } else {
       // eslint-disable-next-line no-alert
-      window.alert(i18n('config_invalid_giturl'));
+      window.alert(i18n('config_invalid_org_site'));
     }
   });
 

@@ -176,9 +176,6 @@
   "config_invalid_export": {
     "message": "您還沒有任何可匯出的設定"
   },
-  "config_invalid_giturl": {
-    "message": "存放庫 URL 無效"
-  },
   "config_invalid_host": {
     "message": "主機名稱無效"
   },
@@ -199,9 +196,6 @@
   },
   "config_manual_devOrigin_placeholder": {
     "message": "本機開發 URL：http://localhost:3000"
-  },
-  "config_manual_giturl_placeholder": {
-    "message": "存放庫 URL：https://github.com/..."
   },
   "config_manual_host_placeholder": {
     "message": "生產主機名稱 (選填)"

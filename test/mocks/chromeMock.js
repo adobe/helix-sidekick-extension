@@ -58,7 +58,12 @@ export default {
     },
     onMessageExternal: {
       // simulate external message from admin API with authToken
-      addListener: (func) => func({ owner: 'test', repo: 'auth-project', authToken: 'foo' }),
+      addListener: (func) => func({
+        action: 'updateAuthToken',
+        owner: 'test',
+        repo: 'auth-project',
+        authToken: 'foo',
+      }),
       removeListener: () => {},
     },
   },
