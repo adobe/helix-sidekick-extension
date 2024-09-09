@@ -1,3 +1,10 @@
+# [6.48.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.47.2...v6.48.0) (2024-09-09)
+
+
+### Features
+
+* **options:** do not use giturl anymore ([#798](https://github.com/adobe/helix-sidekick-extension/issues/798)) ([08a4e50](https://github.com/adobe/helix-sidekick-extension/commit/08a4e50badd31b8855daa3e5436d9df8f26e097b))
+
 ## [6.47.2](https://github.com/adobe/helix-sidekick-extension/compare/v6.47.1...v6.47.2) (2024-09-04)
 
 
