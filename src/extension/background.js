@@ -537,7 +537,14 @@ const externalActions = {
     return resp;
   },
   // reveals presence to new sidekick
-  ping: (_, { id }) => ALLOWED_EXTENSIONS_IDS.includes(id),
+  ping: async (_, { id }) => {
+    if (ALLOWED_EXTENSIONS_IDS.includes(id)) {
+      // remember new sidekick is installed
+      await setConfig('local', { hlxSidekickV7Installed: true });
+      return true;
+    }
+    return false;
+  },
   // sends sidekick projects to new sidekick
   getProjects: async (_, { id }) => {
     if (ALLOWED_EXTENSIONS_IDS.includes(id)) {

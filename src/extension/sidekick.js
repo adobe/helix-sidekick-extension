@@ -12,7 +12,7 @@
 /* eslint-disable no-console, import/no-unresolved */
 
 import {} from './lib/polyfills.min.js';
-
+import sampleRUM from './rum.js';
 import {
   log,
   url,
@@ -117,6 +117,51 @@ export default async function injectSidekick(config, display) {
           sk.addEventListener('projectadded', () => {
             chrome.runtime.sendMessage({ action: 'addRemoveProject' });
           });
+        }
+        const isV7Installed = await getConfig('local', 'hlxSidekickV7Installed');
+        const lastShownV7Dialog = await getConfig('local', 'hlxSidekickV7DialogShown');
+        const showV7Dialog = !isV7Installed
+          && (!lastShownV7Dialog || +lastShownV7Dialog < Date.now() - 86400000); // 1 day
+
+        if (showV7Dialog) {
+          const cover = document.createElement('img');
+          cover.src = `${i18n('v7_hint_cover')}?width=1280&format=webply&optimize=medium`;
+
+          const rememberDialogShown = () => setConfig('local', { hlxSidekickV7DialogShown: Date.now() });
+
+          const installButton = document.createElement('button');
+          installButton.textContent = i18n('v7_install_now');
+          installButton.classList.add('accent');
+          installButton.addEventListener('click', () => {
+            window.open('https://chromewebstore.google.com/detail/aem-sidekick-nextgen/igkmdomcgoebiipaifhmpfjhbjccggml');
+            sampleRUM('sidekick:v7:clicked-install');
+            rememberDialogShown();
+          });
+
+          // refactor to use document.createElement
+          const laterButton = document.createElement('button');
+          laterButton.textContent = i18n('v7_install_later');
+          laterButton.addEventListener('click', () => {
+            sampleRUM('sidekick:v7:clicked-later');
+            rememberDialogShown();
+          });
+
+          const buttonGroup = document.createElement('span');
+          buttonGroup.classList.add('hlx-sk-modal-button-group');
+          buttonGroup.append(laterButton, installButton);
+
+          sk.addEventListener('statusfetched', () => {
+            sk.showModal({
+              message: [
+                cover,
+                i18n('v7_hint_title'),
+                i18n('v7_hint_description'),
+                buttonGroup,
+              ],
+              sticky: true,
+              css: 'cover',
+            });
+          }, { once: true });
         }
       }
     }, 200);
