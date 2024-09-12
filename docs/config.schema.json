@@ -94,23 +94,33 @@
           "type": "boolean",
           "description": "Opens the URL in a palette instead of a new tab"
         },
-        "badgeTextColor" : {
+        "badgeVariant": {
           "type": "string",
-          "description": "The color (CSS color code or name) of the badge",
-          "dependentRequired": ["isBadge"]
-        },
-        "badgeBackgroundColor": {
-          "type": "string",
-          "description": "The background color (CSS color code or name) of the badge",
-          "dependentRequired": ["isBadge"]
-        },
-        "badgeTextColorDark" : {
-          "type": "string",
-          "description": "The color (CSS color code or name) of the badge for dark mode"
-        },
-        "badgeBackgroundColorDark": {
-          "type": "string",
-          "description": "The background color (CSS color code or name) of the badge for dark mode"
+          "description": "The variant of the badge following the Adobe Spectrum badge variants",
+          "enum": [
+            "neutral",
+            "informative",
+            "negative",
+            "positive",
+            "notice",
+            "gray",
+            "red",
+            "orange",
+            "yellow",
+            "chartreuse",
+            "celery",
+            "green",
+            "seafoam",
+            "cyan",
+            "blue",
+            "indigo",
+            "purple",
+            "fuchsia",
+            "magenta"
+          ],
+          "dependentRequired": [
+            "isBadge"
+          ]
         }
       },
       "required": [ "id" ],

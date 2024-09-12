@@ -2305,10 +2305,7 @@ import sampleRUM from './rum.js';
             containerId,
             isContainer,
             isBadge,
-            badgeTextColor,
-            badgeBackgroundColor,
-            badgeTextColorDark,
-            badgeBackgroundColorDark,
+            badgeVariant,
           } = cfg;
           const condition = (s) => {
             let excluded = false;
@@ -2346,33 +2343,30 @@ import sampleRUM from './rum.js';
           };
 
           if (isBadge) {
-            const badgeStyles = `
-              ${(badgeTextColor || badgeBackgroundColor) ? `
-                .plugin.${id} span.hlx-sk-badge {
-                  --hlx-sk-badge-color: ${badgeTextColor};
-                  --hlx-sk-badge-bg: ${badgeBackgroundColor};
-                }
-              ` : ''}
+            // const badgeStyles = `
+            //   ${(badgeTextColor || badgeBackgroundColor) ? `
+            //     .plugin.${id} span.hlx-sk-badge {
+            //       --hlx-sk-badge-color: ${badgeTextColor};
+            //       --hlx-sk-badge-bg: ${badgeBackgroundColor};
+            //     }
+            //   ` : ''}
 
-              ${(badgeTextColorDark || badgeBackgroundColorDark) ? `
-                /* dark mode */
-                @media (prefers-color-scheme: dark) {
-                  .plugin.${id} span.hlx-sk-badge {
-                    --hlx-sk-badge-color: ${badgeTextColorDark};
-                    --hlx-sk-badge-bg: ${badgeBackgroundColorDark};
-                  }
-                }
-              ` : ''}`;
+            //   ${(badgeTextColorDark || badgeBackgroundColorDark) ? `
+            //     /* dark mode */
+            //     @media (prefers-color-scheme: dark) {
+            //       .plugin.${id} span.hlx-sk-badge {
+            //         --hlx-sk-badge-color: ${badgeTextColorDark};
+            //         --hlx-sk-badge-bg: ${badgeBackgroundColorDark};
+            //       }
+            //     }
+            //   ` : ''}`;
             plugin.feature = true;
             plugin.elements = [{
               tag: 'span',
               text: title,
               attrs: {
-                class: 'hlx-sk-badge',
+                class: `hlx-sk-badge hlx-sk-badge-${badgeVariant?.toLowerCase() || 'default'}`,
               },
-            }, {
-              tag: 'style',
-              text: badgeStyles,
             }];
           } else {
             plugin.button = {
