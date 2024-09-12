@@ -2343,23 +2343,6 @@ import sampleRUM from './rum.js';
           };
 
           if (isBadge) {
-            // const badgeStyles = `
-            //   ${(badgeTextColor || badgeBackgroundColor) ? `
-            //     .plugin.${id} span.hlx-sk-badge {
-            //       --hlx-sk-badge-color: ${badgeTextColor};
-            //       --hlx-sk-badge-bg: ${badgeBackgroundColor};
-            //     }
-            //   ` : ''}
-
-            //   ${(badgeTextColorDark || badgeBackgroundColorDark) ? `
-            //     /* dark mode */
-            //     @media (prefers-color-scheme: dark) {
-            //       .plugin.${id} span.hlx-sk-badge {
-            //         --hlx-sk-badge-color: ${badgeTextColorDark};
-            //         --hlx-sk-badge-bg: ${badgeBackgroundColorDark};
-            //       }
-            //     }
-            //   ` : ''}`;
             plugin.feature = true;
             plugin.elements = [{
               tag: 'span',

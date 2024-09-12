@@ -68,27 +68,27 @@
   --hlx-sk-badge-color-white: #fff;
   --hlx-sk-badge-color-black: #000;
   --hlx-sk-badge-bg-neutral: rgba(112, 112, 112);
-	--hlx-sk-badge-bg-informative: rgba(3, 103, 224);
-	--hlx-sk-badge-bg-negative: rgba(215, 25, 19);
-	--hlx-sk-badge-bg-positive: rgba(0, 125, 78);
-	--hlx-sk-badge-bg-notice: rgba(244, 129, 12);
+  --hlx-sk-badge-bg-informative: rgba(3, 103, 224);
+  --hlx-sk-badge-bg-negative: rgba(215, 25, 19);
+  --hlx-sk-badge-bg-positive: rgba(0, 125, 78);
+  --hlx-sk-badge-bg-notice: rgba(244, 129, 12);
   --hlx-sk-badge-bg-gray: rgba(209, 209, 209);
-	--hlx-sk-badge-bg-red: rgba(246, 88, 67);
-	--hlx-sk-badge-bg-orange: rgba(244, 129, 12);
-	--hlx-sk-badge-bg-yellow: rgba(228, 194, 0);
-	--hlx-sk-badge-bg-chartreuse: rgba(148, 192, 8);
-	--hlx-sk-badge-bg-celery: rgba(34, 184, 51);
-	--hlx-sk-badge-bg-green: rgba(18, 162, 108);
-	--hlx-sk-badge-bg-seafoam: rgba(3, 178, 171);
-	--hlx-sk-badge-bg-cyan: rgba(0, 153, 198);
-	--hlx-sk-badge-bg-blue: rgba(52, 143, 244);
-	--hlx-sk-badge-bg-indigo: rgba(124, 129, 251);
-	--hlx-sk-badge-bg-purple: rgba(172, 111, 249);
-	--hlx-sk-badge-bg-fuchsia: rgba(223, 81, 224);
-	--hlx-sk-badge-bg-magenta: rgba(237, 87, 149);
+  --hlx-sk-badge-bg-red: rgba(246, 88, 67);
+  --hlx-sk-badge-bg-orange: rgba(244, 129, 12);
+  --hlx-sk-badge-bg-yellow: rgba(228, 194, 0);
+  --hlx-sk-badge-bg-chartreuse: rgba(148, 192, 8);
+  --hlx-sk-badge-bg-celery: rgba(34, 184, 51);
+  --hlx-sk-badge-bg-green: rgba(18, 162, 108);
+  --hlx-sk-badge-bg-seafoam: rgba(3, 178, 171);
+  --hlx-sk-badge-bg-cyan: rgba(0, 153, 198);
+  --hlx-sk-badge-bg-blue: rgba(52, 143, 244);
+  --hlx-sk-badge-bg-indigo: rgba(124, 129, 251);
+  --hlx-sk-badge-bg-purple: rgba(172, 111, 249);
+  --hlx-sk-badge-bg-fuchsia: rgba(223, 81, 224);
+  --hlx-sk-badge-bg-magenta: rgba(237, 87, 149);
   --hlx-sk-badge-color: var(--hlx-sk-badge-color-white);
   --hlx-sk-badge-bg: var(--hlx-sk-badge-bg-neutral);
-}
+  }
 
 @media (prefers-color-scheme: dark) {
   :host,
