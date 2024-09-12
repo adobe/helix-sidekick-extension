@@ -88,7 +88,7 @@
   --hlx-sk-badge-bg-magenta: rgba(237, 87, 149);
   --hlx-sk-badge-color: var(--hlx-sk-badge-color-white);
   --hlx-sk-badge-bg: var(--hlx-sk-badge-bg-neutral);
-  }
+}
 
 @media (prefers-color-scheme: dark) {
   :host,
