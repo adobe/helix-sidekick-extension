@@ -98,11 +98,6 @@
           "type": "string",
           "description": "The variant of the badge following the Adobe Spectrum badge variants",
           "enum": [
-            "neutral",
-            "informative",
-            "negative",
-            "positive",
-            "notice",
             "gray",
             "red",
             "orange",
