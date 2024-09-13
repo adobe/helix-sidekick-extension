@@ -185,6 +185,9 @@
   "config_invalid_mountpoints": {
     "message": "Ungültige Inhalts-URL"
   },
+  "config_invalid_org_site": {
+    "message": "Ungültiger Organisations- oder Site-Name"
+  },
   "config_invalid_shareurl": {
     "message": "Ungültige Freigabe-URL"
   },
@@ -206,11 +209,19 @@
   "config_manual_mountpoints_placeholder": {
     "message": "Inhalts-URL: https://…"
   },
+  "config_manual_org_placeholder": {
+    "description": "Organisationsname wie im Konfigurationsdienst",
+    "message": "Organisationsname"
+  },
   "config_manual_previewHost_placeholder": {
     "message": "Benutzerdefinierter Vorschau-Hostname (optional)"
   },
   "config_manual_project_placeholder": {
     "message": "Projektname (optional)"
+  },
+  "config_manual_site_placeholder": {
+    "description": "Site-Name wie im Konfigurationsdienst",
+    "message": "Site-Name"
   },
   "config_manual_title": {
     "message": "Manuell hinzufügen"

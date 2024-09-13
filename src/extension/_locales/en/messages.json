@@ -203,9 +203,6 @@
   "config_manual_liveHost_placeholder": {
     "message": "Custom Live Hostname (optional)"
   },
-  "config_manual_authorizationToken_placeholder": {
-    "message": "Authorization Token (optional)"
-  },
   "config_manual_mountpoints_placeholder": {
     "message": "Content URL: https://..."
   },
@@ -401,6 +398,15 @@
   "error_preview_not_gsheet_ms_excel": {
     "message": "This is a Microsoft Excel document. Please convert it to Google Sheets: File > Save as Google Sheets'"
   },
+  "error_site_401": {
+    "message": "Please sign in to continue."
+  },
+  "error_site_401_relogin": {
+    "message": "Access expired. Please sign in again to continue."
+  },
+  "error_site_403": {
+    "message": "Access denied. Try signing in with a different user or ask your administrator for sufficient permissions."
+  },
   "error_status_403": {
     "message": "403 Forbidden: Ask your administrator for sufficient permissions."
   },
@@ -430,6 +436,9 @@
   },
   "error_status_invalid": {
     "message": "Invalid server response. Check your Sidekick configuration or URL."
+  },
+  "error_view_description": {
+    "message": "User-friendly error message."
   },
   "extensions": {
     "message": "Extensions"
@@ -617,6 +626,9 @@
   },
   "user_logout": {
     "message": "Sign out"
+  },
+  "user_relogin": {
+    "message": "Sign in again"
   },
   "user_switch": {
     "message": "Switch user"

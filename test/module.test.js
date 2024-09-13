@@ -201,6 +201,54 @@ describe('Test sidekick', () => {
     assert.ok(plugins.find((p) => p.id === 'foo'), 'Did not add plugin from config');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
+  it('Adds badge plugin to feature container', async () => {
+    const setup = new Setup('blog');
+    nock.sidekick(setup, {
+      configJson: `{
+        "plugins": [{
+          "id": "foo",
+          "title": "Default",
+          "isBadge": true
+        },
+        {
+          "id": "foo2",
+          "title": "Badge 2",
+          "isBadge": true,
+          "badgeVariant": "Chartreuse"
+        },
+        {
+          "id": "foo3",
+          "title": "Invalid colors",
+          "isBadge": true,
+          "badgeVariant": "invalid"
+        }]
+      }`,
+    });
+    nock.admin(setup);
+    const { checkPageResult, plugins } = await new SidekickTest({
+      browser,
+      page,
+      loadModule,
+      checkPage: (p) => p.evaluate(() => {
+        const sk = window.hlx.sidekick;
+        const result = [];
+        // test default badge
+        let badge = sk.get('foo').querySelector('span');
+        result.push(badge.closest('div.feature-container') && getComputedStyle(badge).color === 'rgb(255, 255, 255)' && getComputedStyle(badge).backgroundColor === 'rgb(112, 112, 112)');
+        // test badge with custom colors
+        badge = sk.get('foo2').querySelector('span');
+        result.push(badge.closest('div.feature-container') && getComputedStyle(badge).color === 'rgb(0, 0, 0)' && getComputedStyle(badge).backgroundColor === 'rgb(148, 192, 8)');
+        // test badge with invalid color variant
+        badge = sk.get('foo3').querySelector('span');
+        result.push(badge.closest('div.feature-container') && getComputedStyle(badge).color === 'rgb(255, 255, 255)' && getComputedStyle(badge).backgroundColor === 'rgb(112, 112, 112)');
+        return result;
+      }),
+    }).run();
+
+    assert.ok(plugins.filter((p) => p.id.startsWith('foo')).length === 3, 'Did not add plugin from config');
+    assert.ok(checkPageResult.every((val) => val === true), 'Did not render badges correctly');
+  }).timeout(IT_DEFAULT_TIMEOUT);
+
   it('Detects innerHost and outerHost from config', async () => {
     const setup = new Setup('blog');
     nock.sidekick(setup);
@@ -1263,6 +1311,98 @@ describe('Test sidekick', () => {
         .querySelector('.hlx-sk-special-view')),
     }).run();
     assert.ok(checkPageResult, 'Did not suppress data view for JSON file');
+  }).timeout(IT_DEFAULT_TIMEOUT);
+
+  it('Shows access restricted message for 401 response', async () => {
+    const setup = new Setup('blog');
+    setup.apiResponse().profile = null; // not logged in
+    nock.sidekick(setup);
+    nock.admin(setup);
+    nock('https://admin.hlx.page')
+      .get('/login/adobe/blog/main?extensionId=cookie')
+      .optionally()
+      .reply(200, '<html>logged in</html>')
+      .get('/profile/adobe/blog/main')
+      .optionally()
+      .reply(200, '{}')
+      .persist();
+    const { checkPageResult } = await new SidekickTest({
+      browser,
+      page,
+      loadModule,
+      fixture: '401.html',
+      url: 'https://main--blog--adobe.aem.page/en/topics/bla',
+      post: (p) => p.evaluate(() => {
+        window.hlx.sidekick.shadowRoot
+          .querySelector('.hlx-sk-error-view .container button').click();
+      }),
+      checkPage: (p) => p.evaluate(() => {
+        window.hlx.sidekick.dispatchEvent(new CustomEvent('loggedin'));
+        return window.hlx.sidekick.shadowRoot
+          .querySelector('.hlx-sk-error-view p')?.textContent;
+      }),
+    }).run();
+    assert.equal(
+      checkPageResult,
+      'Please sign in to continue.',
+      'Did not show access restricted message',
+    );
+  }).timeout(IT_DEFAULT_TIMEOUT);
+
+  it('Shows access expired message for 401 response while logged in', async () => {
+    const setup = new Setup('blog');
+    nock.sidekick(setup);
+    nock.admin(setup);
+    const { checkPageResult } = await new SidekickTest({
+      browser,
+      page,
+      loadModule,
+      fixture: '401.html',
+      url: 'https://main--blog--adobe.aem.page/en/topics/bla',
+      checkPage: (p) => p.evaluate(() => window.hlx.sidekick
+        .shadowRoot
+        .querySelector('.hlx-sk-error-view p')?.textContent),
+    }).run();
+    assert.equal(
+      checkPageResult,
+      'Access expired. Please sign in again to continue.',
+      'Did not show access expired message',
+    );
+  }).timeout(IT_DEFAULT_TIMEOUT);
+
+  it('Shows access denied message for 403 response', async () => {
+    const setup = new Setup('blog');
+    nock.sidekick(setup);
+    nock.admin(setup);
+    nock('https://admin.hlx.page')
+      .get('/login/adobe/blog/main?extensionId=cookie&selectAccount=true')
+      .optionally()
+      .reply(200, '<html>logged in</html>')
+      .get('/profile/adobe/blog/main')
+      .optionally()
+      .reply(200, '{}')
+      .persist();
+    const { checkPageResult } = await new SidekickTest({
+      browser,
+      page,
+      loadModule,
+      fixture: '403.html',
+      url: 'https://main--blog--adobe.aem.page/en/topics/bla',
+      post: (p) => p.evaluate(() => {
+        window.hlx.sidekick.shadowRoot
+          .querySelector('.hlx-sk-error-view .container button').click();
+      }),
+      checkPage: (p) => p.evaluate(() => {
+        window.hlx.sidekick.dispatchEvent(new CustomEvent('loggedin'));
+        return window.hlx.sidekick.shadowRoot
+          .querySelector('.hlx-sk-error-view p')?.textContent;
+      }),
+    }).run();
+    assert.equal(
+      checkPageResult,
+      'Access denied. Try signing in with a different user or ask your administrator for sufficient permissions.',
+      'Did not show access denied message',
+    );
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Shows help content', async () => {

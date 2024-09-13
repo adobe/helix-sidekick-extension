@@ -89,13 +89,41 @@
         "passReferrer": {
           "type": "boolean",
           "description": "Append the referrer URL as a query param on new URL button click"
+        },
+        "isBadge": {
+          "type": "boolean",
+          "description": "Opens the URL in a palette instead of a new tab"
+        },
+        "badgeVariant": {
+          "type": "string",
+          "description": "The variant of the badge following the Adobe Spectrum badge variants",
+          "enum": [
+            "gray",
+            "red",
+            "orange",
+            "yellow",
+            "chartreuse",
+            "celery",
+            "green",
+            "seafoam",
+            "cyan",
+            "blue",
+            "indigo",
+            "purple",
+            "fuchsia",
+            "magenta"
+          ],
+          "dependentRequired": [
+            "isBadge"
+          ]
         }
       },
       "required": [ "id" ],
       "anyOf": [
         { "required": [ "url" ] },
         { "required": [ "event" ] },
-        { "required": [ "isContainer" ] }
+        { "required": [ "isContainer" ] },
+        { "required": [ "isBadge" ] }
       ],
       "additionalProperties": false
     },

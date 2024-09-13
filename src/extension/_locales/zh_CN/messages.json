@@ -185,11 +185,11 @@
   "config_invalid_mountpoints": {
     "message": "内容 URL 无效"
   },
+  "config_invalid_org_site": {
+    "message": "无效的组织或网站名称"
+  },
   "config_invalid_shareurl": {
     "message": "共享 URL 无效"
-  },
-  "config_manual_authorizationToken_placeholder": {
-    "message": "授权标记（可选）"
   },
   "config_manual_devMode": {
     "message": "在本地测试项目配置"
@@ -206,11 +206,19 @@
   "config_manual_mountpoints_placeholder": {
     "message": "内容 URL：https://..."
   },
+  "config_manual_org_placeholder": {
+    "description": "配置服务中的组织名称",
+    "message": "组织名称"
+  },
   "config_manual_previewHost_placeholder": {
     "message": "自定义预览主机名（可选）"
   },
   "config_manual_project_placeholder": {
     "message": "项目名称（可选）"
+  },
+  "config_manual_site_placeholder": {
+    "description": "配置服务中的站点名称",
+    "message": "网站名称"
   },
   "config_manual_title": {
     "message": "手动添加"

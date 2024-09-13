@@ -185,11 +185,11 @@
   "config_invalid_mountpoints": {
     "message": "URL de contenu non valide"
   },
+  "config_invalid_org_site": {
+    "message": "Nom de site ou d’organisation non valide"
+  },
   "config_invalid_shareurl": {
     "message": "URL de partage non valide"
-  },
-  "config_manual_authorizationToken_placeholder": {
-    "message": "Jeton d’autorisation (facultatif)"
   },
   "config_manual_devMode": {
     "message": "Tester la configuration du projet localement"
@@ -206,11 +206,19 @@
   "config_manual_mountpoints_placeholder": {
     "message": "URL du contenu : https://..."
   },
+  "config_manual_org_placeholder": {
+    "description": "Nom de l'organisation tel que dans le service de configuration",
+    "message": "Nom d’organisation"
+  },
   "config_manual_previewHost_placeholder": {
     "message": "Nom d’hôte d’aperçu personnalisé (facultatif)"
   },
   "config_manual_project_placeholder": {
     "message": "Nom du projet (facultatif)"
+  },
+  "config_manual_site_placeholder": {
+    "description": "Nom du site tel que dans le service de configuration",
+    "message": "Nom du site"
   },
   "config_manual_title": {
     "message": "Ajouter manuellement"
