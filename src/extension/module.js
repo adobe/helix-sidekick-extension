@@ -2304,6 +2304,8 @@ import sampleRUM from './rum.js';
             includePaths,
             containerId,
             isContainer,
+            isBadge,
+            badgeVariant,
           } = cfg;
           const condition = (s) => {
             let excluded = false;
@@ -2337,7 +2339,20 @@ import sampleRUM from './rum.js';
             custom: true,
             id: id || `custom-plugin-${i}`,
             condition,
-            button: {
+            container: containerId,
+          };
+
+          if (isBadge) {
+            plugin.feature = true;
+            plugin.elements = [{
+              tag: 'span',
+              text: title,
+              attrs: {
+                class: `hlx-sk-badge hlx-sk-badge-${badgeVariant?.toLowerCase() || 'default'}`,
+              },
+            }];
+          } else {
+            plugin.button = {
               text: (titleI18n && titleI18n[lang]) || title || '',
               action: () => {
                 if (url) {
@@ -2425,9 +2440,9 @@ import sampleRUM from './rum.js';
                 fireEvent(sk, `custom:${eventName || id}`);
               },
               isDropdown: isContainer,
-            },
-            container: containerId,
-          };
+            };
+          }
+
           sk.customPlugins[plugin.id] = plugin;
           // check default plugin
           const defaultPlugin = sk.plugins[plugin.id];
