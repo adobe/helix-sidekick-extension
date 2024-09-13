@@ -1,3 +1,11 @@
+# [6.49.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.48.0...v6.49.0) (2024-09-13)
+
+
+### Features
+
+* add support for configurable badges ([#787](https://github.com/adobe/helix-sidekick-extension/issues/787)) ([fb0deca](https://github.com/adobe/helix-sidekick-extension/commit/fb0deca7c5e5f7db47fccf994b90e1eba207695e))
+* transient token support ([#788](https://github.com/adobe/helix-sidekick-extension/issues/788)) ([a5ffc58](https://github.com/adobe/helix-sidekick-extension/commit/a5ffc58ef4cbee0992fe9848b99f60882066d21f))
+
 # [6.48.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.47.2...v6.48.0) (2024-09-09)
 
 
