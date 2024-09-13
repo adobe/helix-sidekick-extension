@@ -188,9 +188,6 @@
   "config_invalid_shareurl": {
     "message": "URL para compartir no válida"
   },
-  "config_manual_authorizationToken_placeholder": {
-    "message": "Token de autorización (opcional)"
-  },
   "config_manual_devMode": {
     "message": "Probar la configuración del proyecto localmente"
   },

@@ -1313,6 +1313,98 @@ describe('Test sidekick', () => {
     assert.ok(checkPageResult, 'Did not suppress data view for JSON file');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
+  it('Shows access restricted message for 401 response', async () => {
+    const setup = new Setup('blog');
+    setup.apiResponse().profile = null; // not logged in
+    nock.sidekick(setup);
+    nock.admin(setup);
+    nock('https://admin.hlx.page')
+      .get('/login/adobe/blog/main?extensionId=cookie')
+      .optionally()
+      .reply(200, '<html>logged in</html>')
+      .get('/profile/adobe/blog/main')
+      .optionally()
+      .reply(200, '{}')
+      .persist();
+    const { checkPageResult } = await new SidekickTest({
+      browser,
+      page,
+      loadModule,
+      fixture: '401.html',
+      url: 'https://main--blog--adobe.aem.page/en/topics/bla',
+      post: (p) => p.evaluate(() => {
+        window.hlx.sidekick.shadowRoot
+          .querySelector('.hlx-sk-error-view .container button').click();
+      }),
+      checkPage: (p) => p.evaluate(() => {
+        window.hlx.sidekick.dispatchEvent(new CustomEvent('loggedin'));
+        return window.hlx.sidekick.shadowRoot
+          .querySelector('.hlx-sk-error-view p')?.textContent;
+      }),
+    }).run();
+    assert.equal(
+      checkPageResult,
+      'Please sign in to continue.',
+      'Did not show access restricted message',
+    );
+  }).timeout(IT_DEFAULT_TIMEOUT);
+
+  it('Shows access expired message for 401 response while logged in', async () => {
+    const setup = new Setup('blog');
+    nock.sidekick(setup);
+    nock.admin(setup);
+    const { checkPageResult } = await new SidekickTest({
+      browser,
+      page,
+      loadModule,
+      fixture: '401.html',
+      url: 'https://main--blog--adobe.aem.page/en/topics/bla',
+      checkPage: (p) => p.evaluate(() => window.hlx.sidekick
+        .shadowRoot
+        .querySelector('.hlx-sk-error-view p')?.textContent),
+    }).run();
+    assert.equal(
+      checkPageResult,
+      'Access expired. Please sign in again to continue.',
+      'Did not show access expired message',
+    );
+  }).timeout(IT_DEFAULT_TIMEOUT);
+
+  it('Shows access denied message for 403 response', async () => {
+    const setup = new Setup('blog');
+    nock.sidekick(setup);
+    nock.admin(setup);
+    nock('https://admin.hlx.page')
+      .get('/login/adobe/blog/main?extensionId=cookie&selectAccount=true')
+      .optionally()
+      .reply(200, '<html>logged in</html>')
+      .get('/profile/adobe/blog/main')
+      .optionally()
+      .reply(200, '{}')
+      .persist();
+    const { checkPageResult } = await new SidekickTest({
+      browser,
+      page,
+      loadModule,
+      fixture: '403.html',
+      url: 'https://main--blog--adobe.aem.page/en/topics/bla',
+      post: (p) => p.evaluate(() => {
+        window.hlx.sidekick.shadowRoot
+          .querySelector('.hlx-sk-error-view .container button').click();
+      }),
+      checkPage: (p) => p.evaluate(() => {
+        window.hlx.sidekick.dispatchEvent(new CustomEvent('loggedin'));
+        return window.hlx.sidekick.shadowRoot
+          .querySelector('.hlx-sk-error-view p')?.textContent;
+      }),
+    }).run();
+    assert.equal(
+      checkPageResult,
+      'Access denied. Try signing in with a different user or ask your administrator for sufficient permissions.',
+      'Did not show access denied message',
+    );
+  }).timeout(IT_DEFAULT_TIMEOUT);
+
   it('Shows help content', async () => {
     const { notification } = await new SidekickTest({
       browser,
