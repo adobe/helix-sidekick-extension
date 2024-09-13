@@ -185,6 +185,9 @@
   "config_invalid_mountpoints": {
     "message": "URL do conteúdo inválido"
   },
+  "config_invalid_org_site": {
+    "message": "Nome de organização ou site inválido"
+  },
   "config_invalid_shareurl": {
     "message": "URL de compartilhamento inválido"
   },
@@ -203,11 +206,19 @@
   "config_manual_mountpoints_placeholder": {
     "message": "URL do conteúdo: https://..."
   },
+  "config_manual_org_placeholder": {
+    "description": "Nome da organização como no serviço de configuração",
+    "message": "Nome da organização"
+  },
   "config_manual_previewHost_placeholder": {
     "message": "Nome de host de visualização personalizada (opcional)"
   },
   "config_manual_project_placeholder": {
     "message": "Nome do projeto (opcional)"
+  },
+  "config_manual_site_placeholder": {
+    "description": "Nome do site como no serviço de configuração",
+    "message": "Nome do site"
   },
   "config_manual_title": {
     "message": "Adicionar manualmente"
