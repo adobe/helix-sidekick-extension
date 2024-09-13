@@ -201,6 +201,54 @@ describe('Test sidekick', () => {
     assert.ok(plugins.find((p) => p.id === 'foo'), 'Did not add plugin from config');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
+  it('Adds badge plugin to feature container', async () => {
+    const setup = new Setup('blog');
+    nock.sidekick(setup, {
+      configJson: `{
+        "plugins": [{
+          "id": "foo",
+          "title": "Default",
+          "isBadge": true
+        },
+        {
+          "id": "foo2",
+          "title": "Badge 2",
+          "isBadge": true,
+          "badgeVariant": "Chartreuse"
+        },
+        {
+          "id": "foo3",
+          "title": "Invalid colors",
+          "isBadge": true,
+          "badgeVariant": "invalid"
+        }]
+      }`,
+    });
+    nock.admin(setup);
+    const { checkPageResult, plugins } = await new SidekickTest({
+      browser,
+      page,
+      loadModule,
+      checkPage: (p) => p.evaluate(() => {
+        const sk = window.hlx.sidekick;
+        const result = [];
+        // test default badge
+        let badge = sk.get('foo').querySelector('span');
+        result.push(badge.closest('div.feature-container') && getComputedStyle(badge).color === 'rgb(255, 255, 255)' && getComputedStyle(badge).backgroundColor === 'rgb(112, 112, 112)');
+        // test badge with custom colors
+        badge = sk.get('foo2').querySelector('span');
+        result.push(badge.closest('div.feature-container') && getComputedStyle(badge).color === 'rgb(0, 0, 0)' && getComputedStyle(badge).backgroundColor === 'rgb(148, 192, 8)');
+        // test badge with invalid color variant
+        badge = sk.get('foo3').querySelector('span');
+        result.push(badge.closest('div.feature-container') && getComputedStyle(badge).color === 'rgb(255, 255, 255)' && getComputedStyle(badge).backgroundColor === 'rgb(112, 112, 112)');
+        return result;
+      }),
+    }).run();
+
+    assert.ok(plugins.filter((p) => p.id.startsWith('foo')).length === 3, 'Did not add plugin from config');
+    assert.ok(checkPageResult.every((val) => val === true), 'Did not render badges correctly');
+  }).timeout(IT_DEFAULT_TIMEOUT);
+
   it('Detects innerHost and outerHost from config', async () => {
     const setup = new Setup('blog');
     nock.sidekick(setup);
