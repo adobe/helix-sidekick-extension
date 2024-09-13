@@ -312,7 +312,7 @@
 
 .hlx-sk .plugin > span.hlx-sk-badge-green {
 	background: var(--hlx-sk-badge-bg-green);
-  color: var(--spectrum-black);
+  color: var(--hlx-sk-badge-color-black);
 }
 
 .hlx-sk .plugin > span.hlx-sk-badge-seafoam {
