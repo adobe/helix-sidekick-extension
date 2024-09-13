@@ -479,6 +479,44 @@ describe('Test extension utils', () => {
     })).to.be.true;
   });
 
+  it('storeAuthToken (with siteToken)', async () => {
+    const spy = sandbox.spy(window.chrome.storage.session, 'set');
+    const owner = 'foo';
+    const repo = 'bar';
+    const authToken = '1234';
+    const siteToken = 'ABCD';
+    const exp = Math.floor((Date.now() / 1000) + 120);
+    await utils.storeAuthToken({
+      owner,
+      repo,
+      authToken,
+      authTokenExpiry: exp,
+      siteToken,
+      siteTokenExpiry: exp,
+    });
+    expect(spy.calledWith({
+      foo: {
+        owner,
+        authToken,
+        authTokenExpiry: exp * 1000,
+      },
+    })).to.be.true;
+    expect(spy.calledWithMatch({
+      'foo/bar': {
+        owner,
+        repo,
+        siteToken,
+        siteTokenExpiry: exp * 1000,
+      },
+    })).to.be.true;
+    expect(spy.calledWith({
+      hlxSidekickProjects: [
+        'foo',
+        'foo/bar',
+      ],
+    })).to.be.true;
+  });
+
   it('storeAuthToken (delete)', async () => {
     const spy = sandbox.spy(window.chrome.storage.session, 'remove');
     const owner = 'foo';
@@ -567,61 +605,6 @@ describe('Test extension utils', () => {
       authToken: '',
     });
 
-    protectedProject = await utils.getConfig('local', 'hlxSidekickProjects');
-    expect(protectedProject).to.deep.equal({});
-
-    expect(spy.calledWith({
-      hlxSidekickProjects: {},
-    })).to.be.true;
-  });
-
-  it('updateProjectAuthorizationHeaderRules adds and removes', async () => {
-    const spy = sandbox.spy(chrome.declarativeNetRequest, 'updateSessionRules');
-    await utils.setProjectAuthorizationToken({
-      owner: 'foo',
-      repo: 'bar',
-    }, '1234');
-
-    await utils.updateProjectAuthorizationHeaderRules();
-    expect(spy.calledWith([
-      {
-        id: 100,
-        priority: 1,
-        action: {
-          type: 'modifyHeaders',
-          requestHeaders: [
-            {
-              operation: 'set',
-              header: 'authorization',
-              value: 'token 1234',
-            },
-          ],
-        },
-        condition: {
-          regexFilter: '^https://[a-z0-9-]+--bar--foo.aem.(page|live)/.*',
-          requestMethods: [
-            'get',
-            'post',
-          ],
-          resourceTypes: [
-            'main_frame',
-            'script',
-            'stylesheet',
-            'image',
-            'xmlhttprequest',
-            'media',
-            'font',
-          ],
-        },
-      },
-    ]));
-
-    await utils.setProjectAuthorizationToken({
-      owner: 'foo',
-      repo: 'bar',
-    }, undefined);
-
-    const rules = await chrome.declarativeNetRequest.getSessionRules();
-    expect(rules).to.deep.equal([]);
+    expect(spy.callCount).to.equal(3);
   });
 });
