@@ -185,6 +185,9 @@
   "config_invalid_mountpoints": {
     "message": "잘못된 콘텐츠 URL"
   },
+  "config_invalid_org_site": {
+    "message": "잘못된 조직 또는 사이트 이름"
+  },
   "config_invalid_shareurl": {
     "message": "잘못된 공유 URL"
   },
@@ -203,11 +206,19 @@
   "config_manual_mountpoints_placeholder": {
     "message": "콘텐츠 URL: https://..."
   },
+  "config_manual_org_placeholder": {
+    "description": "구성 서비스에서와 같은 조직 이름",
+    "message": "조직 이름"
+  },
   "config_manual_previewHost_placeholder": {
     "message": "사용자 정의 미리보기 호스트 이름 (선택 사항)"
   },
   "config_manual_project_placeholder": {
     "message": "프로젝트 이름(선택 사항)"
+  },
+  "config_manual_site_placeholder": {
+    "description": "구성 서비스에서의 사이트 이름",
+    "message": "사이트 이름"
   },
   "config_manual_title": {
     "message": "수동 추가"

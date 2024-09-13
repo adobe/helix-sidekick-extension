@@ -185,6 +185,9 @@
   "config_invalid_mountpoints": {
     "message": "URL di contenuto non valido"
   },
+  "config_invalid_org_site": {
+    "message": "Nome organizzazione o sito non valido"
+  },
   "config_invalid_shareurl": {
     "message": "URL di condivisione non valido"
   },
@@ -203,11 +206,19 @@
   "config_manual_mountpoints_placeholder": {
     "message": "URL del contenuto: https://..."
   },
+  "config_manual_org_placeholder": {
+    "description": "Nome organizzazione come nel servizio di configurazione",
+    "message": "Nome organizzazione"
+  },
   "config_manual_previewHost_placeholder": {
     "message": "Nome host di anteprima personalizzato (facoltativo)"
   },
   "config_manual_project_placeholder": {
     "message": "Nome progetto (facoltativo)"
+  },
+  "config_manual_site_placeholder": {
+    "description": "Nome sito come nel servizio di configurazione",
+    "message": "Nome sito"
   },
   "config_manual_title": {
     "message": "Aggiungi manualmente"
