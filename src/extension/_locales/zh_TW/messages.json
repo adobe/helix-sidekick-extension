@@ -188,9 +188,6 @@
   "config_invalid_shareurl": {
     "message": "共用 URL 無效"
   },
-  "config_manual_authorizationToken_placeholder": {
-    "message": "授權權杖 (選擇性)"
-  },
   "config_manual_devMode": {
     "message": "在本機測試專案設定"
   },

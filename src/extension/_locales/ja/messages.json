@@ -188,9 +188,6 @@
   "config_invalid_shareurl": {
     "message": "無効な共有 URL"
   },
-  "config_manual_authorizationToken_placeholder": {
-    "message": "認証トークン (オプション)"
-  },
   "config_manual_devMode": {
     "message": "プロジェクト設定をローカルでテスト"
   },

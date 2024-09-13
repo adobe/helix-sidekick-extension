@@ -188,9 +188,6 @@
   "config_invalid_shareurl": {
     "message": "잘못된 공유 URL"
   },
-  "config_manual_authorizationToken_placeholder": {
-    "message": "인증 토큰(선택 사항)"
-  },
   "config_manual_devMode": {
     "message": "로컬에서 프로젝트 구성 테스트"
   },
