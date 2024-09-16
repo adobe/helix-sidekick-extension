@@ -1376,7 +1376,6 @@ import sampleRUM from './rum.js';
         action: async () => {
           const { status, location } = sk;
           const safePath = status.webPath.split('/').map(toSafePathSegment).join('/');
-          console.log('safePath', safePath, status.webPath);
           if (safePath !== status.webPath) {
             sk.showModal(
               [
