@@ -71,7 +71,7 @@
     "semantic-release-discord-bot": "^1.1.0",
     "semantic-release-react-native": "1.10.0",
     "shelljs": "0.8.5",
-    "sinon": "18.0.1"
+    "sinon": "19.0.2"
   },
   "lint-staged": {
     "*.js": "eslint"
