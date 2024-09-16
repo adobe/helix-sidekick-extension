@@ -455,6 +455,35 @@ describe('Test bulk preview plugin', () => {
     );
   }).timeout(IT_DEFAULT_TIMEOUT);
 
+  it('Bulk preview plugin rejects illegal folder name in gdrive', async () => {
+    const { setup, fixture } = TESTS[1];
+    nock.sidekick(setup);
+    nock('https://admin.hlx.page/status')
+      .get(/.*/)
+      .twice()
+      .reply(200, {
+        ...setup.apiResponse('admin'),
+        webPath: '/folder with spaces',
+      });
+    const { notification } = await new SidekickTest({
+      browser,
+      page,
+      plugin: 'bulk-preview',
+      acceptDialogs: true,
+      fixture,
+      url: setup.getUrl('edit', 'admin'),
+      loadModule: true,
+      pre: (p) => p.evaluate(() => {
+        // select file
+        document.getElementById('file-gdoc').click();
+      }),
+    }).run();
+    assert.ok(
+      notification.message?.includes('illegal characters'),
+      'Did not reject illegal folder name',
+    );
+  }).timeout(IT_DEFAULT_TIMEOUT);
+
   it('Bulk preview plugin handles docx and xlsx errors in gdrive', async () => {
     const { setup } = TESTS[1];
     nock.sidekick(setup);

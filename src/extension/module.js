@@ -1360,7 +1360,23 @@ import sampleRUM from './rum.js';
       button: {
         text: i18n(sk, 'preview'),
         action: async () => {
+          console.log('------------', sk);
           const { status, location } = sk;
+          if ([' ', '%20'].find((pattern) => status.webPath.includes(pattern))) {
+            sk.showModal(
+              [
+                i18n(sk, 'bulk_error_illegal_file_name'),
+                status.webPath,
+                createTag({
+                  tag: 'button',
+                  text: i18n(sk, 'close'),
+                }),
+              ],
+              true,
+              2,
+            );
+            return;
+          }
           if (status.edit && status.edit.sourceLocation
             && status.edit.sourceLocation.startsWith('onedrive:')
             && !location.pathname.startsWith('/:x:/')) {
@@ -1677,8 +1693,9 @@ import sampleRUM from './rum.js';
 
     const toWebPath = (folder, item) => {
       const { path, type } = item;
-      if (['/', '*', '\\', '!', '?'].find((pattern) => path.includes(pattern))) {
-        return `!ILLEGAL!_${path}`;
+      if (['/', '*', '\\', '!', '?'].find((pattern) => path.includes(pattern))
+        || [' ', '%20'].find((pattern) => folder.includes(pattern))) {
+        return `!ILLEGAL!_${folder}${folder.endsWith('/') ? '' : '/'}${path}`;
       }
       let file = path;
       let ext = '';

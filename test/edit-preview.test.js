@@ -292,4 +292,27 @@ describe('Test editor preview plugin', () => {
     assert.ok(notification.message.includes('429'), 'Reload plugin does not show modal on 429');
     assert.ok(notification.message.includes('Microsoft SharePoint'), 'Reload plugin does not mention onedrive');
   }).timeout(IT_DEFAULT_TIMEOUT);
+
+  it('Editor preview plugin rejects paths with spaces', async () => {
+    const setup = new Setup('blog');
+    nock.sidekick(setup);
+    nock('https://admin.hlx.page/status')
+      .get(/.*/)
+      .reply(200, {
+        ...setup.apiResponse('html'),
+        webPath: '/folder with spaces/filename',
+      });
+    const { notification } = await new SidekickTest({
+      browser,
+      page,
+      setup,
+      plugin: 'edit-preview',
+      url: setup.getUrl('edit'),
+      loadModule: true,
+    }).run();
+    assert.ok(
+      notification.message?.includes('illegal characters'),
+      'Did not reject path with spaces:',
+    );
+  }).timeout(IT_DEFAULT_TIMEOUT);
 });

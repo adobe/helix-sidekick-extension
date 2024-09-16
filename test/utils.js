@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-/* eslint-disable max-classes-per-file */
+/* eslint-disable max-classes-per-file, import/no-extraneous-dependencies */
 /* eslint-env mocha */
 import v8 from 'node:v8';
 import assert from 'assert';
@@ -24,7 +24,7 @@ import { promises as fs } from 'fs';
 const { fetch } = h1();
 
 // set debug to true to see browser window and debug output
-export const DEBUG = false;
+export const DEBUG = true;
 export const DEBUG_LOGS = false;
 
 export const IT_DEFAULT_TIMEOUT = 60000;
