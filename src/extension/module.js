@@ -1360,7 +1360,6 @@ import sampleRUM from './rum.js';
       button: {
         text: i18n(sk, 'preview'),
         action: async () => {
-          console.log('------------', sk);
           const { status, location } = sk;
           if ([' ', '%20'].find((pattern) => status.webPath.includes(pattern))) {
             sk.showModal(
