@@ -306,6 +306,20 @@ import sampleRUM from './rum.js';
   };
 
   /**
+   * Transforms a path segment for safe use in URLs.
+   * @private
+   * @param {string} segment The segment
+   */
+  function toSafePathSegment(segment) {
+    return segment
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '');
+  }
+
+  /**
    * Detects the platform.
    * @private
    * @param {string} userAgent The user agent
@@ -1361,7 +1375,9 @@ import sampleRUM from './rum.js';
         text: i18n(sk, 'preview'),
         action: async () => {
           const { status, location } = sk;
-          if ([' ', '%20'].find((pattern) => status.webPath.includes(pattern))) {
+          const safePath = status.webPath.split('/').map(toSafePathSegment).join('/');
+          console.log('safePath', safePath, status.webPath);
+          if (safePath !== status.webPath) {
             sk.showModal(
               [
                 i18n(sk, 'bulk_error_illegal_file_name'),
@@ -1691,9 +1707,10 @@ import sampleRUM from './rum.js';
     let bulkSelection = [];
 
     const toWebPath = (folder, item) => {
+      const safeFolder = folder.split('/').map(toSafePathSegment).join('/');
       const { path, type } = item;
       if (['/', '*', '\\', '!', '?'].find((pattern) => path.includes(pattern))
-        || [' ', '%20'].find((pattern) => folder.includes(pattern))) {
+        || safeFolder !== folder.toLowerCase()) {
         return `!ILLEGAL!_${folder}${folder.endsWith('/') ? '' : '/'}${path}`;
       }
       let file = path;
@@ -1716,12 +1733,7 @@ import sampleRUM from './rum.js';
         // folder root
         file = '';
       }
-      file = file
-        .toLowerCase()
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-|-$/g, '');
+      file = toSafePathSegment(file);
       return `${folder}${folder.endsWith('/') ? '' : '/'}${file}${ext}`;
     };
 
@@ -1786,7 +1798,7 @@ import sampleRUM from './rum.js';
             // use path in icon svg to determine type
             const typeHint = (row.querySelector(':scope div[role="gridcell"] > div:nth-child(1) path:nth-child(1)') // list layout
               || row.querySelector(':scope div[role="gridcell"] > div:nth-of-type(1) > div:nth-child(2) path:nth-child(1)')) // grid layout
-              .getAttribute('d').slice(-4);
+              ?.getAttribute('d').slice(-4);
             let type = 'unknown';
             if (typeHint) {
               if (typeHint === folderId || typeHint === sharedFolderId) {

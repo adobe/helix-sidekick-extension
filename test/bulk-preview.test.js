@@ -463,7 +463,7 @@ describe('Test bulk preview plugin', () => {
       .twice()
       .reply(200, {
         ...setup.apiResponse('admin'),
-        webPath: '/folder with spaces',
+        webPath: '/földer with spæces',
       });
     const { notification } = await new SidekickTest({
       browser,
