@@ -24,7 +24,7 @@ import { promises as fs } from 'fs';
 const { fetch } = h1();
 
 // set debug to true to see browser window and debug output
-export const DEBUG = true;
+export const DEBUG = false;
 export const DEBUG_LOGS = false;
 
 export const IT_DEFAULT_TIMEOUT = 60000;
