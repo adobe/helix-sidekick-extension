@@ -398,6 +398,15 @@
   "error_preview_not_gsheet_ms_excel": {
     "message": "Questo è un documento Microsoft Excel. Convertilo in Fogli Google: File > Salva come foglio Google"
   },
+  "error_site_401": {
+    "message": "Effettua l'accesso per continuare."
+  },
+  "error_site_401_relogin": {
+    "message": "Accesso scaduto. Per continuare, effettua di nuovo l'accesso."
+  },
+  "error_site_403": {
+    "message": "Accesso negato. Prova ad accedere con un altro utente o chiedi all'amministratore le autorizzazioni necessarie."
+  },
   "error_status_403": {
     "message": "403 - Non consentito: chiedi all’amministratore le autorizzazioni necessarie."
   },
@@ -427,6 +436,9 @@
   },
   "error_status_invalid": {
     "message": "Risposta del server non valida. Controlla la configurazione o l’URL di Sidekick."
+  },
+  "error_view_description": {
+    "message": "Messaggio di errore intuitivo."
   },
   "extensions": {
     "message": "Estensioni"
@@ -611,6 +623,9 @@
   },
   "user_logout": {
     "message": "Esci"
+  },
+  "user_relogin": {
+    "message": "Accedi di nuovo"
   },
   "user_switch": {
     "message": "Cambia utente"
