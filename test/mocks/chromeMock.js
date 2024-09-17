@@ -9,6 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { readFile } from '@web/test-runner-commands';
 
 const ID = 'dummy';
@@ -58,7 +59,12 @@ export default {
     },
     onMessageExternal: {
       // simulate external message from admin API with authToken
-      addListener: (func) => func({ owner: 'test', repo: 'auth-project', authToken: 'foo' }),
+      addListener: (func) => func({
+        action: 'updateAuthToken',
+        owner: 'test',
+        repo: 'auth-project',
+        authToken: 'foo',
+      }),
       removeListener: () => {},
     },
   },

@@ -176,9 +176,6 @@
   "config_invalid_export": {
     "message": "Non hai ancora alcuna configurazione da esportare"
   },
-  "config_invalid_giturl": {
-    "message": "URL archivio non valido"
-  },
   "config_invalid_host": {
     "message": "Nome host non valido"
   },
@@ -188,20 +185,17 @@
   "config_invalid_mountpoints": {
     "message": "URL di contenuto non valido"
   },
+  "config_invalid_org_site": {
+    "message": "Nome organizzazione o sito non valido"
+  },
   "config_invalid_shareurl": {
     "message": "URL di condivisione non valido"
-  },
-  "config_manual_authorizationToken_placeholder": {
-    "message": "Token di autorizzazione (facoltativo)"
   },
   "config_manual_devMode": {
     "message": "Testa localmente la configurazione del progetto"
   },
   "config_manual_devOrigin_placeholder": {
     "message": "URL di sviluppo locale: http://localhost:3000"
-  },
-  "config_manual_giturl_placeholder": {
-    "message": "URL archivio: https://github.com/..."
   },
   "config_manual_host_placeholder": {
     "message": "Nome host di produzione (facoltativo)"
@@ -212,11 +206,19 @@
   "config_manual_mountpoints_placeholder": {
     "message": "URL del contenuto: https://..."
   },
+  "config_manual_org_placeholder": {
+    "description": "Nome organizzazione come nel servizio di configurazione",
+    "message": "Nome organizzazione"
+  },
   "config_manual_previewHost_placeholder": {
     "message": "Nome host di anteprima personalizzato (facoltativo)"
   },
   "config_manual_project_placeholder": {
     "message": "Nome progetto (facoltativo)"
+  },
+  "config_manual_site_placeholder": {
+    "description": "Nome sito come nel servizio di configurazione",
+    "message": "Nome sito"
   },
   "config_manual_title": {
     "message": "Aggiungi manualmente"
@@ -396,6 +398,15 @@
   "error_preview_not_gsheet_ms_excel": {
     "message": "Questo è un documento Microsoft Excel. Convertilo in Fogli Google: File > Salva come foglio Google"
   },
+  "error_site_401": {
+    "message": "Effettua l'accesso per continuare."
+  },
+  "error_site_401_relogin": {
+    "message": "Accesso scaduto. Per continuare, effettua di nuovo l'accesso."
+  },
+  "error_site_403": {
+    "message": "Accesso negato. Prova ad accedere con un altro utente o chiedi all'amministratore le autorizzazioni necessarie."
+  },
   "error_status_403": {
     "message": "403 - Non consentito: chiedi all’amministratore le autorizzazioni necessarie."
   },
@@ -425,6 +436,9 @@
   },
   "error_status_invalid": {
     "message": "Risposta del server non valida. Controlla la configurazione o l’URL di Sidekick."
+  },
+  "error_view_description": {
+    "message": "Messaggio di errore intuitivo."
   },
   "extensions": {
     "message": "Estensioni"
@@ -609,6 +623,9 @@
   },
   "user_logout": {
     "message": "Esci"
+  },
+  "user_relogin": {
+    "message": "Accedi di nuovo"
   },
   "user_switch": {
     "message": "Cambia utente"

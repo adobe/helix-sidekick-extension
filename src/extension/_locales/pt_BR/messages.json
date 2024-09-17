@@ -176,9 +176,6 @@
   "config_invalid_export": {
     "message": "Ainda não há nenhuma configuração a ser exportada"
   },
-  "config_invalid_giturl": {
-    "message": "URL de repositório inválido"
-  },
   "config_invalid_host": {
     "message": "Nome de host inválido"
   },
@@ -188,20 +185,17 @@
   "config_invalid_mountpoints": {
     "message": "URL do conteúdo inválido"
   },
+  "config_invalid_org_site": {
+    "message": "Nome de organização ou site inválido"
+  },
   "config_invalid_shareurl": {
     "message": "URL de compartilhamento inválido"
-  },
-  "config_manual_authorizationToken_placeholder": {
-    "message": "Token de autorização (opcional)"
   },
   "config_manual_devMode": {
     "message": "Testar a configuração do projeto localmente"
   },
   "config_manual_devOrigin_placeholder": {
     "message": "URL de desenvolvimento local: http://localhost:3000"
-  },
-  "config_manual_giturl_placeholder": {
-    "message": "URL do repositório: https://github.com/..."
   },
   "config_manual_host_placeholder": {
     "message": "Hostname de produção (opcional)"
@@ -212,11 +206,19 @@
   "config_manual_mountpoints_placeholder": {
     "message": "URL do conteúdo: https://..."
   },
+  "config_manual_org_placeholder": {
+    "description": "Nome da organização como no serviço de configuração",
+    "message": "Nome da organização"
+  },
   "config_manual_previewHost_placeholder": {
     "message": "Nome de host de visualização personalizada (opcional)"
   },
   "config_manual_project_placeholder": {
     "message": "Nome do projeto (opcional)"
+  },
+  "config_manual_site_placeholder": {
+    "description": "Nome do site como no serviço de configuração",
+    "message": "Nome do site"
   },
   "config_manual_title": {
     "message": "Adicionar manualmente"
@@ -396,6 +398,15 @@
   "error_preview_not_gsheet_ms_excel": {
     "message": "Este é um documento do Microsoft Excel. Converta-o para Planilhas Google: Arquivo > Salvar como Planilhas Google"
   },
+  "error_site_401": {
+    "message": "Entre para continuar."
+  },
+  "error_site_401_relogin": {
+    "message": "Acesso expirado. Entre novamente para continuar."
+  },
+  "error_site_403": {
+    "message": "Acesso negado. Tente entrar com um usuário diferente ou peça permissões suficientes ao administrador."
+  },
   "error_status_403": {
     "message": "403 Proibido: Solicite ao administrador as permissões necessárias."
   },
@@ -425,6 +436,9 @@
   },
   "error_status_invalid": {
     "message": "Resposta do servidor inválida. Verifique sua configuração Sidekick ou o URL."
+  },
+  "error_view_description": {
+    "message": "Mensagem de erro amigável."
   },
   "extensions": {
     "message": "Extensões"
@@ -609,6 +623,9 @@
   },
   "user_logout": {
     "message": "Fazer logoff"
+  },
+  "user_relogin": {
+    "message": "Entrar novamente"
   },
   "user_switch": {
     "message": "Trocar usuário"

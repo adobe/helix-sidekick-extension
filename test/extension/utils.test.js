@@ -313,26 +313,15 @@ describe('Test extension utils', () => {
     expect(mountpoints[0]).to.equal('https://adobe.sharepoint.com/:f:/s/Dummy/Alk9MSH25LpBuUWA_N6DOL8BuI6Vrdyrr87gne56dz3QeQ');
   });
 
-  it('assembleProject with giturl', async () => {
-    const {
-      owner, repo, ref,
-    } = utils.assembleProject({
-      giturl: 'https://github.com/adobe/business-website/tree/main',
-    });
-    expect(owner).to.equal('adobe');
-    expect(repo).to.equal('business-website');
-    expect(ref).to.equal('main');
-  });
-
   it('assembleProject with owner and repo', async () => {
     const {
-      giturl,
+      id,
     } = utils.assembleProject({
       owner: 'adobe',
       repo: 'business-website',
       ref: 'test',
     });
-    expect(giturl).to.equal('https://github.com/adobe/business-website/tree/test');
+    expect(id).to.equal('adobe/business-website/test');
   });
 
   it('addProject', async () => {
@@ -340,7 +329,8 @@ describe('Test extension utils', () => {
     // add project
     const added = await new Promise((resolve) => {
       utils.addProject({
-        giturl: 'https://github.com/test/project',
+        owner: 'test',
+        repo: 'project',
       }, resolve);
     });
     expect(added).to.be.true;
@@ -350,7 +340,8 @@ describe('Test extension utils', () => {
     // add project with auth enabled
     const addedWithAuth = await new Promise((resolve) => {
       utils.addProject({
-        giturl: 'https://github.com/test/auth-project',
+        owner: 'test',
+        repo: 'auth-project',
       }, resolve);
     });
     expect(addedWithAuth).to.be.true;
@@ -360,7 +351,8 @@ describe('Test extension utils', () => {
     // add existing
     const addedExisting = await new Promise((resolve) => {
       utils.addProject({
-        giturl: 'https://github.com/test/project',
+        owner: 'test',
+        repo: 'project',
       }, resolve);
     });
     expect(addedExisting).to.be.false;
@@ -387,11 +379,6 @@ describe('Test extension utils', () => {
   it('deleteProject', async () => {
     const spy = sandbox.spy(window.chrome.storage.sync, 'set');
 
-    await utils.setProjectAuthorizationToken({
-      owner: 'adobe',
-      repo: 'blog',
-    }, '1234');
-
     const deleted = await new Promise((resolve) => {
       utils.deleteProject('adobe/blog', resolve);
     });
@@ -399,12 +386,6 @@ describe('Test extension utils', () => {
     expect(spy.calledWith({
       hlxSidekickProjects: ['test/project', 'test/auth-project'],
     })).to.be.true;
-
-    const rules = await chrome.declarativeNetRequest.getSessionRules();
-    expect(rules).to.deep.equal([]);
-
-    const protectedProject = await utils.getConfig('local', 'hlxSidekickProjects');
-    expect(protectedProject).to.deep.equal({});
   });
 
   it('setDisplay', async () => {
@@ -440,103 +421,152 @@ describe('Test extension utils', () => {
 
   it('storeAuthToken', async () => {
     const spy = sandbox.spy(window.chrome.storage.session, 'set');
-    const token = '1234';
-    const exp = (Date.now() / 1000) + 120;
-    await utils.storeAuthToken('foo', token, exp);
+    const owner = 'foo';
+    const repo = 'bar';
+    const authToken = '1234';
+    const authTokenExpiry = Math.floor((Date.now() / 1000) + 120); // comes in seconds
+    await utils.storeAuthToken({
+      owner,
+      repo,
+      authToken,
+      authTokenExpiry,
+    });
     expect(spy.calledWith({
       foo: {
-        owner: 'foo',
-        authToken: token,
-        authTokenExpiry: exp * 1000,
+        owner,
+        authToken,
+        authTokenExpiry: authTokenExpiry * 1000,
       },
     })).to.be.true;
     expect(spy.calledWith({ hlxSidekickProjects: ['foo'] })).to.be.true;
   });
 
+  it('storeAuthToken (with siteToken)', async () => {
+    const spy = sandbox.spy(window.chrome.storage.session, 'set');
+    const owner = 'foo';
+    const repo = 'bar';
+    const authToken = '1234';
+    const siteToken = 'ABCD';
+    const exp = Math.floor((Date.now() / 1000) + 120);
+    await utils.storeAuthToken({
+      owner,
+      repo,
+      authToken,
+      authTokenExpiry: exp,
+      siteToken,
+      siteTokenExpiry: exp,
+    });
+    expect(spy.calledWith({
+      foo: {
+        owner,
+        authToken,
+        authTokenExpiry: exp * 1000,
+      },
+    })).to.be.true;
+    expect(spy.calledWithMatch({
+      'foo/bar': {
+        owner,
+        repo,
+        siteToken,
+        siteTokenExpiry: exp * 1000,
+      },
+    })).to.be.true;
+    expect(spy.calledWith({
+      hlxSidekickProjects: [
+        'foo',
+        'foo/bar',
+      ],
+    })).to.be.true;
+  });
+
   it('storeAuthToken (delete)', async () => {
     const spy = sandbox.spy(window.chrome.storage.session, 'remove');
-    await utils.storeAuthToken('foo', '');
-    expect(spy.calledWith('foo')).to.be.true;
+    const owner = 'foo';
+    const repo = 'bar';
+    await utils.storeAuthToken({
+      owner,
+      repo,
+      authToken: '',
+    });
+    expect(spy.calledWith(owner)).to.be.true;
+    expect(spy.calledWith(`${owner}/${repo}`)).to.be.true;
   });
 
-  it('setProjectAuthorizationToken (add and remove)', async () => {
-    const spy = sandbox.spy(window.chrome.storage.local, 'set');
-    await utils.setProjectAuthorizationToken({
+  it('updateAuthHeaderRules adds and removes', async () => {
+    const spy = sandbox.spy(chrome.declarativeNetRequest, 'updateSessionRules');
+    const authToken = '1234';
+    const siteToken = 'ABCD';
+    const exp = Math.floor((Date.now() / 1000) + 120);
+    await utils.storeAuthToken({
       owner: 'foo',
       repo: 'bar',
-    }, '1234');
-
-    let protectedProject = await utils.getConfig('local', 'hlxSidekickProjects');
-    expect(protectedProject).to.deep.equal({
-      'foo/bar': '1234',
+      authToken,
+      authTokenExpiry: exp,
+      siteToken,
+      siteTokenExpiry: exp,
     });
 
-    expect(spy.calledWith({
-      hlxSidekickProjects: {
-        'foo/bar': '1234',
-      },
+    expect(spy.getCall(0).calledWith({
+      removeRuleIds: [],
+    })).to.be.true;
+    expect(spy.getCall(1).calledWith({
+      addRules: [
+        {
+          id: 2,
+          priority: 1,
+          action: {
+            type: 'modifyHeaders',
+            requestHeaders: [
+              {
+                operation: 'set',
+                header: 'authorization',
+                value: `token ${siteToken}`,
+              },
+            ],
+          },
+          condition: {
+            regexFilter: '^https://[a-z0-9-]+--bar--foo.aem.(page|live)/.*',
+            requestMethods: ['get', 'post'],
+            resourceTypes: [
+              'main_frame',
+              'script',
+              'stylesheet',
+              'image',
+              'xmlhttprequest',
+              'media',
+              'font',
+            ],
+          },
+        },
+        {
+          id: 3,
+          priority: 1,
+          action: {
+            type: 'modifyHeaders',
+            requestHeaders: [
+              {
+                operation: 'set',
+                header: 'x-auth-token',
+                value: authToken,
+              },
+            ],
+          },
+          condition: {
+            regexFilter: '^https://admin.hlx.page/[a-z]+/foo/.*',
+            requestDomains: ['admin.hlx.page'],
+            requestMethods: ['get', 'post', 'delete'],
+            resourceTypes: ['xmlhttprequest'],
+          },
+        },
+      ],
     })).to.be.true;
 
-    await utils.setProjectAuthorizationToken({
+    await utils.storeAuthToken({
       owner: 'foo',
       repo: 'bar',
-    }, undefined);
+      authToken: '',
+    });
 
-    protectedProject = await utils.getConfig('local', 'hlxSidekickProjects');
-    expect(protectedProject).to.deep.equal({});
-
-    expect(spy.calledWith({
-      hlxSidekickProjects: {},
-    })).to.be.true;
-  });
-
-  it('updateProjectAuthorizationHeaderRules adds and removes', async () => {
-    const spy = sandbox.spy(chrome.declarativeNetRequest, 'updateSessionRules');
-    await utils.setProjectAuthorizationToken({
-      owner: 'foo',
-      repo: 'bar',
-    }, '1234');
-
-    await utils.updateProjectAuthorizationHeaderRules();
-    expect(spy.calledWith([
-      {
-        id: 100,
-        priority: 1,
-        action: {
-          type: 'modifyHeaders',
-          requestHeaders: [
-            {
-              operation: 'set',
-              header: 'authorization',
-              value: 'token 1234',
-            },
-          ],
-        },
-        condition: {
-          regexFilter: '^https://[a-z0-9-]+--bar--foo.aem.(page|live)/.*',
-          requestMethods: [
-            'get',
-            'post',
-          ],
-          resourceTypes: [
-            'main_frame',
-            'script',
-            'stylesheet',
-            'image',
-            'xmlhttprequest',
-            'media',
-            'font',
-          ],
-        },
-      },
-    ]));
-
-    await utils.setProjectAuthorizationToken({
-      owner: 'foo',
-      repo: 'bar',
-    }, undefined);
-
-    const rules = await chrome.declarativeNetRequest.getSessionRules();
-    expect(rules).to.deep.equal([]);
+    expect(spy.callCount).to.equal(3);
   });
 });
