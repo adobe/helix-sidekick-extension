@@ -398,6 +398,15 @@
   "error_preview_not_gsheet_ms_excel": {
     "message": "這是一份 Microsoft Excel 文件。請將其轉換為 Google 試算表：「檔案 > 儲存為 Google 試算表」"
   },
+  "error_site_401": {
+    "message": "請登入以繼續。"
+  },
+  "error_site_401_relogin": {
+    "message": "存取已過期。請再次登入以繼續。"
+  },
+  "error_site_403": {
+    "message": "存取被拒絕。請嘗試使用其他使用者登入，或要求您的管理員提供足夠許可權。"
+  },
   "error_status_403": {
     "message": "403 已禁止：請向管理員要求足夠的權限。"
   },
@@ -427,6 +436,9 @@
   },
   "error_status_invalid": {
     "message": "伺服器回應無效。請檢查您的 Sidekick 設定或 URL。"
+  },
+  "error_view_description": {
+    "message": "方便使用的錯誤訊息。"
   },
   "extensions": {
     "message": "擴充功能"
@@ -611,6 +623,9 @@
   },
   "user_logout": {
     "message": "登出"
+  },
+  "user_relogin": {
+    "message": "重新登入"
   },
   "user_switch": {
     "message": "切換使用者"
