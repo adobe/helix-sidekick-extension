@@ -457,14 +457,13 @@ describe('Test bulk preview plugin', () => {
 
   it('Bulk preview plugin rejects illegal folder name in gdrive', async () => {
     const { setup, fixture } = TESTS[1];
+    const statusResponse = { ...setup.apiResponse('admin') };
+    statusResponse.edit.illegalPath = true;
     nock.sidekick(setup);
     nock('https://admin.hlx.page/status')
       .get(/.*/)
       .twice()
-      .reply(200, {
-        ...setup.apiResponse('admin'),
-        webPath: '/földer with spæces',
-      });
+      .reply(200, statusResponse);
     const { notification } = await new SidekickTest({
       browser,
       page,

@@ -1375,8 +1375,7 @@ import sampleRUM from './rum.js';
         text: i18n(sk, 'preview'),
         action: async () => {
           const { status, location } = sk;
-          const safePath = status.webPath.split('/').map(toSafePathSegment).join('/');
-          if (safePath !== status.webPath) {
+          if (status.edit.illegalPath) {
             sk.showModal(
               [
                 i18n(sk, 'bulk_error_illegal_file_name'),
@@ -1706,11 +1705,9 @@ import sampleRUM from './rum.js';
     let bulkSelection = [];
 
     const toWebPath = (folder, item) => {
-      const safeFolder = folder.split('/').map(toSafePathSegment).join('/');
       const { path, type } = item;
-      if (['/', '*', '\\', '!', '?'].find((pattern) => path.includes(pattern))
-        || safeFolder !== folder.toLowerCase()) {
-        return `!ILLEGAL!_${folder}${folder.endsWith('/') ? '' : '/'}${path}`;
+      if (['/', '*', '\\', '!', '?'].find((pattern) => path.includes(pattern))) {
+        return `!ILLEGAL!_${path}`;
       }
       let file = path;
       let ext = '';
@@ -1733,13 +1730,15 @@ import sampleRUM from './rum.js';
         file = '';
       }
       file = toSafePathSegment(file);
-      return `${folder}${folder.endsWith('/') ? '' : '/'}${file}${ext}`;
+      return `${folder}${file}${ext}`;
     };
 
-    const validateWebPaths = (paths) => {
-      const illegal = paths
-        .filter((path) => path.startsWith('!ILLEGAL!_'))
-        .map((path) => path.substring(10));
+    const validateWebPaths = (status, paths) => {
+      const illegal = status.edit.illegalPath
+        ? [status.webPath] // illegal parent path
+        : paths
+          .filter((path) => path.startsWith('!ILLEGAL!_'))
+          .map((path) => `${status.webPath}${path.substring(10)}`);
       if (illegal.length > 0) {
         sk.showModal({
           message: [
@@ -1989,7 +1988,7 @@ import sampleRUM from './rum.js';
       host,
     }) => {
       const { config, status } = sk;
-      const paths = validateWebPaths(bulkSelection
+      const paths = validateWebPaths(status, bulkSelection
         .map((item) => toWebPath(status.webPath, item)));
       if (paths.length === 0) {
         return;
@@ -2121,7 +2120,7 @@ import sampleRUM from './rum.js';
 
     const doBulkCopyUrls = async (hostProperty) => {
       const { config, status } = sk;
-      const paths = validateWebPaths(bulkSelection
+      const paths = validateWebPaths(status, bulkSelection
         .map((item) => toWebPath(status.webPath, item)));
       if (paths.length === 0) {
         return;
@@ -2174,7 +2173,7 @@ import sampleRUM from './rum.js';
                   host: sk.config.innerHost,
                 });
                 fireEvent(sk, 'previewed', {
-                  paths: validateWebPaths(bulkSelection
+                  paths: validateWebPaths(status, bulkSelection
                     .map((item) => toWebPath(status.webPath, item))),
                 });
                 sampleRUM('sidekick:bulk:previewed');
@@ -2208,7 +2207,7 @@ import sampleRUM from './rum.js';
                   host: sk.config.host || sk.config.outerHost,
                 });
                 fireEvent(sk, 'published', {
-                  paths: validateWebPaths(bulkSelection
+                  paths: validateWebPaths(status, bulkSelection
                     .map((item) => toWebPath(status.webPath, item))),
                 });
                 sampleRUM('sidekick:bulk:published');

@@ -293,38 +293,14 @@ describe('Test editor preview plugin', () => {
     assert.ok(notification.message.includes('Microsoft SharePoint'), 'Reload plugin does not mention onedrive');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
-  it('Editor preview plugin rejects paths with spaces', async () => {
-    const setup = new Setup('blog');
-    nock.sidekick(setup);
-    nock('https://admin.hlx.page/status')
-      .get(/.*/)
-      .reply(200, {
-        ...setup.apiResponse('html'),
-        webPath: '/folder with spaces/filename',
-      });
-    const test = new SidekickTest({
-      browser,
-      page,
-      setup,
-      plugin: 'edit-preview',
-      url: setup.getUrl('edit'),
-    });
-    const { notification: { message } = {} } = await test.run();
-    assert.ok(
-      message?.includes('illegal characters'),
-      'Did not reject path with spaces',
-    );
-  }).timeout(IT_DEFAULT_TIMEOUT);
-
   it('Editor preview plugin rejects illegal paths', async () => {
     const setup = new Setup('blog');
+    const statusResponse = { ...setup.apiResponse('html') };
+    statusResponse.edit.illegalPath = true;
     nock.sidekick(setup);
     nock('https://admin.hlx.page/status')
       .get(/.*/)
-      .reply(200, {
-        ...setup.apiResponse('html'),
-        webPath: '/IllégalFölderNāme/filename',
-      });
+      .reply(200, statusResponse);
     const test = new SidekickTest({
       browser,
       page,
