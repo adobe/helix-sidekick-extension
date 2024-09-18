@@ -1707,7 +1707,7 @@ import sampleRUM from './rum.js';
         // omit docx extension on sharepoint
         ext = '';
       }
-      if (type === 'xlsx' || type === 'spreadsheet') {
+      if (type === 'xlsx' || (type === 'spreadsheet' && ext !== '.xlsx')) {
         // use json extension for spreadsheets
         ext = '.json';
       }
@@ -1725,11 +1725,12 @@ import sampleRUM from './rum.js';
     };
 
     const validateWebPaths = (status, paths) => {
-      const illegal = status.edit.illegalPath
-        ? [status.webPath] // illegal parent path
+      const { webPath: folder, edit } = status;
+      const illegal = edit.illegalPath
+        ? [folder] // illegal parent path
         : paths
           .filter((path) => path.startsWith('!ILLEGAL!_'))
-          .map((path) => `${status.webPath}${path.substring(10)}`);
+          .map((path) => `${folder}${folder.endsWith('/') ? '' : '/'}${path.substring(10)}`);
       if (illegal.length > 0) {
         sk.showModal({
           message: [
