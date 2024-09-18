@@ -306,20 +306,6 @@ import sampleRUM from './rum.js';
   };
 
   /**
-   * Transforms a path segment for safe use in URLs.
-   * @private
-   * @param {string} segment The segment
-   */
-  function toSafePathSegment(segment) {
-    return segment
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-|-$/g, '');
-  }
-
-  /**
    * Detects the platform.
    * @private
    * @param {string} userAgent The user agent
@@ -1729,8 +1715,13 @@ import sampleRUM from './rum.js';
         // folder root
         file = '';
       }
-      file = toSafePathSegment(file);
-      return `${folder}${file}${ext}`;
+      file = file
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-|-$/g, '');
+      return `${folder}${folder.endsWith('/') ? '' : '/'}${file}${ext}`;
     };
 
     const validateWebPaths = (status, paths) => {
