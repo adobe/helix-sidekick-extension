@@ -561,7 +561,7 @@ export async function updateAuthHeaderRules() {
             regexFilter: `^https://admin.hlx.page/[a-z]+/${owner}/.*`,
             requestDomains: ['admin.hlx.page'],
             requestMethods: ['get', 'post', 'delete'],
-            resourceTypes: ['xmlhttprequest'],
+            resourceTypes: ['main_frame', 'xmlhttprequest'],
           },
         });
         id += 1;
