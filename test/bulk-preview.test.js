@@ -478,9 +478,10 @@ describe('Test bulk preview plugin', () => {
       }),
     }).run();
     assert.ok(
-      notification.message?.includes('illegal characters'),
+      notification?.message?.includes('illegal characters'),
       'Did not reject illegal folder name',
     );
+    delete statusResponse.edit.illegalPath;
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Bulk preview plugin handles docx and xlsx errors in gdrive', async () => {
@@ -500,7 +501,7 @@ describe('Test bulk preview plugin', () => {
       fixture: TESTS[1].fixture,
       url: setup.getUrl('edit', 'admin'),
       plugin: 'bulk-preview',
-      pluginSleep: 5000,
+      pluginSleep: 3000,
       loadModule: true,
       acceptDialogs: true,
       pre: (p) => p.evaluate(() => {
