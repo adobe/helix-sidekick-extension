@@ -121,7 +121,7 @@ export default async function injectSidekick(config, display) {
         const isV7Installed = await getConfig('local', 'hlxSidekickV7Installed');
         const lastShownV7Dialog = await getConfig('local', 'hlxSidekickV7DialogShown');
         const showV7Dialog = !isV7Installed
-          && (!lastShownV7Dialog || +lastShownV7Dialog < Date.now() - 86400000); // 1 day
+          && (!lastShownV7Dialog || +lastShownV7Dialog < Date.now() - 604800000); // 1 week
 
         if (showV7Dialog) {
           const cover = document.createElement('img');
