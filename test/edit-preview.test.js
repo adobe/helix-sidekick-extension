@@ -296,7 +296,7 @@ describe('Test editor preview plugin', () => {
   it('Editor preview plugin rejects illegal paths', async () => {
     const setup = new Setup('blog');
     const statusResponse = { ...setup.apiResponse('html') };
-    statusResponse.edit.illegalPath = true;
+    statusResponse.edit.illegalPath = '/this/path/is not/legal';
     nock.sidekick(setup);
     nock('https://admin.hlx.page/status')
       .get(/.*/)
@@ -310,8 +310,9 @@ describe('Test editor preview plugin', () => {
     });
     const { notification: { message } = {} } = await test.run();
     assert.ok(
-      message?.includes('illegal characters'),
+      message?.includes(statusResponse.edit.illegalPath),
       'Did not reject path with illegal characters',
     );
+    delete statusResponse.edit.illegalPath;
   }).timeout(IT_DEFAULT_TIMEOUT);
 });

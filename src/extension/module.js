@@ -1365,7 +1365,7 @@ import sampleRUM from './rum.js';
             sk.showModal(
               [
                 i18n(sk, 'bulk_error_illegal_file_name'),
-                status.webPath,
+                status.edit.illegalPath,
                 createTag({
                   tag: 'button',
                   text: i18n(sk, 'close'),
@@ -1727,7 +1727,7 @@ import sampleRUM from './rum.js';
     const validateWebPaths = (status, paths) => {
       const { webPath: folder, edit } = status;
       const illegal = edit.illegalPath
-        ? [folder] // illegal parent path
+        ? [edit.illegalPath] // illegal parent path
         : paths
           .filter((path) => path.startsWith('!ILLEGAL!_'))
           .map((path) => `${folder}${folder.endsWith('/') ? '' : '/'}${path.substring(10)}`);

@@ -459,7 +459,7 @@ describe('Test bulk preview plugin', () => {
   it('Bulk preview plugin rejects illegal folder name in gdrive', async () => {
     const { setup, fixture } = TESTS[1];
     const statusResponse = { ...setup.apiResponse('admin') };
-    statusResponse.edit.illegalPath = true;
+    statusResponse.edit.illegalPath = '/this/path/is not/legal';
     nock.sidekick(setup);
     nock('https://admin.hlx.page/status')
       .get(/.*/)
@@ -480,7 +480,7 @@ describe('Test bulk preview plugin', () => {
       }),
     }).run();
     assert.ok(
-      notification?.message?.includes('illegal characters'),
+      notification?.message?.includes(statusResponse.edit.illegalPath),
       'Did not reject illegal folder name',
     );
     delete statusResponse.edit.illegalPath;
