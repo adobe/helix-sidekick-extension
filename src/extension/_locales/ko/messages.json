@@ -405,7 +405,7 @@
     "message": "액세스가 만료되었습니다. 계속하려면 다시 로그인하십시오."
   },
   "error_site_403": {
-    "message": "액세스가 거부되었습니다. 다른 사용자로 로그인하거나 관리자에게 충분한 권한을 요청하십시오."
+    "message": "액세스가 거부되었습니다. 다른 사용자로 로그인을 시도하거나 관리자에게 권한을 요청하시기 바랍니다."
   },
   "error_status_403": {
     "message": "403 금지됨: 관리자에게 충분한 권한을 요청하십시오."
@@ -438,7 +438,7 @@
     "message": "잘못된 서버 응답입니다. Sidekick 구성 또는 URL을 확인하십시오."
   },
   "error_view_description": {
-    "message": "사용자에게 친숙한 오류 메시지."
+    "message": "알기 쉬운 오류 메시지."
   },
   "extensions": {
     "message": "확장 기능"
@@ -625,7 +625,7 @@
     "message": "로그아웃"
   },
   "user_relogin": {
-    "message": "다시 로그인"
+    "message": "다시 로그인하십시오"
   },
   "user_switch": {
     "message": "사용자 전환"
