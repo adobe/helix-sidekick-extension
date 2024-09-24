@@ -207,7 +207,7 @@
     "message": "コンテンツ URL : https://..."
   },
   "config_manual_org_placeholder": {
-    "description": "設定サービスに含まれる組織名",
+    "description": "設定サービスでの組織名",
     "message": "組織名"
   },
   "config_manual_previewHost_placeholder": {
@@ -399,13 +399,13 @@
     "message": "これは、Microsoft Excel ドキュメントです。[ファイル] > [Google スプレッドシートとして保存] を選択し、Google スプレッドシートに変換してください"
   },
   "error_site_401": {
-    "message": "続行するにはサインインしてください。"
+    "message": "続行するには、ログインしてください。"
   },
   "error_site_401_relogin": {
-    "message": "アクセス期限切れ。続行するには、もう一度サインインしてください。"
+    "message": "アクセスの有効期限が切れています。続行するには、もう一度ログインしてください。"
   },
   "error_site_403": {
-    "message": "アクセスが拒否されました。別のユーザーでサインインするか、管理者に十分な権限を問い合わせてください。"
+    "message": "アクセスが拒否されました。別のユーザーでログインするか、管理者に十分な権限を求めてください。"
   },
   "error_status_403": {
     "message": "403 Forbidden：管理者に十分な許可を求めてください。"
@@ -625,7 +625,7 @@
     "message": "ログアウト"
   },
   "user_relogin": {
-    "message": "もう一度サインイン"
+    "message": "もう一度ログイン"
   },
   "user_switch": {
     "message": "ユーザーを切り替え"
