@@ -1,3 +1,10 @@
+## [6.49.2](https://github.com/adobe/helix-sidekick-extension/compare/v6.49.1...v6.49.2) (2024-09-24)
+
+
+### Bug Fixes
+
+* reject paths with illegal characters ([#807](https://github.com/adobe/helix-sidekick-extension/issues/807)) ([7e5753c](https://github.com/adobe/helix-sidekick-extension/commit/7e5753cdd8b05258ca356d294afc04f995081494))
+
 ## [6.49.1](https://github.com/adobe/helix-sidekick-extension/compare/v6.49.0...v6.49.1) (2024-09-17)
 
 
