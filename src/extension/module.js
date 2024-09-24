@@ -1361,6 +1361,21 @@ import sampleRUM from './rum.js';
         text: i18n(sk, 'preview'),
         action: async () => {
           const { status, location } = sk;
+          if (status.edit.illegalPath) {
+            sk.showModal(
+              [
+                i18n(sk, 'bulk_error_illegal_file_name'),
+                status.edit.illegalPath,
+                createTag({
+                  tag: 'button',
+                  text: i18n(sk, 'close'),
+                }),
+              ],
+              true,
+              2,
+            );
+            return;
+          }
           if (status.edit && status.edit.sourceLocation
             && status.edit.sourceLocation.startsWith('onedrive:')
             && !location.pathname.startsWith('/:x:/')) {
@@ -1692,7 +1707,7 @@ import sampleRUM from './rum.js';
         // omit docx extension on sharepoint
         ext = '';
       }
-      if (type === 'xlsx' || type === 'spreadsheet') {
+      if (type === 'xlsx' || (type === 'spreadsheet' && ext !== '.xlsx')) {
         // use json extension for spreadsheets
         ext = '.json';
       }
@@ -1709,10 +1724,13 @@ import sampleRUM from './rum.js';
       return `${folder}${folder.endsWith('/') ? '' : '/'}${file}${ext}`;
     };
 
-    const validateWebPaths = (paths) => {
-      const illegal = paths
-        .filter((path) => path.startsWith('!ILLEGAL!_'))
-        .map((path) => path.substring(10));
+    const validateWebPaths = (status, paths) => {
+      const { webPath: folder, edit } = status;
+      const illegal = edit.illegalPath
+        ? [edit.illegalPath] // illegal parent path
+        : paths
+          .filter((path) => path.startsWith('!ILLEGAL!_'))
+          .map((path) => `${folder}${folder.endsWith('/') ? '' : '/'}${path.substring(10)}`);
       if (illegal.length > 0) {
         sk.showModal({
           message: [
@@ -1770,7 +1788,7 @@ import sampleRUM from './rum.js';
             // use path in icon svg to determine type
             const typeHint = (row.querySelector(':scope div[role="gridcell"] > div:nth-child(1) path:nth-child(1)') // list layout
               || row.querySelector(':scope div[role="gridcell"] > div:nth-of-type(1) > div:nth-child(2) path:nth-child(1)')) // grid layout
-              .getAttribute('d').slice(-4);
+              ?.getAttribute('d').slice(-4);
             let type = 'unknown';
             if (typeHint) {
               if (typeHint === folderId || typeHint === sharedFolderId) {
@@ -1962,7 +1980,7 @@ import sampleRUM from './rum.js';
       host,
     }) => {
       const { config, status } = sk;
-      const paths = validateWebPaths(bulkSelection
+      const paths = validateWebPaths(status, bulkSelection
         .map((item) => toWebPath(status.webPath, item)));
       if (paths.length === 0) {
         return;
@@ -2094,7 +2112,7 @@ import sampleRUM from './rum.js';
 
     const doBulkCopyUrls = async (hostProperty) => {
       const { config, status } = sk;
-      const paths = validateWebPaths(bulkSelection
+      const paths = validateWebPaths(status, bulkSelection
         .map((item) => toWebPath(status.webPath, item)));
       if (paths.length === 0) {
         return;
@@ -2147,7 +2165,7 @@ import sampleRUM from './rum.js';
                   host: sk.config.innerHost,
                 });
                 fireEvent(sk, 'previewed', {
-                  paths: validateWebPaths(bulkSelection
+                  paths: validateWebPaths(status, bulkSelection
                     .map((item) => toWebPath(status.webPath, item))),
                 });
                 sampleRUM('sidekick:bulk:previewed');
@@ -2181,7 +2199,7 @@ import sampleRUM from './rum.js';
                   host: sk.config.host || sk.config.outerHost,
                 });
                 fireEvent(sk, 'published', {
-                  paths: validateWebPaths(bulkSelection
+                  paths: validateWebPaths(status, bulkSelection
                     .map((item) => toWebPath(status.webPath, item))),
                 });
                 sampleRUM('sidekick:bulk:published');

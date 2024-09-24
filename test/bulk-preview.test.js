@@ -440,6 +440,7 @@ describe('Test bulk preview plugin', () => {
       browser,
       page,
       plugin: 'bulk-preview',
+      pluginSleep: 1000,
       acceptDialogs: true,
       fixture,
       url: setup.getUrl('edit', 'admin'),
@@ -453,6 +454,36 @@ describe('Test bulk preview plugin', () => {
       notification.message?.includes('illegal characters'),
       'Did not reject illegal file name',
     );
+  }).timeout(IT_DEFAULT_TIMEOUT);
+
+  it('Bulk preview plugin rejects illegal folder name in gdrive', async () => {
+    const { setup, fixture } = TESTS[1];
+    const statusResponse = { ...setup.apiResponse('admin') };
+    statusResponse.edit.illegalPath = '/this/path/is not/legal';
+    nock.sidekick(setup);
+    nock('https://admin.hlx.page/status')
+      .get(/.*/)
+      .twice()
+      .reply(200, statusResponse);
+    const { notification } = await new SidekickTest({
+      browser,
+      page,
+      plugin: 'bulk-preview',
+      pluginSleep: 1000,
+      acceptDialogs: true,
+      fixture,
+      url: setup.getUrl('edit', 'admin'),
+      loadModule: true,
+      pre: (p) => p.evaluate(() => {
+        // select file
+        document.getElementById('file-gdoc').click();
+      }),
+    }).run();
+    assert.ok(
+      notification?.message?.includes(statusResponse.edit.illegalPath),
+      'Did not reject illegal folder name',
+    );
+    delete statusResponse.edit.illegalPath;
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Bulk preview plugin handles docx and xlsx errors in gdrive', async () => {

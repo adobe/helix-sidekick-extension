@@ -292,4 +292,27 @@ describe('Test editor preview plugin', () => {
     assert.ok(notification.message.includes('429'), 'Reload plugin does not show modal on 429');
     assert.ok(notification.message.includes('Microsoft SharePoint'), 'Reload plugin does not mention onedrive');
   }).timeout(IT_DEFAULT_TIMEOUT);
+
+  it('Editor preview plugin rejects illegal paths', async () => {
+    const setup = new Setup('blog');
+    const statusResponse = { ...setup.apiResponse('html') };
+    statusResponse.edit.illegalPath = '/this/path/is not/legal';
+    nock.sidekick(setup);
+    nock('https://admin.hlx.page/status')
+      .get(/.*/)
+      .reply(200, statusResponse);
+    const test = new SidekickTest({
+      browser,
+      page,
+      setup,
+      plugin: 'edit-preview',
+      url: setup.getUrl('edit'),
+    });
+    const { notification: { message } = {} } = await test.run();
+    assert.ok(
+      message?.includes(statusResponse.edit.illegalPath),
+      'Did not reject path with illegal characters',
+    );
+    delete statusResponse.edit.illegalPath;
+  }).timeout(IT_DEFAULT_TIMEOUT);
 });
