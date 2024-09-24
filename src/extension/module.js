@@ -1744,9 +1744,7 @@ import sampleRUM from './rum.js';
           .map((row) => {
             const info = row.getAttribute('aria-label') || row.querySelector('span')?.textContent;
             // info format: bla.docx, docx File, Private, Modified 8/28/2023, edited by Jane, 1 KB
-            console.log(info);
             const type = info.match(/, ([\p{L}\p{N}]+) [\p{L}\p{N}]+,/u)?.[1];
-            console.log(type);
             const path = type && info.split(`, ${type}`)[0];
             return {
               path,
