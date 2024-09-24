@@ -102,7 +102,60 @@ describe('Test bulk info plugin', () => {
           return Number.isNaN(num) ? false : num === 2;
         }),
       }).run();
+
       assert.ok(sizeCheck, 'Wrong selection size displayed');
     }).timeout(IT_DEFAULT_TIMEOUT);
   });
+
+  it('Bulk info plugin displays selection size in non-latin sharepoint', async () => {
+    const { setup } = TESTS[0];
+    const fixture = 'admin-sharepoint-chinese.html';
+    nock.sidekick();
+    nock.admin(setup, {
+      route: 'status',
+      type: 'admin',
+    });
+    const { checkPageResult: sizeCheck } = await new SidekickTest({
+      browser,
+      page,
+      fixture,
+      url: setup.getUrl('edit', 'admin'),
+      loadModule: true,
+      checkPage: (p) => p.evaluate(() => {
+        // get displayed selection size
+        const info = window.hlx.sidekick.shadowRoot.getElementById('hlx-sk-bulk-info');
+        const num = +(info.textContent
+          .split(' ')
+          .shift());
+        return Number.isNaN(num) ? false : num === 1;
+      }),
+    }).run();
+    assert.ok(sizeCheck, 'Wrong selection size displayed');
+  }).timeout(IT_DEFAULT_TIMEOUT);
+
+  it('Bulk info plugin displays selection size in non-latin sharepoint grid', async () => {
+    const { setup } = TESTS[0];
+    const fixture = 'admin-sharepoint-chinese-grid.html';
+    nock.sidekick();
+    nock.admin(setup, {
+      route: 'status',
+      type: 'admin',
+    });
+    const { checkPageResult: sizeCheck } = await new SidekickTest({
+      browser,
+      page,
+      fixture,
+      url: setup.getUrl('edit', 'admin'),
+      loadModule: true,
+      checkPage: (p) => p.evaluate(() => {
+        // get displayed selection size
+        const info = window.hlx.sidekick.shadowRoot.getElementById('hlx-sk-bulk-info');
+        const num = +(info.textContent
+          .split(' ')
+          .shift());
+        return Number.isNaN(num) ? false : num === 1;
+      }),
+    }).run();
+    assert.ok(sizeCheck, 'Wrong selection size displayed');
+  }).timeout(IT_DEFAULT_TIMEOUT);
 });

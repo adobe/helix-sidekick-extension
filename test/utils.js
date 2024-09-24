@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-/* eslint-disable max-classes-per-file */
+/* eslint-disable max-classes-per-file, import/no-extraneous-dependencies */
 /* eslint-env mocha */
 import v8 from 'node:v8';
 import assert from 'assert';
