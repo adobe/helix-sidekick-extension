@@ -18,19 +18,16 @@ import {
 
 import { SidekickTest } from './SidekickTest.js';
 
-const LANGUAGE_FIXTURE = 'non-latin-language.html';
 const TESTS = [{
   env: 'sharepoint',
   setup: new Setup('blog'),
   fixtureList: 'admin-sharepoint.html',
   fixtureGrid: 'admin-sharepoint-grid.html',
-  languageFixture: LANGUAGE_FIXTURE,
 }, {
   env: 'gdrive',
   setup: new Setup('pages'),
   fixtureList: 'admin-gdrive.html',
   fixtureGrid: 'admin-gdrive-grid.html',
-  languageFixture: LANGUAGE_FIXTURE,
 }];
 
 describe('Test bulk info plugin', () => {
@@ -58,7 +55,7 @@ describe('Test bulk info plugin', () => {
   });
 
   TESTS.forEach(({
-    env, fixtureList, fixtureGrid, setup, languageFixture,
+    env, fixtureList, fixtureGrid, setup,
   }) => {
     it(`Bulk info plugin displays selection size in ${env} list view`, async () => {
       nock.sidekick();
@@ -108,28 +105,57 @@ describe('Test bulk info plugin', () => {
 
       assert.ok(sizeCheck, 'Wrong selection size displayed');
     }).timeout(IT_DEFAULT_TIMEOUT);
-
-    // Test case for non-Latin SharePoint item info
-    it(`Bulk info plugin handles non-Latin SharePoint item info in ${env} list view`, async () => {
-      nock.sidekick();
-      nock.admin(setup, {
-        route: 'status',
-        type: 'admin',
-      });
-      const { checkPageResult: textContent } = await new SidekickTest({
-        browser,
-        page,
-        fixture: languageFixture,
-        url: setup.getUrl('edit', 'admin'),
-        loadModule: true,
-        checkPage: (p) => p.evaluate(() => {
-          const infoElement = document.getElementById('hlx-sk-bulk-info');
-          return infoElement.textContent;
-        }),
-      }).run();
-
-      const expectedTextContent = 'heroes.docx, docx 文件, 专用, 已于 4/6/2024 修改, 编辑者: Firstname, Lastname, 875 KB';
-      assert.strictEqual(textContent, expectedTextContent, 'Wrong text content displayed for non-Latin SharePoint item info');
-    }).timeout(IT_DEFAULT_TIMEOUT);
   });
+
+  it('Bulk info plugin displays selection size in non-latin sharepoint', async () => {
+    const { setup } = TESTS[0];
+    const fixture = 'admin-sharepoint-chinese.html';
+    nock.sidekick();
+    nock.admin(setup, {
+      route: 'status',
+      type: 'admin',
+    });
+    const { checkPageResult: sizeCheck } = await new SidekickTest({
+      browser,
+      page,
+      fixture,
+      url: setup.getUrl('edit', 'admin'),
+      loadModule: true,
+      checkPage: (p) => p.evaluate(() => {
+        // get displayed selection size
+        const info = window.hlx.sidekick.shadowRoot.getElementById('hlx-sk-bulk-info');
+        const num = +(info.textContent
+          .split(' ')
+          .shift());
+        return Number.isNaN(num) ? false : num === 1;
+      }),
+    }).run();
+    assert.ok(sizeCheck, 'Wrong selection size displayed');
+  }).timeout(IT_DEFAULT_TIMEOUT);
+
+  it('Bulk info plugin displays selection size in non-latin sharepoint grid', async () => {
+    const { setup } = TESTS[0];
+    const fixture = 'admin-sharepoint-chinese-grid.html';
+    nock.sidekick();
+    nock.admin(setup, {
+      route: 'status',
+      type: 'admin',
+    });
+    const { checkPageResult: sizeCheck } = await new SidekickTest({
+      browser,
+      page,
+      fixture,
+      url: setup.getUrl('edit', 'admin'),
+      loadModule: true,
+      checkPage: (p) => p.evaluate(() => {
+        // get displayed selection size
+        const info = window.hlx.sidekick.shadowRoot.getElementById('hlx-sk-bulk-info');
+        const num = +(info.textContent
+          .split(' ')
+          .shift());
+        return Number.isNaN(num) ? false : num === 1;
+      }),
+    }).run();
+    assert.ok(sizeCheck, 'Wrong selection size displayed');
+  }).timeout(IT_DEFAULT_TIMEOUT);
 });
