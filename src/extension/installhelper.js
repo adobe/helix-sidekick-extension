@@ -18,7 +18,7 @@
     log,
     getState,
     getGitHubSettings,
-  } = await import('./utils.js');
+  } = await import(chrome.runtime.getURL('utils.js'));
   const run = () => {
     getState(({
       projects = [],
