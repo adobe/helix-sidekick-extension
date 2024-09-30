@@ -554,7 +554,7 @@ export async function updateAuthHeaderRules() {
             requestHeaders: [{
               operation: 'set',
               header: 'authorization',
-              value: authToken,
+              value: `token ${authToken}`,
             }],
           },
           condition: {
