@@ -553,7 +553,7 @@ export async function updateAuthHeaderRules() {
             type: 'modifyHeaders',
             requestHeaders: [{
               operation: 'set',
-              header: 'x-auth-token',
+              header: 'authorization',
               value: authToken,
             }],
           },
