@@ -42,8 +42,7 @@ function drawValue(cell, value, url) {
     }
   } else if (value.startsWith('/') || value.startsWith('http')) {
     // check if the value contains a glob pattern
-    const hasGlobPattern = value.includes('*');
-    if (!hasGlobPattern) {
+    if (!value.includes('*')) {
       const link = valueContainer.appendChild(document.createElement('a'));
       const target = new URL(value, url).toString();
       link.href = target;
