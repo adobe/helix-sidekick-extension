@@ -584,8 +584,8 @@ describe('Test extension utils', () => {
             requestHeaders: [
               {
                 operation: 'set',
-                header: 'x-auth-token',
-                value: authToken,
+                header: 'authorization',
+                value: `token ${authToken}`,
               },
             ],
           },
