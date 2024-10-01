@@ -34,10 +34,10 @@
     "message": "Error de operación masiva. Inténtelo de nuevo más tarde."
   },
   "bulk_error_illegal_file_name": {
-    "message": "Solo se permiten letras latinas minúsculas, dígitos y guiones normalizados en los nombres de los archivos. El siguiente nombre de archivo contiene caracteres no permitidos:"
+    "message": "Solo se permiten letras latinas minúsculas, dígitos y guiones normalizados en los nombres de los archivos y las carpetas. La siguiente ruta contiene caracteres no permitidos:"
   },
   "bulk_error_illegal_file_names": {
-    "message": "Solo se permiten letras latinas minúsculas, dígitos y guiones normalizados en los nombres de los archivos. El siguiente nombre de archivo contiene caracteres no permitidos:"
+    "message": "Solo se permiten letras latinas minúsculas, dígitos y guiones normalizados en los nombres de los archivos y las carpetas. Las siguientes rutas contienen caracteres no permitidos:"
   },
   "bulk_error_preview_login_required": {
     "message": "Debe iniciar sesión para generar la vista previa de más de 100 archivos."

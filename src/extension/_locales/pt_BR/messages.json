@@ -34,10 +34,10 @@
     "message": "Falha na operação em massa. Tente novamente mais tarde."
   },
   "bulk_error_illegal_file_name": {
-    "message": "Somente letras latinas minúsculas, dígitos e hifens normalizados são permitidos nos nomes de arquivos. O nome de arquivo a seguir contém caracteres inválidos:"
+    "message": "Somente letras latinas minúsculas, dígitos e hifens normalizados são permitidos nos nomes de arquivos. O caminho a seguir contém caracteres inválidos:"
   },
   "bulk_error_illegal_file_names": {
-    "message": "Somente letras latinas minúsculas, dígitos e hifens normalizados são permitidos nos nomes de arquivos. Os nomes de arquivos a seguir contêm caracteres inválidos:"
+    "message": "Somente letras latinas minúsculas, dígitos e hifens normalizados são permitidos nos nomes de arquivos. Os caminhos a seguir contêm caracteres inválidos:"
   },
   "bulk_error_preview_login_required": {
     "message": "É necessário fazer logon para gerar a pré-visualização de mais de 100 arquivos."
