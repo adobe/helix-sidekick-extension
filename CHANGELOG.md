@@ -1,3 +1,10 @@
+## [6.49.3](https://github.com/adobe/helix-sidekick-extension/compare/v6.49.2...v6.49.3) (2024-10-03)
+
+
+### Bug Fixes
+
+* multiple fixes ([#784](https://github.com/adobe/helix-sidekick-extension/issues/784)) ([8bb0b4a](https://github.com/adobe/helix-sidekick-extension/commit/8bb0b4a2e3ad081e60e9d8131d1c82845395a857)), closes [#830](https://github.com/adobe/helix-sidekick-extension/issues/830)
+
 ## [6.49.2](https://github.com/adobe/helix-sidekick-extension/compare/v6.49.1...v6.49.2) (2024-09-24)
 
 
