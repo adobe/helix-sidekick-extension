@@ -407,6 +407,9 @@
   "error_site_403": {
     "message": "Access denied. Try signing in with a different user or ask your administrator for sufficient permissions."
   },
+  "error_status_400": {
+    "message": "400 Bad Request: This URL is invalid."
+  },
   "error_status_403": {
     "message": "403 Forbidden: Ask your administrator for sufficient permissions."
   },
