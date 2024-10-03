@@ -479,6 +479,44 @@ describe('Test extension utils', () => {
     })).to.be.true;
   });
 
+  it('storeAuthToken (with siteToken)', async () => {
+    const spy = sandbox.spy(window.chrome.storage.session, 'set');
+    const owner = 'foo';
+    const repo = 'bar';
+    const authToken = '1234';
+    const siteToken = 'ABCD';
+    const exp = Math.floor((Date.now() / 1000) + 120);
+    await utils.storeAuthToken({
+      owner,
+      repo,
+      authToken,
+      authTokenExpiry: exp,
+      siteToken,
+      siteTokenExpiry: exp,
+    });
+    expect(spy.calledWith({
+      foo: {
+        owner,
+        authToken,
+        authTokenExpiry: exp * 1000,
+      },
+    })).to.be.true;
+    expect(spy.calledWithMatch({
+      'foo/bar': {
+        owner,
+        repo,
+        siteToken,
+        siteTokenExpiry: exp * 1000,
+      },
+    })).to.be.true;
+    expect(spy.calledWith({
+      hlxSidekickProjects: [
+        'foo',
+        'foo/bar',
+      ],
+    })).to.be.true;
+  });
+
   it('storeAuthToken (delete)', async () => {
     const spy = sandbox.spy(window.chrome.storage.session, 'remove');
     const owner = 'foo';
@@ -546,8 +584,8 @@ describe('Test extension utils', () => {
             requestHeaders: [
               {
                 operation: 'set',
-                header: 'x-auth-token',
-                value: authToken,
+                header: 'authorization',
+                value: `token ${authToken}`,
               },
             ],
           },

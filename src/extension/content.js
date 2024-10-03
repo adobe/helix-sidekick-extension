@@ -18,7 +18,8 @@
     log,
     getState,
     removeCacheParam,
-  } = await import('./utils.js');
+    url,
+  } = await import(chrome.runtime.getURL('utils.js'));
 
   removeCacheParam();
 
@@ -64,13 +65,13 @@
           if (pushDown) {
             config.pushDown = true;
           }
-          import('./sidekick.js')
+          import(url('sidekick.js'))
             .then((mod) => mod.default(config, display))
             .catch((e) => log.error('failed to load sidekick', e));
         } else if (matches.length > 0) {
           log.info('content.js: multiple matching configs found, inject config picker', matches);
           // multiple matches, show config picker
-          import('./configpicker.js')
+          import(url('configpicker.js'))
             .then((mod) => mod.default(matches, display, pushDown, inject))
             .catch((e) => log.error('failed to load config picker', e));
         }

@@ -2496,7 +2496,7 @@ import sampleRUM from './rum.js';
     sk.showWait();
     const loginUrl = getAdminUrl(sk.config, 'login');
     let extensionId = window.chrome?.runtime?.id;
-    if (!extensionId || window.navigator.vendor.includes('Apple')) { // exclude safari
+    if (!extensionId) {
       extensionId = 'cookie';
     }
     loginUrl.searchParams.set('extensionId', extensionId);
@@ -2549,7 +2549,7 @@ import sampleRUM from './rum.js';
     sk.showWait();
     const logoutUrl = getAdminUrl(sk.config, 'logout');
     let extensionId = window.chrome?.runtime?.id;
-    if (!extensionId || window.navigator.vendor.includes('Apple')) { // exclude safari
+    if (!extensionId) {
       extensionId = 'cookie';
     }
     logoutUrl.searchParams.set('extensionId', extensionId);
