@@ -134,16 +134,16 @@ export default async function injectSidekick(config, display) {
           installButton.classList.add('accent');
           installButton.addEventListener('click', () => {
             window.open('https://chromewebstore.google.com/detail/aem-sidekick-nextgen/igkmdomcgoebiipaifhmpfjhbjccggml');
-            sampleRUM('sidekick:v7:clicked-install');
             rememberDialogShown();
+            sampleRUM('sidekick:v7:clicked-install');
           });
 
           // refactor to use document.createElement
           const laterButton = document.createElement('button');
           laterButton.textContent = i18n('v7_install_later');
           laterButton.addEventListener('click', () => {
-            sampleRUM('sidekick:v7:clicked-later');
             rememberDialogShown();
+            sampleRUM('sidekick:v7:clicked-later');
           });
 
           const buttonGroup = document.createElement('span');
