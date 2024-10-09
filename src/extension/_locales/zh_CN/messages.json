@@ -34,10 +34,10 @@
     "message": "批量操作失败。请稍后重试。"
   },
   "bulk_error_illegal_file_name": {
-    "message": "文件名中只允许使用规范化的小写拉丁字母、数字和连字符。以下文件名包含非法字符："
+    "message": "文件和文件夹名称中只允许使用规范化的小写拉丁字母、数字和连字符。以下路径包含非法字符："
   },
   "bulk_error_illegal_file_names": {
-    "message": "文件名中只允许使用规范化的小写拉丁字母、数字和连字符。以下文件名包含非法字符："
+    "message": "文件和文件夹名称中只允许使用规范化的小写拉丁字母、数字和连字符。以下路径包含非法字符："
   },
   "bulk_error_preview_login_required": {
     "message": "您需要登录才能生成 100 多个文件的预览。"

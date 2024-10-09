@@ -34,10 +34,10 @@
     "message": "Massenvorgang fehlgeschlagen. Versuchen Sie es später erneut."
   },
   "bulk_error_illegal_file_name": {
-    "message": "In Dateinamen sind nur normalisierte lateinische Kleinbuchstaben, Ziffern und Bindestriche zulässig. Der folgende Dateiname enthält ungültige Zeichen:"
+    "message": "In Dateinamen sind nur normalisierte lateinische Kleinbuchstaben, Ziffern und Bindestriche zulässig. Der folgende Pfad enthält ungültige Zeichen:"
   },
   "bulk_error_illegal_file_names": {
-    "message": "In Dateinamen sind nur normalisierte lateinische Kleinbuchstaben, Ziffern und Bindestriche zulässig. Die folgenden Dateinamen enthalten ungültige Zeichen:"
+    "message": "In Dateinamen sind nur normalisierte lateinische Kleinbuchstaben, Ziffern und Bindestriche zulässig. Die folgenden Pfade enthalten ungültige Zeichen:"
   },
   "bulk_error_preview_login_required": {
     "message": "Sie müssen sich anmelden, um eine Vorschau von mehr als 100 Dateien zu generieren."

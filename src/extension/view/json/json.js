@@ -41,27 +41,32 @@ function drawValue(cell, value, url) {
       valueContainer.textContent = value;
     }
   } else if (value.startsWith('/') || value.startsWith('http')) {
-    // assume link
-    const link = valueContainer.appendChild(document.createElement('a'));
-    const target = new URL(value, url).toString();
-    link.href = target;
-    link.title = value;
-    link.target = '_blank';
-    if (value.endsWith('.mp4')) {
-      // linked mp4 video
-      valueContainer.classList.add('video');
-      const video = link.appendChild(document.createElement('video'));
-      const source = video.appendChild(document.createElement('source'));
-      source.src = target;
-      source.type = 'video/mp4';
-    } else if (value.includes('media_')) {
-      // linked image
-      valueContainer.classList.add('image');
-      const img = link.appendChild(document.createElement('img'));
-      img.src = target;
+    // check if the value contains a glob pattern
+    if (!value.includes('*')) {
+      const link = valueContainer.appendChild(document.createElement('a'));
+      const target = new URL(value, url).toString();
+      link.href = target;
+      link.title = value;
+      link.target = '_blank';
+      if (value.endsWith('.mp4')) {
+        // linked mp4 video
+        valueContainer.classList.add('video');
+        const video = link.appendChild(document.createElement('video'));
+        const source = video.appendChild(document.createElement('source'));
+        source.src = target;
+        source.type = 'video/mp4';
+      } else if (value.includes('media_')) {
+        // linked image
+        valueContainer.classList.add('image');
+        const img = link.appendChild(document.createElement('img'));
+        img.src = target;
+      } else {
+        // text link
+        link.textContent = value;
+      }
     } else {
-      // text link
-      link.textContent = value;
+      // Text
+      valueContainer.textContent = value;
     }
   } else if (value.startsWith('[') && value.endsWith(']')) {
     // assume array
