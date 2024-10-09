@@ -1,3 +1,10 @@
+## [6.49.4](https://github.com/adobe/helix-sidekick-extension/compare/v6.49.3...v6.49.4) (2024-10-09)
+
+
+### Bug Fixes
+
+* JSON view should not attempt to draw links for glob paths ([#825](https://github.com/adobe/helix-sidekick-extension/issues/825)) ([9c527c2](https://github.com/adobe/helix-sidekick-extension/commit/9c527c2952eac25802d5183907423cc540dce051)), closes [#827](https://github.com/adobe/helix-sidekick-extension/issues/827)
+
 ## [6.49.3](https://github.com/adobe/helix-sidekick-extension/compare/v6.49.2...v6.49.3) (2024-10-03)
 
 
