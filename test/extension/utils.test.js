@@ -260,7 +260,7 @@ describe('Test extension utils', () => {
   it('queryUrlCache', async () => {
     // known url
     let results = await utils.queryUrlCache('https://foo.sharepoint.com/:w:/r/sites/foo/_layouts/15/Doc.aspx?sourcedoc=%7BBFD9A19C-4A68-4DBF-8641-DA2F1283C895%7D&file=index.docx&action=default&mobileredirect=true');
-    expect(results.length).to.equal(2);
+    expect(results.length).to.equal(3);
     // unknown url
     results = await utils.queryUrlCache('https://foo.sharepoint.com/:x:/r/sites/foo/_layouts/15/Doc.aspx?sourcedoc=%7ABFD9A19C-4A68-4DBF-8641-DA2F1283C895%7D&file=index.xlsx&action=default&mobileredirect=true');
     expect(results.length).to.equal(0);
@@ -277,9 +277,9 @@ describe('Test extension utils', () => {
 
   it('getProjectMatches', async () => {
     // match sharepoint URL (docx)
-    expect((await utils.getProjectMatches(CONFIGS, 'https://foo.sharepoint.com/:w:/r/sites/foo/_layouts/15/Doc.aspx?sourcedoc=%7BBFD9A19C-4A68-4DBF-8641-DA2F1283C895%7D&file=index.docx&action=default&mobileredirect=true')).length).to.equal(1);
+    expect((await utils.getProjectMatches(CONFIGS, 'https://foo.sharepoint.com/:w:/r/sites/foo/_layouts/15/Doc.aspx?sourcedoc=%7BBFD9A19C-4A68-4DBF-8641-DA2F1283C895%7D&file=index.docx&action=default&mobileredirect=true')).length).to.equal(2);
     // match gdrive URL
-    expect((await utils.getProjectMatches(CONFIGS, 'https://docs.google.com/document/d/1234567890/edit')).length).to.equal(1);
+    expect((await utils.getProjectMatches(CONFIGS, 'https://docs.google.com/document/d/1234567890/edit')).length).to.equal(2);
     // match preview URL
     expect((await utils.getProjectMatches(CONFIGS, 'https://main--bar1--foo.hlx.page/')).length).to.equal(1);
     // match preview URL with any ref
@@ -294,7 +294,7 @@ describe('Test extension utils', () => {
     expect((await utils.getProjectMatches(CONFIGS, 'https://1.foo.bar/')).length).to.equal(1);
     // match transient url
     expect((await utils.getProjectMatches(CONFIGS, 'https://main--bar0--foo.hlx.live/')).length).to.equal(1);
-    // match transient url from cache
+    // match single url from cache
     await utils.populateUrlCache({ id: 0, url: 'https://transient.foo.bar/' }, { owner: 'bar', repo: 'random' });
     expect((await utils.getProjectMatches(CONFIGS, 'https://transient.foo.bar/')).length).to.equal(1);
     // ignore disabled config
