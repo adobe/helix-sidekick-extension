@@ -118,12 +118,14 @@ export default async function injectSidekick(config, display) {
             chrome.runtime.sendMessage({ action: 'addRemoveProject' });
           });
         }
+
         const isV7Installed = await getConfig('local', 'hlxSidekickV7Installed');
         const lastShownV7Dialog = await getConfig('local', 'hlxSidekickV7DialogShown');
         const showV7Dialog = !isV7Installed
           && (!lastShownV7Dialog || +lastShownV7Dialog < Date.now() - 604800000); // 1 week
 
         if (showV7Dialog) {
+          // show v7 hint dialog
           const cover = document.createElement('img');
           cover.src = `${i18n('v7_hint_cover')}?width=1280&format=webply&optimize=medium`;
 
@@ -135,7 +137,7 @@ export default async function injectSidekick(config, display) {
           installButton.addEventListener('click', () => {
             window.open('https://chromewebstore.google.com/detail/aem-sidekick-nextgen/igkmdomcgoebiipaifhmpfjhbjccggml');
             rememberDialogShown();
-            sampleRUM('sidekick:v7:clicked-install');
+            sampleRUM('sidekick:v7:install-clicked');
           });
 
           // refactor to use document.createElement
@@ -143,7 +145,7 @@ export default async function injectSidekick(config, display) {
           laterButton.textContent = i18n('v7_install_later');
           laterButton.addEventListener('click', () => {
             rememberDialogShown();
-            sampleRUM('sidekick:v7:clicked-later');
+            sampleRUM('sidekick:v7:later-clicked');
           });
 
           const buttonGroup = document.createElement('span');
