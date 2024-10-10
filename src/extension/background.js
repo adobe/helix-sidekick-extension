@@ -180,57 +180,74 @@ async function checkContextMenu({ url: tabUrl, id, active }, configs = []) {
   if (!active) return; // ignore inactive tabs to avoid collisions
   if (chrome.contextMenus) {
     // clear context menu
-    chrome.contextMenus.removeAll(async () => {
-      // check if add project is applicable
-      if (configs) {
-        const { owner, repo } = await getConfigFromTabUrl(tabUrl);
-        if (owner && repo) {
-          const config = configs.find((c) => c.owner === owner && c.repo === repo);
-          // add context menu item for adding/removing project config
-          log.debug(`checkContextMenu: addRemoveProject for ${tabUrl}`);
-          chrome.contextMenus.create({
-            id: 'addRemoveProject',
-            title: config ? i18n('config_project_remove') : i18n('config_project_add'),
+    await chrome.contextMenus.removeAll();
+    // check if add project is applicable
+    if (configs) {
+      const { owner, repo } = await getConfigFromTabUrl(tabUrl);
+      if (owner && repo) {
+        const config = configs.find((c) => c.owner === owner && c.repo === repo);
+        // add context menu item for adding/removing project config
+        log.debug(`checkContextMenu: addRemoveProject for ${tabUrl}`);
+        await chrome.contextMenus.create({
+          id: 'addRemoveProject',
+          title: config ? i18n('config_project_remove') : i18n('config_project_add'),
+          contexts: [
+            'action',
+          ],
+        });
+        if (config) {
+          // add context menu item for enabling/disabling project config
+          const { disabled } = config;
+          await chrome.contextMenus.create({
+            id: 'enableDisableProject',
+            title: disabled ? i18n('config_project_enable') : i18n('config_project_disable'),
             contexts: [
               'action',
             ],
           });
-          if (config) {
-            // add context menu item for enabling/disabling project config
-            const { disabled } = config;
-            chrome.contextMenus.create({
-              id: 'enableDisableProject',
-              title: disabled ? i18n('config_project_enable') : i18n('config_project_disable'),
-              contexts: [
-                'action',
-              ],
-            });
-            // open preview
-            chrome.contextMenus.create({
-              id: 'openPreview',
-              title: i18n('open_preview'),
-              contexts: [
-                'action',
-              ],
-              visible: tabUrl.startsWith(GH_URL),
-            });
-          }
+          // open preview
+          await chrome.contextMenus.create({
+            id: 'openPreview',
+            title: i18n('open_preview'),
+            contexts: [
+              'action',
+            ],
+            visible: tabUrl.startsWith(GH_URL),
+          });
         }
       }
+    }
 
-      // add the open view doc context menu item only if the current tab is a Franklin site (guess)
-      guessIfFranklinSite({ id }).then((isFranklinSite) => {
-        if (isFranklinSite) {
-          chrome.contextMenus.create({
-            id: 'openViewDocSource',
-            title: i18n('open_view_doc_source'),
-            contexts: [
-              'action',
-            ],
-          });
-        }
+    // add the open view doc context menu item only if the current tab is a Franklin site (guess)
+    const isFranklinSite = await guessIfFranklinSite({ id });
+    if (isFranklinSite) {
+      await chrome.contextMenus.create({
+        id: 'openViewDocSource',
+        title: i18n('open_view_doc_source'),
+        contexts: [
+          'action',
+        ],
       });
-    });
+    }
+
+    // add context menu item to install v7
+    const isV7Installed = await getConfig('local', 'hlxSidekickV7Installed');
+    if (!isV7Installed) {
+      await chrome.contextMenus.create({
+        id: 'installV7Separator',
+        type: 'separator',
+        contexts: [
+          'action',
+        ],
+      });
+      await chrome.contextMenus.create({
+        id: 'installV7',
+        title: i18n('v7_hint_title'),
+        contexts: [
+          'action',
+        ],
+      });
+    }
   }
 }
 
@@ -602,6 +619,11 @@ const internalActions = {
         url: `https://${ref}--${repo}--${owner}.hlx.page/`,
       });
     }
+  },
+  installV7: async () => {
+    chrome.tabs.create({
+      url: 'https://chromewebstore.google.com/detail/aem-sidekick-nextgen/igkmdomcgoebiipaifhmpfjhbjccggml',
+    });
   },
 };
 
