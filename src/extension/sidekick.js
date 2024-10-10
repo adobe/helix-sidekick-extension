@@ -135,7 +135,7 @@ export default async function injectSidekick(config, display) {
           installButton.textContent = i18n('v7_install_now');
           installButton.classList.add('accent');
           installButton.addEventListener('click', () => {
-            window.open('https://chromewebstore.google.com/detail/aem-sidekick-nextgen/igkmdomcgoebiipaifhmpfjhbjccggml');
+            window.open(i18n('v7_install_url'));
             rememberDialogShown();
             sampleRUM('sidekick:v7:install-clicked');
           });

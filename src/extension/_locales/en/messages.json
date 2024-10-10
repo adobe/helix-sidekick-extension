@@ -633,20 +633,26 @@
   "user_switch": {
     "message": "Switch user"
   },
+  "v7_context_menu": {
+    "message": "Install the new AEM Sidekick"
+  },
   "v7_hint_cover": {
     "message": "https://www.aem.live/tools/sidekick/en/v7-teaser.png"
-  },
-  "v7_hint_title": {
-    "message": "Introducing the new AEM Sidekick"
   },
   "v7_hint_description": {
     "message": "A brand-new AEM Sidekick extension is now available in the Chrome Web Store. Switch now to upgrade your user experience!"
   },
-  "v7_install_now": {
-    "message": "Install now"
+  "v7_hint_title": {
+    "message": "Introducing the new AEM Sidekick"
   },
   "v7_install_later": {
     "message": "Later"
+  },
+  "v7_install_now": {
+    "message": "Install now"
+  },
+  "v7_install_url": {
+    "message": "https://chromewebstore.google.com/detail/aem-sidekick-nextgen/igkmdomcgoebiipaifhmpfjhbjccggml"
   },
   "yesterday_at": {
     "message": "Yesterday at $1"

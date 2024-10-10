@@ -242,7 +242,7 @@ async function checkContextMenu({ url: tabUrl, id, active }, configs = []) {
       });
       await chrome.contextMenus.create({
         id: 'installV7',
-        title: i18n('v7_hint_title'),
+        title: i18n('v7_context_menu'),
         contexts: [
           'action',
         ],
@@ -622,7 +622,7 @@ const internalActions = {
   },
   installV7: async () => {
     chrome.tabs.create({
-      url: 'https://chromewebstore.google.com/detail/aem-sidekick-nextgen/igkmdomcgoebiipaifhmpfjhbjccggml',
+      url: i18n('v7_install_url'),
     });
   },
 };
