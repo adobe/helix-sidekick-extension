@@ -39,7 +39,7 @@ const CONFIGS = [
     repo: 'bar3',
     ref: 'main',
     host: '3.foo.bar',
-    mountpoints: ['https://foo.sharepoint.com/something/boo/Shared%20Documents/root3'],
+    mountpoints: ['https://foo.sharepoint.com/something/boo/Shared%20Documents/root1'],
   },
   {
     owner: 'foo',
@@ -293,7 +293,10 @@ describe('Test extension utils', () => {
     // match production host
     expect((await utils.getProjectMatches(CONFIGS, 'https://1.foo.bar/')).length).to.equal(1);
     // match transient url
-    expect((await utils.getProjectMatches(CONFIGS, 'https://main--bar0--foo.hlx.live/')).length).to.equal(1);
+    expect((await utils.getProjectMatches([], 'https://main--bar1--foo.hlx.page/')).length).to.equal(1);
+    // match transient url from cache
+    await utils.populateUrlCache({ id: 0, url: 'https://foo.sharepoint.com/something/boo/Shared%20Documents/root1' });
+    expect((await utils.getProjectMatches([], 'https://foo.sharepoint.com/something/boo/Shared%20Documents/root1')).length).to.equal(2);
     // match single url from cache
     await utils.populateUrlCache({ id: 0, url: 'https://transient.foo.bar/' }, { owner: 'bar', repo: 'random' });
     expect((await utils.getProjectMatches(CONFIGS, 'https://transient.foo.bar/')).length).to.equal(1);
