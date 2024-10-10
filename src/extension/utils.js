@@ -464,17 +464,26 @@ export async function getProjectMatches(configs, tabUrl) {
       });
     }
   }
-  if (matches.length === 0) {
-    const { org, site } = urlCache.length === 1
-      ? urlCache[0] // use single match from url cache
-      : (urlCache.find((r) => r.originalSite) || {});
-    if (org && site) {
-      matches.push({
-        owner: org,
-        repo: site,
+  if (matches.length === 0 && urlCache.length >= 1) {
+    if (urlCache.length === 1) {
+      // use single match from url cache
+      const { org: owner, site: repo } = urlCache[0];
+      return [{
+        owner,
+        repo,
         ref: 'main',
         transient: true,
-      });
+      }];
+    } else {
+      // use all matches from url cache with originalSite flag
+      return urlCache
+        .filter((r) => r.originalSite)
+        .map(({ org: owner, site: repo }) => ({
+          owner,
+          repo,
+          ref: 'main',
+          transient: true,
+        }));
     }
   }
   log.debug(`${matches.length} project match(es) found for ${tabUrl}`, matches);

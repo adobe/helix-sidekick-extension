@@ -25,6 +25,7 @@ const CONFIG_JSON = {
 const DISCOVER_JSON = [
   { org: 'foo', site: 'bar1', originalSite: true },
   { org: 'foo', site: 'bar2', originalSite: false },
+  { org: 'foo', site: 'bar3', originalSite: true },
 ];
 
 const DRIVE_ITEM_JSON = {
