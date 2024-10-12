@@ -42,7 +42,7 @@
   "devDependencies": {
     "@adobe/eslint-config-helix": "2.0.8",
     "@adobe/fetch": "4.1.9",
-    "@babel/eslint-parser": "7.25.7",
+    "@babel/eslint-parser": "7.25.8",
     "@esm-bundle/chai": "4.3.4-fix.0",
     "@semantic-release/changelog": "6.0.3",
     "@semantic-release/exec": "6.0.3",
@@ -54,7 +54,7 @@
     "c8": "10.1.2",
     "codecov": "3.8.3",
     "eslint": "8.57.1",
-    "express": "4.21.0",
+    "express": "4.21.1",
     "fs-extra": "11.2.0",
     "husky": "9.1.6",
     "jsdoc-to-markdown": "9.0.2",
