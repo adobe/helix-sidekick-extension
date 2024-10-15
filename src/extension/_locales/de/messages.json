@@ -34,10 +34,10 @@
     "message": "Massenvorgang fehlgeschlagen. Versuchen Sie es später erneut."
   },
   "bulk_error_illegal_file_name": {
-    "message": "In Dateinamen sind nur normalisierte lateinische Kleinbuchstaben, Ziffern und Bindestriche zulässig. Der folgende Dateiname enthält ungültige Zeichen:"
+    "message": "In Dateinamen sind nur normalisierte lateinische Kleinbuchstaben, Ziffern und Bindestriche zulässig. Der folgende Pfad enthält ungültige Zeichen:"
   },
   "bulk_error_illegal_file_names": {
-    "message": "In Dateinamen sind nur normalisierte lateinische Kleinbuchstaben, Ziffern und Bindestriche zulässig. Die folgenden Dateinamen enthalten ungültige Zeichen:"
+    "message": "In Dateinamen sind nur normalisierte lateinische Kleinbuchstaben, Ziffern und Bindestriche zulässig. Die folgenden Pfade enthalten ungültige Zeichen:"
   },
   "bulk_error_preview_login_required": {
     "message": "Sie müssen sich anmelden, um eine Vorschau von mehr als 100 Dateien zu generieren."
@@ -406,6 +406,9 @@
   },
   "error_site_403": {
     "message": "Zugriff verweigert. Versuchen Sie, sich mit einem anderen Benutzerkonto anzumelden, oder bitten Sie Ihre bzw. Ihren Admin um ausreichende Berechtigungen."
+  },
+  "error_status_400": {
+    "message": "400 – Ungültige Anfrage: Diese URL ist ungültig."
   },
   "error_status_403": {
     "message": "403 Verboten: Bitten Sie Ihre bzw. Ihren Admin um ausreichende Berechtigungen."

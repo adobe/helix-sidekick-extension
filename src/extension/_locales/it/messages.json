@@ -34,10 +34,10 @@
     "message": "Operazione in blocco non riuscita. Riprova più tardi."
   },
   "bulk_error_illegal_file_name": {
-    "message": "Nei nomi dei file sono consentiti solo i seguenti caratteri latini normalizzati: lettere minuscole, cifre e trattini. Il nome di file seguente contiene caratteri non validi:"
+    "message": "Nei nomi dei file e delle cartelle sono consentiti solo i caratteri latini normalizzati, lettere minuscole, cifre e trattini. Il percorso seguente contiene caratteri non validi:"
   },
   "bulk_error_illegal_file_names": {
-    "message": "Nei nomi dei file sono consentiti solo i seguenti caratteri latini normalizzati: lettere minuscole, cifre e trattini. I nomi dei file seguenti contengono caratteri non validi:"
+    "message": "Nei nomi dei file e delle cartelle sono consentiti solo i caratteri latini normalizzati, lettere minuscole, cifre e trattini. I percorsi seguenti contengono caratteri non validi:"
   },
   "bulk_error_preview_login_required": {
     "message": "Per generare l’anteprima di più di 100 file, è necessario accedere."
@@ -406,6 +406,9 @@
   },
   "error_site_403": {
     "message": "Accesso negato. Prova ad accedere con un altro utente o chiedi all’amministratore le autorizzazioni necessarie."
+  },
+  "error_status_400": {
+    "message": "400 - Richiesta non valida: questo URL non è valido."
   },
   "error_status_403": {
     "message": "403 - Non consentito: chiedi all’amministratore le autorizzazioni necessarie."
