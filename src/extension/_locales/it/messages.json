@@ -407,6 +407,9 @@
   "error_site_403": {
     "message": "Accesso negato. Prova ad accedere con un altro utente o chiedi all’amministratore le autorizzazioni necessarie."
   },
+  "error_status_400": {
+    "message": "400 - Richiesta non valida: questo URL non è valido."
+  },
   "error_status_403": {
     "message": "403 - Non consentito: chiedi all’amministratore le autorizzazioni necessarie."
   },
