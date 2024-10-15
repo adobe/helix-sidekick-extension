@@ -407,6 +407,9 @@
   "error_site_403": {
     "message": "Acesso negado. Tente fazer logon com um usuário diferente ou peça permissões suficientes à administração."
   },
+  "error_status_400": {
+    "message": "400 Solicitação incorreta: este URL é inválido."
+  },
   "error_status_403": {
     "message": "403 Proibido: Solicite ao administrador as permissões necessárias."
   },
