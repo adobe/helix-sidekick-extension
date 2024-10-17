@@ -1,3 +1,10 @@
+# [6.50.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.49.4...v6.50.0) (2024-10-17)
+
+
+### Features
+
+* support for multiple original sites ([#835](https://github.com/adobe/helix-sidekick-extension/issues/835)) ([ea22ed5](https://github.com/adobe/helix-sidekick-extension/commit/ea22ed5427a0a6429a74302f130d071c0a8d7579))
+
 ## [6.49.4](https://github.com/adobe/helix-sidekick-extension/compare/v6.49.3...v6.49.4) (2024-10-09)
 
 
