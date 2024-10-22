@@ -1,6 +1,6 @@
 {
   "name": "@adobe/helix-sidekick-extension",
-  "version": "6.49.0",
+  "version": "6.49.2",
   "description": "AEM Sidekick Extension",
   "type": "module",
   "scripts": {
@@ -41,7 +41,7 @@
   },
   "devDependencies": {
     "@adobe/eslint-config-helix": "2.0.7",
-    "@adobe/fetch": "4.1.8",
+    "@adobe/fetch": "4.1.9",
     "@babel/eslint-parser": "7.25.1",
     "@esm-bundle/chai": "4.3.4-fix.0",
     "@semantic-release/changelog": "6.0.3",
@@ -53,11 +53,11 @@
     "archiver": "7.0.1",
     "c8": "10.1.2",
     "codecov": "3.8.3",
-    "eslint": "8.57.0",
+    "eslint": "8.57.1",
     "express": "4.21.0",
     "fs-extra": "11.2.0",
     "husky": "9.1.6",
-    "jsdoc-to-markdown": "9.0.1",
+    "jsdoc-to-markdown": "9.0.2",
     "lint-staged": "15.2.10",
     "mime": "4.0.4",
     "mocha": "10.7.3",
@@ -67,11 +67,11 @@
     "puppeteer-core": "21.1.1",
     "puppeteer-to-istanbul": "1.4.0",
     "request": "2.88.2",
-    "semantic-release": "24.1.1",
-    "semantic-release-discord-bot": "^1.1.0",
+    "semantic-release": "24.1.2",
+    "semantic-release-discord-bot": "1.1.0",
     "semantic-release-react-native": "1.10.0",
     "shelljs": "0.8.5",
-    "sinon": "18.0.1"
+    "sinon": "19.0.2"
   },
   "lint-staged": {
     "*.js": "eslint"

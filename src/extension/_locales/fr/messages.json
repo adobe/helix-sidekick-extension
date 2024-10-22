@@ -207,7 +207,7 @@
     "message": "URL du contenu : https://..."
   },
   "config_manual_org_placeholder": {
-    "description": "Nom de l'organisation tel que dans le service de configuration",
+    "description": "Nom de l’organisation tel que dans le service de configuration",
     "message": "Nom d’organisation"
   },
   "config_manual_previewHost_placeholder": {
@@ -402,10 +402,10 @@
     "message": "Connectez-vous pour continuer."
   },
   "error_site_401_relogin": {
-    "message": "Accès expiré. Veuillez vous reconnecter pour continuer."
+    "message": "Accès arrivé à expiration. Reconnectez-vous pour continuer."
   },
   "error_site_403": {
-    "message": "Accès refusé. Essayez de vous connecter avec un autre utilisateur ou demandez à votre administrateur des autorisations suffisantes."
+    "message": "Accès refusé. Essayez de vous connecter avec une autre identité ou demandez à votre équipe d’administration des autorisations suffisantes."
   },
   "error_status_403": {
     "message": "403 Accès interdit : demandez les autorisations nécessaires à votre administrateur ou à votre administratrice."
@@ -625,7 +625,7 @@
     "message": "Se déconnecter"
   },
   "user_relogin": {
-    "message": "Reconnectez-vous"
+    "message": "Se reconnecter"
   },
   "user_switch": {
     "message": "Changer d'utilisateur"

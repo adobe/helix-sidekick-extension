@@ -402,10 +402,10 @@
     "message": "请登录以继续。"
   },
   "error_site_401_relogin": {
-    "message": "访问已过期。请重新登录以继续。"
+    "message": "访问过期。请重新登录以继续。"
   },
   "error_site_403": {
-    "message": "访问被拒绝。请尝试使用其他用户登录，或向您的管理员请求足够的权限。"
+    "message": "访问被拒。请尝试以其他用户身份登录或向管理员申请足够的权限。"
   },
   "error_status_403": {
     "message": "403 禁止：请向管理员请求足够的权限。"
@@ -438,7 +438,7 @@
     "message": "服务器响应无效。检查您的 Sidekick 配置或 URL。"
   },
   "error_view_description": {
-    "message": "用户友好的错误消息。"
+    "message": "用户友好型错误消息。"
   },
   "extensions": {
     "message": "扩展"
@@ -625,7 +625,7 @@
     "message": "注销"
   },
   "user_relogin": {
-    "message": "再次登录"
+    "message": "重新登录"
   },
   "user_switch": {
     "message": "切换用户"

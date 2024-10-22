@@ -64,7 +64,7 @@ export default async function injectSidekick(config, display) {
     } = curatedConfig;
 
     // todo: improve config change handling. currently we only update the authToken
-    chrome.storage.session.onChanged.addListener((changes) => {
+    chrome.storage.onChanged.addListener((changes) => {
       if (changes[`${owner}/${repo}`]) {
         const { authTokenExpiry } = changes[`${owner}/${repo}`].newValue || {};
         log.debug(`updating auth token expiry for ${owner}/${repo} in sidekick config`);
