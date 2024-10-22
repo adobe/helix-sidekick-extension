@@ -34,10 +34,10 @@
     "message": "一括操作に失敗しました。後でもう一度試してください。"
   },
   "bulk_error_illegal_file_name": {
-    "message": "ファイル名には、正規化された小文字のラテン文字、数字、ハイフンのみを使用できます。次のファイル名に不正な文字が含まれています :"
+    "message": "ファイル名とフォルダー名には、正規化された小文字のラテン文字、数字、ハイフンのみを使用できます。次のパスに不正な文字が含まれています :"
   },
   "bulk_error_illegal_file_names": {
-    "message": "ファイル名には、正規化された小文字のラテン文字、数字、ハイフンのみを使用できます。次のファイル名に不正な文字が含まれています :"
+    "message": "ファイル名とフォルダー名には、正規化された小文字のラテン文字、数字、ハイフンのみを使用できます。次のパスに不正な文字が含まれています :"
   },
   "bulk_error_preview_login_required": {
     "message": "100 個を超えるファイルのプレビューを生成するには、ログインする必要があります。"
@@ -407,6 +407,9 @@
   "error_site_403": {
     "message": "アクセスが拒否されました。別のユーザーでログインするか、管理者に十分な権限を求めてください。"
   },
+  "error_status_400": {
+    "message": "400 無効なリクエスト：この URL は無効です。"
+  },
   "error_status_403": {
     "message": "403 Forbidden：管理者に十分な許可を求めてください。"
   },
@@ -629,6 +632,27 @@
   },
   "user_switch": {
     "message": "ユーザーを切り替え"
+  },
+  "v7_context_menu": {
+    "message": "新しいインストールAEM Sidekick"
+  },
+  "v7_hint_cover": {
+    "message": "https://www.aem.live/tools/sidekick/en/v7-teaser.png"
+  },
+  "v7_hint_description": {
+    "message": "新しいバージョンのAEM Sidekick拡張機能がChrome Web Store で利用できるようになりました。今すぐ切り替えて、パフォーマンスの向上、新機能、シームレスなオーサリング体験をご利用ください。"
+  },
+  "v7_hint_title": {
+    "message": "新しいAEM Sidekick"
+  },
+  "v7_install_later": {
+    "message": "後で"
+  },
+  "v7_install_now": {
+    "message": "インストールする"
+  },
+  "v7_install_url": {
+    "message": "https://chromewebstore.google.com/detail/aem-sidekick/igkmdomcgoebiipaifhmpfjhbjccggml"
   },
   "view_doc_source_copied": {
     "message": "コピーしました。"

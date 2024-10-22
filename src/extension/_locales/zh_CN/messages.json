@@ -34,10 +34,10 @@
     "message": "批量操作失败。请稍后重试。"
   },
   "bulk_error_illegal_file_name": {
-    "message": "文件名中只允许使用规范化的小写拉丁字母、数字和连字符。以下文件名包含非法字符："
+    "message": "文件和文件夹名称中只允许使用规范化的小写拉丁字母、数字和连字符。以下路径包含非法字符："
   },
   "bulk_error_illegal_file_names": {
-    "message": "文件名中只允许使用规范化的小写拉丁字母、数字和连字符。以下文件名包含非法字符："
+    "message": "文件和文件夹名称中只允许使用规范化的小写拉丁字母、数字和连字符。以下路径包含非法字符："
   },
   "bulk_error_preview_login_required": {
     "message": "您需要登录才能生成 100 多个文件的预览。"
@@ -407,6 +407,9 @@
   "error_site_403": {
     "message": "访问被拒。请尝试以其他用户身份登录或向管理员申请足够的权限。"
   },
+  "error_status_400": {
+    "message": "400 错误请求。该 URL 无效。"
+  },
   "error_status_403": {
     "message": "403 禁止：请向管理员请求足够的权限。"
   },
@@ -629,6 +632,27 @@
   },
   "user_switch": {
     "message": "切换用户"
+  },
+  "v7_context_menu": {
+    "message": "安装新AEM Sidekick"
+  },
+  "v7_hint_cover": {
+    "message": "https://www.aem.live/tools/sidekick/en/v7-teaser.png"
+  },
+  "v7_hint_description": {
+    "message": "Chrome Web Store中现在提供了AEM Sidekick扩展的全新版本。立即切换，获得增强的性能、新功能和无缝的创作体验。"
+  },
+  "v7_hint_title": {
+    "message": "介绍新AEM Sidekick"
+  },
+  "v7_install_later": {
+    "message": "稍后"
+  },
+  "v7_install_now": {
+    "message": "立即安装"
+  },
+  "v7_install_url": {
+    "message": "https://chromewebstore.google.com/detail/aem-sidekick/igkmdomcgoebiipaifhmpfjhbjccggml"
   },
   "view_doc_source_copied": {
     "message": "已复制！"

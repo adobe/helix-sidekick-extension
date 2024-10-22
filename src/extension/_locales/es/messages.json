@@ -34,10 +34,10 @@
     "message": "Error de operación masiva. Inténtelo de nuevo más tarde."
   },
   "bulk_error_illegal_file_name": {
-    "message": "Solo se permiten letras latinas minúsculas, dígitos y guiones normalizados en los nombres de los archivos. El siguiente nombre de archivo contiene caracteres no permitidos:"
+    "message": "Solo se permiten letras latinas minúsculas, dígitos y guiones normalizados en los nombres de los archivos y las carpetas. La siguiente ruta contiene caracteres no permitidos:"
   },
   "bulk_error_illegal_file_names": {
-    "message": "Solo se permiten letras latinas minúsculas, dígitos y guiones normalizados en los nombres de los archivos. El siguiente nombre de archivo contiene caracteres no permitidos:"
+    "message": "Solo se permiten letras latinas minúsculas, dígitos y guiones normalizados en los nombres de los archivos y las carpetas. Las siguientes rutas contienen caracteres no permitidos:"
   },
   "bulk_error_preview_login_required": {
     "message": "Debe iniciar sesión para generar la vista previa de más de 100 archivos."
@@ -407,6 +407,9 @@
   "error_site_403": {
     "message": "Acceso denegado. Intente iniciar sesión con un usuario diferente o solicite al administrador los permisos necesarios."
   },
+  "error_status_400": {
+    "message": "Error de solicitud 400: esta URL no es válida."
+  },
   "error_status_403": {
     "message": "403 Prohibido: Pídale al administrador permisos suficientes."
   },
@@ -629,6 +632,27 @@
   },
   "user_switch": {
     "message": "Cambiar de usuario"
+  },
+  "v7_context_menu": {
+    "message": "Instale el nuevo AEM Sidekick"
+  },
+  "v7_hint_cover": {
+    "message": "https://www.aem.live/tools/sidekick/en/v7-teaser.png"
+  },
+  "v7_hint_description": {
+    "message": "Ya hay disponible una versión completamente nueva de la extensión de AEM Sidekick en la tienda web de Chrome. Cambie hoy mismo para obtener un rendimiento mejorado, nuevas funciones y una experiencia de creación perfecta."
+  },
+  "v7_hint_title": {
+    "message": "Presentación del nuevo AEM Sidekick"
+  },
+  "v7_install_later": {
+    "message": "Más tarde"
+  },
+  "v7_install_now": {
+    "message": "Instalar ahora"
+  },
+  "v7_install_url": {
+    "message": "https://chromewebstore.google.com/detail/aem-sidekick/igkmdomcgoebiipaifhmpfjhbjccggml"
   },
   "view_doc_source_copied": {
     "message": "Copiado."
