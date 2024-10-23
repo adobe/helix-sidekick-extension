@@ -34,10 +34,10 @@
     "message": "Massenvorgang fehlgeschlagen. Versuchen Sie es später erneut."
   },
   "bulk_error_illegal_file_name": {
-    "message": "In Dateinamen sind nur normalisierte lateinische Kleinbuchstaben, Ziffern und Bindestriche zulässig. Der folgende Dateiname enthält ungültige Zeichen:"
+    "message": "In Dateinamen sind nur normalisierte lateinische Kleinbuchstaben, Ziffern und Bindestriche zulässig. Der folgende Pfad enthält ungültige Zeichen:"
   },
   "bulk_error_illegal_file_names": {
-    "message": "In Dateinamen sind nur normalisierte lateinische Kleinbuchstaben, Ziffern und Bindestriche zulässig. Die folgenden Dateinamen enthalten ungültige Zeichen:"
+    "message": "In Dateinamen sind nur normalisierte lateinische Kleinbuchstaben, Ziffern und Bindestriche zulässig. Die folgenden Pfade enthalten ungültige Zeichen:"
   },
   "bulk_error_preview_login_required": {
     "message": "Sie müssen sich anmelden, um eine Vorschau von mehr als 100 Dateien zu generieren."
@@ -407,6 +407,9 @@
   "error_site_403": {
     "message": "Zugriff verweigert. Versuchen Sie, sich mit einem anderen Benutzerkonto anzumelden, oder bitten Sie Ihre bzw. Ihren Admin um ausreichende Berechtigungen."
   },
+  "error_status_400": {
+    "message": "400 – Ungültige Anfrage: Diese URL ist ungültig."
+  },
   "error_status_403": {
     "message": "403 Verboten: Bitten Sie Ihre bzw. Ihren Admin um ausreichende Berechtigungen."
   },
@@ -629,6 +632,27 @@
   },
   "user_switch": {
     "message": "Benutzer/in wechseln"
+  },
+  "v7_context_menu": {
+    "message": "Installieren Sie die neue AEM Sidekick"
+  },
+  "v7_hint_cover": {
+    "message": "https://www.aem.live/tools/sidekick/en/v7-teaser.png"
+  },
+  "v7_hint_description": {
+    "message": "Eine brandneue Version der AEM Sidekick-Erweiterung ist jetzt im Chrome Web Store verfügbar. Entscheiden Sie sich noch heute für verbesserte Leistung, neue Funktionen und ein nahtloses Authoring-Erlebnis."
+  },
+  "v7_hint_title": {
+    "message": "Die neue AEM Sidekick"
+  },
+  "v7_install_later": {
+    "message": "Später"
+  },
+  "v7_install_now": {
+    "message": "Jetzt installieren"
+  },
+  "v7_install_url": {
+    "message": "https://chromewebstore.google.com/detail/aem-sidekick/igkmdomcgoebiipaifhmpfjhbjccggml"
   },
   "view_doc_source_copied": {
     "message": "Kopiert!"

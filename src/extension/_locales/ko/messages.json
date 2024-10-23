@@ -34,10 +34,10 @@
     "message": "일괄 작업에 실패했습니다. 나중에 다시 시도해 주십시오."
   },
   "bulk_error_illegal_file_name": {
-    "message": "파일 이름에는 정규화된 라틴 소문자, 숫자 및 하이픈만 허용됩니다. 다음 파일 이름에 잘못된 문자가 포함되어 있습니다."
+    "message": "파일 및 폴더 이름에는 정규화된 소문자 라틴 문자, 숫자 및 하이픈만 허용됩니다. 다음 경로에 잘못된 문자가 포함되어 있습니다."
   },
   "bulk_error_illegal_file_names": {
-    "message": "파일 이름에는 정규화된 라틴 소문자, 숫자 및 하이픈만 허용됩니다. 다음 파일 이름에 잘못된 문자가 포함되어 있습니다."
+    "message": "파일 및 폴더 이름에는 정규화된 소문자 라틴 문자, 숫자 및 하이픈만 허용됩니다. 다음 경로에 잘못된 문자가 포함되어 있습니다."
   },
   "bulk_error_preview_login_required": {
     "message": "100개를 초과하는 파일의 미리보기를 생성하려면 로그인해야 합니다."
@@ -407,6 +407,9 @@
   "error_site_403": {
     "message": "액세스가 거부되었습니다. 다른 사용자로 로그인을 시도하거나 관리자에게 권한을 요청하시기 바랍니다."
   },
+  "error_status_400": {
+    "message": "400 잘못된 요청: 잘못된 URL입니다."
+  },
   "error_status_403": {
     "message": "403 금지됨: 관리자에게 충분한 권한을 요청하십시오."
   },
@@ -629,6 +632,27 @@
   },
   "user_switch": {
     "message": "사용자 전환"
+  },
+  "v7_context_menu": {
+    "message": "새 AEM Sidekick 설치"
+  },
+  "v7_hint_cover": {
+    "message": "https://www.aem.live/tools/sidekick/en/v7-teaser.png"
+  },
+  "v7_hint_description": {
+    "message": "이제 Chrome 웹 스토어에서 완전히 새로운 버전의 AEM Sidekick 확장을 사용할 수 있습니다. 향상된 성능, 새로운 기능 및 원활한 작성 환경을 위해 지금 전환합니다."
+  },
+  "v7_hint_title": {
+    "message": "새 AEM Sidekick 소개"
+  },
+  "v7_install_later": {
+    "message": "나중에"
+  },
+  "v7_install_now": {
+    "message": "지금 설치"
+  },
+  "v7_install_url": {
+    "message": "https://chromewebstore.google.com/detail/aem-sidekick/igkmdomcgoebiipaifhmpfjhbjccggml"
   },
   "view_doc_source_copied": {
     "message": "복사됨!"

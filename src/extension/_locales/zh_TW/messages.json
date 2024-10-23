@@ -34,10 +34,10 @@
     "message": "大量作業失敗。請稍後再試。"
   },
   "bulk_error_illegal_file_name": {
-    "message": "檔案名稱中只允許使用標準化的小寫拉丁字母、數字和連字號。以下檔案名稱含有違規字元："
+    "message": "檔案和資料夾名稱中僅允許使用正規化的小寫拉丁字母、數字和連字號。以下路徑包含違規字元："
   },
   "bulk_error_illegal_file_names": {
-    "message": "檔案名稱中只允許使用標準化的小寫拉丁字母、數字和連字號。以下檔案名稱含有違規字元："
+    "message": "檔案和資料夾名稱中僅允許使用正規化的小寫拉丁字母、數字和連字號。以下路徑包含違規字元："
   },
   "bulk_error_preview_login_required": {
     "message": "您必須登入才能產生超過 100 個檔案的預覽。"
@@ -407,6 +407,9 @@
   "error_site_403": {
     "message": "存取已遭拒。請嘗試使用不同的使用者登入，或向管理員要求足夠的權限。"
   },
+  "error_status_400": {
+    "message": "400 錯誤的請求：此 URL 無效。"
+  },
   "error_status_403": {
     "message": "403 已禁止：請向管理員要求足夠的權限。"
   },
@@ -629,6 +632,27 @@
   },
   "user_switch": {
     "message": "切換使用者"
+  },
+  "v7_context_menu": {
+    "message": "安裝新AEM Sidekick"
+  },
+  "v7_hint_cover": {
+    "message": "https://www.aem.live/tools/sidekick/en/v7-teaser.png"
+  },
+  "v7_hint_description": {
+    "message": "Chrome Web Store現在提供全新AEM Sidekick擴充功能。立即切換以獲得更優異的效能、新功能以及順暢的製作體驗。"
+  },
+  "v7_hint_title": {
+    "message": "介紹新AEM Sidekick"
+  },
+  "v7_install_later": {
+    "message": "稍後"
+  },
+  "v7_install_now": {
+    "message": "立即安裝"
+  },
+  "v7_install_url": {
+    "message": "https://chromewebstore.google.com/detail/aem-sidekick/igkmdomcgoebiipaifhmpfjhbjccggml"
   },
   "view_doc_source_copied": {
     "message": "已複製！"
