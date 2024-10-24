@@ -1,3 +1,10 @@
+## [6.50.1](https://github.com/adobe/helix-sidekick-extension/compare/v6.50.0...v6.50.1) (2024-10-24)
+
+
+### Bug Fixes
+
+* **json:** never load from cache ([#843](https://github.com/adobe/helix-sidekick-extension/issues/843)) ([4ac8a25](https://github.com/adobe/helix-sidekick-extension/commit/4ac8a25b5ce249c9ed8e518e97cc5b39e4894a95))
+
 # [6.50.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.49.4...v6.50.0) (2024-10-17)
 
 
