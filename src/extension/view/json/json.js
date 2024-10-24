@@ -127,7 +127,7 @@ export default function draw(json, url) {
   try {
     const url = new URL(new URL(window.location.href).searchParams.get('url')).toString();
     if (url) {
-      const res = await fetch(url);
+      const res = await fetch(url, { cache: 'no-store' });
       if (res.ok) {
         const text = await res.text();
         let json = {};
