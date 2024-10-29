@@ -186,7 +186,7 @@
     "message": "無効なコンテンツ URL"
   },
   "config_invalid_org_site": {
-    "message": "無効な組織またはサイト名"
+    "message": "無効な組織またはサイト名です"
   },
   "config_invalid_shareurl": {
     "message": "無効な共有 URL"
@@ -634,25 +634,25 @@
     "message": "ユーザーを切り替え"
   },
   "v7_context_menu": {
-    "message": "新しいインストールAEM Sidekick"
+    "message": "新しい AEM Sidekick をインストール"
   },
   "v7_hint_cover": {
     "message": "https://www.aem.live/tools/sidekick/en/v7-teaser.png"
   },
   "v7_hint_description": {
-    "message": "新しいバージョンのAEM Sidekick拡張機能がChrome Web Store で利用できるようになりました。今すぐ切り替えて、パフォーマンスの向上、新機能、シームレスなオーサリング体験をご利用ください。"
+    "message": "新しいバージョンの AEM Sidekick 拡張機能が Chrome Web Store で利用できるようになりました。今すぐ切り替えて、強化されたパフォーマンス、新機能、シームレスなオーサリングエクスペリエンスをご利用ください。"
   },
   "v7_hint_title": {
-    "message": "新しいAEM Sidekick"
+    "message": "新しい AEM Sidekick の概要"
   },
   "v7_install_later": {
     "message": "後で"
   },
   "v7_install_now": {
-    "message": "インストールする"
+    "message": "今すぐインストール"
   },
   "v7_install_url": {
-    "message": "https://chromewebstore.google.com/detail/aem-sidekick/igkmdomcgoebiipaifhmpfjhbjccggml?hl=ja"
+    "message": "https://chromewebstore.google.com/detail/aem-sidekick/igkmdomcgoebiipaifhmpfjhbjccggml"
   },
   "view_doc_source_copied": {
     "message": "コピーしました。"
