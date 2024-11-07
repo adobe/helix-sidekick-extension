@@ -634,7 +634,7 @@
     "message": "Cambiar de usuario"
   },
   "v7_context_menu": {
-    "message": "Instale la nueva AEM Sidekick"
+    "message": "Instale el nuevo AEM Sidekick"
   },
   "v7_hint_cover": {
     "message": "https://www.aem.live/tools/sidekick/en/v7-teaser.png"
@@ -643,7 +643,7 @@
     "message": "Ya hay disponible una versión completamente nueva de la extensión de AEM Sidekick en la tienda web de Chrome. Cambie hoy mismo para disfrutar de un rendimiento mejorado, nuevas funciones y una experiencia de creación perfecta."
   },
   "v7_hint_title": {
-    "message": "Presentación de la nueva AEM Sidekick"
+    "message": "Presentación del nuevo AEM Sidekick"
   },
   "v7_install_later": {
     "message": "Más tarde"
