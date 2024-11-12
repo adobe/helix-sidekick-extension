@@ -42,7 +42,8 @@ describe('Test sidekick login', () => {
     nock.done();
   });
 
-  it('Opens login window and logs in via auth-cookie', async () => {
+  it('Opens login window and logs in cookie-less', async () => {
+    let mockToken = null;
     let loggedIn = false;
     const test = new SidekickTest({
       browser,
@@ -50,6 +51,14 @@ describe('Test sidekick login', () => {
       pluginSleep: 2000,
       plugin: 'user-login',
       loadModule: true,
+      requestHandler: (request) => {
+        if (new URL(request.url).hostname !== 'admin.hlx.page') return;
+
+        if (mockToken) {
+          // mock admin sending token from background extension worker
+          request.headers.authorization = `token ${mockToken}`;
+        }
+      },
     });
 
     nock.login();
@@ -57,7 +66,7 @@ describe('Test sidekick login', () => {
       .get('/sidekick/adobe/blog/main/config.json')
       .twice()
       .reply(function req() {
-        if (this.req.headers.cookie === 'auth_token=foobar') {
+        if (this.req.headers.authorization === `token ${mockToken}`) {
           return [200, '{}', { 'content-type': 'application/json' }];
         }
         return [401];
@@ -65,19 +74,20 @@ describe('Test sidekick login', () => {
       .get('/status/adobe/blog/main/en/topics/bla?editUrl=auto')
       .twice()
       .reply(function req() {
-        if (this.req.headers.cookie === 'auth_token=foobar') {
+        if (this.req.headers.authorization === `token ${mockToken}`) {
           loggedIn = true;
           return [200, '{ "status": 200}', { 'content-type': 'application/json' }];
         }
         return [401, '{ "status": 401 }', { 'content-type': 'application/json' }];
       })
-      .get('/login/adobe/blog/main?extensionId=cookie')
-      .reply(200, '<html>logged in<script>setTimeout(() => self.close(), 500)</script></html>', {
-        'set-cookie': 'auth_token=foobar; Path=/; HttpOnly; Secure; SameSite=None',
+      .get('/login/adobe/blog/main?extensionId=testsidekickid')
+      .reply(() => {
+        mockToken = 'test-token'; // mock admin sending token to the background extension worker
+        return [200, '<html>Logged in!<script>setTimeout(() => self.close(), 500)</script></html>'];
       })
       .get('/profile/adobe/blog/main')
       .reply(function req() {
-        if (this.req.headers.cookie === 'auth_token=foobar') {
+        if (this.req.headers.authorization === `token ${mockToken}`) {
           return [200, '{ "status": 200 }', { 'content-type': 'application/json' }];
         }
         return [401, '{ "status": 401 }', { 'content-type': 'application/json' }];
@@ -89,7 +99,7 @@ describe('Test sidekick login', () => {
 
     await test.run();
 
-    assert.ok(loggedIn, 'Sidekick did not send auth cookie.');
+    assert.ok(loggedIn, 'Sidekick did not login.');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Opens login window and shows aborted modal', async () => {
@@ -107,7 +117,7 @@ describe('Test sidekick login', () => {
       .reply(401)
       .get('/status/adobe/blog/main/en/topics/bla?editUrl=auto')
       .reply(401, '{ "status": 401 }', { 'content-type': 'application/json' })
-      .get('/login/adobe/blog/main?extensionId=cookie')
+      .get('/login/adobe/blog/main?extensionId=testsidekickid')
       .reply(200, '<html>not logged in!<script>setTimeout(() => self.close(), 500)</script></html>')
       .get('/profile/adobe/blog/main')
       .times(5)

@@ -1322,7 +1322,7 @@ describe('Test sidekick', () => {
     nock.sidekick(setup);
     nock.admin(setup);
     nock('https://admin.hlx.page')
-      .get('/login/adobe/blog/main?extensionId=cookie')
+      .get('/login/adobe/blog/main?extensionId=testsidekickid')
       .optionally()
       .reply(200, '<html>logged in</html>')
       .get('/profile/adobe/blog/main')
@@ -1378,7 +1378,7 @@ describe('Test sidekick', () => {
     nock.sidekick(setup);
     nock.admin(setup);
     nock('https://admin.hlx.page')
-      .get('/login/adobe/blog/main?extensionId=cookie&selectAccount=true')
+      .get('/login/adobe/blog/main?extensionId=testsidekickid&selectAccount=true')
       .optionally()
       .reply(200, '<html>logged in</html>')
       .get('/profile/adobe/blog/main')
