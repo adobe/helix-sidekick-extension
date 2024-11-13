@@ -634,16 +634,16 @@
     "message": "사용자 전환"
   },
   "v7_context_menu": {
-    "message": "새 AEM Sidekick 설치"
+    "message": "새로운 AEM Sidekick 설치"
   },
   "v7_hint_cover": {
     "message": "https://www.aem.live/tools/sidekick/en/v7-teaser.png"
   },
   "v7_hint_description": {
-    "message": "이제 Chrome 웹 스토어에서 완전히 새로운 버전의 AEM Sidekick 확장을 사용할 수 있습니다. 향상된 성능, 새로운 기능 및 원활한 작성 환경을 위해 지금 전환합니다."
+    "message": "완전히 새로운 버전의 AEM Sidekick 확장 기능이 이제 Chrome 웹 스토어에서 제공됩니다. 지금 전환하여 향상된 성능, 새로운 기능 및 원활한 저작 경험을 누리세요."
   },
   "v7_hint_title": {
-    "message": "새 AEM Sidekick 소개"
+    "message": "새로운 AEM Sidekick 소개"
   },
   "v7_install_later": {
     "message": "나중에"

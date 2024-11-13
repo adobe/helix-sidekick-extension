@@ -640,7 +640,7 @@
     "message": "https://www.aem.live/tools/sidekick/en/v7-teaser.png"
   },
   "v7_hint_description": {
-    "message": "Ya hay disponible una versión completamente nueva de la extensión de AEM Sidekick en la tienda web de Chrome. Cambie hoy mismo para obtener un rendimiento mejorado, nuevas funciones y una experiencia de creación perfecta."
+    "message": "Ya hay disponible una versión completamente nueva de la extensión de AEM Sidekick en la tienda web de Chrome. Cambie hoy mismo para disfrutar de un rendimiento mejorado, nuevas funciones y una experiencia de creación perfecta."
   },
   "v7_hint_title": {
     "message": "Presentación del nuevo AEM Sidekick"
@@ -652,7 +652,7 @@
     "message": "Instalar ahora"
   },
   "v7_install_url": {
-    "message": "https://chromewebstore.google.com/detail/aem-sidekick/igkmdomcgoebiipaifhmpfjhbjccggml"
+    "message": "https://chromewebstore.google.com/detail/aem-sidekick/igkmdomcgoebiipaifhmpfjhbjccggml?hl=es"
   },
   "view_doc_source_copied": {
     "message": "Copiado."

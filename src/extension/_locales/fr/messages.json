@@ -208,7 +208,7 @@
   },
   "config_manual_org_placeholder": {
     "description": "Nom de l’organisation tel que dans le service de configuration",
-    "message": "Nom d’organisation"
+    "message": "Nom de l’organisation"
   },
   "config_manual_previewHost_placeholder": {
     "message": "Nom d’hôte d’aperçu personnalisé (facultatif)"
@@ -634,19 +634,19 @@
     "message": "Changer d'utilisateur"
   },
   "v7_context_menu": {
-    "message": "Installer le nouveau AEM Sidekick"
+    "message": "Installer le nouvel AEM Sidekick"
   },
   "v7_hint_cover": {
     "message": "https://www.aem.live/tools/sidekick/en/v7-teaser.png"
   },
   "v7_hint_description": {
-    "message": "Une toute nouvelle version de l’extension de AEM Sidekick est désormais disponible dans Chrome Web Store. Optez dès aujourd'hui pour des performances améliorées, de nouvelles fonctionnalités et une expérience de création transparente."
+    "message": "Une toute nouvelle version de l’extension AEM Sidekick est désormais disponible dans Chrome Web Store. Optez dès aujourd’hui pour des performances améliorées, de nouvelles fonctionnalités et une expérience de création transparente."
   },
   "v7_hint_title": {
-    "message": "Présentation du nouveau AEM Sidekick"
+    "message": "Présentation du nouvel AEM Sidekick"
   },
   "v7_install_later": {
-    "message": "Ultérieurement"
+    "message": "Plus tard"
   },
   "v7_install_now": {
     "message": "Installer maintenant"
