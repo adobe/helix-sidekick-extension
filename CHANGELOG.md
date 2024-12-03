@@ -1,3 +1,31 @@
+## [6.50.1](https://github.com/adobe/helix-sidekick-extension/compare/v6.50.0...v6.50.1) (2024-10-24)
+
+
+### Bug Fixes
+
+* **json:** never load from cache ([#843](https://github.com/adobe/helix-sidekick-extension/issues/843)) ([4ac8a25](https://github.com/adobe/helix-sidekick-extension/commit/4ac8a25b5ce249c9ed8e518e97cc5b39e4894a95))
+
+# [6.50.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.49.4...v6.50.0) (2024-10-17)
+
+
+### Features
+
+* support for multiple original sites ([#835](https://github.com/adobe/helix-sidekick-extension/issues/835)) ([ea22ed5](https://github.com/adobe/helix-sidekick-extension/commit/ea22ed5427a0a6429a74302f130d071c0a8d7579))
+
+## [6.49.4](https://github.com/adobe/helix-sidekick-extension/compare/v6.49.3...v6.49.4) (2024-10-09)
+
+
+### Bug Fixes
+
+* JSON view should not attempt to draw links for glob paths ([#825](https://github.com/adobe/helix-sidekick-extension/issues/825)) ([9c527c2](https://github.com/adobe/helix-sidekick-extension/commit/9c527c2952eac25802d5183907423cc540dce051)), closes [#827](https://github.com/adobe/helix-sidekick-extension/issues/827)
+
+## [6.49.3](https://github.com/adobe/helix-sidekick-extension/compare/v6.49.2...v6.49.3) (2024-10-03)
+
+
+### Bug Fixes
+
+* multiple fixes ([#784](https://github.com/adobe/helix-sidekick-extension/issues/784)) ([8bb0b4a](https://github.com/adobe/helix-sidekick-extension/commit/8bb0b4a2e3ad081e60e9d8131d1c82845395a857)), closes [#830](https://github.com/adobe/helix-sidekick-extension/issues/830)
+
 ## [6.49.2](https://github.com/adobe/helix-sidekick-extension/compare/v6.49.1...v6.49.2) (2024-09-24)
 
 
