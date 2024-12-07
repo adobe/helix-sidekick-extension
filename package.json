@@ -54,7 +54,7 @@
     "c8": "10.1.2",
     "codecov": "3.8.3",
     "eslint": "8.57.1",
-    "express": "4.21.1",
+    "express": "4.21.2",
     "fs-extra": "11.2.0",
     "husky": "9.1.7",
     "jsdoc-to-markdown": "9.1.1",
