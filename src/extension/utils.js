@@ -695,7 +695,7 @@ export async function getProjectEnv({
   try {
     const options = {
       cache: 'no-store',
-      credentials: 'include',
+      credentials: 'omit',
       headers: authToken ? { 'x-auth-token': authToken } : {},
     };
     res = await fetch(`https://admin.hlx.page/sidekick/${owner}/${repo}/${ref}/config.json`, options);

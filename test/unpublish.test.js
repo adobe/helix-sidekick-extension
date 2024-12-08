@@ -84,13 +84,14 @@ describe('Test unpublish plugin', () => {
   }).timeout(IT_DEFAULT_TIMEOUT);
 
   it('Unpublish plugin hidden if source document still exists but user is authenticated', async () => {
+    let mockToken = null;
     const setup = new Setup('blog');
     nock.login();
     nock('https://admin.hlx.page')
       .get('/sidekick/adobe/blog/main/config.json')
       .twice()
       .reply(function req() {
-        if (this.req.headers.cookie === 'auth_token=foobar') {
+        if (this.req.headers.authorization === `token ${mockToken}`) {
           return [200, '{}', { 'content-type': 'application/json' }];
         }
         return [401];
@@ -98,20 +99,21 @@ describe('Test unpublish plugin', () => {
       .get('/status/adobe/blog/main/en/topics/bla?editUrl=auto')
       .twice()
       .reply(function req() {
-        if (this.req.headers.cookie === 'auth_token=foobar') {
+        if (this.req.headers.authorization === `token ${mockToken}`) {
           const resp = setup.apiResponse();
           resp.live.permissions.push('delete'); // authenticated request, add delete permission
           return [200, JSON.stringify(resp), { 'content-type': 'application/json' }];
         }
         return [401, '{ "status": 401 }', { 'content-type': 'application/json' }];
       })
-      .get('/login/adobe/blog/main?extensionId=cookie')
-      .reply(200, '<html>logged in<script>setTimeout(() => self.close(), 500)</script></html>', {
-        'set-cookie': 'auth_token=foobar; Path=/; HttpOnly; Secure; SameSite=None',
+      .get('/login/adobe/blog/main?extensionId=testsidekickid')
+      .reply(() => {
+        mockToken = 'test-token'; // mock admin sending token to the background extension worker
+        return [200, '<html>logged in<script>setTimeout(() => self.close(), 500)</script></html>'];
       })
       .get('/profile/adobe/blog/main')
       .reply(function req() {
-        if (this.req.headers.cookie === 'auth_token=foobar') {
+        if (this.req.headers.authorization === `token ${mockToken}`) {
           return [200, '{ "status": 200 }', { 'content-type': 'application/json' }];
         }
         return [401, '{ "status": 401 }', { 'content-type': 'application/json' }];
@@ -127,6 +129,14 @@ describe('Test unpublish plugin', () => {
       plugin: 'user-login',
       pluginSleep: 2000,
       loadModule: true,
+      requestHandler: (request) => {
+        if (new URL(request.url).hostname !== 'admin.hlx.page') return;
+
+        if (mockToken) {
+          // mock admin sending token from background extension worker
+          request.headers.authorization = `token ${mockToken}`;
+        }
+      },
     }).run();
     assert.ok(
       plugins.find((p) => p.id === 'unpublish' && p.classes.includes('hlx-sk-advanced-only')),
