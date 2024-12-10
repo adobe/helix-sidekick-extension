@@ -186,7 +186,7 @@
     "message": "無効なコンテンツ URL"
   },
   "config_invalid_org_site": {
-    "message": "無効な組織またはサイト名"
+    "message": "無効な組織またはサイト名です"
   },
   "config_invalid_shareurl": {
     "message": "無効な共有 URL"
