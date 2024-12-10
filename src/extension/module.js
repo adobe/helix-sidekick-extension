@@ -572,13 +572,12 @@ import sampleRUM from './rum.js';
 
   /**
    * Returns the fetch options for admin requests
-   * @param {boolean} omitCredentials Should we omit the credentials
    * @returns {object}
    */
-  function getAdminFetchOptions(omitCredentials = false) {
+  function getAdminFetchOptions() {
     const opts = {
       cache: 'no-store',
-      credentials: omitCredentials ? 'omit' : 'include',
+      credentials: 'omit',
       headers: {},
     };
     return opts;
@@ -651,7 +650,7 @@ import sampleRUM from './rum.js';
         ? `${devOrigin}/tools/sidekick/config.json`
         : getAdminUrl(config, 'sidekick', '/config.json');
       try {
-        const res = await fetch(configUrl, getAdminFetchOptions(true));
+        const res = await fetch(configUrl, getAdminFetchOptions());
         if (res.status === 200) {
           config = {
             ...config,
