@@ -633,6 +633,27 @@
   "user_switch": {
     "message": "Trocar usuário"
   },
+  "v7_context_menu": {
+    "message": "Instalar o novo AEM Sidekick"
+  },
+  "v7_hint_cover": {
+    "message": "https://www.aem.live/tools/sidekick/en/v7-teaser.png"
+  },
+  "v7_hint_description": {
+    "message": "Uma versão totalmente nova da extensão do AEM Sidekick está disponível na Chrome Web Store. Baixe a nova versão hoje mesmo para obter um desempenho avançado, novos recursos e uma experiência de criação perfeita."
+  },
+  "v7_hint_title": {
+    "message": "Apresentação do novo AEM Sidekick"
+  },
+  "v7_install_later": {
+    "message": "Posteriormente"
+  },
+  "v7_install_now": {
+    "message": "Instalar agora"
+  },
+  "v7_install_url": {
+    "message": "https://chromewebstore.google.com/detail/aem-sidekick/igkmdomcgoebiipaifhmpfjhbjccggml?hl=pt_br"
+  },
   "view_doc_source_copied": {
     "message": "Copiado."
   },
