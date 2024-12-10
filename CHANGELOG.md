@@ -1,3 +1,10 @@
+# [6.51.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.50.1...v6.51.0) (2024-12-10)
+
+
+### Features
+
+* advertise v7 ([#803](https://github.com/adobe/helix-sidekick-extension/issues/803)) ([4380bb6](https://github.com/adobe/helix-sidekick-extension/commit/4380bb6ee3c21813a2549fa5a7eb39c0aba8543f))
+
 ## [6.50.1](https://github.com/adobe/helix-sidekick-extension/compare/v6.50.0...v6.50.1) (2024-10-24)
 
 
