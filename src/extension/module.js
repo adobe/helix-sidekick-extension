@@ -3050,7 +3050,8 @@ import sampleRUM from './rum.js';
    * @param {Sidekick} sk The sidekick
    */
   async function showView(sk) {
-    if (!sk.isProject()) {
+    const v7Sidekick = document.querySelector('aem-sidekick');
+    if (!sk.isProject() || v7Sidekick) {
       return;
     }
     const {
