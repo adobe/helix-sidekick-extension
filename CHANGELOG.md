@@ -1,3 +1,11 @@
+## [6.51.1](https://github.com/adobe/helix-sidekick-extension/compare/v6.51.0...v6.51.1) (2025-01-09)
+
+
+### Bug Fixes
+
+* cookie-less auth cleanup. remove credentials: include ([f2c03af](https://github.com/adobe/helix-sidekick-extension/commit/f2c03afdb109cc14f29962912f691f2773ea7fa3))
+* if v7 sidekick exists on page, don't open custom views ([ecc1ffa](https://github.com/adobe/helix-sidekick-extension/commit/ecc1ffad84ef832bbcc97113c2fd03f770094302))
+
 # [6.51.0](https://github.com/adobe/helix-sidekick-extension/compare/v6.50.1...v6.51.0) (2024-12-10)
 
 
