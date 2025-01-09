@@ -49,7 +49,7 @@ describe('Test sidekick logout', () => {
     nock('https://admin.hlx.page')
       .get('/status/adobe/blog/main/en/topics/bla?editUrl=auto')
       .reply(200, { status: 200 })
-      .get('/logout/adobe/blog/main?extensionId=cookie')
+      .get('/logout/adobe/blog/main?extensionId=testsidekickid')
       .reply(200, '<html>logged out<script>setTimeout(() => self.close(), 500)</script></html>')
       .get('/profile/adobe/blog/main')
       .reply(401, '{ "status": 401 }', { 'content-type': 'application/json' });
