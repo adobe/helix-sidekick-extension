@@ -356,6 +356,12 @@ export class SidekickTest extends EventEmitter {
               }
               input.value = testLocation;
             }
+            // Mock sidekick's extension ID
+            window.chrome = {
+              runtime: {
+                id: 'testsidekickid',
+              },
+            };
             // inject sidekick
             const moduleScript = document.createElement('script');
             moduleScript.id = 'hlx-sk-module';
