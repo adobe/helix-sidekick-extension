@@ -40,7 +40,7 @@
     "reporter-options": "configFile=.mocha-multi.json"
   },
   "devDependencies": {
-    "@adobe/eslint-config-helix": "2.0.8",
+    "@adobe/eslint-config-helix": "2.0.9",
     "@adobe/fetch": "4.1.11",
     "@babel/eslint-parser": "7.26.5",
     "@esm-bundle/chai": "4.3.4-fix.0",
