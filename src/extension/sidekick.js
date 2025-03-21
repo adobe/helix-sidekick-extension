@@ -146,7 +146,7 @@ export default async function injectSidekick(config, display, v7Installed) {
           switchButton.addEventListener('click', () => {
             sk.hide();
             try {
-              chrome.runtime.getManifest().externally_connectable?.ids?.forEach((id) => {
+              chrome.runtime.getManifest().externally_connectable?.ids?.forEach(async (id) => {
                 chrome.runtime.lastError = null;
                 chrome.runtime.sendMessage(
                   id,
@@ -154,6 +154,11 @@ export default async function injectSidekick(config, display, v7Installed) {
                     action: 'launch',
                     owner: sk.config.owner,
                     repo: sk.config.repo,
+                  },
+                  () => {
+                    if (chrome.runtime.lastError) {
+                      throw new Error(chrome.runtime.lastError.message);
+                    }
                   },
                 );
               });
