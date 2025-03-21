@@ -66,7 +66,7 @@
             config.pushDown = true;
           }
           import(url('sidekick.js'))
-            .then((mod) => mod.default(config, display))
+            .then((mod) => mod.default(config, display, window.hlx.v7Installed))
             .catch((e) => log.error('failed to load sidekick', e));
         } else if (matches.length > 0) {
           log.info('content.js: multiple matching configs found, inject config picker', matches);
@@ -79,10 +79,11 @@
     };
 
     log.debug('content.js: waiting for config matches...');
-    chrome.runtime.onMessage.addListener(({ projectMatches = [] }, { tab }) => {
+    chrome.runtime.onMessage.addListener(({ projectMatches = [], v7Installed }, { tab }) => {
       // make sure message is from extension
       if (!tab) {
         window.hlx.projectMatches = projectMatches;
+        window.hlx.v7Installed = v7Installed;
         inject();
       }
     });

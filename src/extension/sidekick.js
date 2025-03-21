@@ -22,7 +22,7 @@ import {
   i18n,
 } from './utils.js';
 
-export default async function injectSidekick(config, display) {
+export default async function injectSidekick(config, display, v7Installed) {
   if (typeof config !== 'object') {
     log.warn('sidekick.js: invalid config', config);
     return;
@@ -119,11 +119,10 @@ export default async function injectSidekick(config, display) {
           });
         }
 
-        const isV7Installed = await getConfig('local', 'hlxSidekickV7Installed');
         const isChrome = /Chrome/.test(navigator.userAgent) && /Google/.test(navigator.vendor);
         const lastShownV7Dialog = await getConfig('local', 'hlxSidekickV7DialogShown');
-        const showV7Dialog = !isV7Installed && isChrome
-          && (!lastShownV7Dialog || +lastShownV7Dialog < Date.now() - 604800000); // 1 week
+        const showV7Dialog = isChrome
+          && (!lastShownV7Dialog || +lastShownV7Dialog < Date.now() - 172800000); // 2 days
 
         if (showV7Dialog) {
           // show v7 hint dialog
@@ -133,15 +132,43 @@ export default async function injectSidekick(config, display) {
           const rememberDialogShown = () => setConfig('local', { hlxSidekickV7DialogShown: Date.now() });
 
           const installButton = document.createElement('button');
-          installButton.textContent = i18n('v7_install_now');
-          installButton.classList.add('accent');
+          installButton.textContent = i18n(v7Installed ? 'v7_reinstall' : 'v7_install_now');
+          installButton.classList.add(v7Installed ? 'secondary' : 'accent');
           installButton.addEventListener('click', () => {
             window.open(i18n('v7_install_url'));
             rememberDialogShown();
             sampleRUM('sidekick:v7:install-clicked');
           });
 
-          // refactor to use document.createElement
+          const switchButton = document.createElement('button');
+          switchButton.textContent = i18n('v7_switch_now');
+          switchButton.classList.add(v7Installed ? 'accent' : 'hlx-sk-hidden');
+          switchButton.addEventListener('click', () => {
+            sk.hide();
+            try {
+              chrome.runtime.getManifest().externally_connectable?.ids?.forEach(async (id) => {
+                chrome.runtime.lastError = null;
+                chrome.runtime.sendMessage(
+                  id,
+                  {
+                    action: 'launch',
+                    owner: sk.config.owner,
+                    repo: sk.config.repo,
+                  },
+                  () => {
+                    if (chrome.runtime.lastError) {
+                      throw new Error(chrome.runtime.lastError.message);
+                    }
+                  },
+                );
+              });
+            } catch (e) {
+              log.info('failed to launch v7', e);
+            }
+            rememberDialogShown();
+            sampleRUM('sidekick:v7:switch-clicked');
+          });
+
           const laterButton = document.createElement('button');
           laterButton.textContent = i18n('v7_install_later');
           laterButton.addEventListener('click', () => {
@@ -151,14 +178,14 @@ export default async function injectSidekick(config, display) {
 
           const buttonGroup = document.createElement('span');
           buttonGroup.classList.add('hlx-sk-modal-button-group');
-          buttonGroup.append(laterButton, installButton);
+          buttonGroup.append(laterButton, installButton, switchButton);
 
           sk.addEventListener('statusfetched', () => {
             sk.showModal({
               message: [
                 cover,
-                i18n('v7_hint_title'),
-                i18n('v7_hint_description'),
+                i18n(v7Installed ? 'v7_hint_title_switch' : 'v7_hint_title'),
+                i18n(v7Installed ? 'v7_hint_description_switch' : 'v7_hint_description'),
                 buttonGroup,
               ],
               sticky: true,
