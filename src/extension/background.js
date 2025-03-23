@@ -231,7 +231,7 @@ async function checkContextMenu({ url: tabUrl, id, active }, configs = []) {
     }
 
     // add context menu item to install v7
-    const isV7Installed = await getConfig('local', 'hlxSidekickV7Installed');
+    const isV7Installed = await getConfig('session', 'hlxSidekickV7Installed');
     if (!isV7Installed) {
       await chrome.contextMenus.create({
         id: 'installV7Separator',
@@ -264,8 +264,10 @@ async function injectContentScript(tabId, matches) {
       files: ['./content.js'],
     });
     // send config matches to tab
+    const v7Installed = await getConfig('session', 'hlxSidekickV7Installed');
     await chrome.tabs.sendMessage(tabId, {
       projectMatches: matches,
+      v7Installed,
     });
   } catch (e) {
     log.error('error injecting content script', tabId, e);
@@ -562,7 +564,7 @@ const externalActions = {
   ping: async (_, { id }) => {
     if (ALLOWED_EXTENSIONS_IDS.includes(id)) {
       // remember new sidekick is installed
-      await setConfig('local', { hlxSidekickV7Installed: true });
+      await setConfig('session', { hlxSidekickV7Installed: true });
       return true;
     }
     return false;
