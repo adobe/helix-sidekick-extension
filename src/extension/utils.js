@@ -567,6 +567,7 @@ export async function updateAuthHeaderRules() {
             }],
           },
           condition: {
+            excludedInitiatorDomains: ['da.live'],
             regexFilter: `^https://admin.hlx.page/[a-z]+/${owner}/.*`,
             requestDomains: ['admin.hlx.page'],
             requestMethods: ['get', 'post', 'delete'],
