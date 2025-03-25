@@ -593,6 +593,7 @@ describe('Test extension utils', () => {
             ],
           },
           condition: {
+            excludedInitiatorDomains: ['da.live'],
             regexFilter: '^https://admin.hlx.page/[a-z]+/foo/.*',
             requestDomains: ['admin.hlx.page'],
             requestMethods: ['get', 'post', 'delete'],
