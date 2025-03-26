@@ -1,3 +1,11 @@
+## [6.51.2](https://github.com/adobe/helix-sidekick-extension/compare/v6.51.1...v6.51.2) (2025-03-26)
+
+
+### Bug Fixes
+
+* Do not inject admin token for requests originatin on da.live ([#884](https://github.com/adobe/helix-sidekick-extension/issues/884)) ([cb0d2c1](https://github.com/adobe/helix-sidekick-extension/commit/cb0d2c124e9b36a3ad62f456c0e9ef59466f14f7))
+* encourage v7 migration ([#880](https://github.com/adobe/helix-sidekick-extension/issues/880)) ([9f24766](https://github.com/adobe/helix-sidekick-extension/commit/9f247664ed2ee240ab68e8542090d02f2e957011))
+
 ## [6.51.1](https://github.com/adobe/helix-sidekick-extension/compare/v6.51.0...v6.51.1) (2025-01-09)
 
 
