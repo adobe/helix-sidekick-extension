@@ -642,8 +642,14 @@
   "v7_hint_description": {
     "message": "Chrome 网上应用店现已提供全新版本的 AEM Sidekick 扩展程序。立即切换以获得增强的性能、新功能和无缝的创作体验。"
   },
+  "v7_hint_description_switch": {
+    "message": "看起来您已经安装了新版 AEM Sidekick，所以一切就绪！"
+  },
   "v7_hint_title": {
     "message": "推出新版 AEM Sidekick"
+  },
+  "v7_hint_title_switch": {
+    "message": "立即切换到新版 AEM Sidekick"
   },
   "v7_install_later": {
     "message": "稍后"
@@ -653,6 +659,12 @@
   },
   "v7_install_url": {
     "message": "https://chromewebstore.google.com/detail/aem-sidekick/igkmdomcgoebiipaifhmpfjhbjccggml?hl=zh_cn"
+  },
+  "v7_reinstall": {
+    "message": "再次安装"
+  },
+  "v7_switch_now": {
+    "message": "立即切换"
   },
   "view_doc_source_copied": {
     "message": "已复制！"
