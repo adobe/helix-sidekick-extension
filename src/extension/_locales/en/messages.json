@@ -645,8 +645,14 @@
   "v7_hint_description": {
     "message": "A brand-new version of the AEM Sidekick extension is now available in the Chrome Web Store. Switch today for enhanced performance, new features, and a seamless authoring experience."
   },
+  "v7_hint_description_switch": {
+    "message": "Looks like you have the new AEM Sidekick already installed, so you're all set!"
+  },
   "v7_hint_title": {
     "message": "Introducing the new AEM Sidekick"
+  },
+  "v7_hint_title_switch": {
+    "message": "Switch to the new AEM Sidekick today"
   },
   "v7_install_later": {
     "message": "Later"
@@ -656,6 +662,12 @@
   },
   "v7_install_url": {
     "message": "https://chromewebstore.google.com/detail/aem-sidekick/igkmdomcgoebiipaifhmpfjhbjccggml"
+  },
+  "v7_reinstall": {
+    "message": "Install again"
+  },
+  "v7_switch_now": {
+    "message": "Switch now"
   },
   "yesterday_at": {
     "message": "Yesterday at $1"
