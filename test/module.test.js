@@ -204,6 +204,27 @@ describe('Test sidekick', () => {
     assert.ok(plugins.find((p) => p.id === 'foo'), 'Did not add plugin from config');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
+  it('Skips over popover plugin', async () => {
+    const setup = new Setup('blog');
+    nock.sidekick(setup, {
+      configJson: `{
+        "plugins": [{
+          "id": "foo",
+          "title": "Foo",
+          "url": "https://www.foo.bar",
+          "isPopover": true
+        }]
+      }`,
+    });
+    nock.admin(setup);
+    const { plugins } = await new SidekickTest({
+      browser,
+      page,
+      loadModule,
+    }).run();
+    assert.ok(!plugins.find((p) => p.id === 'foo'), 'Did not skip popover plugin');
+  }).timeout(IT_DEFAULT_TIMEOUT);
+
   it('Adds badge plugin to feature container', async () => {
     const setup = new Setup('blog');
     nock.sidekick(setup, {

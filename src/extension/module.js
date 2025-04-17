@@ -2320,6 +2320,7 @@ import sampleRUM from './rum.js';
             passConfig,
             passReferrer,
             isPalette,
+            isPopover,
             paletteRect,
             event: eventName,
             environments,
@@ -2330,6 +2331,12 @@ import sampleRUM from './rum.js';
             isBadge,
             badgeVariant,
           } = cfg;
+
+          if (isPopover) {
+            console.log(`unsupported popover plugin '${id}'. use palette instead`);
+            return;
+          }
+
           const condition = (s) => {
             let excluded = false;
             const pathSearchHash = s.location.href.replace(s.location.origin, '');
