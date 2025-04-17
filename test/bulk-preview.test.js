@@ -19,7 +19,6 @@ import {
 import { SidekickTest } from './SidekickTest.js';
 
 const SHAREPOINT_FIXTURE = 'admin-sharepoint.html';
-const SHAREPOINT_FIXTURE_FILE_LABEL = 'admin-sharepoint-file-label.html';
 const GDRIVE_FIXTURE = 'admin-gdrive.html';
 const TESTS = [{
   env: 'sharepoint',
