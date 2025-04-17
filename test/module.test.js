@@ -204,7 +204,7 @@ describe('Test sidekick', () => {
     assert.ok(plugins.find((p) => p.id === 'foo'), 'Did not add plugin from config');
   }).timeout(IT_DEFAULT_TIMEOUT);
 
-  it.only('Skips over popover plugin', async () => {
+  it('Skips over popover plugin', async () => {
     const setup = new Setup('blog');
     nock.sidekick(setup, {
       configJson: `{
