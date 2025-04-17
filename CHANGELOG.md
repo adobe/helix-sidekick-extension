@@ -1,3 +1,13 @@
+## [6.51.3](https://github.com/adobe/helix-sidekick-extension/compare/v6.51.2...v6.51.3) (2025-04-17)
+
+
+### Bug Fixes
+
+* cleanup ([a5a0de0](https://github.com/adobe/helix-sidekick-extension/commit/a5a0de012612259bd1c7fdeeb046566a24ae3fe2))
+* cleanup ([efc6311](https://github.com/adobe/helix-sidekick-extension/commit/efc63115d015f8963fab59311be071524c91b7fd))
+* tests ([13249c9](https://github.com/adobe/helix-sidekick-extension/commit/13249c93d3a8bb99d39c1ffe8ded62e1ddc4eb2d))
+* update sharepoint selection logic ([b7a3260](https://github.com/adobe/helix-sidekick-extension/commit/b7a3260db329b42a7a9dcf3f2483005f35bb0ad4))
+
 ## [6.51.2](https://github.com/adobe/helix-sidekick-extension/compare/v6.51.1...v6.51.2) (2025-03-26)
 
 

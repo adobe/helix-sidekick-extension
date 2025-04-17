@@ -1,6 +1,6 @@
 {
   "name": "@adobe/helix-sidekick-extension",
-  "version": "6.51.2",
+  "version": "6.51.3",
   "description": "AEM Sidekick Extension",
   "type": "module",
   "scripts": {
