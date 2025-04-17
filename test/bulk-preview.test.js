@@ -19,6 +19,7 @@ import {
 import { SidekickTest } from './SidekickTest.js';
 
 const SHAREPOINT_FIXTURE = 'admin-sharepoint.html';
+const SHAREPOINT_FIXTURE_FILE_LABEL = 'admin-sharepoint-file-label.html';
 const GDRIVE_FIXTURE = 'admin-gdrive.html';
 const TESTS = [{
   env: 'sharepoint',
@@ -519,5 +520,54 @@ describe('Test bulk preview plugin', () => {
       contentError.className.includes('level-0'),
       'Did not handle docx and xlsx errors',
     );
+  }).timeout(IT_DEFAULT_TIMEOUT);
+
+  it.only('Bulk preview plugin previews user selection in new sharepoint structure, copies preview URLs to clipboard and opens them', async () => {
+    const { setup } = TESTS[0];
+    nock.sidekick();
+    nock.bulkJob(setup, {
+      resources: [],
+    });
+    const { notification, checkPageResult } = await new SidekickTest({
+      browser,
+      page,
+      fixture: SHAREPOINT_FIXTURE_FILE_LABEL,
+      sidekickConfig: setup.sidekickConfig,
+      configJson: setup.configJson,
+      url: setup.getUrl('edit', 'admin'),
+      plugin: 'bulk-preview',
+      pluginSleep: 5000,
+      pre: (p) => p.evaluate(() => {
+        // user selects more files
+        document.getElementById('file-word').click();
+        document.getElementById('file-excel').click();
+      }),
+      checkPage: (p) => p.evaluate(() => {
+        window.hlx.clipboardText = 'dummy';
+        window.navigator.clipboard.writeText = (text) => {
+          window.hlx.clipboardText = text;
+        };
+        window.hlx.openedWindows = [];
+        window.open = (url) => window.hlx.openedWindows.push(url);
+        // user clicks copy and open URLs buttons
+        // eslint-disable-next-line no-underscore-dangle
+        window.hlx.sidekick._modal.querySelectorAll('button').forEach((b) => b.click());
+        // wait 500ms, then get clipboard text and opened windows
+        return new Promise((resolve) => {
+          setTimeout(() => {
+            resolve([window.hlx.clipboardText, window.hlx.openedWindows]);
+          }, 500);
+        });
+      }),
+      loadModule: true,
+      acceptDialogs: true,
+    }).run();
+    const [clipboardText, openedWindows] = checkPageResult;
+    assert.ok(
+      notification?.message.startsWith('Preview of 2 files successfully generated'),
+      'Did not bulk preview user selection',
+    );
+    assert.strictEqual(clipboardText.split('\n').length, 2, `2 URLs not copied to clipboard in sharepoint: \n${clipboardText}`);
+    assert.strictEqual(openedWindows.length, 2, `2 URLs not opened in sharepoint: \n${openedWindows.join('\n')}`);
   }).timeout(IT_DEFAULT_TIMEOUT);
 });
