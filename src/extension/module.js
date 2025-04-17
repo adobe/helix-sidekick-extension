@@ -1752,7 +1752,7 @@ import sampleRUM from './rum.js';
     const getBulkSelection = () => {
       const { location } = sk;
       if (isSharePointFolder(sk, location)) {
-        return [...document.querySelectorAll('#appRoot [role="presentation"] div[aria-selected="true"]')]
+        return [...document.querySelectorAll('#appRoot [aria-selected="true"]:not([aria-checked="true"]')]
           // exclude folders
           .filter((row) => !row.querySelector('img')?.getAttribute('src').includes('/foldericons/')
             && !row.querySelector('img')?.getAttribute('src').endsWith('folder.svg')
@@ -1761,8 +1761,14 @@ import sampleRUM from './rum.js';
           .map((row) => {
             const info = row.getAttribute('aria-label') || row.querySelector('span')?.textContent;
             // info format: bla.docx, docx File, Private, Modified 8/28/2023, edited by Jane, 1 KB
-            const type = info.match(/, ([\p{L}\p{N}]+) [\p{L}\p{N}]+,/u)?.[1];
-            const path = type && info.split(`, ${type}`)[0];
+            let type = info.match(/, ([\p{L}\p{N}]+) [\p{L}\p{N}]+,/u)?.[1];
+            let path = type && info.split(`, ${type}`)[0];
+
+            if (!type) {
+              type = info.split('.').pop();
+              path = info;
+            }
+
             return {
               path,
               type,
@@ -2314,6 +2320,7 @@ import sampleRUM from './rum.js';
             passConfig,
             passReferrer,
             isPalette,
+            isPopover,
             paletteRect,
             event: eventName,
             environments,
@@ -2324,6 +2331,12 @@ import sampleRUM from './rum.js';
             isBadge,
             badgeVariant,
           } = cfg;
+
+          if (isPopover) {
+            console.log(`unsupported popover plugin '${id}'. use palette instead`);
+            return;
+          }
+
           const condition = (s) => {
             let excluded = false;
             const pathSearchHash = s.location.href.replace(s.location.origin, '');
