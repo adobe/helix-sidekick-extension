@@ -31,7 +31,7 @@
     "message": "Voulez-vous vraiment publier ce fichier ?"
   },
   "bulk_error": {
-    "message": "Échec de l’opération en bloc. Veuillez réessayer plus tard."
+    "message": "Échec de l’opération en masse. Veuillez réessayer plus tard."
   },
   "bulk_error_illegal_file_name": {
     "message": "Seuls les lettres latines minuscules, les chiffres et les tirets normalisés sont autorisés dans les noms de fichier et de dossier. Le chemin suivant contient des caractères interdits :"
