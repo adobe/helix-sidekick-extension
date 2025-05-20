@@ -1759,14 +1759,24 @@ import sampleRUM from './rum.js';
             && !row.querySelector('svg')?.parentElement.className.toLowerCase().includes('folder'))
           // extract file name and type
           .map((row) => {
-            const info = row.getAttribute('aria-label') || row.querySelector('span')?.textContent;
-            // info format: bla.docx, docx File, Private, Modified 8/28/2023, edited by Jane, 1 KB
-            let type = info.match(/, ([\p{L}\p{N}]+) [\p{L}\p{N}]+,/u)?.[1];
-            let path = type && info.split(`, ${type}`)[0];
+            let path = row
+              .querySelector('[data-id="heroField"], [data-automationid="name"]') // list, grid
+              ?.textContent.trim();
+            let type = (path || '').split('.').pop();
 
-            if (!type) {
-              type = info.split('.').pop();
-              path = info;
+            // istanbul ignore next 13
+            if (!path) {
+              // fallback to previous SP DOM version and retrieve type and file from info string
+              const info = row.getAttribute('aria-label') || row.querySelector('span')?.textContent || '';
+
+              // info format: bla.docx, docx File, Private, Modified 8/28/2023, edited by Jane, 1 KB
+              type = info.match(/, ([\p{L}\p{N}]+) [\p{L}\p{N}]+,/u)?.[1];
+              path = type && info.split(`, ${type}`)[0];
+
+              if (!type) {
+                type = info.split('.').pop();
+                path = info;
+              }
             }
 
             return {

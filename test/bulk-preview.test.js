@@ -293,8 +293,8 @@ describe('Test bulk preview plugin', () => {
       const files = [];
       for (let i = 0; i < 100; i += 1) {
         const clone = file.cloneNode(true);
-        const button = clone.querySelector('button');
-        button.textContent = `file${i}.pdf`;
+        const span = clone.querySelector('span');
+        span.textContent = `file${i}.pdf`;
         files.push(clone);
       }
       container.append(...files);
