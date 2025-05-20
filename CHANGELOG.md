@@ -1,3 +1,10 @@
+## [6.51.4](https://github.com/adobe/helix-sidekick-extension/compare/v6.51.3...v6.51.4) (2025-05-20)
+
+
+### Bug Fixes
+
+* **bulk:** selection no longer detected in sharepoint ([#899](https://github.com/adobe/helix-sidekick-extension/issues/899)) ([60faf96](https://github.com/adobe/helix-sidekick-extension/commit/60faf967b183065083e6e80a2393345fef2a5d5f))
+
 ## [6.51.3](https://github.com/adobe/helix-sidekick-extension/compare/v6.51.2...v6.51.3) (2025-04-17)
 
 
