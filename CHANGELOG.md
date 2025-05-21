@@ -1,3 +1,10 @@
+## [6.51.5](https://github.com/adobe/helix-sidekick-extension/compare/v6.51.4...v6.51.5) (2025-05-21)
+
+
+### Bug Fixes
+
+* show v7 dialog every day now ([#900](https://github.com/adobe/helix-sidekick-extension/issues/900)) ([ddf6c5a](https://github.com/adobe/helix-sidekick-extension/commit/ddf6c5a2d6c8b81f55d06eeec4e22588f86d66ab))
+
 ## [6.51.4](https://github.com/adobe/helix-sidekick-extension/compare/v6.51.3...v6.51.4) (2025-05-20)
 
 
