@@ -1,3 +1,10 @@
+## [6.51.6](https://github.com/adobe/helix-sidekick-extension/compare/v6.51.5...v6.51.6) (2025-06-11)
+
+
+### Bug Fixes
+
+* instrument user agent ([#906](https://github.com/adobe/helix-sidekick-extension/issues/906)) ([77dac8d](https://github.com/adobe/helix-sidekick-extension/commit/77dac8de118dbeebc80e51df25bc7ec7dbfb9726))
+
 ## [6.51.5](https://github.com/adobe/helix-sidekick-extension/compare/v6.51.4...v6.51.5) (2025-05-21)
 
 
