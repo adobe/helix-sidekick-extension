@@ -972,3 +972,31 @@ export function removeCacheParam() {
     fetch(location, { cache: 'reload' });
   }
 }
+
+/**
+ * Adds the sidekick version to the user agent for requests to the Admin API.
+ */
+export async function updateUserAgent() {
+  const userAgent = `${navigator.userAgent} AEMSidekick/${chrome.runtime.getManifest().version}`;
+  const addRules = [{
+    id: Math.floor(Math.random() * 1000000),
+    priority: 1,
+    action: {
+      type: 'modifyHeaders',
+      requestHeaders: [{
+        header: 'User-Agent',
+        operation: 'set',
+        value: userAgent,
+      }],
+    },
+    condition: {
+      regexFilter: '^https://admin.hlx.page/.*',
+      requestMethods: ['get', 'post', 'delete'],
+      resourceTypes: ['xmlhttprequest'],
+    },
+  }];
+
+  // @ts-ignore
+  await chrome.declarativeNetRequest.updateDynamicRules({ addRules });
+  log.debug(`updateUserAgent: ${userAgent}`);
+}

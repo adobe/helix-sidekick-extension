@@ -122,7 +122,7 @@ export default async function injectSidekick(config, display, v7Installed) {
         const isChrome = /Chrome/.test(navigator.userAgent) && /Google/.test(navigator.vendor);
         const lastShownV7Dialog = await getConfig('local', 'hlxSidekickV7DialogShown');
         const showV7Dialog = isChrome
-          && (!lastShownV7Dialog || +lastShownV7Dialog < Date.now() - 86400000); // 1 day
+          && (!lastShownV7Dialog || +lastShownV7Dialog < Date.now() - 43200000); // 12h
 
         if (showV7Dialog) {
           // show v7 hint dialog
