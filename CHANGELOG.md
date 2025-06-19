@@ -1,3 +1,10 @@
+## [6.51.7](https://github.com/adobe/helix-sidekick-extension/compare/v6.51.6...v6.51.7) (2025-06-19)
+
+
+### Bug Fixes
+
+* clean up dynamic rule before adding new one ([#909](https://github.com/adobe/helix-sidekick-extension/issues/909)) ([a645c60](https://github.com/adobe/helix-sidekick-extension/commit/a645c60148265b98afa88041c0a849b8070db529))
+
 ## [6.51.6](https://github.com/adobe/helix-sidekick-extension/compare/v6.51.5...v6.51.6) (2025-06-11)
 
 
