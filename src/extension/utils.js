@@ -977,6 +977,12 @@ export function removeCacheParam() {
  * Adds the sidekick version to the user agent for requests to the Admin API.
  */
 export async function updateUserAgent() {
+  // remove dynamic rules first
+  await chrome.declarativeNetRequest.updateDynamicRules({
+    removeRuleIds: (await chrome.declarativeNetRequest.getDynamicRules())
+      .map((rule) => rule.id),
+  });
+
   const userAgent = `${navigator.userAgent} AEMSidekick/${chrome.runtime.getManifest().version}`;
   const addRules = [{
     id: Math.floor(Math.random() * 1000000),
