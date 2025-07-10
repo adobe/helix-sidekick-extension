@@ -1,6 +1,7 @@
 {
   "extends": ["github>adobe/helix-shared"],
-  packageRules: [
+    enabled: false,
+    packageRules: [
     {
       // current problem with Fetch.enable probably introduced in 21.2
       packageNames: ['puppeteer', 'puppeteer-core'],
