@@ -42,7 +42,7 @@
   "devDependencies": {
     "@adobe/eslint-config-helix": "2.0.9",
     "@adobe/fetch": "4.2.2",
-    "@babel/eslint-parser": "7.27.5",
+    "@babel/eslint-parser": "7.28.0",
     "@esm-bundle/chai": "4.3.4-fix.0",
     "@semantic-release/changelog": "6.0.3",
     "@semantic-release/exec": "7.1.0",
