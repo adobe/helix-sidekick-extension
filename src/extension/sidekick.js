@@ -122,7 +122,7 @@ export default async function injectSidekick(config, display, v7Installed) {
         const isChrome = /Chrome/.test(navigator.userAgent) && /Google/.test(navigator.vendor);
         const lastShownV7Dialog = await getConfig('local', 'hlxSidekickV7DialogShown');
         const showV7Dialog = isChrome
-          && (!lastShownV7Dialog || +lastShownV7Dialog < Date.now() - 43200000); // 12h
+          && (!lastShownV7Dialog || +lastShownV7Dialog < Date.now() - 14400000); // 4h
 
         if (showV7Dialog) {
           // show v7 hint dialog
@@ -131,54 +131,80 @@ export default async function injectSidekick(config, display, v7Installed) {
 
           const rememberDialogShown = () => setConfig('local', { hlxSidekickV7DialogShown: Date.now() });
 
-          const installButton = document.createElement('button');
-          installButton.textContent = i18n(v7Installed ? 'v7_reinstall' : 'v7_install_now');
-          installButton.classList.add(v7Installed ? 'secondary' : 'accent');
-          installButton.addEventListener('click', () => {
-            window.open(i18n('v7_install_url'));
+          const createInstallButton = () => {
+            const installButton = document.createElement('button');
+            installButton.textContent = i18n(v7Installed ? 'v7_reinstall' : 'v7_install_now');
+            installButton.classList.add(v7Installed ? 'secondary' : 'accent');
+            installButton.addEventListener('click', () => {
+              window.open(i18n('v7_install_url'));
+              rememberDialogShown();
+              sampleRUM('sidekick:v7:install-clicked');
+            });
+            return installButton;
+          };
+
+          const createSwitchButton = () => {
+            const switchButton = document.createElement('button');
+            switchButton.textContent = i18n('v7_switch_now');
+            switchButton.classList.add(v7Installed ? 'accent' : 'hlx-sk-hidden');
+            switchButton.addEventListener('click', () => {
+              sk.hide();
+              try {
+                chrome.runtime.getManifest().externally_connectable?.ids?.forEach(async (id) => {
+                  chrome.runtime.lastError = null;
+                  chrome.runtime.sendMessage(
+                    id,
+                    {
+                      action: 'launch',
+                      owner: sk.config.owner,
+                      repo: sk.config.repo,
+                    },
+                    () => {
+                      if (chrome.runtime.lastError) {
+                        throw new Error(chrome.runtime.lastError.message);
+                      }
+                    },
+                  );
+                });
+              } catch (e) {
+                log.info('failed to launch v7', e);
+              }
+              rememberDialogShown();
+              sampleRUM('sidekick:v7:switch-clicked');
+            });
+            return switchButton;
+          };
+
+          const laterCancelButton = document.createElement('button');
+          laterCancelButton.textContent = i18n('cancel');
+          laterCancelButton.addEventListener('click', () => {
+            sk.hideModal();
             rememberDialogShown();
-            sampleRUM('sidekick:v7:install-clicked');
           });
 
-          const switchButton = document.createElement('button');
-          switchButton.textContent = i18n('v7_switch_now');
-          switchButton.classList.add(v7Installed ? 'accent' : 'hlx-sk-hidden');
-          switchButton.addEventListener('click', () => {
-            sk.hide();
-            try {
-              chrome.runtime.getManifest().externally_connectable?.ids?.forEach(async (id) => {
-                chrome.runtime.lastError = null;
-                chrome.runtime.sendMessage(
-                  id,
-                  {
-                    action: 'launch',
-                    owner: sk.config.owner,
-                    repo: sk.config.repo,
-                  },
-                  () => {
-                    if (chrome.runtime.lastError) {
-                      throw new Error(chrome.runtime.lastError.message);
-                    }
-                  },
-                );
-              });
-            } catch (e) {
-              log.info('failed to launch v7', e);
-            }
-            rememberDialogShown();
-            sampleRUM('sidekick:v7:switch-clicked');
-          });
+          const laterButtonGroup = document.createElement('span');
+          laterButtonGroup.classList.add('hlx-sk-modal-button-group');
+          laterButtonGroup.append(laterCancelButton, v7Installed
+            ? createSwitchButton()
+            : createInstallButton());
 
           const laterButton = document.createElement('button');
           laterButton.textContent = i18n('v7_install_later');
           laterButton.addEventListener('click', () => {
-            rememberDialogShown();
             sampleRUM('sidekick:v7:later-clicked');
+            setTimeout(() => {
+              sk.showModal([
+                i18n('v7_hint_description_later'),
+                laterButtonGroup,
+              ], true);
+            }, 100);
           });
 
           const buttonGroup = document.createElement('span');
           buttonGroup.classList.add('hlx-sk-modal-button-group');
-          buttonGroup.append(laterButton, installButton, switchButton);
+          buttonGroup.append(laterButton, v7Installed
+            ? createSwitchButton()
+            : createInstallButton());
 
           sk.addEventListener('statusfetched', () => {
             sk.showModal({

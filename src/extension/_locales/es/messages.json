@@ -640,16 +640,19 @@
     "message": "https://www.aem.live/tools/sidekick/en/v7-teaser.png"
   },
   "v7_hint_description": {
-    "message": "Ya hay disponible una versión completamente nueva de la extensión de AEM Sidekick en la tienda web de Chrome. Cambie hoy mismo para disfrutar de un rendimiento mejorado, nuevas funciones y una experiencia de creación perfecta."
+    "message": "Esta versión de AEM Sidekick ya no es compatible. Hay una nueva versión disponible en Chrome Web Store. "
+  },
+  "v7_hint_description_later": {
+    "message": "Esta versión de AEM Sidekick está obsoleta y solo estará disponible hasta finales de enero de 2026. ¡Es mejor actualizar hoy!"
   },
   "v7_hint_description_switch": {
-    "message": "Parece que ya tiene instalado el nuevo AEM Sidekick, así que ¡todo listo!"
+    "message": "Esta versión de AEM Sidekick ya no es compatible. Parece que ya tiene instalado el nuevo AEM Sidekick. ¿Listo para cambiar?"
   },
   "v7_hint_title": {
-    "message": "Presentación del nuevo AEM Sidekick"
+    "message": "⚠️ Instale el nuevo AEM Sidekick hoy"
   },
   "v7_hint_title_switch": {
-    "message": "Cambie al nuevo AEM Sidekick hoy mismo"
+    "message": "⚠️ Cambie al nuevo AEM Sidekick hoy"
   },
   "v7_install_later": {
     "message": "Más tarde"
