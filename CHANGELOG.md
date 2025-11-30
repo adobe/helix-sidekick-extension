@@ -1,3 +1,10 @@
+## [6.51.8](https://github.com/adobe/helix-sidekick-extension/compare/v6.51.7...v6.51.8) (2025-11-30)
+
+
+### Bug Fixes
+
+* show v7 dialog every 4h and addtl dialog on later ([#914](https://github.com/adobe/helix-sidekick-extension/issues/914)) ([9725682](https://github.com/adobe/helix-sidekick-extension/commit/9725682ed05558306a7f8d6decb498336ad99559))
+
 ## [6.51.7](https://github.com/adobe/helix-sidekick-extension/compare/v6.51.6...v6.51.7) (2025-06-19)
 
 
