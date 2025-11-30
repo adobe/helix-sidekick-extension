@@ -640,16 +640,19 @@
     "message": "https://www.aem.live/tools/sidekick/en/v7-teaser.png"
   },
   "v7_hint_description": {
-    "message": "Chrome 网上应用店现已提供全新版本的 AEM Sidekick 扩展程序。立即切换以获得增强的性能、新功能和无缝的创作体验。"
+    "message": "此版本的 AEM Sidekick 不再受支持。Chrome 网上应用店现已提供新版本。 "
+  },
+  "v7_hint_description_later": {
+    "message": "此版本的 AEM Sidekick 已弃用，仅在 2026 年 1 月底之前可用。最好今天升级！"
   },
   "v7_hint_description_switch": {
-    "message": "看起来您已经安装了新版 AEM Sidekick，所以一切就绪！"
+    "message": "此版本的 AEM Sidekick 不再受支持。看起来您已经安装了新版 AEM Sidekick。准备好切换了吗？"
   },
   "v7_hint_title": {
-    "message": "推出新版 AEM Sidekick"
+    "message": "⚠️ 今天安装新版 AEM Sidekick"
   },
   "v7_hint_title_switch": {
-    "message": "立即切换到新版 AEM Sidekick"
+    "message": "⚠️ 今天切换到新版 AEM Sidekick"
   },
   "v7_install_later": {
     "message": "稍后"
