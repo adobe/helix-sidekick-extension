@@ -645,28 +645,30 @@ import sampleRUM from './rum.js';
       devOrigin = 'http://localhost:3000';
     }
     if (owner && repo && !_extended) {
-      // look for custom config in project
-      const configUrl = devMode
-        ? `${devOrigin}/tools/sidekick/config.json`
-        : getAdminUrl(config, 'sidekick', '/config.json');
-      try {
-        const res = await fetch(configUrl, getAdminFetchOptions());
-        if (res.status === 200) {
-          config = {
-            ...config,
-            ...(await res.json()),
-            // no overriding below
-            owner,
-            repo,
-            ref,
-            devMode,
-            adminVersion,
-            _extended: Date.now(),
-          };
-        }
-      } catch (e) {
-        console.log('error retrieving custom sidekick config', e);
-      }
+      // V6_SUNSET: disable loading config from admin API
+      // // look for custom config in project
+      // const configUrl = devMode
+      //   ? `${devOrigin}/tools/sidekick/config.json`
+      //   : getAdminUrl(config, 'sidekick', '/config.json');
+      // try {
+      //   const res = await fetch(configUrl, getAdminFetchOptions());
+      //   if (res.status === 200) {
+      config = {
+        ...config,
+        // ...(await res.json()),
+        // no overriding below
+        owner,
+        repo,
+        ref,
+        devMode,
+        adminVersion,
+        _extended: Date.now(),
+      };
+      // V6_SUNSET: disable loading config from admin API
+      //   }
+      // } catch (e) {
+      //   console.log('error retrieving custom sidekick config', e);
+      // }
     }
 
     const {
@@ -3370,8 +3372,8 @@ import sampleRUM from './rum.js';
         addBulkPlugins(this);
         addCustomPlugins(this);
         addTransientAddProjectPlugin(this);
-        // fetch status
-        this.fetchStatus();
+        // V6_SUNSET: disable fetching status from admin API
+        // this.fetchStatus();
         // push down content
         pushDownContent(this);
 
@@ -3396,9 +3398,9 @@ import sampleRUM from './rum.js';
           source: this.location.href,
           target: `${platform}:${browser}:${mode}`,
         });
-        // announce to the document that the sidekick is ready
-        document.dispatchEvent(new CustomEvent('sidekick-ready'));
-        document.dispatchEvent(new CustomEvent('helix-sidekick-ready')); // legacy
+        // V6_SUNSET: stop announcing to the document that the sidekick is ready
+        // document.dispatchEvent(new CustomEvent('sidekick-ready'));
+        // document.dispatchEvent(new CustomEvent('helix-sidekick-ready')); // legacy
       }, { once: true });
       this.addEventListener('statusfetched', () => {
         showView(this);

@@ -12,12 +12,9 @@
 /* eslint-disable no-console, import/no-unresolved */
 
 import {} from './lib/polyfills.min.js';
-import sampleRUM from './rum.js';
 import {
   log,
   url,
-  getConfig,
-  setConfig,
   setDisplay,
   i18n,
 } from './utils.js';
@@ -82,37 +79,7 @@ export default async function injectSidekick(config, display, v7Installed) {
         sk.addEventListener('hidden', () => {
           setDisplay(false);
         });
-        const helpOptOut = await getConfig('sync', 'hlxSidekickHelpOptOut');
-        if (!helpOptOut) {
-          // find next unacknowledged help topic with matching condition
-          const helpContent = await getConfig('sync', 'hlxSidekickHelpContent') || [];
-          const topic = helpContent
-            .find((t) => (!t.condition || sk[t.condition]()) && t.userStatus !== 'acknowledged');
-          if (topic) {
-            log.info(`next help topic to show: ${topic.title}`);
-            sk.addEventListener('statusfetched', () => {
-              sk.showHelp(topic);
-            });
-          }
-          sk.addEventListener('helpoptedout', async () => {
-            await setConfig('sync', { hlxSidekickHelpOptOut: true });
-            sk.notify(i18n('help_opt_out_alert'));
-          });
-          sk.addEventListener('helpacknowledged', async ({ detail = {} }) => {
-            const { data: id } = detail;
-            if (id) {
-              const hlxSidekickHelpContent = await getConfig('sync', 'hlxSidekickHelpContent') || [];
-              const ackTopic = hlxSidekickHelpContent.find((t) => t.id === id);
-              log.debug('help topic acknowledged', hlxSidekickHelpContent, id, ackTopic);
-              if (ackTopic) {
-                ackTopic.userStatus = 'acknowledged';
-                setConfig('sync', {
-                  hlxSidekickHelpContent,
-                });
-              }
-            }
-          });
-        }
+
         if (curatedConfig.transient) {
           sk.addEventListener('projectadded', () => {
             chrome.runtime.sendMessage({ action: 'addRemoveProject' });
@@ -120,25 +87,18 @@ export default async function injectSidekick(config, display, v7Installed) {
         }
 
         const isChrome = /Chrome/.test(navigator.userAgent) && /Google/.test(navigator.vendor);
-        const lastShownV7Dialog = await getConfig('local', 'hlxSidekickV7DialogShown');
-        const showV7Dialog = isChrome
-          && (!lastShownV7Dialog || +lastShownV7Dialog < Date.now() - 14400000); // 4h
-
-        if (showV7Dialog) {
+        if (isChrome) {
           // show v7 hint dialog
           const cover = document.createElement('img');
           cover.src = `${i18n('v7_hint_cover')}?width=1280&format=webply&optimize=medium`;
-
-          const rememberDialogShown = () => setConfig('local', { hlxSidekickV7DialogShown: Date.now() });
 
           const createInstallButton = () => {
             const installButton = document.createElement('button');
             installButton.textContent = i18n(v7Installed ? 'v7_reinstall' : 'v7_install_now');
             installButton.classList.add(v7Installed ? 'secondary' : 'accent');
             installButton.addEventListener('click', () => {
+              window.hlx.sidekickV7Action = 'install';
               window.open(i18n('v7_install_url'));
-              rememberDialogShown();
-              sampleRUM('sidekick:v7:install-clicked');
             });
             return installButton;
           };
@@ -148,6 +108,7 @@ export default async function injectSidekick(config, display, v7Installed) {
             switchButton.textContent = i18n('v7_switch_now');
             switchButton.classList.add(v7Installed ? 'accent' : 'hlx-sk-hidden');
             switchButton.addEventListener('click', () => {
+              window.hlx.sidekickV7Action = 'switch';
               sk.hide();
               try {
                 chrome.runtime.getManifest().externally_connectable?.ids?.forEach(async (id) => {
@@ -169,55 +130,29 @@ export default async function injectSidekick(config, display, v7Installed) {
               } catch (e) {
                 log.info('failed to launch v7', e);
               }
-              rememberDialogShown();
-              sampleRUM('sidekick:v7:switch-clicked');
             });
             return switchButton;
           };
 
-          const laterCancelButton = document.createElement('button');
-          laterCancelButton.textContent = i18n('cancel');
-          laterCancelButton.addEventListener('click', () => {
-            sk.hideModal();
-            rememberDialogShown();
+          const hideAndRemoveSidekick = () => {
+            sk.hide();
+            sk.replaceWith('');
+            delete window.hlx.sidekick;
+          };
+
+          sk.showModal({
+            message: [
+              cover,
+              i18n(v7Installed ? 'v7_hint_title_switch' : 'v7_hint_title'),
+              i18n(v7Installed ? 'v7_hint_description_switch' : 'v7_hint_description'),
+              v7Installed
+                ? createSwitchButton()
+                : createInstallButton(),
+            ],
+            sticky: true,
+            css: 'cover',
+            callback: hideAndRemoveSidekick,
           });
-
-          const laterButtonGroup = document.createElement('span');
-          laterButtonGroup.classList.add('hlx-sk-modal-button-group');
-          laterButtonGroup.append(laterCancelButton, v7Installed
-            ? createSwitchButton()
-            : createInstallButton());
-
-          const laterButton = document.createElement('button');
-          laterButton.textContent = i18n('v7_install_later');
-          laterButton.addEventListener('click', () => {
-            sampleRUM('sidekick:v7:later-clicked');
-            setTimeout(() => {
-              sk.showModal([
-                i18n('v7_hint_description_later'),
-                laterButtonGroup,
-              ], true);
-            }, 100);
-          });
-
-          const buttonGroup = document.createElement('span');
-          buttonGroup.classList.add('hlx-sk-modal-button-group');
-          buttonGroup.append(laterButton, v7Installed
-            ? createSwitchButton()
-            : createInstallButton());
-
-          sk.addEventListener('statusfetched', () => {
-            sk.showModal({
-              message: [
-                cover,
-                i18n(v7Installed ? 'v7_hint_title_switch' : 'v7_hint_title'),
-                i18n(v7Installed ? 'v7_hint_description_switch' : 'v7_hint_description'),
-                buttonGroup,
-              ],
-              sticky: true,
-              css: 'cover',
-            });
-          }, { once: true });
         }
       }
     }, 200);
