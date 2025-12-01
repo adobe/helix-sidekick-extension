@@ -642,11 +642,8 @@
   "v7_hint_description": {
     "message": "Cette version d'AEM Sidekick n'est plus prise en charge. Une nouvelle version est disponible pour vous dans le Chrome Web Store. "
   },
-  "v7_hint_description_later": {
-    "message": "Cette version d'AEM Sidekick est obsolète et ne sera disponible que jusqu'à fin janvier 2026. Il est préférable de mettre à niveau dès aujourd'hui !"
-  },
   "v7_hint_description_switch": {
-    "message": "Cette version d'AEM Sidekick n'est plus prise en charge. Il semble que vous ayez déjà installé le nouvel AEM Sidekick. Prêt à basculer ?"
+    "message": "Cette version d'AEM Sidekick n'est plus prise en charge. Passez à la nouvelle version maintenant."
   },
   "v7_hint_title": {
     "message": "⚠️ Installez le nouvel AEM Sidekick dès aujourd'hui"

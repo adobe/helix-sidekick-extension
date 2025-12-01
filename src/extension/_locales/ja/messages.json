@@ -642,11 +642,8 @@
   "v7_hint_description": {
     "message": "このバージョンの AEM Sidekick はサポートされなくなりました。Chrome Web Store で新しいバージョンをご利用いただけます。 "
   },
-  "v7_hint_description_later": {
-    "message": "このバージョンの AEM Sidekick は廃止され、2026年1月末までのみ利用可能です。今日アップグレードすることをお勧めします！"
-  },
   "v7_hint_description_switch": {
-    "message": "このバージョンの AEM Sidekick はサポートされなくなりました。新しい AEM Sidekick が既にインストールされているようです。切り替える準備はできていますか？"
+    "message": "このバージョンの AEM Sidekick はサポートされなくなりました。今すぐ新しいバージョンに切り替えてください。"
   },
   "v7_hint_title": {
     "message": "⚠️ 今日、新しい AEM Sidekick をインストール"
