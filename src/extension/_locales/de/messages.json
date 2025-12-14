@@ -642,6 +642,9 @@
   "v7_hint_description": {
     "message": "Diese Version von AEM Sidekick wird nicht mehr unterstützt. Eine neue Version ist für Sie im Chrome Web Store verfügbar. "
   },
+  "v7_hint_description_safari": {
+    "message": "AEM Sidekick für Safari wird nicht mehr unterstützt. Eine neue Version ist für Google Chrome, Microsoft Edge und andere Chromium-basierte Browser im Chrome Web Store verfügbar. "
+  },
   "v7_hint_description_later": {
     "message": "Diese Version von AEM Sidekick ist veraltet und wird nur noch bis Ende Januar 2026 verfügbar sein. Am besten führen Sie noch heute ein Upgrade durch!"
   },
@@ -650,6 +653,9 @@
   },
   "v7_hint_title": {
     "message": "⚠️ Installieren Sie noch heute den neuen AEM Sidekick"
+  },
+  "v7_hint_title_safari": {
+    "message": "Wechseln Sie zum neuen AEM Sidekick für Google Chrome"
   },
   "v7_hint_title_switch": {
     "message": "⚠️ Wechseln Sie noch heute zum neuen AEM Sidekick"
