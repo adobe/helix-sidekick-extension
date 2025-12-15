@@ -642,6 +642,9 @@
   "v7_hint_description": {
     "message": "此版本的 AEM Sidekick 不再受支援。Chrome 線上應用程式商店現已提供新版本。 "
   },
+  "v7_hint_description_safari": {
+    "message": "Safari 版 AEM Sidekick 不再受支援。Chrome 線上應用程式商店現已提供適用於 Google Chrome、Microsoft Edge 和其他基於 Chromium 的瀏覽器的新版本。 "
+  },
   "v7_hint_description_later": {
     "message": "此版本的 AEM Sidekick 已棄用，僅在 2026 年 1 月底之前可用。最好今天升級！"
   },
@@ -650,6 +653,9 @@
   },
   "v7_hint_title": {
     "message": "⚠️ 今天安裝新版 AEM Sidekick"
+  },
+  "v7_hint_title_safari": {
+    "message": "切換至 Google Chrome 版新版 AEM Sidekick"
   },
   "v7_hint_title_switch": {
     "message": "⚠️ 今天切換至新版 AEM Sidekick"

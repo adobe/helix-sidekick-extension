@@ -642,6 +642,9 @@
   "v7_hint_description": {
     "message": "このバージョンの AEM Sidekick はサポートされなくなりました。Chrome Web Store で新しいバージョンをご利用いただけます。 "
   },
+  "v7_hint_description_safari": {
+    "message": "Safari 版 AEM Sidekick はサポートされなくなりました。Google Chrome、Microsoft Edge、およびその他の Chromium ベースのブラウザー向けの新しいバージョンが Chrome Web Store で提供されています。 "
+  },
   "v7_hint_description_later": {
     "message": "このバージョンの AEM Sidekick は廃止され、2026年1月末までのみ利用可能です。今日アップグレードすることをお勧めします！"
   },
@@ -650,6 +653,9 @@
   },
   "v7_hint_title": {
     "message": "⚠️ 今日、新しい AEM Sidekick をインストール"
+  },
+  "v7_hint_title_safari": {
+    "message": "Google Chrome 版の新しい AEM Sidekick に切り替え"
   },
   "v7_hint_title_switch": {
     "message": "⚠️ 今日、新しい AEM Sidekick に切り替え"
