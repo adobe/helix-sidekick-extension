@@ -1,3 +1,10 @@
+## [6.51.10](https://github.com/adobe/helix-sidekick-extension/compare/v6.51.9...v6.51.10) (2025-12-15)
+
+
+### Bug Fixes
+
+* show v7 dialog in safari ([#916](https://github.com/adobe/helix-sidekick-extension/issues/916)) ([e131e03](https://github.com/adobe/helix-sidekick-extension/commit/e131e035289ff8cf2deb34cb9c50609334c34ded))
+
 ## [6.51.9](https://github.com/adobe/helix-sidekick-extension/compare/v6.51.8...v6.51.9) (2025-11-30)
 
 
