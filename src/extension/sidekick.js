@@ -17,6 +17,7 @@ import {
   url,
   setDisplay,
   i18n,
+  getConfig,
 } from './utils.js';
 
 export default async function injectSidekick(config, display, v7Installed) {
@@ -86,8 +87,10 @@ export default async function injectSidekick(config, display, v7Installed) {
           });
         }
 
-        const isChrome = /Chrome/.test(navigator.userAgent) && /Google/.test(navigator.vendor);
-        if (isChrome) {
+        const lastShownV7Dialog = await getConfig('local', 'hlxSidekickV7DialogShown');
+        const showV7Dialog = !lastShownV7Dialog || +lastShownV7Dialog < Date.now() - 14400000; // 4h
+
+        if (showV7Dialog) {
           // show v7 hint dialog
           const cover = document.createElement('img');
           cover.src = `${i18n('v7_hint_cover')}?width=1280&format=webply&optimize=medium`;
@@ -153,6 +156,28 @@ export default async function injectSidekick(config, display, v7Installed) {
             css: 'cover',
             callback: hideAndRemoveSidekick,
           });
+
+          const buttonGroup = document.createElement('span');
+          buttonGroup.classList.add('hlx-sk-modal-button-group');
+          buttonGroup.append(v7Installed
+            ? createSwitchButton()
+            : createInstallButton());
+
+          sk.addEventListener('statusfetched', () => {
+            const isChrome = /Chrome/.test(navigator.userAgent) && /Google/.test(navigator.vendor);
+            const description = isChrome ? 'v7_hint_description' : 'v7_hint_description_safari';
+            const title = isChrome ? 'v7_hint_title' : 'v7_hint_title_safari';
+            sk.showModal({
+              message: [
+                cover,
+                i18n(v7Installed ? 'v7_hint_title_switch' : title),
+                i18n(v7Installed ? 'v7_hint_description_switch' : description),
+                buttonGroup,
+              ],
+              sticky: true,
+              css: 'cover',
+            });
+          }, { once: true });
         }
       }
     }, 200);
