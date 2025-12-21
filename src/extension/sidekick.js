@@ -17,7 +17,6 @@ import {
   url,
   setDisplay,
   i18n,
-  getConfig,
 } from './utils.js';
 
 export default async function injectSidekick(config, display, v7Installed) {
@@ -87,98 +86,72 @@ export default async function injectSidekick(config, display, v7Installed) {
           });
         }
 
-        const lastShownV7Dialog = await getConfig('local', 'hlxSidekickV7DialogShown');
-        const showV7Dialog = !lastShownV7Dialog || +lastShownV7Dialog < Date.now() - 14400000; // 4h
+        // V6_SUNSET: always show v7 dialog and exit
+        const cover = document.createElement('img');
+        cover.src = `${i18n('v7_hint_cover')}?width=1280&format=webply&optimize=medium`;
 
-        if (showV7Dialog) {
-          // show v7 hint dialog
-          const cover = document.createElement('img');
-          cover.src = `${i18n('v7_hint_cover')}?width=1280&format=webply&optimize=medium`;
-
-          const createInstallButton = () => {
-            const installButton = document.createElement('button');
-            installButton.textContent = i18n(v7Installed ? 'v7_reinstall' : 'v7_install_now');
-            installButton.classList.add(v7Installed ? 'secondary' : 'accent');
-            installButton.addEventListener('click', () => {
-              window.hlx.sidekickV7Action = 'install';
-              window.open(i18n('v7_install_url'));
-            });
-            return installButton;
-          };
-
-          const createSwitchButton = () => {
-            const switchButton = document.createElement('button');
-            switchButton.textContent = i18n('v7_switch_now');
-            switchButton.classList.add(v7Installed ? 'accent' : 'hlx-sk-hidden');
-            switchButton.addEventListener('click', () => {
-              window.hlx.sidekickV7Action = 'switch';
-              sk.hide();
-              try {
-                chrome.runtime.getManifest().externally_connectable?.ids?.forEach(async (id) => {
-                  chrome.runtime.lastError = null;
-                  chrome.runtime.sendMessage(
-                    id,
-                    {
-                      action: 'launch',
-                      owner: sk.config.owner,
-                      repo: sk.config.repo,
-                    },
-                    () => {
-                      if (chrome.runtime.lastError) {
-                        throw new Error(chrome.runtime.lastError.message);
-                      }
-                    },
-                  );
-                });
-              } catch (e) {
-                log.info('failed to launch v7', e);
-              }
-            });
-            return switchButton;
-          };
-
-          const hideAndRemoveSidekick = () => {
-            sk.hide();
-            sk.replaceWith('');
-            delete window.hlx.sidekick;
-          };
-
-          sk.showModal({
-            message: [
-              cover,
-              i18n(v7Installed ? 'v7_hint_title_switch' : 'v7_hint_title'),
-              i18n(v7Installed ? 'v7_hint_description_switch' : 'v7_hint_description'),
-              v7Installed
-                ? createSwitchButton()
-                : createInstallButton(),
-            ],
-            sticky: true,
-            css: 'cover',
-            callback: hideAndRemoveSidekick,
+        const createInstallButton = () => {
+          const installButton = document.createElement('button');
+          installButton.textContent = i18n(v7Installed ? 'v7_reinstall' : 'v7_install_now');
+          installButton.classList.add(v7Installed ? 'secondary' : 'accent');
+          installButton.addEventListener('click', () => {
+            window.open(i18n('v7_install_url'));
           });
+          return installButton;
+        };
 
-          const buttonGroup = document.createElement('span');
-          buttonGroup.classList.add('hlx-sk-modal-button-group');
-          buttonGroup.append(v7Installed
-            ? createSwitchButton()
-            : createInstallButton());
+        const createSwitchButton = () => {
+          const switchButton = document.createElement('button');
+          switchButton.textContent = i18n('v7_switch_now');
+          switchButton.classList.add(v7Installed ? 'accent' : 'hlx-sk-hidden');
+          switchButton.addEventListener('click', () => {
+            sk.hide();
+            try {
+              chrome.runtime.getManifest().externally_connectable?.ids?.forEach(async (id) => {
+                chrome.runtime.lastError = null;
+                chrome.runtime.sendMessage(
+                  id,
+                  {
+                    action: 'launch',
+                    owner: sk.config.owner,
+                    repo: sk.config.repo,
+                  },
+                  () => {
+                    if (chrome.runtime.lastError) {
+                      throw new Error(chrome.runtime.lastError.message);
+                    }
+                  },
+                );
+              });
+            } catch (e) {
+              log.info('failed to launch v7', e);
+            }
+          });
+          return switchButton;
+        };
 
-          sk.addEventListener('statusfetched', () => {
-            const isChrome = /Chrome/.test(navigator.userAgent) && /Google/.test(navigator.vendor);
-            const description = isChrome ? 'v7_hint_description' : 'v7_hint_description_safari';
-            const title = isChrome ? 'v7_hint_title' : 'v7_hint_title_safari';
-            sk.showModal({
-              message: [
-                cover,
-                i18n(v7Installed ? 'v7_hint_title_switch' : title),
-                i18n(v7Installed ? 'v7_hint_description_switch' : description),
-                buttonGroup,
-              ],
-              sticky: true,
-              css: 'cover',
-            });
-          }, { once: true });
-        }
+        const hideAndRemoveSidekick = () => {
+          sk.hide();
+          sk.replaceWith('');
+          delete window.hlx.sidekick;
+        };
+
+        const isChrome = /Chrome/.test(navigator.userAgent) && /Google/.test(navigator.vendor);
+        const title = isChrome ? 'v7_hint_title' : 'v7_hint_title_safari';
+        const description = isChrome ? 'v7_hint_description' : 'v7_hint_description_safari';
+        sk.showModal({
+          message: [
+            cover,
+            i18n(v7Installed ? 'v7_hint_title_switch' : title),
+            i18n(v7Installed ? 'v7_hint_description_switch' : description),
+            v7Installed
+              ? createSwitchButton()
+              : createInstallButton(),
+          ],
+          sticky: true,
+          css: 'cover',
+          callback: hideAndRemoveSidekick,
+        });
       }
     }, 200);
   }
