@@ -649,7 +649,7 @@
     "message": "Questa versione di AEM Sidekick è obsoleta e sarà disponibile solo fino alla fine di gennaio 2026. Meglio eseguire l'aggiornamento oggi!"
   },
   "v7_hint_description_switch": {
-    "message": "Questa versione di AEM Sidekick non è più supportata. Sembra che il nuovo AEM Sidekick sia già installato. Pronto per passare?"
+    "message": "Questa versione di AEM Sidekick non è più supportata. Passa alla nuova versione ora."
   },
   "v7_hint_title": {
     "message": "⚠️ Installa il nuovo AEM Sidekick oggi"
