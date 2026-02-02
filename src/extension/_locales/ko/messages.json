@@ -649,7 +649,7 @@
     "message": "이 버전의 AEM Sidekick은 더 이상 사용되지 않으며 2026년 1월 말까지만 사용할 수 있습니다. 오늘 업그레이드하는 것이 가장 좋습니다!"
   },
   "v7_hint_description_switch": {
-    "message": "이 버전의 AEM Sidekick은 더 이상 지원되지 않습니다. 새로운 AEM Sidekick이 이미 설치된 것 같습니다. 전환할 준비가 되셨습니까?"
+    "message": "이 버전의 AEM Sidekick은 더 이상 지원되지 않습니다. 지금 새 버전으로 전환하세요."
   },
   "v7_hint_title": {
     "message": "⚠️ 오늘 새로운 AEM Sidekick 설치"

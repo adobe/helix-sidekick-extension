@@ -316,7 +316,8 @@ function checkTab(id) {
         log.debug('local dev url detected, retrieve proxy url');
         checkUrl = await getProxyUrl(tab);
       }
-      await populateUrlCache(tab, projects);
+      // V6_SUNSET: disable population of url cache
+      // await populateUrlCache(tab, projects);
       if (tab.active) {
         await checkContextMenu(tab, projects);
       }
