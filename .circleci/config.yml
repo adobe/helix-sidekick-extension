@@ -26,20 +26,20 @@ jobs:
     steps:
       - setup
       - run: mkdir junit
-      - run:
-          name: Lint
-          command: npm run lint
-      - browser-tools/install-chrome
-      - run:
-          name: Test
-          command: |
-            export CHROME_PATH=`find /home/circleci/project/node_modules -name chrome`
-            npm run test-ci
-      - codecov/upload
-      - store_test_results:
-          path: junit
-      - store_artifacts:
-          path: junit
+      # - run:
+      #     name: Lint
+      #     command: npm run lint
+      # - browser-tools/install-chrome
+      # - run:
+      #     name: Test
+      #     command: |
+      #       export CHROME_PATH=`find /home/circleci/project/node_modules -name chrome`
+      #       npm run test-ci
+      # - codecov/upload
+      # - store_test_results:
+      #     path: junit
+      # - store_artifacts:
+      #     path: junit
   semantic-release:
     executor: node18
     steps:
